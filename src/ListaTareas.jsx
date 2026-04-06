@@ -329,11 +329,10 @@ export default function ListaTareas({ onVolver, userId }) {
 
       {/* BARRA AGREGAR */}
       <div style={{position:'fixed',bottom:0,left:0,right:0,background:'white',borderTop:'1px solid #e5e5e5',padding:'10px 16px',display:'flex',alignItems:'center',gap:'8px',zIndex:50}}>
-        <button onClick={abrirModalAgregar} style={{width:'36px',height:'36px',borderRadius:'50%',background:'#185FA5',border:'none',color:'white',fontSize:'24px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
         <input ref={quickInputRef} value={quickText} onChange={e=>setQuickText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&quickAdd()}
-          placeholder="Nueva tarea rapida..."
+          placeholder="Nueva tarea... (Enter para agregar)"
           style={{flex:1,padding:'10px 14px',border:'1.5px solid #e5e5e5',borderRadius:'12px',fontSize:'15px',outline:'none',fontFamily:'inherit',background:'#FAFAFA',color:'#2C2C2A'}}/>
-        <button onClick={quickAdd} style={{padding:'10px 16px',background:'#185FA5',color:'white',border:'none',borderRadius:'12px',fontSize:'14px',fontWeight:'600',cursor:'pointer',flexShrink:0}}>Agregar</button>
+        <button onClick={abrirModalAgregar} style={{width:'36px',height:'36px',borderRadius:'50%',background:'#185FA5',border:'none',color:'white',fontSize:'24px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
       </div>
 
       {/* MODAL AGREGAR - todo visible sin scroll */}
