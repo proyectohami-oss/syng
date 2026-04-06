@@ -167,7 +167,7 @@ export default function App() {
 
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
 
-  if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} />
+  if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} userId={user.uid} />
   if (user && pantalla === 'listasuper') return <ListaSuper onVolver={() => setPantalla('inicio')} />
   if (user && pantalla === 'pizarron') return <Pizarron onVolver={() => setPantalla('inicio')} />
 
