@@ -332,7 +332,7 @@ export default function ListaTareas({ onVolver, userId }) {
         <input ref={quickInputRef} value={quickText} onChange={e=>setQuickText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&quickAdd()}
           placeholder="Nueva tarea... (Enter para agregar)"
           style={{flex:1,padding:'10px 14px',border:'1.5px solid #e5e5e5',borderRadius:'12px',fontSize:'15px',outline:'none',fontFamily:'inherit',background:'#FAFAFA',color:'#2C2C2A'}}/>
-        <button onClick={abrirModalAgregar} style={{width:'36px',height:'36px',borderRadius:'50%',background:'#185FA5',border:'none',color:'white',fontSize:'24px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
+        <button onClick={()=>quickText.trim()?quickAdd():abrirModalAgregar()} style={{width:'36px',height:'36px',borderRadius:'50%',background:'#185FA5',border:'none',color:'white',fontSize:'24px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
       </div>
 
       {/* MODAL AGREGAR - todo visible sin scroll */}
