@@ -3,8 +3,8 @@ import { db } from './firebase'
 import { collection, doc, onSnapshot, setDoc, deleteDoc } from 'firebase/firestore'
 
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-const DIAS_LARGO = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
-const DIAS_CORTO = ['Dom','Lun','Mar','Mié','Jue','Vie','Sáb']
+const DIAS_LARGO = ['Domingo','Lunes','Martes','Miercoles','Jueves','Viernes','Sabado']
+const DIAS_CORTO = ['Dom','Lun','Mar','Mie','Jue','Vie','Sab']
 
 function generarId() { return Math.random().toString(36).substr(2, 9) }
 function hoyISO() { const h = new Date(); return `${h.getFullYear()}-${String(h.getMonth()+1).padStart(2,'0')}-${String(h.getDate()).padStart(2,'0')}` }
@@ -37,25 +37,25 @@ function SelectorFecha({ value, onChange }) {
   for(let i=0;i<primerDia;i++) celdas.push(null)
   for(let d=1;d<=diasEnMes;d++) celdas.push(d)
   return (
-    <div style={{background:'#f8f8f8',border:'1.5px solid #e5e5e5',borderRadius:'14px',padding:'12px',userSelect:'none'}}>
-      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'8px'}}>
-        <button onClick={mesAnterior} style={{background:'none',border:'none',fontSize:'22px',cursor:'pointer',color:'#185FA5',padding:'2px 10px'}}>&#8249;</button>
-        <span style={{fontWeight:'700',fontSize:'14px',color:'#2C2C2A'}}>{MESES[mes]} {anio}</span>
-        <button onClick={mesSiguiente} style={{background:'none',border:'none',fontSize:'22px',cursor:'pointer',color:'#185FA5',padding:'2px 10px'}}>&#8250;</button>
+    <div style={{background:'#f8f8f8',border:'1.5px solid #e5e5e5',borderRadius:'14px',padding:'10px',userSelect:'none'}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'6px'}}>
+        <button onClick={mesAnterior} style={{background:'none',border:'none',fontSize:'20px',cursor:'pointer',color:'#185FA5',padding:'2px 8px'}}>&#8249;</button>
+        <span style={{fontWeight:'700',fontSize:'13px',color:'#2C2C2A'}}>{MESES[mes]} {anio}</span>
+        <button onClick={mesSiguiente} style={{background:'none',border:'none',fontSize:'20px',cursor:'pointer',color:'#185FA5',padding:'2px 8px'}}>&#8250;</button>
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'2px',marginBottom:'4px'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'1px',marginBottom:'2px'}}>
         {['D','L','M','M','J','V','S'].map((d,i)=>(
-          <div key={i} style={{textAlign:'center',fontSize:'11px',fontWeight:'600',color:'#aaa',padding:'4px 0'}}>{d}</div>
+          <div key={i} style={{textAlign:'center',fontSize:'10px',fontWeight:'600',color:'#aaa',padding:'2px 0'}}>{d}</div>
         ))}
       </div>
-      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px'}}>
+      <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'2px'}}>
         {celdas.map((dia,i)=>{
           if(!dia) return <div key={i}/>
           const iso=`${anio}-${String(mes+1).padStart(2,'0')}-${String(dia).padStart(2,'0')}`
           const sel=iso===value, esHoy=iso===hoy
           return(
             <button key={i} onClick={()=>seleccionar(dia)}
-              style={{width:'100%',aspectRatio:'1',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:'13px',fontWeight:sel||esHoy?'700':'400',background:sel?'#185FA5':esHoy?'#E6F1FB':'transparent',color:sel?'white':esHoy?'#185FA5':'#2C2C2A'}}>
+              style={{width:'100%',aspectRatio:'1',border:'none',borderRadius:'50%',cursor:'pointer',fontSize:'12px',fontWeight:sel||esHoy?'700':'400',background:sel?'#185FA5':esHoy?'#E6F1FB':'transparent',color:sel?'white':esHoy?'#185FA5':'#2C2C2A'}}>
               {dia}
             </button>
           )
@@ -86,6 +86,7 @@ export default function ListaTareas({ onVolver, userId }) {
   const longPressRef = useRef(null)
   const quickInputRef = useRef(null)
   const touchItem = useRef(null)
+  const touchMoved = useRef(false)
 
   const tareasRef = userId ? collection(db, 'users', userId, 'tareas') : null
 
@@ -155,31 +156,39 @@ export default function ListaTareas({ onVolver, userId }) {
     setSeleccionados(prev => prev.includes(id) ? prev.filter(i=>i!==id) : [...prev, id])
   }
 
-  function iniciarLongPress(id) {
-    longPressRef.current = setTimeout(() => { setSeleccionMode(true); setSeleccionados([id]) }, 600)
-  }
-  function cancelarLongPress() { clearTimeout(longPressRef.current) }
-
   function onTouchStartItem(e, id) {
+    touchMoved.current = false
     touchItem.current = id
-    iniciarLongPress(id)
+    longPressRef.current = setTimeout(() => {
+      if (!touchMoved.current) { setSeleccionMode(true); setSeleccionados([id]) }
+    }, 600)
   }
+
   function onTouchMoveItem(e) {
-    cancelarLongPress()
-    if (!touchItem.current) return
-    const el = document.elementFromPoint(e.touches[0].clientX, e.touches[0].clientY)
+    touchMoved.current = true
+    clearTimeout(longPressRef.current)
+    if (!touchItem.current || !draggingId) {
+      setDraggingId(touchItem.current)
+    }
+    const touch = e.touches[0]
+    const el = document.elementFromPoint(touch.clientX, touch.clientY)
     const row = el?.closest('[data-tarea-id]')
-    if (row && row.dataset.tareaId !== touchItem.current) setDragOverId(row.dataset.tareaId)
-    setDraggingId(touchItem.current)
+    if (row && row.dataset.tareaId !== touchItem.current) {
+      setDragOverId(row.dataset.tareaId)
+    }
   }
+
   async function onTouchEndItem() {
-    cancelarLongPress()
+    clearTimeout(longPressRef.current)
     if (draggingId && dragOverId && draggingId !== dragOverId && tareasRef) {
       const pend = [...pendientes]
-      const fi = pend.findIndex(t=>t.id===draggingId), ti = pend.findIndex(t=>t.id===dragOverId)
+      const fi = pend.findIndex(t=>t.id===draggingId)
+      const ti = pend.findIndex(t=>t.id===dragOverId)
       if (fi>=0 && ti>=0) {
         const [item] = pend.splice(fi,1); pend.splice(ti,0,item)
-        for (let i=0; i<pend.length; i++) await setDoc(doc(tareasRef, pend[i].id), { ...pend[i], orden:i })
+        for (let i=0; i<pend.length; i++) {
+          await setDoc(doc(tareasRef, pend[i].id), { ...pend[i], orden:i })
+        }
       }
     }
     setDraggingId(null); setDragOverId(null); touchItem.current = null
@@ -200,7 +209,7 @@ export default function ListaTareas({ onVolver, userId }) {
   }
   function onDragEnd() { setDraggingId(null); setDragOverId(null) }
 
-  const inp = { width:'100%', padding:'12px 14px', border:'1.5px solid #ddd', borderRadius:'12px', fontSize:'16px', outline:'none', fontFamily:'inherit', boxSizing:'border-box', color:'#2C2C2A', background:'white' }
+  const inp = { width:'100%', padding:'11px 13px', border:'1.5px solid #ddd', borderRadius:'12px', fontSize:'15px', outline:'none', fontFamily:'inherit', boxSizing:'border-box', color:'#2C2C2A', background:'white' }
 
   if (cargando) return (
     <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#F5F5F7'}}>
@@ -211,23 +220,23 @@ export default function ListaTareas({ onVolver, userId }) {
   return (
     <div style={{height:'100dvh',background:'#F5F5F7',fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif',display:'flex',flexDirection:'column',overflow:'hidden'}}>
 
+      {/* HEADER */}
       <div style={{background:'#185FA5',padding:'14px 20px 12px',flexShrink:0}}>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'6px'}}>
           <button onClick={onVolver} style={{background:'rgba(255,255,255,0.2)',border:'none',color:'white',borderRadius:'20px',padding:'6px 14px',cursor:'pointer',fontSize:'14px'}}>&#8249; Atras</button>
-          <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
+          <div style={{textAlign:'right'}}>
+            <div style={{fontSize:'28px',fontWeight:'600',color:'white',lineHeight:1}}>{pendientes.length}</div>
+            <div style={{fontSize:'11px',color:'rgba(255,255,255,0.6)'}}>pendientes</div>
             {diaActivo !== hoyStr && (
-              <button onClick={irHoy} style={{background:'rgba(255,255,255,0.25)',color:'white',border:'1.5px solid rgba(255,255,255,0.5)',borderRadius:'16px',padding:'5px 13px',fontSize:'13px',fontWeight:'700',cursor:'pointer'}}>Hoy</button>
+              <button onClick={irHoy} style={{background:'rgba(255,255,255,0.25)',color:'white',border:'1.5px solid rgba(255,255,255,0.5)',borderRadius:'12px',padding:'3px 10px',fontSize:'11px',fontWeight:'700',cursor:'pointer',marginTop:'4px'}}>Hoy</button>
             )}
-            <div style={{textAlign:'right'}}>
-              <div style={{fontSize:'28px',fontWeight:'600',color:'white',lineHeight:1}}>{pendientes.length}</div>
-              <div style={{fontSize:'11px',color:'rgba(255,255,255,0.6)'}}>pendientes</div>
-            </div>
           </div>
         </div>
         <div style={{fontSize:'20px',fontWeight:'600',color:'white'}}>Mis Tareas</div>
         <div style={{fontSize:'13px',color:'rgba(255,255,255,0.7)',marginTop:'2px'}}>{formatearFechaLarga(diaActivo)}</div>
       </div>
 
+      {/* BARRA 3 DIAS */}
       <div style={{background:'#0C447C',display:'flex',alignItems:'center',padding:'8px 12px',gap:'6px',flexShrink:0}}>
         <button onClick={diaAnterior} style={{width:'38px',height:'38px',borderRadius:'10px',background:'rgba(255,255,255,0.2)',border:'none',color:'white',fontSize:'22px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>&#8249;</button>
         <div style={{flex:1,display:'flex',gap:'6px'}}>
@@ -246,6 +255,7 @@ export default function ListaTareas({ onVolver, userId }) {
         <button onClick={diaSiguiente} style={{width:'38px',height:'38px',borderRadius:'10px',background:'rgba(255,255,255,0.2)',border:'none',color:'white',fontSize:'22px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>&#8250;</button>
       </div>
 
+      {/* BARRA SELECCION MULTIPLE */}
       {seleccionMode && (
         <div style={{background:'#E6F1FB',borderBottom:'1px solid #B5D4F4',padding:'10px 20px',display:'flex',justifyContent:'space-between',alignItems:'center',flexShrink:0}}>
           <span style={{fontSize:'14px',color:'#0C447C',fontWeight:'600'}}>{seleccionados.length} seleccionada{seleccionados.length!==1?'s':''}</span>
@@ -256,6 +266,7 @@ export default function ListaTareas({ onVolver, userId }) {
         </div>
       )}
 
+      {/* LISTA */}
       <div style={{flex:1,overflowY:'auto',paddingBottom:'80px'}}>
         <div style={{padding:'10px 20px 6px',background:'#F5F5F7',borderBottom:'0.5px solid #e5e5e5'}}>
           <span style={{fontSize:'11px',fontWeight:'600',color:'#aaa',letterSpacing:'0.08em',textTransform:'uppercase'}}>Pendientes</span>
@@ -273,7 +284,7 @@ export default function ListaTareas({ onVolver, userId }) {
             draggable={!seleccionMode}
             onDragStart={()=>onDragStart(t.id)} onDragOver={e=>onDragOver(e,t.id)} onDrop={e=>onDrop(e,t.id)} onDragEnd={onDragEnd}
             onTouchStart={e=>onTouchStartItem(e,t.id)} onTouchMove={onTouchMoveItem} onTouchEnd={onTouchEndItem}
-            style={{background:dragOverId===t.id?'#E6F1FB':seleccionados.includes(t.id)?'#EEF5FF':'white',borderBottom:'0.5px solid #EBEBEB',opacity:draggingId===t.id?0.4:1,borderLeft:seleccionados.includes(t.id)?'3px solid #185FA5':'3px solid transparent',transition:'background 0.15s'}}>
+            style={{background:dragOverId===t.id?'#dbeeff':seleccionados.includes(t.id)?'#EEF5FF':'white',borderBottom:'0.5px solid #EBEBEB',opacity:draggingId===t.id?0.4:1,borderLeft:seleccionados.includes(t.id)?'3px solid #185FA5':'3px solid transparent',transition:'background 0.15s'}}>
             <div style={{display:'flex',alignItems:'flex-start',gap:'12px',padding:'14px 16px'}}>
               <div onClick={()=>seleccionMode?toggleSeleccion(t.id):toggleDone(t)}
                 style={{width:'24px',height:'24px',borderRadius:'50%',border:seleccionados.includes(t.id)?'none':'2px solid #ccc',background:seleccionados.includes(t.id)?'#185FA5':'white',flexShrink:0,marginTop:'1px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}>
@@ -304,8 +315,7 @@ export default function ListaTareas({ onVolver, userId }) {
               <span style={{fontSize:'11px',fontWeight:'600',color:'#aaa',letterSpacing:'0.08em',textTransform:'uppercase'}}>Completadas</span>
             </div>
             {completadas.map(t=>(
-              <div key={t.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 16px',background:'#FAFAFA',borderBottom:'0.5px solid #EBEBEB',cursor:'pointer'}}
-                onClick={()=>toggleDone(t)}>
+              <div key={t.id} style={{display:'flex',alignItems:'center',gap:'12px',padding:'12px 16px',background:'#FAFAFA',borderBottom:'0.5px solid #EBEBEB',cursor:'pointer'}} onClick={()=>toggleDone(t)}>
                 <div style={{width:'24px',height:'24px',borderRadius:'50%',background:'#185FA5',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
                   <span style={{color:'white',fontSize:'13px'}}>&#10003;</span>
                 </div>
@@ -317,6 +327,7 @@ export default function ListaTareas({ onVolver, userId }) {
         )}
       </div>
 
+      {/* BARRA AGREGAR */}
       <div style={{position:'fixed',bottom:0,left:0,right:0,background:'white',borderTop:'1px solid #e5e5e5',padding:'10px 16px',display:'flex',alignItems:'center',gap:'8px',zIndex:50}}>
         <button onClick={abrirModalAgregar} style={{width:'36px',height:'36px',borderRadius:'50%',background:'#185FA5',border:'none',color:'white',fontSize:'24px',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>+</button>
         <input ref={quickInputRef} value={quickText} onChange={e=>setQuickText(e.target.value)} onKeyDown={e=>e.key==='Enter'&&quickAdd()}
@@ -325,85 +336,87 @@ export default function ListaTareas({ onVolver, userId }) {
         <button onClick={quickAdd} style={{padding:'10px 16px',background:'#185FA5',color:'white',border:'none',borderRadius:'12px',fontSize:'14px',fontWeight:'600',cursor:'pointer',flexShrink:0}}>Agregar</button>
       </div>
 
+      {/* MODAL AGREGAR - todo visible sin scroll */}
       {modalAgregar&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:100,overflowY:'auto'}}
-          onClick={e=>{if(e.target===e.currentTarget)setModalAgregar(false)}}>
-          <div style={{background:'white',borderRadius:'20px',width:'calc(100% - 32px)',maxWidth:'500px',margin:'20px auto 40px',padding:'24px 20px'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
-              <div style={{fontSize:'18px',fontWeight:'600',color:'#2C2C2A'}}>Nueva tarea</div>
-              <button onClick={()=>setModalAgregar(false)} style={{background:'#f0f0f0',border:'none',borderRadius:'50%',width:'32px',height:'32px',cursor:'pointer',fontSize:'16px',color:'#666'}}>&#10005;</button>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.55)',zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',padding:'16px'}}>
+          <div style={{background:'white',borderRadius:'20px',width:'100%',maxWidth:'480px',padding:'20px 18px',maxHeight:'90vh',overflowY:'auto'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
+              <div style={{fontSize:'17px',fontWeight:'600',color:'#2C2C2A'}}>Nueva tarea</div>
+              <button onClick={()=>setModalAgregar(false)} style={{background:'#f0f0f0',border:'none',borderRadius:'50%',width:'30px',height:'30px',cursor:'pointer',fontSize:'15px',color:'#666'}}>&#10005;</button>
             </div>
-            <div style={{marginBottom:'16px'}}>
-              <div style={{fontSize:'13px',fontWeight:'500',color:'#666',marginBottom:'6px'}}>Tarea *</div>
+            <div style={{marginBottom:'12px'}}>
+              <div style={{fontSize:'12px',fontWeight:'500',color:'#666',marginBottom:'5px'}}>Tarea *</div>
               <input value={modalTexto} onChange={e=>setModalTexto(e.target.value)} placeholder="Que tienes que hacer?" style={inp}/>
             </div>
-            <div style={{marginBottom:'16px'}}>
-              <div style={{fontSize:'13px',fontWeight:'500',color:'#666',marginBottom:'8px'}}>Fecha *</div>
+            <div style={{marginBottom:'12px'}}>
+              <div style={{fontSize:'12px',fontWeight:'500',color:'#666',marginBottom:'6px'}}>Fecha *</div>
               <SelectorFecha value={modalFecha} onChange={setModalFecha}/>
             </div>
-            <div style={{marginBottom:'24px'}}>
-              <div style={{fontSize:'13px',fontWeight:'500',color:'#666',marginBottom:'6px'}}>Hora (opcional)</div>
+            <div style={{marginBottom:'16px'}}>
+              <div style={{fontSize:'12px',fontWeight:'500',color:'#666',marginBottom:'5px'}}>Hora (opcional)</div>
               <input type="time" value={modalHora} onChange={e=>setModalHora(e.target.value)} style={inp}/>
             </div>
             <button onClick={guardarAgregar}
-              style={{width:'100%',padding:'15px',background:modalTexto.trim()&&modalFecha?'#185FA5':'#e5e5e5',color:modalTexto.trim()&&modalFecha?'white':'#aaa',border:'none',borderRadius:'14px',fontSize:'16px',fontWeight:'600',cursor:'pointer'}}>
+              style={{width:'100%',padding:'14px',background:modalTexto.trim()&&modalFecha?'#185FA5':'#e5e5e5',color:modalTexto.trim()&&modalFecha?'white':'#aaa',border:'none',borderRadius:'14px',fontSize:'15px',fontWeight:'600',cursor:'pointer'}}>
               Agregar tarea
             </button>
           </div>
         </div>
       )}
 
+      {/* MODAL EDITAR - todo visible sin scroll */}
       {modalEditar&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:100,overflowY:'auto'}}
-          onClick={e=>{if(e.target===e.currentTarget)setModalEditar(null)}}>
-          <div style={{background:'white',borderRadius:'20px',width:'calc(100% - 32px)',maxWidth:'500px',margin:'20px auto 40px',padding:'24px 20px'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
-              <div style={{fontSize:'18px',fontWeight:'600',color:'#2C2C2A'}}>Editar tarea</div>
-              <button onClick={()=>setModalEditar(null)} style={{background:'#f0f0f0',border:'none',borderRadius:'50%',width:'32px',height:'32px',cursor:'pointer',fontSize:'16px',color:'#666'}}>&#10005;</button>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.55)',zIndex:100,display:'flex',alignItems:'center',justifyContent:'center',padding:'16px'}}>
+          <div style={{background:'white',borderRadius:'20px',width:'100%',maxWidth:'480px',padding:'20px 18px',maxHeight:'90vh',overflowY:'auto'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
+              <div style={{fontSize:'17px',fontWeight:'600',color:'#2C2C2A'}}>Editar tarea</div>
+              <button onClick={()=>setModalEditar(null)} style={{background:'#f0f0f0',border:'none',borderRadius:'50%',width:'30px',height:'30px',cursor:'pointer',fontSize:'15px',color:'#666'}}>&#10005;</button>
             </div>
-            <div style={{marginBottom:'16px'}}>
-              <div style={{fontSize:'13px',fontWeight:'500',color:'#666',marginBottom:'6px'}}>Tarea *</div>
+            <div style={{marginBottom:'12px'}}>
+              <div style={{fontSize:'12px',fontWeight:'500',color:'#666',marginBottom:'5px'}}>Tarea *</div>
               <input value={modalTexto} onChange={e=>setModalTexto(e.target.value)} style={inp}/>
             </div>
-            <div style={{marginBottom:'16px'}}>
-              <div style={{fontSize:'13px',fontWeight:'500',color:'#666',marginBottom:'8px'}}>Fecha *</div>
+            <div style={{marginBottom:'12px'}}>
+              <div style={{fontSize:'12px',fontWeight:'500',color:'#666',marginBottom:'6px'}}>Fecha *</div>
               <SelectorFecha value={modalFecha} onChange={setModalFecha}/>
             </div>
-            <div style={{marginBottom:'24px'}}>
-              <div style={{fontSize:'13px',fontWeight:'500',color:'#666',marginBottom:'6px'}}>Hora (opcional)</div>
+            <div style={{marginBottom:'16px'}}>
+              <div style={{fontSize:'12px',fontWeight:'500',color:'#666',marginBottom:'5px'}}>Hora (opcional)</div>
               <input type="time" value={modalHora} onChange={e=>setModalHora(e.target.value)} style={inp}/>
             </div>
             <button onClick={guardarEditar}
-              style={{width:'100%',padding:'15px',background:modalTexto.trim()&&modalFecha?'#185FA5':'#e5e5e5',color:modalTexto.trim()&&modalFecha?'white':'#aaa',border:'none',borderRadius:'14px',fontSize:'16px',fontWeight:'600',cursor:'pointer'}}>
+              style={{width:'100%',padding:'14px',background:modalTexto.trim()&&modalFecha?'#185FA5':'#e5e5e5',color:modalTexto.trim()&&modalFecha?'white':'#aaa',border:'none',borderRadius:'14px',fontSize:'15px',fontWeight:'600',cursor:'pointer'}}>
               Guardar cambios
             </button>
           </div>
         </div>
       )}
 
+      {/* CONFIRMAR ELIMINAR */}
       {confirmEliminar&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:'24px'}}>
-          <div style={{background:'white',borderRadius:'20px',padding:'32px 24px',width:'100%',maxWidth:'320px',textAlign:'center'}}>
-            <div style={{fontSize:'40px',marginBottom:'12px'}}>&#128465;</div>
-            <div style={{fontSize:'17px',fontWeight:'700',color:'#2C2C2A',marginBottom:'8px'}}>Eliminar esta tarea?</div>
-            <div style={{fontSize:'14px',color:'#555',marginBottom:'28px',lineHeight:'1.5'}}>"{confirmEliminar.texto}"</div>
+          <div style={{background:'white',borderRadius:'20px',padding:'28px 22px',width:'100%',maxWidth:'320px',textAlign:'center'}}>
+            <div style={{fontSize:'36px',marginBottom:'10px'}}>&#128465;</div>
+            <div style={{fontSize:'16px',fontWeight:'700',color:'#2C2C2A',marginBottom:'8px'}}>Eliminar esta tarea?</div>
+            <div style={{fontSize:'14px',color:'#555',marginBottom:'24px',lineHeight:'1.5'}}>"{confirmEliminar.texto}"</div>
             <div style={{display:'flex',gap:'12px'}}>
-              <button onClick={()=>setConfirmEliminar(null)} style={{flex:1,padding:'14px',background:'#E0E0E0',border:'none',borderRadius:'14px',cursor:'pointer',fontSize:'15px',fontWeight:'700',color:'#333'}}>Cancelar</button>
-              <button onClick={ejecutarEliminar} style={{flex:1,padding:'14px',background:'#A32D2D',border:'none',borderRadius:'14px',cursor:'pointer',fontSize:'15px',color:'white',fontWeight:'700'}}>Eliminar</button>
+              <button onClick={()=>setConfirmEliminar(null)} style={{flex:1,padding:'13px',background:'#E0E0E0',border:'none',borderRadius:'14px',cursor:'pointer',fontSize:'14px',fontWeight:'700',color:'#333'}}>Cancelar</button>
+              <button onClick={ejecutarEliminar} style={{flex:1,padding:'13px',background:'#A32D2D',border:'none',borderRadius:'14px',cursor:'pointer',fontSize:'14px',color:'white',fontWeight:'700'}}>Eliminar</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* CONFIRMAR ELIMINAR MULTIPLE */}
       {confirmEliminarMultiple&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:'24px'}}>
-          <div style={{background:'white',borderRadius:'20px',padding:'32px 24px',width:'100%',maxWidth:'320px',textAlign:'center'}}>
-            <div style={{fontSize:'40px',marginBottom:'12px'}}>&#128465;</div>
-            <div style={{fontSize:'17px',fontWeight:'700',color:'#2C2C2A',marginBottom:'8px'}}>Eliminar {seleccionados.length} tarea{seleccionados.length!==1?'s':''}?</div>
-            <div style={{fontSize:'14px',color:'#555',marginBottom:'28px'}}>Esta accion no se puede deshacer.</div>
+          <div style={{background:'white',borderRadius:'20px',padding:'28px 22px',width:'100%',maxWidth:'320px',textAlign:'center'}}>
+            <div style={{fontSize:'36px',marginBottom:'10px'}}>&#128465;</div>
+            <div style={{fontSize:'16px',fontWeight:'700',color:'#2C2C2A',marginBottom:'8px'}}>Eliminar {seleccionados.length} tarea{seleccionados.length!==1?'s':''}?</div>
+            <div style={{fontSize:'14px',color:'#555',marginBottom:'24px'}}>Esta accion no se puede deshacer.</div>
             <div style={{display:'flex',gap:'12px'}}>
-              <button onClick={()=>setConfirmEliminarMultiple(false)} style={{flex:1,padding:'14px',background:'#E0E0E0',border:'none',borderRadius:'14px',cursor:'pointer',fontSize:'15px',fontWeight:'700',color:'#333'}}>Cancelar</button>
-              <button onClick={ejecutarEliminarMultiple} style={{flex:1,padding:'14px',background:'#A32D2D',border:'none',borderRadius:'14px',cursor:'pointer',fontSize:'15px',color:'white',fontWeight:'700'}}>Eliminar</button>
+              <button onClick={()=>setConfirmEliminarMultiple(false)} style={{flex:1,padding:'13px',background:'#E0E0E0',border:'none',borderRadius:'14px',cursor:'pointer',fontSize:'14px',fontWeight:'700',color:'#333'}}>Cancelar</button>
+              <button onClick={ejecutarEliminarMultiple} style={{flex:1,padding:'13px',background:'#A32D2D',border:'none',borderRadius:'14px',cursor:'pointer',fontSize:'14px',color:'white',fontWeight:'700'}}>Eliminar</button>
             </div>
           </div>
         </div>
