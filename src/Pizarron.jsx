@@ -563,8 +563,8 @@ export default function Pizarron({ onVolver, userId }) {
                       </div>
                       <div style={{ flex:1, fontSize:'15px', color: a.realizada?'#aaa':'#2C2C2A', background: a.realizada?'#FFFDE7':'transparent', borderRadius:'4px', padding: a.realizada?'2px 6px':'0', textDecoration: a.realizada?'line-through':'none', lineHeight:'1.4', textAlign:'left', wordBreak:'break-word' }}>{a.texto}</div>
                       <div style={{ display:'flex', gap:'4px', flexShrink:0 }}>
-                        <button onClick={e => { e.stopPropagation(); iniciarEdicion(a, i) }} style={{ background:'#E8F0FE', border:'none', borderRadius:'8px', cursor:'pointer', fontSize:'15px', padding:'6px 10px', color:'#185FA5' }}>&#9998; Editar</button>
-                        <button onClick={e => { e.stopPropagation(); confirmarEliminarFn(modalDia, a) }} style={{ background:'#FEECEC', border:'none', borderRadius:'8px', cursor:'pointer', fontSize:'15px', padding:'6px 10px', color:'#A32D2D' }}>&#128465; Eliminar</button>
+                        <button onClick={e => { e.stopPropagation(); iniciarEdicion(a, i) }} style={{ background:'#E8F0FE', border:'none', borderRadius:'8px', cursor:'pointer', fontSize:'18px', padding:'5px 8px', color:'#185FA5', flexShrink:0 }}>&#9998;</button>
+                        <button onClick={e => { e.stopPropagation(); confirmarEliminarFn(modalDia, a) }} style={{ background:'#FEECEC', border:'none', borderRadius:'8px', cursor:'pointer', fontSize:'18px', padding:'5px 8px', color:'#A32D2D', flexShrink:0 }}>&#128465;</button>
                       </div>
                     </div>
                   )}
