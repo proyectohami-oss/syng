@@ -190,20 +190,24 @@ export default function Pizarron({ onVolver, userId }) {
   const guardarEdicion = async (diaModal) => {
     if (!textoEditar.trim() || !editando) return
     const keyVieja = getKey(anio, mes, diaModal)
-    const keyNueva = getKey(editFecha.anio, editFecha.mes, editFecha.dia)
     const nuevas = { ...anotaciones }
     const listaVieja = [...(nuevas[keyVieja] || [])]
-    const idxOriginal = editandoIdxRef.current ?? listaVieja.findIndex(a => a.id === editando)
     const itemOriginal = listaVieja.find(a => a.id === editando)
-    const itemActualizado = { ...itemOriginal, texto: textoEditar.trim(), dia: editFecha.dia, mes: editFecha.mes, anio: editFecha.anio }
+    // Eliminar de la fecha original
     nuevas[keyVieja] = listaVieja.filter(a => a.id !== editando)
-    const listaNueva = [...(nuevas[keyNueva] || [])]
-    if (keyVieja === keyNueva) listaNueva.splice(idxOriginal, 0, itemActualizado)
-    else listaNueva.push(itemActualizado)
-    nuevas[keyNueva] = listaNueva
+    const promises = [guardarKey(keyVieja, nuevas[keyVieja])]
+    // Si hay fechas repetir seleccionadas, agregar a todas
+    const targets = mostrarRepetir && fechasRepetir.length > 0 ? fechasRepetir : [editFecha || { dia: diaModal, mes, anio }]
+    const repeatGroupId = targets.length > 1 ? generarId() : null
+    targets.forEach(({ dia, mes: m, anio: a }) => {
+      const keyNueva = getKey(a, m, dia)
+      const itemActualizado = { ...itemOriginal, id: generarId(), texto: textoEditar.trim(), dia, mes: m, anio: a, repeatGroupId }
+      nuevas[keyNueva] = [...(nuevas[keyNueva] || []), itemActualizado]
+      promises.push(guardarKey(keyNueva, nuevas[keyNueva]))
+    })
     setAnotaciones(nuevas)
-    await Promise.all([guardarKey(keyVieja, nuevas[keyVieja]), guardarKey(keyNueva, nuevas[keyNueva])])
-    setEditando(null); editandoIdxRef.current = null; setTextoEditar(''); setEditFecha(null); setMostrarCalEditFecha(false)
+    await Promise.all(promises)
+    setEditando(null); editandoIdxRef.current = null; setTextoEditar(''); setEditFecha(null); setMostrarCalEditFecha(false); setMostrarRepetir(false); setFechasRepetir([{dia:diaModal,mes,anio}])
   }
 
   const seleccionarFechaEdicion = (d) => { setEditFecha({ dia: d, mes: mesCalEdit, anio: anioCalEdit }); setMostrarCalEditFecha(false) }
