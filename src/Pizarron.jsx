@@ -405,9 +405,9 @@ export default function Pizarron({ onVolver, userId }) {
       {vistaAnual ? (
         <div style={{ padding:'0 12px 100px 12px' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'16px 0' }}>
-            <button onClick={() => setAnioAnual(anioAnual-1)} style={{ background:'white', border:'1px solid #e5e5e5', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'18px' }}>&#8249;</button>
+            <button onClick={() => setAnioAnual(anioAnual-1)} style={{ background:'#185FA5', border:'none', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'22px', color:'white', fontWeight:'bold' }}>&#8249;</button>
             <div style={{ fontSize:'32px', fontWeight:'800', color: anioAnual === hoy.getFullYear() ? '#534AB7' : '#2C2C2A' }}>{anioAnual}</div>
-            <button onClick={() => setAnioAnual(anioAnual+1)} style={{ background:'white', border:'1px solid #e5e5e5', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'18px' }}>&#8250;</button>
+            <button onClick={() => setAnioAnual(anioAnual+1)} style={{ background:'#185FA5', border:'none', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'22px', color:'white', fontWeight:'bold' }}>&#8250;</button>
           </div>
           <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:'16px' }}>
             {MESES_CORTO.map((nombreCorto, m) => (
@@ -425,9 +425,9 @@ export default function Pizarron({ onVolver, userId }) {
       ) : (
         <>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 20px' }}>
-            <button onClick={() => { if(mes===0){setMes(11);setAnio(anio-1)}else setMes(mes-1) }} style={{ background:'white', border:'1px solid #e5e5e5', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'18px' }}>&#8249;</button>
+            <button onClick={() => { if(mes===0){setMes(11);setAnio(anio-1)}else setMes(mes-1) }} style={{ background:'#185FA5', border:'none', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'22px', color:'white', fontWeight:'bold' }}>&#8249;</button>
             <button onClick={() => setVistaAnual(true)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'18px', fontWeight:'700', color:'#2C2C2A' }}>{MESES[mes]} {anio} ▾</button>
-            <button onClick={() => { if(mes===11){setMes(0);setAnio(anio+1)}else setMes(mes+1) }} style={{ background:'white', border:'1px solid #e5e5e5', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'18px' }}>&#8250;</button>
+            <button onClick={() => { if(mes===11){setMes(0);setAnio(anio+1)}else setMes(mes+1) }} style={{ background:'#185FA5', border:'none', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'22px', color:'white', fontWeight:'bold' }}>&#8250;</button>
           </div>
 
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', padding:'0 12px', gap:'2px', marginBottom:'4px' }}>
@@ -465,9 +465,6 @@ export default function Pizarron({ onVolver, userId }) {
             })}
           </div>
 
-          <div style={{ position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)', zIndex:50 }}>
-            <button onClick={irAHoy} style={{ background:'white', border:'2px solid #534AB7', borderRadius:'24px', padding:'10px 28px', fontSize:'16px', fontWeight:'700', color:'#534AB7', cursor:'pointer', boxShadow:'0 4px 16px rgba(83,74,183,0.25)' }}>Hoy</button>
-          </div>
         </>
       )}
 
@@ -566,8 +563,8 @@ export default function Pizarron({ onVolver, userId }) {
                       </div>
                       <div style={{ flex:1, fontSize:'15px', color: a.realizada?'#aaa':'#2C2C2A', background: a.realizada?'#FFFDE7':'transparent', borderRadius:'4px', padding: a.realizada?'2px 6px':'0', textDecoration: a.realizada?'line-through':'none', lineHeight:'1.4', textAlign:'left', wordBreak:'break-word' }}>{a.texto}</div>
                       <div style={{ display:'flex', gap:'4px', flexShrink:0 }}>
-                        <button onClick={e => { e.stopPropagation(); iniciarEdicion(a, i) }} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'16px', padding:'2px' }}>&#9998;</button>
-                        <button onClick={e => { e.stopPropagation(); confirmarEliminarFn(modalDia, a) }} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'16px', padding:'2px' }}>&#128465;</button>
+                        <button onClick={e => { e.stopPropagation(); iniciarEdicion(a, i) }} style={{ background:'#E8F0FE', border:'none', borderRadius:'8px', cursor:'pointer', fontSize:'15px', padding:'6px 10px', color:'#185FA5' }}>&#9998; Editar</button>
+                        <button onClick={e => { e.stopPropagation(); confirmarEliminarFn(modalDia, a) }} style={{ background:'#FEECEC', border:'none', borderRadius:'8px', cursor:'pointer', fontSize:'15px', padding:'6px 10px', color:'#A32D2D' }}>&#128465; Eliminar</button>
                       </div>
                     </div>
                   )}
@@ -595,11 +592,11 @@ export default function Pizarron({ onVolver, userId }) {
               <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 <button onClick={() => ejecutarEliminar(true)} style={{ padding:'12px', background:'#f5f5f7', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', color:'#2C2C2A', fontWeight:'500' }}>Solo esta fecha</button>
                 <button onClick={() => ejecutarEliminar(false)} style={{ padding:'12px', background:'#ff3b30', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', color:'white', fontWeight:'600' }}>Todas las repeticiones</button>
-                <button onClick={() => setConfirmEliminar(null)} style={{ padding:'12px', background:'none', border:'none', cursor:'pointer', fontSize:'15px', color:'#888' }}>Cancelar</button>
+                <button onClick={() => setConfirmEliminar(null)} style={{ padding:'12px', background:'#E0E0E0', border:'1px solid #ccc', borderRadius:'10px', cursor:'pointer', fontSize:'15px', fontWeight:'700', color:'#333' }}>Cancelar</button>
               </div>
             ) : (
               <div style={{ display:'flex', gap:'10px' }}>
-                <button onClick={() => setConfirmEliminar(null)} style={{ flex:1, padding:'12px', background:'#f5f5f7', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px' }}>Cancelar</button>
+                <button onClick={() => setConfirmEliminar(null)} style={{ flex:1, padding:'12px', background:'#E0E0E0', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', fontWeight:'700', color:'#333' }}>Cancelar</button>
                 <button onClick={() => ejecutarEliminar(true)} style={{ flex:1, padding:'12px', background:'#ff3b30', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', color:'white', fontWeight:'600' }}>Eliminar</button>
               </div>
             )}
