@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
+import PantallaInvitacion from './PantallaInvitacion'
 import { auth, googleProvider } from './firebase'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth'
 import Pizarron from './Pizarron'
@@ -138,6 +139,13 @@ export default function App() {
   const [loading, setLoading] = useState(false)
   const [user, setUser] = useState(null)
   const [pantalla, setPantalla] = useState('inicio')
+  const [invitacionId, setInvitacionId] = useState(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const inv = params.get('invitacion')
+    if (inv) setInvitacionId(inv)
+  }, [])
   const [idioma, setIdioma] = useState(() => localStorage.getItem('syng_idioma') || 'es')
 
   const banderas = [{c:'es',b:'🇲🇽'},{c:'en',b:'🇺🇸'},{c:'fr',b:'🇫🇷'},{c:'de',b:'🇩🇪'},{c:'it',b:'🇮🇹'},{c:'pt',b:'🇧🇷'},{c:'ja',b:'🇯🇵'},{c:'zh',b:'🇨🇳'}]
@@ -166,6 +174,8 @@ export default function App() {
   }
 
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
+
+  if (invitacionId && !user) return <PantallaInvitacion invitacionId={invitacionId} onEntrar={(u) => { setInvitacionId(null); window.history.replaceState({},"",window.location.pathname) }} onLogin={() => setInvitacionId(null)} />
 
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} userId={user.uid} />
   if (user && pantalla === 'listasuper') return <ListaSuper onVolver={() => setPantalla('inicio')} />
