@@ -323,7 +323,7 @@ export default function Pizarron({ onVolver, userId, userEmail, userName }) {
       ghost.innerText = 'moviendo...'
       document.body.appendChild(ghost)
       dragGhost.current = ghost
-    }, 500)
+    }, 600)
   }
 
   const onTouchMoveCalendario = (e) => {
@@ -332,7 +332,7 @@ export default function Pizarron({ onVolver, userId, userEmail, userName }) {
       if (touchStartPos.current) {
         const dx = Math.abs(touch.clientX - touchStartPos.current.x)
         const dy = Math.abs(touch.clientY - touchStartPos.current.y)
-        if (dx > 10 || dy > 10) { clearTimeout(longPressTimerCalendario.current); longPressTimerCalendario.current = null }
+        if (dx > 8 || dy > 8) { clearTimeout(longPressTimerCalendario.current); longPressTimerCalendario.current = null }
       }
       return
     }
