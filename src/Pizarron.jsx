@@ -162,18 +162,34 @@ export default function Pizarron({ onVolver, userId, userEmail, userName }) {
     setModalGrupos(false)
   }
 
-  // Generar link de invitación
-  const generarLinkInvitacion = async (grupoId) => {
+  // Generar link de invitación y compartir
+  const compartirInvitacion = async (grupoId, nombreGrupo) => {
     const invitacionId = generarId()
     await setDoc(doc(db, 'invitaciones', invitacionId), {
       grupoId,
       creadoPor: userId,
       creadoEn: Date.now(),
-      expiresEn: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 días
+      expiresEn: Date.now() + 7 * 24 * 60 * 60 * 1000,
+      usado: false
     })
     const link = `${window.location.origin}?invitacion=${invitacionId}`
-    setLinkInvitacion(link)
-    return link
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: 'Syng',
+          text: `Te invito a unirte al grupo "${nombreGrupo}" en Syng`,
+          url: link
+        })
+      } catch(e) {
+        if (e.name !== 'AbortError') {
+          navigator.clipboard.writeText(link)
+          alert('Link copiado al portapapeles')
+        }
+      }
+    } else {
+      navigator.clipboard.writeText(link)
+      alert('Link copiado: ' + link)
+    }
   }
 
   // Aceptar invitación al entrar
@@ -697,22 +713,11 @@ export default function Pizarron({ onVolver, userId, userEmail, userName }) {
             {modalVerGrupo.adminId === userId && (
               <div style={{ marginTop:'20px' }}>
                 <div style={{ fontSize:'13px', fontWeight:'600', color:'#888', marginBottom:'10px', textTransform:'uppercase', letterSpacing:'0.05em' }}>Invitar personas</div>
-                <button onClick={() => generarLinkInvitacion(modalVerGrupo.id)}
-                  style={{ width:'100%', padding:'13px', background:'linear-gradient(135deg,#185FA5,#534AB7)', color:'white', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', fontWeight:'600' }}>
-                  Generar link de invitacion
+                <button onClick={() => compartirInvitacion(modalVerGrupo.id, modalVerGrupo.nombre)}
+                  style={{ width:'100%', padding:'13px', background:'linear-gradient(135deg,#185FA5,#534AB7)', color:'white', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', fontWeight:'600', display:'flex', alignItems:'center', justifyContent:'center', gap:'8px' }}>
+                  <span>􀈂</span> Invitar al grupo
                 </button>
-                {linkInvitacion && (
-                  <div style={{ marginTop:'12px' }}>
-                    <div style={{ background:'#f8f8f8', borderRadius:'10px', padding:'12px', fontSize:'13px', color:'#534AB7', wordBreak:'break-all', marginBottom:'8px' }}>
-                      {linkInvitacion}
-                    </div>
-                    <button onClick={() => { navigator.clipboard.writeText(linkInvitacion) }}
-                      style={{ width:'100%', padding:'11px', background:'#EEF2FF', color:'#534AB7', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'14px', fontWeight:'600' }}>
-                      Copiar link
-                    </button>
-                    <div style={{ fontSize:'11px', color:'#aaa', textAlign:'center', marginTop:'6px' }}>Valido por 7 dias · 2 toques para unirse</div>
-                  </div>
-                )}
+                <div style={{ fontSize:'11px', color:'#aaa', textAlign:'center', marginTop:'8px' }}>Se abrirá WhatsApp, SMS o el medio que elijas</div>
               </div>
             )}
           </div>
