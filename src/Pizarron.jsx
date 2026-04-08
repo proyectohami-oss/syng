@@ -1,12 +1,14 @@
 import { useState, useRef, useEffect } from 'react'
 import { db } from './firebase'
-import { collection, doc, onSnapshot, setDoc, deleteDoc, writeBatch } from 'firebase/firestore'
+import { collection, doc, onSnapshot, setDoc, deleteDoc, getDoc, updateDoc, arrayUnion, arrayRemove } from 'firebase/firestore'
 
 const DIAS_SEMANA = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab']
 const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
 const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 
 function generarId() { return Math.random().toString(36).substr(2, 9) }
+
+const EMOJIS_GRUPO = ['👨‍👩‍👧‍👦','💼','🏠','🎯','⭐','🚀','❤️','🎨','🏋️','📚','🌿','🎵']
 
 function MiniMes({ anio, mes, hoy, anotaciones }) {
   const primerDia = new Date(anio, mes, 1).getDay()
@@ -38,7 +40,7 @@ function MiniMes({ anio, mes, hoy, anotaciones }) {
   )
 }
 
-export default function Pizarron({ onVolver, userId }) {
+export default function Pizarron({ onVolver, userId, userEmail, userName }) {
   const hoy = new Date()
   const [mes, setMes] = useState(hoy.getMonth())
   const [anio, setAnio] = useState(hoy.getFullYear())
@@ -63,6 +65,17 @@ export default function Pizarron({ onVolver, userId }) {
   const [dragOverModal, setDragOverModal] = useState(null)
   const [draggingModalIdx, setDraggingModalIdx] = useState(null)
 
+  // Grupos
+  const [grupos, setGrupos] = useState([])
+  const [grupoActivo, setGrupoActivo] = useState('personal')
+  const [modalGrupos, setModalGrupos] = useState(false)
+  const [modalCrearGrupo, setModalCrearGrupo] = useState(false)
+  const [modalVerGrupo, setModalVerGrupo] = useState(null)
+  const [nuevoNombreGrupo, setNuevoNombreGrupo] = useState('')
+  const [nuevoEmojiGrupo, setNuevoEmojiGrupo] = useState('👨‍👩‍👧‍👦')
+  const [linkInvitacion, setLinkInvitacion] = useState('')
+  const [cargandoGrupos, setCargandoGrupos] = useState(true)
+
   const dragItem = useRef(null)
   const dragGhost = useRef(null)
   const editandoIdxRef = useRef(null)
@@ -74,30 +87,119 @@ export default function Pizarron({ onVolver, userId }) {
   const modalDragItem = useRef(null)
   const modalGhost = useRef(null)
 
-  const pizarronRef = userId ? collection(db, 'users', userId, 'pizarron') : null
   const getKey = (a, m, d) => `${a}-${m}-${d}`
 
-  // Cargar anotaciones desde Firebase en tiempo real
+  // Referencia a la colección de anotaciones según grupo activo
+  const getPizarronRef = () => {
+    if (grupoActivo === 'personal') {
+      return userId ? collection(db, 'users', userId, 'pizarron') : null
+    } else {
+      return collection(db, 'grupos', grupoActivo, 'pizarron')
+    }
+  }
+
+  // Cargar grupos del usuario
   useEffect(() => {
-    if (!pizarronRef) return
-    const unsub = onSnapshot(pizarronRef, snap => {
+    if (!userId) return
+    const userGruposRef = collection(db, 'users', userId, 'misGrupos')
+    const unsub = onSnapshot(userGruposRef, async snap => {
+      const gruposData = []
+      for (const d of snap.docs) {
+        const grupoSnap = await getDoc(doc(db, 'grupos', d.id))
+        if (grupoSnap.exists()) {
+          gruposData.push({ id: d.id, ...grupoSnap.data() })
+        }
+      }
+      setGrupos(gruposData)
+      setCargandoGrupos(false)
+    })
+    return () => unsub()
+  }, [userId])
+
+  // Cargar anotaciones según grupo activo
+  useEffect(() => {
+    const ref = getPizarronRef()
+    if (!ref) return
+    setCargando(true)
+    const unsub = onSnapshot(ref, snap => {
       const data = {}
       snap.docs.forEach(d => { data[d.id] = d.data().items || [] })
       setAnotaciones(data)
       setCargando(false)
     })
     return () => unsub()
-  }, [userId])
+  }, [userId, grupoActivo])
 
-  // Guardar un key en Firebase
   const guardarKey = async (key, lista) => {
-    if (!pizarronRef) return
+    const ref = getPizarronRef()
+    if (!ref) return
     if (lista.length === 0) {
-      await deleteDoc(doc(pizarronRef, key))
+      await deleteDoc(doc(ref, key))
     } else {
-      await setDoc(doc(pizarronRef, key), { items: lista })
+      await setDoc(doc(ref, key), { items: lista })
     }
   }
+
+  // Crear grupo
+  const crearGrupo = async () => {
+    if (!nuevoNombreGrupo.trim() || !userId) return
+    const grupoId = generarId()
+    const nuevoGrupo = {
+      nombre: nuevoNombreGrupo.trim(),
+      emoji: nuevoEmojiGrupo,
+      adminId: userId,
+      adminEmail: userEmail || '',
+      adminNombre: userName || '',
+      miembros: [{ uid: userId, email: userEmail || '', nombre: userName || '', rol: 'admin' }],
+      creadoEn: Date.now()
+    }
+    await setDoc(doc(db, 'grupos', grupoId), nuevoGrupo)
+    await setDoc(doc(db, 'users', userId, 'misGrupos', grupoId), { nombre: nuevoGrupo.nombre, emoji: nuevoGrupo.emoji })
+    setGrupoActivo(grupoId)
+    setNuevoNombreGrupo('')
+    setNuevoEmojiGrupo('👨‍👩‍👧‍👦')
+    setModalCrearGrupo(false)
+    setModalGrupos(false)
+  }
+
+  // Generar link de invitación
+  const generarLinkInvitacion = async (grupoId) => {
+    const invitacionId = generarId()
+    await setDoc(doc(db, 'invitaciones', invitacionId), {
+      grupoId,
+      creadoPor: userId,
+      creadoEn: Date.now(),
+      expiresEn: Date.now() + 7 * 24 * 60 * 60 * 1000 // 7 días
+    })
+    const link = `${window.location.origin}?invitacion=${invitacionId}`
+    setLinkInvitacion(link)
+    return link
+  }
+
+  // Aceptar invitación al entrar
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const invitacionId = params.get('invitacion')
+    if (!invitacionId || !userId) return
+    const aceptarInvitacion = async () => {
+      const invSnap = await getDoc(doc(db, 'invitaciones', invitacionId))
+      if (!invSnap.exists()) return
+      const { grupoId } = invSnap.data()
+      const grupoSnap = await getDoc(doc(db, 'grupos', grupoId))
+      if (!grupoSnap.exists()) return
+      const grupo = grupoSnap.data()
+      const yaEsMiembro = grupo.miembros?.some(m => m.uid === userId)
+      if (!yaEsMiembro) {
+        await updateDoc(doc(db, 'grupos', grupoId), {
+          miembros: arrayUnion({ uid: userId, email: userEmail || '', nombre: userName || '', rol: 'miembro' })
+        })
+        await setDoc(doc(db, 'users', userId, 'misGrupos', grupoId), { nombre: grupo.nombre, emoji: grupo.emoji })
+      }
+      window.history.replaceState({}, '', window.location.pathname)
+      setGrupoActivo(grupoId)
+    }
+    aceptarInvitacion()
+  }, [userId])
 
   const primerDia = new Date(anio, mes, 1).getDay()
   const diasEnMes = new Date(anio, mes + 1, 0).getDate()
@@ -142,7 +244,7 @@ export default function Pizarron({ onVolver, userId }) {
     const promises = []
     fechasRepetir.forEach(({ dia, mes: m, anio: a }) => {
       const key = getKey(a, m, dia)
-      nuevas[key] = [...(nuevas[key] || []), { id: generarId(), texto: textoNuevo.trim(), realizada: false, repeatGroupId, dia, mes: m, anio: a }]
+      nuevas[key] = [...(nuevas[key] || []), { id: generarId(), texto: textoNuevo.trim(), realizada: false, repeatGroupId, dia, mes: m, anio: a, creadoPor: userId }]
       promises.push(guardarKey(key, nuevas[key]))
     })
     setAnotaciones(nuevas)
@@ -193,10 +295,8 @@ export default function Pizarron({ onVolver, userId }) {
     const nuevas = { ...anotaciones }
     const listaVieja = [...(nuevas[keyVieja] || [])]
     const itemOriginal = listaVieja.find(a => a.id === editando)
-    // Eliminar de la fecha original
     nuevas[keyVieja] = listaVieja.filter(a => a.id !== editando)
     const promises = [guardarKey(keyVieja, nuevas[keyVieja])]
-    // Si hay fechas repetir seleccionadas, agregar a todas
     const targets = mostrarRepetir && fechasRepetir.length > 0 ? fechasRepetir : [editFecha || { dia: diaModal, mes, anio }]
     const repeatGroupId = targets.length > 1 ? generarId() : null
     targets.forEach(({ dia, mes: m, anio: a }) => {
@@ -212,7 +312,6 @@ export default function Pizarron({ onVolver, userId }) {
 
   const seleccionarFechaEdicion = (d) => { setEditFecha({ dia: d, mes: mesCalEdit, anio: anioCalEdit }); setMostrarCalEditFecha(false) }
 
-  // Drag calendario touch
   const onTouchStartCalendario = (e, fromKey, idx) => {
     touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
     isDraggingCalendario.current = false
@@ -273,7 +372,6 @@ export default function Pizarron({ onVolver, userId }) {
     setDragOverCelda(null); isDraggingCalendario.current = false; dragItem.current = null
   }
 
-  // Drag modal touch
   const onTouchStartModal = (e, idx) => {
     touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
     isDraggingModal.current = false
@@ -326,7 +424,6 @@ export default function Pizarron({ onVolver, userId }) {
     setDragOverModal(null); setDraggingModalIdx(null); isDraggingModal.current = false; modalDragItem.current = null
   }
 
-  // Mouse drag calendario
   const onDragStartCalendario = (e, fromKey, idx) => { dragItem.current = { fromKey, idx }; e.dataTransfer.effectAllowed = 'move' }
 
   const onDropCelda = async (e, dia) => {
@@ -345,7 +442,6 @@ export default function Pizarron({ onVolver, userId }) {
     dragItem.current = null
   }
 
-  // Mouse drag modal
   const onMouseDownModal = (e, idx) => {
     if (e.button !== 0) return
     const startY = e.clientY; let dragStarted = false
@@ -391,6 +487,10 @@ export default function Pizarron({ onVolver, userId }) {
   const celdasCalEdit = buildCeldas(anioCalEdit, mesCalEdit)
   const esMesActual = (m) => m === hoy.getMonth() && anioAnual === hoy.getFullYear()
 
+  const grupoActivoData = grupos.find(g => g.id === grupoActivo)
+  const nombreGrupoActivo = grupoActivo === 'personal' ? 'Personal' : (grupoActivoData?.nombre || 'Grupo')
+  const emojiGrupoActivo = grupoActivo === 'personal' ? '👤' : (grupoActivoData?.emoji || '👥')
+
   if (cargando) return (
     <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f5f5f7' }}>
       <div style={{ fontSize:'15px', color:'#aaa' }}>Cargando pizarron...</div>
@@ -400,10 +500,15 @@ export default function Pizarron({ onVolver, userId }) {
   return (
     <div style={{ minHeight:'100vh', background:'#f5f5f7', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
 
-      <div style={{ background:'linear-gradient(135deg,#185FA5,#534AB7)', padding:'16px 20px', display:'flex', alignItems:'center' }}>
+      {/* Header */}
+      <div style={{ background:'linear-gradient(135deg,#185FA5,#534AB7)', padding:'16px 20px', display:'flex', alignItems:'center', gap:'10px' }}>
         <button onClick={onVolver} style={{ background:'rgba(255,255,255,0.2)', border:'none', color:'white', borderRadius:'20px', padding:'6px 14px', cursor:'pointer', fontSize:'14px', whiteSpace:'nowrap' }}>Atras</button>
-        <div style={{ color:'white', fontSize:'20px', fontWeight:'700', flex:1, textAlign:'center' }}>Pizarron Interactivo</div>
-        <div style={{ width:'60px' }} />
+        <div style={{ color:'white', fontSize:'18px', fontWeight:'700', flex:1, textAlign:'center' }}>Pizarron Interactivo</div>
+        <button onClick={() => setModalGrupos(true)} style={{ background:'rgba(255,255,255,0.2)', border:'none', color:'white', borderRadius:'16px', padding:'6px 12px', cursor:'pointer', fontSize:'13px', display:'flex', alignItems:'center', gap:'6px', whiteSpace:'nowrap' }}>
+          <span style={{ fontSize:'18px' }}>{emojiGrupoActivo}</span>
+          <span style={{ maxWidth:'80px', overflow:'hidden', textOverflow:'ellipsis' }}>{nombreGrupoActivo}</span>
+          <span>▾</span>
+        </button>
       </div>
 
       {vistaAnual ? (
@@ -422,15 +527,12 @@ export default function Pizarron({ onVolver, userId }) {
               </div>
             ))}
           </div>
-          <div style={{ position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)', zIndex:50 }}>
-            <button onClick={irAHoy} style={{ background:'white', border:'2px solid #534AB7', borderRadius:'24px', padding:'10px 28px', fontSize:'16px', fontWeight:'700', color:'#534AB7', cursor:'pointer', boxShadow:'0 4px 16px rgba(83,74,183,0.25)' }}>Hoy</button>
-          </div>
         </div>
       ) : (
         <>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'12px 20px' }}>
             <button onClick={() => { if(mes===0){setMes(11);setAnio(anio-1)}else setMes(mes-1) }} style={{ background:'#185FA5', border:'none', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'22px', color:'white', fontWeight:'bold' }}>&#8249;</button>
-            <button onClick={() => setVistaAnual(true)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'18px', fontWeight:'700', color:'#2C2C2A' }}>{MESES[mes]} {anio} ▾</button>
+            <button onClick={() => setVistaAnual(true)} style={{ background:'none', border:'none', cursor:'pointer', fontSize:'18px', fontWeight:'700', color:'#2C2C2A' }}>{MESES[mes]} {anio} &#9660;</button>
             <button onClick={() => { if(mes===11){setMes(0);setAnio(anio+1)}else setMes(mes+1) }} style={{ background:'#185FA5', border:'none', borderRadius:'10px', padding:'8px 16px', cursor:'pointer', fontSize:'22px', color:'white', fontWeight:'bold' }}>&#8250;</button>
           </div>
 
@@ -468,10 +570,139 @@ export default function Pizarron({ onVolver, userId }) {
               )
             })}
           </div>
-
         </>
       )}
 
+      {/* MODAL GRUPOS */}
+      {modalGrupos && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:200, display:'flex', alignItems:'flex-end', justifyContent:'center' }}
+          onClick={e => { if(e.target===e.currentTarget) setModalGrupos(false) }}>
+          <div style={{ background:'white', borderRadius:'24px 24px 0 0', width:'100%', maxWidth:'600px', padding:'24px', maxHeight:'80vh', overflowY:'auto' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
+              <div style={{ fontSize:'18px', fontWeight:'700', color:'#2C2C2A' }}>Mis Pizarrones</div>
+              <button onClick={() => setModalGrupos(false)} style={{ background:'#f0f0f0', border:'none', borderRadius:'50%', width:'32px', height:'32px', cursor:'pointer', fontSize:'16px' }}>&#10005;</button>
+            </div>
+
+            {/* Personal */}
+            <div onClick={() => { setGrupoActivo('personal'); setModalGrupos(false) }}
+              style={{ display:'flex', alignItems:'center', gap:'14px', padding:'14px 16px', borderRadius:'14px', background: grupoActivo==='personal'?'#EEF2FF':'#f8f8f8', marginBottom:'8px', cursor:'pointer', border: grupoActivo==='personal'?'2px solid #534AB7':'2px solid transparent' }}>
+              <div style={{ width:'44px', height:'44px', borderRadius:'50%', background:'linear-gradient(135deg,#185FA5,#534AB7)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>👤</div>
+              <div style={{ flex:1 }}>
+                <div style={{ fontSize:'16px', fontWeight:'600', color:'#2C2C2A' }}>Personal</div>
+                <div style={{ fontSize:'12px', color:'#888' }}>Solo yo</div>
+              </div>
+              {grupoActivo==='personal' && <span style={{ color:'#534AB7', fontSize:'20px' }}>&#10003;</span>}
+            </div>
+
+            {/* Grupos */}
+            {grupos.map(g => (
+              <div key={g.id} style={{ display:'flex', alignItems:'center', gap:'14px', padding:'14px 16px', borderRadius:'14px', background: grupoActivo===g.id?'#EEF2FF':'#f8f8f8', marginBottom:'8px', cursor:'pointer', border: grupoActivo===g.id?'2px solid #534AB7':'2px solid transparent' }}>
+                <div onClick={() => { setGrupoActivo(g.id); setModalGrupos(false) }} style={{ display:'flex', alignItems:'center', gap:'14px', flex:1 }}>
+                  <div style={{ width:'44px', height:'44px', borderRadius:'50%', background:'linear-gradient(135deg,#185FA5,#534AB7)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>{g.emoji}</div>
+                  <div style={{ flex:1 }}>
+                    <div style={{ fontSize:'16px', fontWeight:'600', color:'#2C2C2A' }}>{g.nombre}</div>
+                    <div style={{ fontSize:'12px', color:'#888' }}>{g.miembros?.length || 1} miembro{(g.miembros?.length || 1)!==1?'s':''}</div>
+                  </div>
+                  {grupoActivo===g.id && <span style={{ color:'#534AB7', fontSize:'20px' }}>&#10003;</span>}
+                </div>
+                <button onClick={() => { setModalVerGrupo(g); setModalGrupos(false) }}
+                  style={{ background:'none', border:'none', fontSize:'20px', cursor:'pointer', color:'#aaa', padding:'4px' }}>&#9432;</button>
+              </div>
+            ))}
+
+            <button onClick={() => { setModalCrearGrupo(true); setModalGrupos(false) }}
+              style={{ width:'100%', padding:'14px', background:'linear-gradient(135deg,#185FA5,#534AB7)', color:'white', border:'none', borderRadius:'14px', fontSize:'15px', fontWeight:'600', cursor:'pointer', marginTop:'8px' }}>
+              + Crear nuevo grupo
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL CREAR GRUPO */}
+      {modalCrearGrupo && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:200, display:'flex', alignItems:'center', justifyContent:'center', padding:'20px' }}
+          onClick={e => { if(e.target===e.currentTarget) setModalCrearGrupo(false) }}>
+          <div style={{ background:'white', borderRadius:'20px', width:'100%', maxWidth:'400px', padding:'24px' }}>
+            <div style={{ fontSize:'18px', fontWeight:'700', color:'#2C2C2A', marginBottom:'20px', textAlign:'center' }}>Nuevo grupo</div>
+
+            <div style={{ display:'flex', flexWrap:'wrap', gap:'8px', marginBottom:'20px', justifyContent:'center' }}>
+              {EMOJIS_GRUPO.map(e => (
+                <button key={e} onClick={() => setNuevoEmojiGrupo(e)}
+                  style={{ fontSize:'24px', padding:'8px', borderRadius:'12px', border: nuevoEmojiGrupo===e?'2px solid #534AB7':'2px solid transparent', background: nuevoEmojiGrupo===e?'#EEF2FF':'#f8f8f8', cursor:'pointer' }}>
+                  {e}
+                </button>
+              ))}
+            </div>
+
+            <div style={{ marginBottom:'20px' }}>
+              <div style={{ fontSize:'13px', fontWeight:'500', color:'#666', marginBottom:'6px' }}>Nombre del grupo *</div>
+              <input value={nuevoNombreGrupo} onChange={e => setNuevoNombreGrupo(e.target.value)}
+                placeholder="Ej: Familia, Trabajo, Amigos..."
+                style={{ width:'100%', padding:'12px 14px', border:'1.5px solid #ddd', borderRadius:'12px', fontSize:'16px', outline:'none', boxSizing:'border-box' }} />
+            </div>
+
+            <div style={{ display:'flex', gap:'10px' }}>
+              <button onClick={() => setModalCrearGrupo(false)} style={{ flex:1, padding:'13px', background:'#E0E0E0', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', fontWeight:'600', color:'#333' }}>Cancelar</button>
+              <button onClick={crearGrupo} style={{ flex:1, padding:'13px', background: nuevoNombreGrupo.trim()?'linear-gradient(135deg,#185FA5,#534AB7)':'#e5e5e5', color: nuevoNombreGrupo.trim()?'white':'#aaa', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', fontWeight:'600' }}>Crear</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL VER GRUPO */}
+      {modalVerGrupo && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:200, display:'flex', alignItems:'flex-end', justifyContent:'center' }}
+          onClick={e => { if(e.target===e.currentTarget) { setModalVerGrupo(null); setLinkInvitacion('') } }}>
+          <div style={{ background:'white', borderRadius:'24px 24px 0 0', width:'100%', maxWidth:'600px', padding:'24px', maxHeight:'85vh', overflowY:'auto' }}>
+            <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'20px' }}>
+              <div style={{ fontSize:'18px', fontWeight:'700', color:'#2C2C2A', display:'flex', alignItems:'center', gap:'10px' }}>
+                <span style={{ fontSize:'28px' }}>{modalVerGrupo.emoji}</span>
+                {modalVerGrupo.nombre}
+              </div>
+              <button onClick={() => { setModalVerGrupo(null); setLinkInvitacion('') }} style={{ background:'#f0f0f0', border:'none', borderRadius:'50%', width:'32px', height:'32px', cursor:'pointer', fontSize:'16px' }}>&#10005;</button>
+            </div>
+
+            {/* Miembros */}
+            <div style={{ fontSize:'13px', fontWeight:'600', color:'#888', marginBottom:'10px', textTransform:'uppercase', letterSpacing:'0.05em' }}>Miembros ({modalVerGrupo.miembros?.length || 1})</div>
+            {(modalVerGrupo.miembros || []).map((m, i) => (
+              <div key={i} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'10px 0', borderBottom:'0.5px solid #f0f0f0' }}>
+                <div style={{ width:'36px', height:'36px', borderRadius:'50%', background:'linear-gradient(135deg,#185FA5,#534AB7)', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'16px', fontWeight:'700', flexShrink:0 }}>
+                  {(m.nombre || m.email || '?')[0].toUpperCase()}
+                </div>
+                <div style={{ flex:1 }}>
+                  <div style={{ fontSize:'14px', fontWeight:'500', color:'#2C2C2A' }}>{m.nombre || m.email}</div>
+                  <div style={{ fontSize:'12px', color:'#aaa' }}>{m.rol === 'admin' ? 'Administrador' : 'Miembro'}</div>
+                </div>
+              </div>
+            ))}
+
+            {/* Invitar */}
+            {modalVerGrupo.adminId === userId && (
+              <div style={{ marginTop:'20px' }}>
+                <div style={{ fontSize:'13px', fontWeight:'600', color:'#888', marginBottom:'10px', textTransform:'uppercase', letterSpacing:'0.05em' }}>Invitar personas</div>
+                <button onClick={() => generarLinkInvitacion(modalVerGrupo.id)}
+                  style={{ width:'100%', padding:'13px', background:'linear-gradient(135deg,#185FA5,#534AB7)', color:'white', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', fontWeight:'600' }}>
+                  Generar link de invitacion
+                </button>
+                {linkInvitacion && (
+                  <div style={{ marginTop:'12px' }}>
+                    <div style={{ background:'#f8f8f8', borderRadius:'10px', padding:'12px', fontSize:'13px', color:'#534AB7', wordBreak:'break-all', marginBottom:'8px' }}>
+                      {linkInvitacion}
+                    </div>
+                    <button onClick={() => { navigator.clipboard.writeText(linkInvitacion) }}
+                      style={{ width:'100%', padding:'11px', background:'#EEF2FF', color:'#534AB7', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'14px', fontWeight:'600' }}>
+                      Copiar link
+                    </button>
+                    <div style={{ fontSize:'11px', color:'#aaa', textAlign:'center', marginTop:'6px' }}>Valido por 7 dias · 2 toques para unirse</div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL DIA */}
       {modalDia && (
         <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:100, touchAction:'none' }}
           onClick={e => { if(e.target===e.currentTarget) cerrarModal() }}>
@@ -587,8 +818,9 @@ export default function Pizarron({ onVolver, userId }) {
         </div>
       )}
 
+      {/* CONFIRMAR ELIMINAR */}
       {confirmEliminar && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:200 }}>
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:300 }}>
           <div style={{ background:'white', borderRadius:'20px', padding:'28px 24px', width:'300px', textAlign:'center' }}>
             <div style={{ fontSize:'16px', fontWeight:'700', color:'#2C2C2A', marginBottom:'8px' }}>{confirmEliminar.anotacion.repeatGroupId ? 'Que deseas eliminar?' : 'Eliminar esta tarea?'}</div>
             <div style={{ fontSize:'14px', color:'#888', marginBottom:'20px' }}>"{confirmEliminar.anotacion.texto}"</div>
@@ -596,7 +828,7 @@ export default function Pizarron({ onVolver, userId }) {
               <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 <button onClick={() => ejecutarEliminar(true)} style={{ padding:'12px', background:'#f5f5f7', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', color:'#2C2C2A', fontWeight:'500' }}>Solo esta fecha</button>
                 <button onClick={() => ejecutarEliminar(false)} style={{ padding:'12px', background:'#ff3b30', border:'none', borderRadius:'12px', cursor:'pointer', fontSize:'15px', color:'white', fontWeight:'600' }}>Todas las repeticiones</button>
-                <button onClick={() => setConfirmEliminar(null)} style={{ padding:'12px', background:'#E0E0E0', border:'1px solid #ccc', borderRadius:'10px', cursor:'pointer', fontSize:'15px', fontWeight:'700', color:'#333' }}>Cancelar</button>
+                <button onClick={() => setConfirmEliminar(null)} style={{ padding:'12px', background:'#E0E0E0', border:'none', borderRadius:'10px', cursor:'pointer', fontSize:'15px', fontWeight:'700', color:'#333' }}>Cancelar</button>
               </div>
             ) : (
               <div style={{ display:'flex', gap:'10px' }}>

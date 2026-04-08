@@ -169,7 +169,7 @@ export default function App() {
 
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} userId={user.uid} />
   if (user && pantalla === 'listasuper') return <ListaSuper onVolver={() => setPantalla('inicio')} />
-  if (user && pantalla === 'pizarron') return <Pizarron onVolver={() => setPantalla('inicio')} userId={user.uid} />
+  if (user && pantalla === 'pizarron') return <Pizarron onVolver={() => setPantalla('inicio')} userId={user.uid} userEmail={user.email} userName={user.displayName || ''} />
 
   if (user) return (
     <div style={{ minHeight:'100vh', background:'#f5f5f7', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
