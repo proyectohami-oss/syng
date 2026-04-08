@@ -570,13 +570,10 @@ export default function Pizarron({ onVolver, userId, userEmail, userName }) {
                       <div onClick={() => abrirModal(dia)} style={{ fontSize:'12px', fontWeight: esHoy(dia)?'700':'400', color: esHoy(dia)?'#534AB7':'#2C2C2A', marginBottom:'2px', cursor:'pointer', display:'inline-block', padding:'1px 3px', borderRadius:'4px' }}>{dia}</div>
                       {lista.slice(0,2).map((a, i) => (
                         <div key={i} draggable onDragStart={e => onDragStartCalendario(e, key, i)}
-                          style={{ display:'flex', alignItems:'flex-start', gap:'2px', marginBottom:'1px', userSelect:'none' }}>
-                          <span
-                            onTouchStart={e => { e.stopPropagation(); limpiarDragCalendario(); touchStartPos.current={x:e.touches[0].clientX,y:e.touches[0].clientY}; isDraggingCalendario.current=true; dragItem.current={fromKey:key,idx:i}; const g=document.createElement('div'); g.style.cssText='position:fixed;padding:6px 12px;background:#534AB7;color:white;border-radius:10px;font-size:12px;pointer-events:none;z-index:9999;opacity:0.9;'; g.innerText='moviendo...'; document.body.appendChild(g); dragGhost.current=g; }}
-                            onTouchMove={onTouchMoveCalendario}
-                            onTouchEnd={onTouchEndCalendario}
-                            style={{ fontSize:'13px', color:'#bbb', flexShrink:0, lineHeight:'1.3', cursor:'grab', padding:'0 2px', touchAction:'none' }}>⠿</span>
-                          <span onClick={() => abrirModal(dia)} style={{ fontSize:'9px', color: a.realizada?'#ccc':'#2C2C2A', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flex:1, textDecoration: a.realizada?'line-through':'none', lineHeight:'1.3', textAlign:'left' }}>{a.texto}</span>
+                          onTouchStart={e => onTouchStartCalendario(e, key, i)} onTouchMove={onTouchMoveCalendario} onTouchEnd={onTouchEndCalendario}
+                          style={{ display:'flex', alignItems:'flex-start', gap:'3px', marginBottom:'1px', cursor:'grab', userSelect:'none' }}>
+                          <span style={{ fontSize:'9px', color: a.realizada?'#ccc':'#534AB7', flexShrink:0, lineHeight:'1.3', marginTop:'1px' }}>•</span>
+                          <span style={{ fontSize:'9px', color: a.realizada?'#ccc':'#2C2C2A', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', flex:1, textDecoration: a.realizada?'line-through':'none', lineHeight:'1.3', textAlign:'left' }}>{a.texto}</span>
                         </div>
                       ))}
                       {lista.length === 0 && <div onClick={() => abrirModal(dia)} style={{ height:'48px', cursor:'pointer' }} />}
