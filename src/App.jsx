@@ -175,7 +175,7 @@ export default function App() {
 
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
 
-  if (invitacionId && !user) return <PantallaInvitacion invitacionId={invitacionId} onEntrar={(u) => { setInvitacionId(null); window.history.replaceState({},"",window.location.pathname) }} onLogin={() => setInvitacionId(null)} />
+  if (invitacionId) return <PantallaInvitacion invitacionId={invitacionId} onEntrar={(u) => { setInvitacionId(null); window.history.replaceState({},"",window.location.pathname) }} onLogin={() => setInvitacionId(null)} />
 
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} userId={user.uid} />
   if (user && pantalla === 'listasuper') return <ListaSuper onVolver={() => setPantalla('inicio')} />
