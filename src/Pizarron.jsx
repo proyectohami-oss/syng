@@ -370,6 +370,7 @@ export default function Pizarron({ onVolver, userId, userEmail, userName }) {
       }
     }
     setDragOverCelda(null); isDraggingCalendario.current = false; dragItem.current = null
+    if (dragGhost.current) { try { document.body.removeChild(dragGhost.current) } catch(e){} dragGhost.current = null }
   }
 
   const onTouchStartModal = (e, idx) => {
