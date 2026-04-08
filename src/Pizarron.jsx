@@ -312,15 +312,28 @@ export default function Pizarron({ onVolver, userId, userEmail, userName }) {
 
   const seleccionarFechaEdicion = (d) => { setEditFecha({ dia: d, mes: mesCalEdit, anio: anioCalEdit }); setMostrarCalEditFecha(false) }
 
-  const onTouchStartCalendario = (e, fromKey, idx) => {
-    touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
+  const limpiarDragCalendario = () => {
+    if (dragGhost.current) {
+      try { document.body.removeChild(dragGhost.current) } catch(e) {}
+      dragGhost.current = null
+    }
     isDraggingCalendario.current = false
+    dragItem.current = null
+    if (longPressTimerCalendario.current) {
+      clearTimeout(longPressTimerCalendario.current)
+      longPressTimerCalendario.current = null
+    }
+  }
+
+  const onTouchStartCalendario = (e, fromKey, idx) => {
+    limpiarDragCalendario()
+    touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }
     longPressTimerCalendario.current = setTimeout(() => {
       isDraggingCalendario.current = true
       dragItem.current = { fromKey, idx }
       const ghost = document.createElement('div')
-      ghost.style.cssText = 'position:fixed;padding:8px 14px;background:#534AB7;color:white;border-radius:10px;font-size:13px;pointer-events:none;z-index:9999;opacity:0.9;'
-      ghost.innerText = 'moviendo...'
+      ghost.style.cssText = 'position:fixed;padding:8px 14px;background:#534AB7;color:white;border-radius:10px;font-size:13px;pointer-events:none;z-index:9999;opacity:0.9;top:50%;left:50%;transform:translate(-50%,-50%);'
+      ghost.innerText = '✦ moviendo...'
       document.body.appendChild(ghost)
       dragGhost.current = ghost
     }, 600)
