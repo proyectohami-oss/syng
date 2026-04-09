@@ -102,7 +102,7 @@ function Sinyi({ idioma, nombre, pantalla }) {
 
   return (
     <>
-      <button onClick={() => { if (estado==='idle') { activadaRef.current=true; hablar('Dime, en que te ayudo'); setTimeout(escucharComando,900) } else { window.speechSynthesis.cancel(); setEstado('idle') } }}
+      <button onClick={() => { if (estado==='idle') { activadaRef.current=true; hablar('Dime, en que te ayudo'); setTimeout(escucharComando,900) } else { window.speechSynthesis.cancel(); setEstado('idle') } }} hidden
         style={{ position:'fixed', bottom:'28px', right:'24px', width:'58px', height:'58px', borderRadius:'50%', border:'2px solid '+color, background: estado!=='idle'?color+'22':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, boxShadow:'0 4px 16px rgba(0,0,0,0.15)' }}>
         {estado==='escuchando'||estado==='hablando' ? (
           <div style={{ display:'flex', alignItems:'center', gap:'3px', height:'22px' }}>
@@ -228,8 +228,8 @@ export default function App() {
           <button onClick={() => setIsLogin(false)} style={{ flex:1, padding:'8px', border:'none', borderRadius:'10px', background:!isLogin?'white':'transparent', color:!isLogin?'#534AB7':'#888', cursor:'pointer', fontSize:'14px' }}>Registrarse</button>
         </div>
         <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginBottom:'20px' }}>
-          <input placeholder="Correo electronico" value={email} onChange={e=>setEmail(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
-          <input type="password" placeholder="Contrasena" value={password} onChange={e=>setPassword(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
+          <input placeholder="Correo electronico" value={email} onChange={e=>setEmail(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none', background:'white', color:'#333' }} />
+          <input type="password" placeholder="Contrasena" value={password} onChange={e=>setPassword(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none', background:'white', color:'#333' }} />
         </div>
         {error && <div style={{ color:'red', fontSize:'13px', marginBottom:'12px', textAlign:'center' }}>{error}</div>}
         <button onClick={handleEmailAuth} disabled={loading} style={{ width:'100%', padding:'15px', background:'linear-gradient(135deg,#534AB7,#185FA5)', color:'white', border:'none', borderRadius:'14px', fontSize:'16px', cursor:'pointer', marginBottom:'20px' }}>
