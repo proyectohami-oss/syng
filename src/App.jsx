@@ -150,7 +150,7 @@ export default function App() {
   if (invitacionId) return <PantallaInvitacion invitacionId={invitacionId} onEntrar={(u) => { setInvitacionId(null); window.history.replaceState({},"",window.location.pathname); setPantalla("pizarron") }} onLogin={() => setInvitacionId(null)} />
 
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} userId={user.uid} />
-  if (user && pantalla === 'listasuper') return <ListaSuper onVolver={() => setPantalla('inicio')} />
+  if (user && pantalla === 'listasuper') return <ListaSuper onVolver={() => setPantalla('inicio')} userId={user.uid} />
   if (user && pantalla === 'pizarron') return <Pizarron onVolver={() => setPantalla('inicio')} userId={user.uid} userEmail={user.email} userName={user.displayName || ''} />
 
   if (user) return (
