@@ -1,4 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
+import { db } from './firebase'
+import { doc, onSnapshot, setDoc } from 'firebase/firestore'
 
 const SV = '✓'
 
@@ -56,13 +58,46 @@ export default function ListaSuper({ onVolver }) {
   const [filtroList, setFiltroList] = useState('')
   const [modal, setModal] = useState(null)
   const [mData, setMData] = useState({})
+  const [cargando, setCargando] = useState(true)
 
   const catInputRef = useRef(null)
   const listInputRef = useRef(null)
+  const iniciado = useRef(false)
 
   // Mantener foco en el input al filtrar
   useEffect(() => { if (tab === 'cat' && filtroCat) catInputRef.current?.focus() }, [filtroCat])
   useEffect(() => { if (tab === 'list' && filtroList) listInputRef.current?.focus() }, [filtroList])
+
+  // ── Cargar desde Firestore cuando cambia el grupo ──
+  useEffect(() => {
+    const gId = grupos[grupoActivo]?.id
+    if (!gId) return
+    iniciado.current = false
+    setCargando(true)
+    const ref = doc(db, 'listas', gId)
+    const unsub = onSnapshot(ref, snap => {
+      if (snap.exists()) {
+        const data = snap.data()
+        setSeleccionados(data.seleccionados || {})
+        setCustomProds(data.customProds || {})
+      } else {
+        setSeleccionados({})
+        setCustomProds({})
+      }
+      setCargando(false)
+      iniciado.current = true
+    })
+    return () => unsub()
+  }, [grupoActivo])
+
+  // ── Guardar a Firestore cuando cambia seleccionados o customProds ──
+  useEffect(() => {
+    if (!iniciado.current) return
+    const gId = grupos[grupoActivo]?.id
+    if (!gId) return
+    const ref = doc(db, 'listas', gId)
+    setDoc(ref, { seleccionados, customProds }, { merge: true })
+  }, [seleccionados, customProds])
 
   // Catálogo completo ordenado alfabéticamente
   function getTodo() {
@@ -164,13 +199,11 @@ export default function ListaSuper({ onVolver }) {
     const color = GRUPO_COLORS[grupos.length % GRUPO_COLORS.length]
     setGrupos(prev => [...prev, { id: generarId(), nombre, color, miembros: ['Tú'] }])
     setGrupoActivo(grupos.length)
-    setSeleccionados({})
     setModal(null)
   }
 
   function cambiarGrupo(i) {
     setGrupoActivo(i)
-    setSeleccionados({})
     setModal(null)
   }
 
@@ -191,6 +224,14 @@ export default function ListaSuper({ onVolver }) {
     color: ok ? 'white' : '#aaa', border: 'none', borderRadius: '12px',
     fontSize: '14px', fontWeight: '500', cursor: ok ? 'pointer' : 'default'
   })
+
+  if (cargando) {
+    return (
+      <div style={{ minHeight: '100vh', background: '#F5F5F7', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: '-apple-system,BlinkMacSystemFont,sans-serif' }}>
+        <div style={{ color: '#aaa', fontSize: '14px' }}>Cargando lista...</div>
+      </div>
+    )
+  }
 
   return (
     <div style={{ minHeight: '100vh', background: '#F5F5F7', fontFamily: '-apple-system,BlinkMacSystemFont,sans-serif' }}>
@@ -382,7 +423,6 @@ export default function ListaSuper({ onVolver }) {
         <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '20px' }}
           onClick={e => { if (e.target === e.currentTarget) setModal(null) }}>
 
-          {/* Lista de grupos */}
           {modal === 'grupos' && (
             <div style={{ background: 'white', borderRadius: '16px', padding: '22px 20px', width: '100%', maxWidth: '340px' }}>
               <div style={{ fontSize: '15px', fontWeight: '500', color: '#2C2C2A', marginBottom: '14px' }}>Mis grupos</div>
@@ -398,16 +438,10 @@ export default function ListaSuper({ onVolver }) {
             </div>
           )}
 
-          {/* Nuevo grupo */}
           {modal === 'nuevo-grupo' && <ModalInput title="Nuevo grupo" placeholder="Nombre del grupo (ej. Amigos)" onConfirm={v => crearGrupo(v)} onCancel={() => setModal(null)} />}
-
-          {/* Agregar producto */}
           {modal === 'add-prod' && <ModalInput title={`Agregar a ${mData.dep}`} placeholder="Nombre del producto" onConfirm={v => agregarProducto(mData.dep, v)} onCancel={() => setModal(null)} />}
-
-          {/* Editar producto */}
           {modal === 'edit-prod' && <ModalInput title="Editar producto" placeholder="Nombre" defaultValue={mData.prod} onConfirm={v => editarProducto(mData.dep, mData.prod, v)} onCancel={() => setModal(null)} />}
 
-          {/* Confirmación eliminar producto del catálogo */}
           {modal === 'confirm-del-cat' && (
             <ModalConfirm
               title={`¿Eliminar "${mData.prod}"?`}
@@ -417,7 +451,6 @@ export default function ListaSuper({ onVolver }) {
             />
           )}
 
-          {/* Confirmación eliminar de lista */}
           {modal === 'confirm-del-lista' && (
             <ModalConfirm
               title={`¿Eliminar ${listSelIds.length} producto${listSelIds.length !== 1 ? 's' : ''}?`}
@@ -427,7 +460,6 @@ export default function ListaSuper({ onVolver }) {
             />
           )}
 
-          {/* Confirmación borrar lista */}
           {modal === 'confirm-borrar' && (
             <ModalConfirm
               title="¿Borrar lista?"
