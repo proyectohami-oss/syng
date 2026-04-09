@@ -4,7 +4,7 @@
 - **Ruta local:** /Users/efrain/syng/src/
 - **Repo:** github.com/proyectohami-oss/syng
 - **URL:** syng-psi.vercel.app
-- **Token GitHub:** (guardado localmente, no subir al repo)
+- **Token GitHub:** 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 (no subir al repo)
 - **Firebase proyecto:** syng-app
 
 ## Stack

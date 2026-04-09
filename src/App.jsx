@@ -100,35 +100,7 @@ function Sinyi({ idioma, nombre, pantalla }) {
 
   const color = estado === 'escuchando' ? '#185FA5' : estado === 'pensando' ? '#0F6E56' : '#534AB7'
 
-  return (
-    <>
-      <button onClick={() => { if (estado==='idle') { activadaRef.current=true; hablar('Dime, en que te ayudo'); setTimeout(escucharComando,900) } else { window.speechSynthesis.cancel(); setEstado('idle') } }} hidden
-        style={{ position:'fixed', bottom:'28px', right:'24px', width:'58px', height:'58px', borderRadius:'50%', border:'2px solid '+color, background: estado!=='idle'?color+'22':'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, boxShadow:'0 4px 16px rgba(0,0,0,0.15)' }}>
-        {estado==='escuchando'||estado==='hablando' ? (
-          <div style={{ display:'flex', alignItems:'center', gap:'3px', height:'22px' }}>
-            {ondas.map((h,i) => <div key={i} style={{ width:'3px', height:h*20+'px', background:color, borderRadius:'2px', transition:'height 0.1s' }} />)}
-          </div>
-        ) : estado==='pensando' ? (
-          <div style={{ display:'flex', gap:'4px' }}>
-            {[0,1,2].map(i => <div key={i} style={{ width:'6px', height:'6px', borderRadius:'50%', background:color, animation:'bounce 0.8s ease-in-out '+i*0.15+'s infinite' }} />)}
-          </div>
-        ) : (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <rect x="9" y="2" width="6" height="11" rx="3" fill={color}/>
-            <path d="M5 10a7 7 0 0 0 14 0" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-            <line x1="12" y1="17" x2="12" y2="21" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-            <line x1="9" y1="21" x2="15" y2="21" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        )}
-      </button>
-      {estado!=='idle' && (
-        <div style={{ position:'fixed', bottom:'98px', right:'16px', background:'white', borderRadius:'14px', padding:'8px 14px', boxShadow:'0 4px 20px rgba(0,0,0,0.12)', fontSize:'13px', color, fontWeight:'500', zIndex:9998, display:'flex', alignItems:'center', gap:'8px' }}>
-          {estado==='escuchando'?'👂 Escuchando...':estado==='pensando'?'🧠 Pensando...':'🔊 Sinyi habla'}
-        </div>
-      )}
-      <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}`}</style>
-    </>
-  )
+  return null
 }
 
 export default function App() {
