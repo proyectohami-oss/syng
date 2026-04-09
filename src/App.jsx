@@ -217,7 +217,7 @@ export default function App() {
     <div style={{ minHeight:'100vh', background:'linear-gradient(135deg,#534AB7 0%,#185FA5 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', padding:'20px' }}>
       <div style={{ background:'white', borderRadius:'28px', padding:'40px 32px', width:'100%', maxWidth:'380px', boxShadow:'0 20px 60px rgba(0,0,0,0.3)' }}>
         <div style={{ textAlign:'center', marginBottom:'24px' }}>
-          <div style={{ fontSize:'42px', fontWeight:'800', color:'#534AB7', fontFamily:'Georgia, serif', letterSpacing:'-1px' }}>Syng</div>
+          <div style={{ fontSize:'42px', fontWeight:'800', color:'#534AB7', fontFamily:'Space Grotesk, sans-serif', letterSpacing:'-2px' }}>Syng</div>
           <div style={{ color:'#888', fontSize:'14px' }}>Sinyi - Sincroniza tu mundo</div>
         </div>
         <div style={{ display:'flex', justifyContent:'center', flexWrap:'wrap', gap:'8px', marginBottom:'20px' }}>
