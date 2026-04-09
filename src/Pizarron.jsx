@@ -172,7 +172,7 @@ export default function Pizarron({ onVolver, userId, userEmail, userName }) {
       expiresEn: Date.now() + 7 * 24 * 60 * 60 * 1000,
       usado: false
     })
-    const link = `${window.location.origin}?invitacion=${invitacionId}`
+    const link = `https://syng-psi.vercel.app?invitacion=${invitacionId}`
     if (navigator.share) {
       try {
         await navigator.share({
