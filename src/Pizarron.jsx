@@ -67,7 +67,7 @@ export default function Pizarron({ onVolver }) {
   const [editando, setEditando] = useState(null)
   const [textoEditar, setTextoEditar] = useState('')
   const [editFecha, setEditFecha] = useState(null)
-  const [mostrarCalEditFecha, setMostrarCalEditFecha] = useState(false)
+  const [mostrarCalEditFecha, setMostrarCalEditFecha] = useState(null)
   const [mesCalEdit, setMesCalEdit] = useState(hoy.getMonth())
   const [anioCalEdit, setAnioCalEdit] = useState(hoy.getFullYear())
   const [dragOverCelda, setDragOverCelda] = useState(null)
