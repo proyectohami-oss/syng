@@ -1,11 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
-import { auth, googleProvider } from './firebase'
+import { auth, googleProvider, db } from './firebase'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth'
+import { doc, getDoc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore'
 import Pizarron from './Pizarron'
 import ListaTareas from './ListaTareas'
 import ListaSuper from './ListaSuper'
 
-// ─── IDIOMAS ──────────────────────────────────────────────────
 const IDIOMAS = [
   { codigo:'es', bandera:'🇲🇽', nombre:'Español' },
   { codigo:'en', bandera:'🇺🇸', nombre:'English' },
@@ -151,7 +151,7 @@ const TEXTOS = {
 // ─── SINYI ────────────────────────────────────────────────────
 function Sinyi({ idioma, nombre, pantalla }) {
   const t = TEXTOS[idioma] || TEXTOS.es
-  const [estado, setEstado] = useState('idle') // idle | escuchando | pensando | hablando
+  const [estado, setEstado] = useState('idle')
   const [ondas, setOndas] = useState([0.3,0.5,0.8,0.5,0.3])
   const recRef = useRef(null)
   const wakeRef = useRef(null)
@@ -160,13 +160,10 @@ function Sinyi({ idioma, nombre, pantalla }) {
   const hablar = (texto) => {
     window.speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(texto)
-    u.lang = t.vozVoz
-    u.rate = 1.05
-    u.pitch = 1.15
+    u.lang = t.vozVoz; u.rate = 1.05; u.pitch = 1.15
     const voces = window.speechSynthesis.getVoices()
     const voz = voces.find(v => v.lang.startsWith(idioma) && v.name.toLowerCase().includes('female'))
-      || voces.find(v => v.lang.startsWith(idioma))
-      || voces.find(v => v.lang.startsWith('es'))
+      || voces.find(v => v.lang.startsWith(idioma)) || voces.find(v => v.lang.startsWith('es'))
     if (voz) u.voice = voz
     u.onstart = () => setEstado('hablando')
     u.onend = () => { setEstado('idle'); activadaRef.current = false; iniciarWake() }
@@ -176,44 +173,24 @@ function Sinyi({ idioma, nombre, pantalla }) {
   const preguntarClaude = async (texto) => {
     setEstado('pensando')
     const apiKey = import.meta.env.VITE_CLAUDE_API_KEY || ''
-    if (!apiKey) {
-      setTimeout(() => hablar(t.sinyiSaludo), 300)
-      return
-    }
+    if (!apiKey) { setTimeout(() => hablar(t.sinyiSaludo), 300); return }
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 150,
-          system: t.sinyiSistema + ` El usuario se llama ${nombre}. Están en: ${pantalla}.`,
-          messages: [{ role:'user', content: texto }],
-        }),
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 150, system: t.sinyiSistema + ` El usuario se llama ${nombre}. Están en: ${pantalla}.`, messages: [{ role:'user', content: texto }] }),
       })
       const data = await res.json()
       hablar(data?.content?.[0]?.text || t.sinyiError)
-    } catch {
-      hablar(t.sinyiError)
-    }
+    } catch { hablar(t.sinyiError) }
   }
 
   const escucharComando = () => {
     if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     const rec = new SR()
-    rec.lang = t.vozVoz
-    rec.continuous = false
-    rec.interimResults = false
-    rec.onresult = (e) => {
-      setEstado('idle')
-      preguntarClaude(e.results[0][0].transcript)
-    }
+    rec.lang = t.vozVoz; rec.continuous = false; rec.interimResults = false
+    rec.onresult = (e) => { setEstado('idle'); preguntarClaude(e.results[0][0].transcript) }
     rec.onerror = () => { setEstado('idle'); hablar(t.sinyiError); activadaRef.current = false; iniciarWake() }
     rec.onend = () => { if (estado === 'escuchando') setEstado('idle') }
     recRef.current = rec
@@ -225,16 +202,11 @@ function Sinyi({ idioma, nombre, pantalla }) {
     if (wakeRef.current) try { wakeRef.current.stop() } catch {}
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     const rec = new SR()
-    rec.lang = t.vozVoz
-    rec.continuous = true
-    rec.interimResults = false
+    rec.lang = t.vozVoz; rec.continuous = true; rec.interimResults = false
     rec.onresult = (e) => {
       const txt = e.results[e.results.length-1][0].transcript.toLowerCase()
       if (!activadaRef.current && (txt.includes('sinyi') || txt.includes('siniy'))) {
-        activadaRef.current = true
-        rec.stop()
-        hablar(t.sinyiDime)
-        setTimeout(escucharComando, 1000)
+        activadaRef.current = true; rec.stop(); hablar(t.sinyiDime); setTimeout(escucharComando, 1000)
       }
     }
     rec.onerror = () => setTimeout(iniciarWake, 2000)
@@ -270,15 +242,7 @@ function Sinyi({ idioma, nombre, pantalla }) {
 
   return (
     <>
-      <button onClick={activarManual} title="Sinyi" style={{
-        position:'fixed', bottom:'28px', right:'24px',
-        width:'58px', height:'58px', borderRadius:'50%',
-        border:`2px solid ${color}`,
-        background: estado !== 'idle' ? `${color}22` : 'white',
-        cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center',
-        zIndex:9999, transition:'all 0.3s',
-        boxShadow: estado !== 'idle' ? `0 0 0 6px ${color}22, 0 4px 20px ${color}44` : '0 4px 16px rgba(0,0,0,0.15)',
-      }}>
+      <button onClick={activarManual} title="Sinyi" style={{ position:'fixed', bottom:'28px', right:'24px', width:'58px', height:'58px', borderRadius:'50%', border:`2px solid ${color}`, background: estado !== 'idle' ? `${color}22` : 'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, transition:'all 0.3s', boxShadow: estado !== 'idle' ? `0 0 0 6px ${color}22, 0 4px 20px ${color}44` : '0 4px 16px rgba(0,0,0,0.15)' }}>
         {estado === 'escuchando' || estado === 'hablando' ? (
           <div style={{ display:'flex', alignItems:'center', gap:'3px', height:'22px' }}>
             {ondas.map((h,i) => <div key={i} style={{ width:'3px', height:`${h*20}px`, background:color, borderRadius:'2px', transition:'height 0.1s' }} />)}
@@ -297,14 +261,7 @@ function Sinyi({ idioma, nombre, pantalla }) {
         )}
       </button>
       {estado !== 'idle' && (
-        <div style={{
-          position:'fixed', bottom:'98px', right:'16px',
-          background:'white', borderRadius:'14px', padding:'8px 14px',
-          boxShadow:'0 4px 20px rgba(0,0,0,0.12)', border:`1px solid ${color}33`,
-          fontSize:'13px', color, fontWeight:'500', zIndex:9998,
-          display:'flex', alignItems:'center', gap:'8px',
-          fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif',
-        }}>
+        <div style={{ position:'fixed', bottom:'98px', right:'16px', background:'white', borderRadius:'14px', padding:'8px 14px', boxShadow:'0 4px 20px rgba(0,0,0,0.12)', border:`1px solid ${color}33`, fontSize:'13px', color, fontWeight:'500', zIndex:9998, display:'flex', alignItems:'center', gap:'8px', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
           {estado === 'escuchando' ? '👂' : estado === 'pensando' ? '🧠' : '🔊'}
           {estado === 'escuchando' ? 'Escuchando...' : estado === 'pensando' ? 'Pensando...' : 'Sinyi...'}
         </div>
@@ -314,18 +271,133 @@ function Sinyi({ idioma, nombre, pantalla }) {
   )
 }
 
-// ─── SELECTOR DE IDIOMA ───────────────────────────────────────
 function SelectorIdioma({ idioma, onChange }) {
   return (
     <div style={{ display:'flex', flexWrap:'wrap', justifyContent:'center', gap:'8px', marginBottom:'24px' }}>
       {IDIOMAS.map(l => (
-        <button key={l.codigo} onClick={() => onChange(l.codigo)} style={{
-          fontSize:'22px', padding:'6px 10px', borderRadius:'12px', cursor:'pointer',
-          border: idioma === l.codigo ? '2px solid #534AB7' : '2px solid #e5e5e5',
-          background: idioma === l.codigo ? 'rgba(83,74,183,0.1)' : 'transparent',
-          transition:'all 0.2s',
-        }} title={l.nombre}>{l.bandera}</button>
+        <button key={l.codigo} onClick={() => onChange(l.codigo)} style={{ fontSize:'22px', padding:'6px 10px', borderRadius:'12px', cursor:'pointer', border: idioma === l.codigo ? '2px solid #534AB7' : '2px solid #e5e5e5', background: idioma === l.codigo ? 'rgba(83,74,183,0.1)' : 'transparent', transition:'all 0.2s' }} title={l.nombre}>{l.bandera}</button>
       ))}
+    </div>
+  )
+}
+
+// ─── PANTALLA DE INVITACIÓN ───────────────────────────────────
+function PantallaInvitacion({ invData, onEntrar, onGoogle, onRegistrar }) {
+  const [mostrarLogin, setMostrarLogin] = useState(false)
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+
+  const handleEmailLogin = async () => {
+    if (!email || !password) { setError('Escribe tu correo y contraseña'); return }
+    setLoading(true); setError('')
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+      // onAuthStateChanged en App detectará el login y procesará la invitación
+    } catch { setError('Correo o contraseña incorrectos') }
+    setLoading(false)
+  }
+
+  const handleGoogleInv = async () => {
+    setLoading(true); setError('')
+    try { await signInWithPopup(auth, googleProvider) }
+    catch { setError('Error al iniciar con Google') }
+    setLoading(false)
+  }
+
+  return (
+    <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#1a3a6b 0%,#2563a8 50%,#1a5a8a 100%)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'24px', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
+
+      {/* Logo */}
+      <div style={{ fontSize:'28px', fontWeight:'800', color:'white', letterSpacing:'2px', marginBottom:'40px' }}>SYNG</div>
+
+      {/* Icono grupo */}
+      <div style={{ width:'120px', height:'120px', borderRadius:'28px', background:'rgba(255,255,255,0.15)', backdropFilter:'blur(10px)', display:'flex', alignItems:'center', justifyContent:'center', marginBottom:'28px' }}>
+        <svg width="64" height="64" viewBox="0 0 24 24" fill="none">
+          <circle cx="9" cy="7" r="4" fill="white" opacity="0.9"/>
+          <circle cx="17" cy="9" r="3" fill="white" opacity="0.6"/>
+          <path d="M1 21c0-4 3.6-7 8-7s8 3 8 7" fill="white" opacity="0.9"/>
+          <path d="M17 14c2.2.5 4 2.5 4 5" stroke="white" strokeWidth="1.5" strokeLinecap="round" opacity="0.6"/>
+        </svg>
+      </div>
+
+      {/* Nombre del grupo */}
+      <div style={{ fontSize:'32px', fontWeight:'800', color:'white', marginBottom:'8px', textAlign:'center' }}>
+        {invData.grupoNombre}
+      </div>
+      <div style={{ fontSize:'16px', color:'rgba(255,255,255,0.75)', marginBottom:'24px' }}>
+        Has sido invitado a unirte
+      </div>
+
+      {/* Invitado por */}
+      <div style={{ background:'rgba(255,255,255,0.12)', borderRadius:'16px', padding:'14px 24px', marginBottom:'32px', textAlign:'center', backdropFilter:'blur(8px)' }}>
+        <div style={{ fontSize:'13px', color:'rgba(255,255,255,0.6)', marginBottom:'4px' }}>Invitado por</div>
+        <div style={{ fontSize:'15px', color:'white', fontWeight:'600' }}>{invData.adminNombre}</div>
+      </div>
+
+      {!mostrarLogin ? (
+        <>
+          {/* Botón entrar */}
+          <button onClick={onEntrar} style={{ width:'100%', maxWidth:'320px', padding:'16px', background:'white', border:'none', borderRadius:'16px', fontSize:'17px', fontWeight:'700', color:'#1a3a6b', cursor:'pointer', marginBottom:'28px', WebkitTapHighlightColor:'transparent' }}>
+            Entrar al grupo
+          </button>
+
+          {/* Conéctate también con */}
+          <div style={{ fontSize:'13px', color:'rgba(255,255,255,0.55)', marginBottom:'16px', letterSpacing:'0.03em' }}>
+            Conéctate también con
+          </div>
+
+          <div style={{ display:'flex', gap:'20px', marginBottom:'28px' }}>
+            {/* Apple — deshabilitado por ahora */}
+            <div style={{ width:'60px', height:'60px', borderRadius:'50%', background:'black', display:'flex', alignItems:'center', justifyContent:'center', opacity:0.4 }} title="Próximamente">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.8-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+            </div>
+
+            {/* Google */}
+            <button onClick={handleGoogleInv} disabled={loading} style={{ width:'60px', height:'60px', borderRadius:'50%', background:'#EA4335', border:'none', display:'flex', alignItems:'center', justifyContent:'center', cursor:'pointer', WebkitTapHighlightColor:'transparent' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="white">
+                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+            </button>
+          </div>
+
+          {/* Ya tienes cuenta / Regístrate */}
+          <div style={{ fontSize:'13px', color:'rgba(255,255,255,0.6)' }}>
+            ¿Ya tienes cuenta?{' '}
+            <span onClick={() => setMostrarLogin(true)} style={{ color:'white', fontWeight:'600', cursor:'pointer', textDecoration:'underline' }}>
+              Inicia sesión
+            </span>
+            {'  ·  '}
+            <span onClick={onRegistrar} style={{ color:'white', fontWeight:'600', cursor:'pointer', textDecoration:'underline' }}>
+              Regístrate
+            </span>
+          </div>
+
+          {error && <div style={{ color:'#ffb3b3', fontSize:'13px', marginTop:'12px', textAlign:'center' }}>{error}</div>}
+        </>
+      ) : (
+        /* Mini login con correo */
+        <div style={{ width:'100%', maxWidth:'320px', background:'rgba(255,255,255,0.12)', borderRadius:'20px', padding:'20px', backdropFilter:'blur(8px)' }}>
+          <input type="email" placeholder="Correo electrónico" value={email} onChange={e=>setEmail(e.target.value)}
+            style={{ width:'100%', padding:'12px 14px', borderRadius:'10px', border:'none', fontSize:'15px', outline:'none', marginBottom:'10px', boxSizing:'border-box' }}/>
+          <input type="password" placeholder="Contraseña" value={password} onChange={e=>setPassword(e.target.value)}
+            onKeyDown={e=>e.key==='Enter'&&handleEmailLogin()}
+            style={{ width:'100%', padding:'12px 14px', borderRadius:'10px', border:'none', fontSize:'15px', outline:'none', marginBottom:'12px', boxSizing:'border-box' }}/>
+          {error && <div style={{ color:'#ffb3b3', fontSize:'12px', marginBottom:'10px', textAlign:'center' }}>{error}</div>}
+          <button onClick={handleEmailLogin} disabled={loading} style={{ width:'100%', padding:'13px', background:'white', border:'none', borderRadius:'12px', fontSize:'15px', fontWeight:'700', color:'#1a3a6b', cursor:'pointer', marginBottom:'10px', WebkitTapHighlightColor:'transparent' }}>
+            {loading ? 'Entrando...' : 'Entrar'}
+          </button>
+          <button onClick={() => setMostrarLogin(false)} style={{ width:'100%', padding:'10px', background:'none', border:'none', color:'rgba(255,255,255,0.7)', fontSize:'13px', cursor:'pointer' }}>
+            Cancelar
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -342,17 +414,82 @@ export default function App() {
   const [idioma, setIdioma] = useState(() => localStorage.getItem('syng_idioma') || 'es')
   const [mostrarConfig, setMostrarConfig] = useState(false)
 
+  // Invitación
+  const [invId, setInvId] = useState(null)
+  const [invData, setInvData] = useState(null) // { grupoNombre, adminNombre, grupoId, modulo }
+  const [invCargando, setInvCargando] = useState(false)
+  const [grupoDestino, setGrupoDestino] = useState(null) // para navegar al grupo tras login
+
   const t = TEXTOS[idioma] || TEXTOS.es
 
-  const cambiarIdioma = (cod) => {
-    setIdioma(cod)
-    localStorage.setItem('syng_idioma', cod)
+  const cambiarIdioma = (cod) => { setIdioma(cod); localStorage.setItem('syng_idioma', cod) }
+
+  // Detectar invitación en la URL
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const id = params.get('invitacion')
+    if (!id) return
+    setInvId(id)
+    setInvCargando(true)
+    const cargarInv = async () => {
+      try {
+        const invSnap = await getDoc(doc(db, 'invitaciones', id))
+        if (!invSnap.exists()) { setInvId(null); setInvCargando(false); return }
+        const inv = invSnap.data()
+        if (inv.usado) { setInvId(null); setInvCargando(false); return }
+        const gSnap = await getDoc(doc(db, 'grupos', inv.grupoId))
+        if (!gSnap.exists()) { setInvId(null); setInvCargando(false); return }
+        const grupo = gSnap.data()
+        setInvData({ grupoId: inv.grupoId, modulo: inv.modulo, grupoNombre: grupo.nombre, adminNombre: grupo.adminNombre || 'un administrador' })
+      } catch { setInvId(null) }
+      setInvCargando(false)
+    }
+    cargarInv()
+  }, [])
+
+  // Procesar invitación cuando el usuario ya está logueado
+  const procesarInvitacion = async (u, inv) => {
+    if (!u || !inv) return
+    try {
+      const gSnap = await getDoc(doc(db, 'grupos', inv.grupoId))
+      if (!gSnap.exists()) return
+      const grupo = gSnap.data()
+      const yaMiembro = (grupo.miembros || []).some(m => m.uid === u.uid)
+      if (!yaMiembro) {
+        await updateDoc(doc(db, 'grupos', inv.grupoId), {
+          miembros: arrayUnion({ uid: u.uid, email: u.email || '', nombre: u.displayName || u.email?.split('@')[0] || 'Usuario', rol: 'miembro' })
+        })
+        await setDoc(doc(db, 'users', u.uid, 'misGrupos', inv.grupoId), {
+          nombre: grupo.nombre, modulo: inv.modulo
+        })
+      }
+      const invSnap = await getDoc(doc(db, 'invitaciones', invId || ''))
+      if (invSnap.exists() && !invSnap.data().usado) {
+        await updateDoc(doc(db, 'invitaciones', invId), { usado: true })
+      }
+      window.history.replaceState({}, '', window.location.pathname)
+      setInvId(null); setInvData(null)
+      setGrupoDestino({ grupoId: inv.grupoId, modulo: inv.modulo })
+    } catch (e) { console.error(e) }
   }
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => setUser(u))
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      setUser(u)
+      if (u && invData) {
+        await procesarInvitacion(u, invData)
+      }
+    })
     return unsub
-  }, [])
+  }, [invData])
+
+  // Navegar al grupo destino cuando ya esté listo
+  useEffect(() => {
+    if (user && grupoDestino) {
+      setPantalla(grupoDestino.modulo === 'pizarron' ? 'pizarron' : 'listasuper')
+      setGrupoDestino(null)
+    }
+  }, [user, grupoDestino])
 
   const handleEmailAuth = async () => {
     if (!email || !password) { setError(t.errorCampos); return }
@@ -373,12 +510,45 @@ export default function App() {
 
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
 
-  // ── Módulos ──
+  // Cargando invitación
+  if (invCargando) return (
+    <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#1a3a6b,#2563a8)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ color:'white', fontSize:'15px', opacity:0.7 }}>Cargando invitación...</div>
+    </div>
+  )
+
+  // Pantalla de invitación
+  if (invData && !user) return (
+    <PantallaInvitacion
+      invData={invData}
+      onEntrar={() => {
+        // Entrar como visitante — limpiar URL y ir al módulo sin cuenta
+        window.history.replaceState({}, '', window.location.pathname)
+        setInvId(null); setInvData(null)
+        // Solo puede ver, no modificar — para esto simplemente lo mandamos al login
+        // con un mensaje de que necesita cuenta para participar
+        setPantalla('inicio')
+      }}
+      onGoogle={async () => {
+        setLoading(true)
+        try { await signInWithPopup(auth, googleProvider) }
+        catch { }
+        setLoading(false)
+      }}
+      onRegistrar={() => {
+        window.history.replaceState({}, '', window.location.pathname)
+        setInvId(null)
+        // invData se mantiene para procesar tras registro
+      }}
+    />
+  )
+
+  // Módulos
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} />
   if (user && pantalla === 'listasuper')  return <ListaSuper  onVolver={() => setPantalla('inicio')} />
   if (user && pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} />
 
-  // ── Pantalla principal ──
+  // Pantalla principal
   if (user) return (
     <div style={{ minHeight:'100vh', background:'#f5f5f7', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
       <div style={{ background:'linear-gradient(135deg,#534AB7,#185FA5)', padding:'20px 24px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
@@ -391,41 +561,33 @@ export default function App() {
           <button onClick={() => signOut(auth)} style={{ background:'rgba(255,255,255,0.2)', color:'white', border:'none', borderRadius:'20px', padding:'6px 14px', fontSize:'13px', cursor:'pointer' }}>{t.salir}</button>
         </div>
       </div>
-
       {mostrarConfig && (
         <div style={{ background:'white', padding:'20px 24px', borderBottom:'1px solid #e5e5e5' }}>
           <div style={{ fontSize:'13px', color:'#888', marginBottom:'12px', textAlign:'center' }}>{t.eligeIdioma}</div>
           <SelectorIdioma idioma={idioma} onChange={(cod) => { cambiarIdioma(cod); setMostrarConfig(false) }} />
         </div>
       )}
-
       <div style={{ padding:'24px' }}>
-        <div style={{ fontSize:'22px', fontWeight:'700', color:'#2C2C2A', marginBottom:'6px' }}>
-          {t.hola}, {nombre}!
-        </div>
+        <div style={{ fontSize:'22px', fontWeight:'700', color:'#2C2C2A', marginBottom:'6px' }}>{t.hola}, {nombre}!</div>
         <div style={{ color:'#888', fontSize:'15px', marginBottom:'28px' }}>{t.queOrganizar}</div>
-
         <div onClick={() => setPantalla('pizarron')} style={{ background:'white', borderRadius:'20px', padding:'24px', marginBottom:'16px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', cursor:'pointer' }}>
           <div style={{ fontSize:'18px', fontWeight:'700', color:'#185FA5', marginBottom:'4px' }}>{t.pizarron}</div>
           <div style={{ color:'#888', fontSize:'14px' }}>{t.pizarronDesc}</div>
         </div>
-
         <div onClick={() => setPantalla('listatareas')} style={{ background:'white', borderRadius:'20px', padding:'24px', marginBottom:'16px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', cursor:'pointer' }}>
           <div style={{ fontSize:'18px', fontWeight:'700', color:'#534AB7', marginBottom:'4px' }}>{t.tareas}</div>
           <div style={{ color:'#888', fontSize:'14px' }}>{t.tareasDesc}</div>
         </div>
-
         <div onClick={() => setPantalla('listasuper')} style={{ background:'white', borderRadius:'20px', padding:'24px', marginBottom:'16px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', cursor:'pointer' }}>
           <div style={{ fontSize:'18px', fontWeight:'700', color:'#0F6E56', marginBottom:'4px' }}>{t.super}</div>
           <div style={{ color:'#888', fontSize:'14px' }}>{t.superDesc}</div>
         </div>
       </div>
-
       <Sinyi idioma={idioma} nombre={nombre} pantalla={pantalla} />
     </div>
   )
 
-  // ── Login ──
+  // Login
   return (
     <div style={{ minHeight:'100vh', background:'linear-gradient(135deg,#534AB7 0%,#185FA5 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', padding:'20px' }}>
       <div style={{ background:'white', borderRadius:'28px', padding:'40px 32px', width:'100%', maxWidth:'380px', boxShadow:'0 20px 60px rgba(0,0,0,0.3)' }}>
@@ -433,32 +595,25 @@ export default function App() {
           <div style={{ fontSize:'42px', fontWeight:'800', background:'linear-gradient(135deg,#534AB7,#185FA5)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', marginBottom:'4px' }}>Syng</div>
           <div style={{ color:'#888', fontSize:'14px' }}>Sinyi · {t.slogan}</div>
         </div>
-
         <div style={{ fontSize:'12px', color:'#888', textAlign:'center', marginBottom:'10px' }}>{t.eligeIdioma}</div>
         <SelectorIdioma idioma={idioma} onChange={cambiarIdioma} />
-
         <div style={{ display:'flex', background:'#f5f5f7', borderRadius:'12px', padding:'4px', marginBottom:'20px' }}>
           <button onClick={() => setIsLogin(true)} style={{ flex:1, padding:'8px', border:'none', borderRadius:'10px', background:isLogin?'white':'transparent', color:isLogin?'#534AB7':'#888', fontWeight:isLogin?'600':'400', cursor:'pointer', fontSize:'14px', boxShadow:isLogin?'0 1px 4px rgba(0,0,0,0.1)':'none' }}>{t.iniciar}</button>
           <button onClick={() => setIsLogin(false)} style={{ flex:1, padding:'8px', border:'none', borderRadius:'10px', background:!isLogin?'white':'transparent', color:!isLogin?'#534AB7':'#888', fontWeight:!isLogin?'600':'400', cursor:'pointer', fontSize:'14px', boxShadow:!isLogin?'0 1px 4px rgba(0,0,0,0.1)':'none' }}>{t.registrar}</button>
         </div>
-
         <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginBottom:'20px' }}>
           <input type="email" placeholder={t.correo} value={email} onChange={e=>setEmail(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
           <input type="password" placeholder={t.contrasena} value={password} onChange={e=>setPassword(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
         </div>
-
         {error && <div style={{ color:'red', fontSize:'13px', marginBottom:'12px', textAlign:'center' }}>{error}</div>}
-
         <button onClick={handleEmailAuth} disabled={loading} style={{ width:'100%', padding:'15px', background:'linear-gradient(135deg,#534AB7,#185FA5)', color:'white', border:'none', borderRadius:'14px', fontSize:'16px', fontWeight:'600', cursor:'pointer', marginBottom:'20px' }}>
           {loading ? t.cargando : isLogin ? t.entrar : t.crear}
         </button>
-
         <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'20px' }}>
           <div style={{ flex:1, height:'1px', background:'#e5e5e5' }} />
           <span style={{ color:'#aaa', fontSize:'13px' }}>{t.oCon}</span>
           <div style={{ flex:1, height:'1px', background:'#e5e5e5' }} />
         </div>
-
         <button onClick={handleGoogle} disabled={loading} style={{ width:'100%', padding:'13px', background:'white', border:'1.5px solid #e5e5e5', borderRadius:'14px', fontSize:'15px', fontWeight:'500', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px' }}>
           {t.google}
         </button>
