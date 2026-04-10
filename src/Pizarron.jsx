@@ -80,7 +80,7 @@ export default function Pizarron({ onVolver }) {
   const [modalVerGrupo, setModalVerGrupo] = useState(null)
   const [nuevoNombreGrupo, setNuevoNombreGrupo] = useState('')
   const [editandoNombreGrupo, setEditandoNombreGrupo] = useState(false)
-  const [editModo, setEditModo] = useState('fecha')
+  const [editModo, setEditModo] = useState(null)
   const [nombreGrupoEdit, setNombreGrupoEdit] = useState('')
   const [confirmEliminarGrupo, setConfirmEliminarGrupo] = useState(false)
   const [confirmSalirGrupo, setConfirmSalirGrupo] = useState(false)
