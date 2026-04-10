@@ -356,13 +356,13 @@ export default function Pizarron({ onVolver }) {
               <div style={{fontSize:'18px',fontWeight:'700',color:'#2C2C2A'}}>{modalDia} de {MESES[mes]} {anio}</div>
               <button onClick={cerrarModal} style={{background:'#f5f5f7',border:'none',borderRadius:'50%',width:'32px',height:'32px',fontSize:'16px',color:'#888',...T}}>✕</button>
             </div>
-            <div style={{marginBottom:'12px'}}>
+            {!editando&&(<div style={{marginBottom:'12px'}}>
               <div style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
-                <input value={textoNuevo} onChange={e=>setTextoNuevo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&agregarAnotacion()} placeholder="Nueva anotación..." style={{flex:1,padding:'10px 14px',borderRadius:'10px',border:'1.5px solid #e5e5e5',fontSize:'15px',outline:'none'}}/>
+                <input value={textoNuevo} onChange={e=>setTextoNuevo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&agregarAnotacion()} placeholder="Nueva anotación..." style={{flex:1,padding:'10px 14px',borderRadius:'10px',border:'1.5px solid #e5e5e5',fontSize:'15px',outline:'none',background:'white',color:'#2C2C2A'}}/>
                 <button onClick={agregarAnotacion} style={{background:'linear-gradient(135deg,#185FA5,#534AB7)',color:'white',border:'none',borderRadius:'10px',padding:'10px 18px',fontWeight:'600',fontSize:'16px',...T}}>+</button>
               </div>
               <button onClick={()=>{setMostrarRepetir(!mostrarRepetir);if(!mostrarRepetir)setFechasRepetir([{dia:modalDia,mes,anio}])}} style={{background:mostrarRepetir?'#EEF2FF':'#f5f5f7',border:'none',borderRadius:'8px',padding:'6px 14px',fontSize:'13px',color:mostrarRepetir?'#534AB7':'#888',fontWeight:'500',...T}}>🔁 Repetir {mostrarRepetir?'▲':'▼'}</button>
-            </div>
+            </div>)}
             {mostrarRepetir&&(<div style={{background:'#f5f5f7',borderRadius:'16px',padding:'16px',marginBottom:'16px'}}><div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'12px'}}><button onClick={()=>{if(mesRepetir===0){setMesRepetir(11);setAnioRepetir(anioRepetir-1)}else setMesRepetir(mesRepetir-1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'4px 12px',...T}}>‹</button><div style={{fontSize:'14px',fontWeight:'600'}}>{MESES[mesRepetir]} {anioRepetir}</div><button onClick={()=>{if(mesRepetir===11){setMesRepetir(0);setAnioRepetir(anioRepetir+1)}else setMesRepetir(mesRepetir+1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'4px 12px',...T}}>›</button></div><div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px',marginBottom:'6px'}}>{DIAS_SEMANA.map(d=><div key={d} style={{textAlign:'center',fontSize:'10px',color:'#aaa',fontWeight:'600'}}>{d}</div>)}</div><div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px'}}>{celdasRepetir.map((d,i)=><button key={i} onClick={()=>d&&toggleFechaRepetir(d)} style={{height:'34px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'8px',fontSize:'13px',background:d&&esFechaSeleccionada(d)?'#534AB7':d?'white':'transparent',color:d&&esFechaSeleccionada(d)?'white':'#2C2C2A',fontWeight:d&&esFechaSeleccionada(d)?'700':'400',border:d?'1px solid #e5e5e5':'none',...T}}>{d||''}</button>)}</div><div style={{marginTop:'8px',fontSize:'12px',color:'#534AB7',textAlign:'center'}}>{fechasRepetir.length} fecha{fechasRepetir.length!==1?'s':''} seleccionada{fechasRepetir.length!==1?'s':''}</div></div>)}
             {(anotaciones[getKey(anio,mes,modalDia)]||[]).map((a,i)=>(
               <div key={a.id}>
@@ -372,7 +372,7 @@ export default function Pizarron({ onVolver }) {
                     <div>
                       <div style={{display:'flex',gap:'8px',marginBottom:'8px',alignItems:'center'}}>
                         <button onClick={()=>toggleRealizada(modalDia,a.id)} style={{width:'22px',height:'22px',borderRadius:'6px',border:a.realizada?'none':'2px solid #d0d0d0',background:a.realizada?'#534AB7':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,...T}}>{a.realizada&&<span style={{color:'white',fontSize:'13px'}}>✓</span>}</button>
-                        <input value={textoEditar} onChange={e=>setTextoEditar(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarEdicion(modalDia)} autoFocus style={{flex:1,padding:'6px 10px',borderRadius:'8px',border:'1.5px solid #534AB7',fontSize:'15px',outline:'none'}}/>
+                        <input value={textoEditar} onChange={e=>setTextoEditar(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarEdicion(modalDia)} autoFocus style={{flex:1,padding:'6px 10px',borderRadius:'8px',border:'1.5px solid #534AB7',fontSize:'15px',outline:'none',background:'white',color:'#2C2C2A'}}/>
                         <button onClick={()=>guardarEdicion(modalDia)} style={{background:'#534AB7',border:'none',borderRadius:'8px',padding:'6px 12px',color:'white',fontSize:'14px',...T}}>✓</button>
                       </div>
                       <div style={{marginLeft:'32px'}}>
