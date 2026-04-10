@@ -588,6 +588,9 @@ export default function Pizarron({ onVolver }) {
             })}
           </div>
 
+          {/* Botón Hoy */}
+          <div style={{ position:'fixed', bottom:'24px', left:'50%', transform:'translateX(-50%)', zIndex:50 }}>
+            <button onClick={irAHoy}
               style={{ background:'white', border:'2px solid #534AB7', borderRadius:'24px', padding:'10px 28px',
                 fontSize:'16px', fontWeight:'700', color:'#534AB7', cursor:'pointer',
                 boxShadow:'0 4px 16px rgba(83,74,183,0.25)' }}>
