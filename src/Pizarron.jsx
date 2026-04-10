@@ -769,8 +769,8 @@ export default function Pizarron({ onVolver }) {
               <button onClick={cerrarModal} style={{background:'#f5f5f7',border:'none',borderRadius:'50%',width:'32px',height:'32px',fontSize:'16px',color:'#888',...T}}>✕</button>
             </div>
 
-            {/* Input nueva anotación */}
-            <div style={{marginBottom:'12px'}}>
+            {/* Input nueva anotación — oculto cuando hay edición activa */}
+            <div style={{marginBottom:'12px',display:editando?'none':'block'}}>
               <div style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
                 <input value={textoNuevo} onChange={e=>setTextoNuevo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&agregarAnotacion()} placeholder="Nueva anotación..." style={{flex:1,padding:'10px 14px',borderRadius:'10px',border:'1.5px solid #e5e5e5',fontSize:'15px',outline:'none'}}/>
                 <button onClick={agregarAnotacion} style={{background:'linear-gradient(135deg,#185FA5,#534AB7)',color:'white',border:'none',borderRadius:'10px',padding:'10px 18px',fontWeight:'600',fontSize:'16px',...T}}>+</button>
@@ -856,9 +856,9 @@ export default function Pizarron({ onVolver }) {
                           <div style={{background:'#f5f5f7',borderRadius:'12px',padding:'12px',marginTop:'4px'}}>
                             <div style={{fontSize:'12px',color:'#888',marginBottom:'8px',textAlign:'center'}}>Toca los días donde quieres copiar esta anotación</div>
                             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}}>
-                              <button onClick={()=>{if(mesCalRep===0){setMesCalRep(11);setAnioCalRep(anioCalRep-1)}else setMesCalRep(mesCalRep-1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'3px 10px',...T}}>‹</button>
+                              <button onClick={()=>{if(mesCalRep===0){setMesCalRep(11);setAnioCalRep(anioCalRep-1)}else setMesCalRep(mesCalRep-1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'3px 10px',fontSize:'16px',...T}}>{'‹'}</button>
                               <div style={{fontSize:'13px',fontWeight:'600'}}>{MESES[mesCalRep]} {anioCalRep}</div>
-                              <button onClick={()=>{if(mesCalRep===11){setMesCalRep(0);setAnioCalRep(anioCalRep+1)}else setMesCalRep(mesCalRep+1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'3px 10px',...T}}>›</button>
+                              <button onClick={()=>{if(mesCalRep===11){setMesCalRep(0);setAnioCalRep(anioCalRep+1)}else setMesCalRep(mesCalRep+1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'3px 10px',fontSize:'16px',...T}}>{'›'}</button>
                             </div>
                             <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px',marginBottom:'4px'}}>
                               {DIAS_SEMANA.map(d => <div key={d} style={{textAlign:'center',fontSize:'10px',color:'#aaa'}}>{d}</div>)}
@@ -872,11 +872,7 @@ export default function Pizarron({ onVolver }) {
                                 )
                               })}
                             </div>
-                            {fechasEditRepetir.length > 0 && (
-                              <button onClick={aplicarRepetirEnFechas} style={{marginTop:'10px',width:'100%',background:'#534AB7',border:'none',borderRadius:'8px',padding:'8px',color:'white',fontSize:'14px',fontWeight:'600',...T}}>
-                                Copiar en {fechasEditRepetir.length} fecha{fechasEditRepetir.length>1?'s':''}
-                              </button>
-                            )}
+
                           </div>
                         )}
                       </div>
