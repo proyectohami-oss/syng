@@ -423,11 +423,27 @@ export default function Pizarron({ onVolver }) {
     if (!textoEditar.trim() || !editando) return
     const key = getKey(anio, mes, modalDia)
     const lista = (anotaciones[key] || []).map(a => a.id === editando ? { ...a, texto: textoEditar.trim() } : a)
-    setAnotaciones({ ...anotaciones, [key]: lista })
-    await guardarKey(key, lista)
+    const nuevas = { ...anotaciones, [key]: lista }
+    const promises = [guardarKey(key, lista)]
+    if (fechasEditRepetir.length > 0) {
+      const anotacionOrigen = (anotaciones[key] || []).find(a => a.id === editando)
+      if (anotacionOrigen) {
+        const repeatGroupId = generarId()
+        fechasEditRepetir.forEach(k => {
+          const [a, m, d] = k.split('-').map(Number)
+          const keyDest = getKey(a, m, d)
+          const item = { ...anotacionOrigen, id: generarId(), texto: textoEditar.trim(), dia: d, mes: m, anio: a, repeatGroupId }
+          nuevas[keyDest] = [...(nuevas[keyDest] || []), item]
+          promises.push(guardarKey(keyDest, nuevas[keyDest]))
+        })
+      }
+    }
+    setAnotaciones(nuevas)
+    await Promise.all(promises)
     setEditando(null)
     setEditModo(null)
     setTextoEditar('')
+    setFechasEditRepetir([])
   }
 
   // — Drag & drop calendario —
