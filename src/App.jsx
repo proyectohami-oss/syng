@@ -517,8 +517,8 @@ export default function App() {
     </div>
   )
 
-  // Pantalla de invitación — se muestra siempre que haya invitación pendiente
-  if (invData) return (
+  // Pantalla de invitación — se muestra SIEMPRE que haya invitación, sin importar auth
+  if (invData || invId) return (
     <PantallaInvitacion
       invData={invData}
       userActual={user}
