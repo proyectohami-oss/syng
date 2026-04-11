@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { auth, googleProvider, db } from './firebase'
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from 'firebase/auth'
 import { doc, getDoc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore'
 import Pizarron from './Pizarron'
 import ListaTareas from './ListaTareas'
@@ -570,13 +570,14 @@ export default function App() {
       }}
       onGoogle={async () => {
         setLoading(true)
-        const invDataCopy = invData
-        // Guardar invData en localStorage antes del redirect
-        if (invDataCopy) localStorage.setItem('syng_inv_pendiente', JSON.stringify(invDataCopy))
+        if (invData) localStorage.setItem('syng_inv_pendiente', JSON.stringify(invData))
+        const esiOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
         try {
-          const result = await signInWithPopup(auth, googleProvider)
-          if (result.user && invDataCopy) {
-            await procesarInvitacion(result.user, invDataCopy)
+          if (esiOS) {
+            await signInWithRedirect(auth, googleProvider)
+          } else {
+            const result = await signInWithPopup(auth, googleProvider)
+            if (result.user && invData) await procesarInvitacion(result.user, invData)
           }
         } catch { }
         setLoading(false)
