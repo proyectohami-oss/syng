@@ -476,9 +476,7 @@ export default function App() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u)
-      if (u && invData) {
-        await procesarInvitacion(u, invData)
-      }
+      // NO procesar invitación automáticamente — solo cuando el usuario toca "Entrar"
     })
     return unsub
   }, [invData])
