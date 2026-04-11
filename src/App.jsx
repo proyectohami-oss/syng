@@ -442,14 +442,19 @@ export default function App() {
     setInvCargando(true)
     const cargarInv = async () => {
       try {
-        const invSnap = await getDoc(doc(db, 'invitaciones', id))
-        if (!invSnap.exists()) { setInvId(null); setInvCargando(false); return }
-        const inv = invSnap.data()
-        if (inv.usado) { setInvId(null); setInvCargando(false); return }
-        const gSnap = await getDoc(doc(db, 'grupos', inv.grupoId))
-        if (!gSnap.exists()) { setInvId(null); setInvCargando(false); return }
-        const grupo = gSnap.data()
-        setInvData({ grupoId: inv.grupoId, modulo: inv.modulo, grupoNombre: grupo.nombre, adminNombre: grupo.adminNombre || 'un administrador' })
+        const pid = 'syng-app'
+        const r1 = await fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/invitaciones/${id}`)
+        if (!r1.ok) { setInvId(null); setInvCargando(false); return }
+        const j1 = await r1.json()
+        if (!j1.fields) { setInvId(null); setInvCargando(false); return }
+        if (j1.fields.usado?.booleanValue) { setInvId(null); setInvCargando(false); return }
+        const grupoId = j1.fields.grupoId?.stringValue
+        const modulo = j1.fields.modulo?.stringValue
+        const r2 = await fetch(`https://firestore.googleapis.com/v1/projects/${pid}/databases/(default)/documents/grupos/${grupoId}`)
+        if (!r2.ok) { setInvId(null); setInvCargando(false); return }
+        const j2 = await r2.json()
+        const fg = j2.fields
+        setInvData({ grupoId, modulo, grupoNombre: fg?.nombre?.stringValue || 'Grupo', adminNombre: fg?.adminNombre?.stringValue || 'un administrador' })
       } catch(e) { console.error('ERROR INV:', e); setInvId(null) }
       setInvCargando(false)
     }
