@@ -438,6 +438,7 @@ export default function App() {
       return
     }
     if (params.get('invitacion')) sessionStorage.setItem('syng_inv', id)
+    localStorage.setItem('syng_inv_id', id)
     setInvId(id)
     setInvCargando(true)
     const cargarInv = async () => {
@@ -447,6 +448,7 @@ export default function App() {
         const data = await res.json()
         if (data.error) { setInvId(null); setInvCargando(false); return }
         setInvData(data)
+        localStorage.setItem('syng_inv_pendiente', JSON.stringify(data))
       } catch(e) { console.error('ERROR INV:', e); setInvId(null) }
       setInvCargando(false)
     }
