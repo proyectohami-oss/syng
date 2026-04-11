@@ -427,8 +427,9 @@ export default function App() {
   // Detectar invitación en la URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const id = params.get('invitacion')
+    const id = params.get('invitacion') || sessionStorage.getItem('syng_inv')
     if (!id) return
+    if (params.get('invitacion')) sessionStorage.setItem('syng_inv', id)
     setInvId(id)
     setInvCargando(true)
     const cargarInv = async () => {
@@ -468,6 +469,7 @@ export default function App() {
         await updateDoc(doc(db, 'invitaciones', invId), { usado: true })
       }
       window.history.replaceState({}, '', window.location.pathname)
+      sessionStorage.removeItem('syng_inv')
       setInvId(null); setInvData(null)
       setGrupoDestino({ grupoId: inv.grupoId, modulo: inv.modulo })
     } catch (e) { console.error(e) }
