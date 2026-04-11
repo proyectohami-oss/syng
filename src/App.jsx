@@ -1156,18 +1156,14 @@ export default function App() {
   }
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u)
-      if (u && invData) {
-        await procesarInvitacion(u, invData)
-      }
-    })
+    const unsub = onAuthStateChanged(auth, (u) => { setUser(u) })
     return unsub
-  }, [invData])
+  }, [])
 
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
     if (user && grupoDestino) {
+      localStorage.setItem('syng_grupo_activo_pizarron', grupoDestino.grupoId)
       setPantalla(grupoDestino.modulo === 'pizarron' ? 'pizarron' : 'listasuper')
       setGrupoDestino(null)
     }
