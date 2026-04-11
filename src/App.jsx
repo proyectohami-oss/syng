@@ -483,20 +483,21 @@ export default function App() {
   }
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
-      setUser(u)
-      if (u && !u.isAnonymous) {
-        // Revisar si hay invitación pendiente guardada antes del redirect de Google
-        const pendiente = localStorage.getItem('syng_inv_pendiente')
-        if (pendiente) {
-          try {
+    const init = async () => {
+      try {
+        const result = await getRedirectResult(auth)
+        if (result?.user) {
+          const pendiente = localStorage.getItem('syng_inv_pendiente')
+          if (pendiente) {
             const inv = JSON.parse(pendiente)
             localStorage.removeItem('syng_inv_pendiente')
-            await procesarInvitacion(u, inv)
-          } catch(e) { console.error(e) }
+            await procesarInvitacion(result.user, inv)
+          }
         }
-      }
-    })
+      } catch(e) { console.error('redirect error:', e) }
+    }
+    init()
+    const unsub = onAuthStateChanged(auth, (u) => { setUser(u) })
     return unsub
   }, [])
 
