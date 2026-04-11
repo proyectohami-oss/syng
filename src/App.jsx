@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { auth, googleProvider, db } from './firebase'
-import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, signInWithRedirect, getRedirectResult, onAuthStateChanged, signOut } from 'firebase/auth'
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth'
 import { doc, getDoc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore'
 import Pizarron from './Pizarron'
 import ListaTareas from './ListaTareas'
@@ -427,29 +427,21 @@ export default function App() {
   // Detectar invitación en la URL
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
-    const id = params.get('invitacion') || sessionStorage.getItem('syng_inv')
+    const id = params.get('invitacion')
     if (!id) return
-    // Si estamos en WebView (WhatsApp, Instagram, etc) — redirigir a Safari
-    const ua = navigator.userAgent
-    const esWebView = /FBAN|FBAV|Instagram|WhatsApp|MicroMessenger/.test(ua) || 
-      ((/iPhone|iPod|iPad/.test(ua)) && !/Safari/.test(ua))
-    if (esWebView) {
-      window.location.href = 'https://syng-psi.vercel.app/?invitacion=' + id
-      return
-    }
-    if (params.get('invitacion')) sessionStorage.setItem('syng_inv', id)
-    localStorage.setItem('syng_inv_id', id)
     setInvId(id)
     setInvCargando(true)
     const cargarInv = async () => {
       try {
-        const res = await fetch(`/api/invitacion?id=${id}`)
-        if (!res.ok) { setInvId(null); setInvCargando(false); return }
-        const data = await res.json()
-        if (data.error) { setInvId(null); setInvCargando(false); return }
-        setInvData(data)
-        localStorage.setItem('syng_inv_pendiente', JSON.stringify(data))
-      } catch(e) { console.error('ERROR INV:', e); setInvId(null) }
+        const invSnap = await getDoc(doc(db, 'invitaciones', id))
+        if (!invSnap.exists()) { setInvId(null); setInvCargando(false); return }
+        const inv = invSnap.data()
+        if (inv.usado) { setInvId(null); setInvCargando(false); return }
+        const gSnap = await getDoc(doc(db, 'grupos', inv.grupoId))
+        if (!gSnap.exists()) { setInvId(null); setInvCargando(false); return }
+        const grupo = gSnap.data()
+        setInvData({ grupoId: inv.grupoId, modulo: inv.modulo, grupoNombre: grupo.nombre, adminNombre: grupo.adminNombre || 'un administrador' })
+      } catch { setInvId(null) }
       setInvCargando(false)
     }
     cargarInv()
@@ -476,36 +468,24 @@ export default function App() {
         await updateDoc(doc(db, 'invitaciones', invId), { usado: true })
       }
       window.history.replaceState({}, '', window.location.pathname)
-      sessionStorage.removeItem('syng_inv')
       setInvId(null); setInvData(null)
       setGrupoDestino({ grupoId: inv.grupoId, modulo: inv.modulo })
     } catch (e) { console.error(e) }
   }
 
   useEffect(() => {
-    const init = async () => {
-      try {
-        const result = await getRedirectResult(auth)
-        if (result?.user) {
-          const pendiente = localStorage.getItem('syng_inv_pendiente')
-          if (pendiente) {
-            const inv = JSON.parse(pendiente)
-            localStorage.removeItem('syng_inv_pendiente')
-            await procesarInvitacion(result.user, inv)
-          }
-        }
-      } catch(e) { console.error('redirect error:', e) }
-    }
-    init()
-    const unsub = onAuthStateChanged(auth, (u) => { setUser(u) })
+    const unsub = onAuthStateChanged(auth, async (u) => {
+      setUser(u)
+      if (u && invData) {
+        await procesarInvitacion(u, invData)
+      }
+    })
     return unsub
-  }, [])
+  }, [invData])
 
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
     if (user && grupoDestino) {
-      // Guardar el grupo activo en localStorage para que el módulo lo lea
-      localStorage.setItem('syng_grupo_activo_' + grupoDestino.modulo, grupoDestino.grupoId)
       setPantalla(grupoDestino.modulo === 'pizarron' ? 'pizarron' : 'listasuper')
       setGrupoDestino(null)
     }
@@ -530,54 +510,57 @@ export default function App() {
 
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
 
-  // Pantalla de invitación — tiene prioridad sobre todo
+  // Cargando invitación
   if (invCargando) return (
     <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#1a3a6b,#2563a8)', display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ color:'white', fontSize:'15px', opacity:0.7 }}>Cargando invitación...</div>
     </div>
   )
 
-  if (invData) return (
+  // Pantalla de invitación — se muestra SIEMPRE que haya invitación, sin importar auth
+  if (invData || invId) return (
     <PantallaInvitacion
       invData={invData}
       userActual={user}
       onEntrar={async () => {
+        // Flujo 1: usuario ya logueado — procesar invitación y entrar al grupo
         if (user && !user.isAnonymous) {
-          // Ya logueado — procesar y entrar al grupo con todos los privilegios
           await procesarInvitacion(user, invData)
-        } else {
-          // Sin cuenta — entrar como visitante anónimo
-          try {
-            const { signInAnonymously } = await import('firebase/auth')
-            const cred = await signInAnonymously(auth)
-            const uid = cred.user.uid
-            const gSnap = await getDoc(doc(db, 'grupos', invData.grupoId))
-            if (gSnap.exists()) {
-              const grupo = gSnap.data()
-              const yaMiembro = (grupo.miembros || []).some(m => m.uid === uid)
-              if (!yaMiembro) {
-                await updateDoc(doc(db, 'grupos', invData.grupoId), {
-                  miembros: arrayUnion({ uid, email: '', nombre: 'Invitado', rol: 'miembro' })
-                })
-                await setDoc(doc(db, 'users', uid, 'misGrupos', invData.grupoId), {
-                  nombre: grupo.nombre, modulo: invData.modulo
-                })
-              }
-            }
-            window.history.replaceState({}, '', window.location.pathname)
-            sessionStorage.removeItem('syng_inv')
-            localStorage.removeItem('syng_inv_pendiente')
-            setGrupoDestino({ grupoId: invData.grupoId, modulo: invData.modulo })
-            setInvId(null); setInvData(null)
-          } catch(e) { console.error(e) }
+          return
         }
+        // Flujo 2: sin cuenta — entrar como anónimo
+        try {
+          const { signInAnonymously } = await import('firebase/auth')
+          const cred = await signInAnonymously(auth)
+          const uid = cred.user.uid
+          const { updateDoc, arrayUnion, setDoc, doc, getDoc } = await import('firebase/firestore')
+          const gSnap = await getDoc(doc(db, 'grupos', invData.grupoId))
+          if (gSnap.exists()) {
+            const grupo = gSnap.data()
+            const yaMiembro = (grupo.miembros || []).some(m => m.uid === uid)
+            if (!yaMiembro) {
+              await updateDoc(doc(db, 'grupos', invData.grupoId), {
+                miembros: arrayUnion({ uid, email: '', nombre: 'Invitado', rol: 'miembro' })
+              })
+              await setDoc(doc(db, 'users', uid, 'misGrupos', invData.grupoId), {
+                nombre: grupo.nombre, modulo: invData.modulo
+              })
+            }
+          }
+          window.history.replaceState({}, '', window.location.pathname)
+          setGrupoDestino({ grupoId: invData.grupoId, modulo: invData.modulo })
+          setInvId(null); setInvData(null)
+        } catch(e) { console.error(e) }
       }}
-      onIrLogin={() => {
-        // Guardar grupo destino para después del login
-        localStorage.setItem('syng_inv_pendiente', JSON.stringify(invData))
+      onGoogle={async () => {
+        setLoading(true)
+        try { await signInWithPopup(auth, googleProvider) }
+        catch { }
+        setLoading(false)
+      }}
+      onRegistrar={() => {
         window.history.replaceState({}, '', window.location.pathname)
-        sessionStorage.removeItem('syng_inv')
-        setInvId(null); setInvData(null)
+        setInvId(null)
       }}
     />
   )
