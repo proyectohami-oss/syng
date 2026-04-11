@@ -483,10 +483,20 @@ export default function App() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u)
-      // NO procesar invitación automáticamente — solo cuando el usuario toca "Entrar"
+      if (u && !u.isAnonymous) {
+        // Revisar si hay invitación pendiente guardada antes del redirect de Google
+        const pendiente = localStorage.getItem('syng_inv_pendiente')
+        if (pendiente) {
+          try {
+            const inv = JSON.parse(pendiente)
+            localStorage.removeItem('syng_inv_pendiente')
+            await procesarInvitacion(u, inv)
+          } catch(e) { console.error(e) }
+        }
+      }
     })
     return unsub
-  }, [invData])
+  }, [])
 
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
@@ -561,6 +571,8 @@ export default function App() {
       onGoogle={async () => {
         setLoading(true)
         const invDataCopy = invData
+        // Guardar invData en localStorage antes del redirect
+        if (invDataCopy) localStorage.setItem('syng_inv_pendiente', JSON.stringify(invDataCopy))
         try {
           const result = await signInWithPopup(auth, googleProvider)
           if (result.user && invDataCopy) {
