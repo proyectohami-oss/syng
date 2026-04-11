@@ -3,7 +3,7 @@ import { db, auth } from './firebase'
 import { doc, getDoc, updateDoc, arrayUnion, setDoc } from 'firebase/firestore'
 import { signInAnonymously } from 'firebase/auth'
 
-export default function PantallaInvitacion({ invitacionId, onEntrar, onLogin }) {
+export default function PantallaInvitacion({ invData, userActual, onEntrar, onGoogle, onRegistrar }) {
   const [grupo, setGrupo] = useState(null)
   const [invitacion, setInvitacion] = useState(null)
   const [cargando, setCargando] = useState(true)

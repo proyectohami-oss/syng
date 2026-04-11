@@ -517,17 +517,40 @@ export default function App() {
     </div>
   )
 
-  // Pantalla de invitación
-  if (invData && !user) return (
+  // Pantalla de invitación — se muestra siempre que haya invitación pendiente
+  if (invData) return (
     <PantallaInvitacion
       invData={invData}
-      onEntrar={() => {
-        // Entrar como visitante — limpiar URL y ir al módulo sin cuenta
-        window.history.replaceState({}, '', window.location.pathname)
-        setInvId(null); setInvData(null)
-        // Solo puede ver, no modificar — para esto simplemente lo mandamos al login
-        // con un mensaje de que necesita cuenta para participar
-        setPantalla('inicio')
+      userActual={user}
+      onEntrar={async () => {
+        // Flujo 1: usuario ya logueado — procesar invitación y entrar al grupo
+        if (user && !user.isAnonymous) {
+          await procesarInvitacion(user, invData)
+          return
+        }
+        // Flujo 2: sin cuenta — entrar como anónimo
+        try {
+          const { signInAnonymously } = await import('firebase/auth')
+          const cred = await signInAnonymously(auth)
+          const uid = cred.user.uid
+          const { updateDoc, arrayUnion, setDoc, doc, getDoc } = await import('firebase/firestore')
+          const gSnap = await getDoc(doc(db, 'grupos', invData.grupoId))
+          if (gSnap.exists()) {
+            const grupo = gSnap.data()
+            const yaMiembro = (grupo.miembros || []).some(m => m.uid === uid)
+            if (!yaMiembro) {
+              await updateDoc(doc(db, 'grupos', invData.grupoId), {
+                miembros: arrayUnion({ uid, email: '', nombre: 'Invitado', rol: 'miembro' })
+              })
+              await setDoc(doc(db, 'users', uid, 'misGrupos', invData.grupoId), {
+                nombre: grupo.nombre, modulo: invData.modulo
+              })
+            }
+          }
+          window.history.replaceState({}, '', window.location.pathname)
+          setGrupoDestino({ grupoId: invData.grupoId, modulo: invData.modulo })
+          setInvId(null); setInvData(null)
+        } catch(e) { console.error(e) }
       }}
       onGoogle={async () => {
         setLoading(true)
@@ -538,7 +561,6 @@ export default function App() {
       onRegistrar={() => {
         window.history.replaceState({}, '', window.location.pathname)
         setInvId(null)
-        // invData se mantiene para procesar tras registro
       }}
     />
   )
