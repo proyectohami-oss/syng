@@ -474,14 +474,11 @@ export default function App() {
   }
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
+    const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u)
-      if (u && invData) {
-        await procesarInvitacion(u, invData)
-      }
     })
     return unsub
-  }, [invData])
+  }, [])
 
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
