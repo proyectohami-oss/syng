@@ -558,8 +558,12 @@ export default function App() {
       }}
       onGoogle={async () => {
         setLoading(true)
-        try { await signInWithPopup(auth, googleProvider) }
-        catch { }
+        try {
+          const result = await signInWithPopup(auth, googleProvider)
+          if (result.user && invData) {
+            await procesarInvitacion(result.user, invData)
+          }
+        } catch { }
         setLoading(false)
       }}
       onRegistrar={() => {
