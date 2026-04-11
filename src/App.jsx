@@ -429,6 +429,14 @@ export default function App() {
     const params = new URLSearchParams(window.location.search)
     const id = params.get('invitacion') || sessionStorage.getItem('syng_inv')
     if (!id) return
+    // Si estamos en WebView (WhatsApp, Instagram, etc) — redirigir a Safari
+    const ua = navigator.userAgent
+    const esWebView = /FBAN|FBAV|Instagram|WhatsApp|MicroMessenger/.test(ua) || 
+      ((/iPhone|iPod|iPad/.test(ua)) && !/Safari/.test(ua))
+    if (esWebView) {
+      window.location.href = 'https://syng-psi.vercel.app/?invitacion=' + id
+      return
+    }
     if (params.get('invitacion')) sessionStorage.setItem('syng_inv', id)
     setInvId(id)
     setInvCargando(true)
@@ -442,7 +450,7 @@ export default function App() {
         if (!gSnap.exists()) { setInvId(null); setInvCargando(false); return }
         const grupo = gSnap.data()
         setInvData({ grupoId: inv.grupoId, modulo: inv.modulo, grupoNombre: grupo.nombre, adminNombre: grupo.adminNombre || 'un administrador' })
-      } catch { setInvId(null) }
+      } catch(e) { console.error('ERROR INV:', e); setInvId(null) }
       setInvCargando(false)
     }
     cargarInv()
