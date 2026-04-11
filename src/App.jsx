@@ -566,7 +566,7 @@ export default function App() {
   // Módulos
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} />
   if (user && pantalla === 'listasuper')  return <ListaSuper  onVolver={() => setPantalla('inicio')} />
-  if (user && pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} />
+  if (user && pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} grupoInicialId={localStorage.getItem('syng_grupo_activo_pizarron')} />
 
   // Pantalla principal
   if (user) return (

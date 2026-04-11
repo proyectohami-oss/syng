@@ -45,7 +45,7 @@ function MiniMes({ anio, mes, hoy, anotaciones }) {
   )
 }
 
-export default function Pizarron({ onVolver }) {
+export default function Pizarron({ onVolver, grupoInicialId }) {
   const user = auth.currentUser
   const userId = user?.uid
   const userEmail = user?.email
@@ -97,7 +97,7 @@ export default function Pizarron({ onVolver }) {
 
   // — Grupos —
   const [grupos, setGrupos] = useState([])
-  const [grupoActivo, setGrupoActivo] = useState(() => localStorage.getItem('syng_grupo_activo_pizarron') || 'personal')
+  const [grupoActivo, setGrupoActivo] = useState(() => grupoInicialId || localStorage.getItem('syng_grupo_activo_pizarron') || 'personal')
   const [modalGrupos, setModalGrupos] = useState(false)
   const [modalCrearGrupo, setModalCrearGrupo] = useState(false)
   const [modalVerGrupo, setModalVerGrupo] = useState(null)
