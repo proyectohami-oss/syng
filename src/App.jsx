@@ -510,14 +510,13 @@ export default function App() {
 
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
 
-  // Si hay invitación en URL — bloquear login completamente
-  if (invCargando || invId) return (
-    invData ? null : <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#1a3a6b,#2563a8)', display:'flex', alignItems:'center', justifyContent:'center' }}>
+  // Pantalla de invitación — tiene prioridad sobre todo
+  if (invCargando) return (
+    <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#1a3a6b,#2563a8)', display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ color:'white', fontSize:'15px', opacity:0.7 }}>Cargando invitación...</div>
     </div>
   )
 
-  // Pantalla de invitación
   if (invData) return (
     <PantallaInvitacion
       invData={invData}
