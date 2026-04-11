@@ -542,52 +542,42 @@ export default function App() {
       invData={invData}
       userActual={user}
       onEntrar={async () => {
-        // Flujo 1: usuario ya logueado — procesar invitación y entrar al grupo
         if (user && !user.isAnonymous) {
+          // Ya logueado — procesar y entrar al grupo con todos los privilegios
           await procesarInvitacion(user, invData)
-          return
-        }
-        // Flujo 2: sin cuenta — entrar como anónimo
-        try {
-          const { signInAnonymously } = await import('firebase/auth')
-          const cred = await signInAnonymously(auth)
-          const uid = cred.user.uid
-          const { updateDoc, arrayUnion, setDoc, doc, getDoc } = await import('firebase/firestore')
-          const gSnap = await getDoc(doc(db, 'grupos', invData.grupoId))
-          if (gSnap.exists()) {
-            const grupo = gSnap.data()
-            const yaMiembro = (grupo.miembros || []).some(m => m.uid === uid)
-            if (!yaMiembro) {
-              await updateDoc(doc(db, 'grupos', invData.grupoId), {
-                miembros: arrayUnion({ uid, email: '', nombre: 'Invitado', rol: 'miembro' })
-              })
-              await setDoc(doc(db, 'users', uid, 'misGrupos', invData.grupoId), {
-                nombre: grupo.nombre, modulo: invData.modulo
-              })
+        } else {
+          // Sin cuenta — entrar como visitante anónimo
+          try {
+            const { signInAnonymously } = await import('firebase/auth')
+            const cred = await signInAnonymously(auth)
+            const uid = cred.user.uid
+            const gSnap = await getDoc(doc(db, 'grupos', invData.grupoId))
+            if (gSnap.exists()) {
+              const grupo = gSnap.data()
+              const yaMiembro = (grupo.miembros || []).some(m => m.uid === uid)
+              if (!yaMiembro) {
+                await updateDoc(doc(db, 'grupos', invData.grupoId), {
+                  miembros: arrayUnion({ uid, email: '', nombre: 'Invitado', rol: 'miembro' })
+                })
+                await setDoc(doc(db, 'users', uid, 'misGrupos', invData.grupoId), {
+                  nombre: grupo.nombre, modulo: invData.modulo
+                })
+              }
             }
-          }
-          window.history.replaceState({}, '', window.location.pathname)
-          setGrupoDestino({ grupoId: invData.grupoId, modulo: invData.modulo })
-          setInvId(null); setInvData(null)
-        } catch(e) { console.error(e) }
+            window.history.replaceState({}, '', window.location.pathname)
+            sessionStorage.removeItem('syng_inv')
+            localStorage.removeItem('syng_inv_pendiente')
+            setGrupoDestino({ grupoId: invData.grupoId, modulo: invData.modulo })
+            setInvId(null); setInvData(null)
+          } catch(e) { console.error(e) }
+        }
       }}
-      onGoogle={async () => {
-        setLoading(true)
-        if (invData) localStorage.setItem('syng_inv_pendiente', JSON.stringify(invData))
-        const esiOS = /iPhone|iPad|iPod/.test(navigator.userAgent)
-        try {
-          if (esiOS) {
-            await signInWithRedirect(auth, googleProvider)
-          } else {
-            const result = await signInWithPopup(auth, googleProvider)
-            if (result.user && invData) await procesarInvitacion(result.user, invData)
-          }
-        } catch { }
-        setLoading(false)
-      }}
-      onRegistrar={() => {
+      onIrLogin={() => {
+        // Guardar grupo destino para después del login
+        localStorage.setItem('syng_inv_pendiente', JSON.stringify(invData))
         window.history.replaceState({}, '', window.location.pathname)
-        setInvId(null)
+        sessionStorage.removeItem('syng_inv')
+        setInvId(null); setInvData(null)
       }}
     />
   )
