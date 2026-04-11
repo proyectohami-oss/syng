@@ -491,6 +491,8 @@ export default function App() {
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
     if (user && grupoDestino) {
+      // Guardar el grupo activo en localStorage para que el módulo lo lea
+      localStorage.setItem('syng_grupo_activo_' + grupoDestino.modulo, grupoDestino.grupoId)
       setPantalla(grupoDestino.modulo === 'pizarron' ? 'pizarron' : 'listasuper')
       setGrupoDestino(null)
     }
@@ -558,10 +560,11 @@ export default function App() {
       }}
       onGoogle={async () => {
         setLoading(true)
+        const invDataCopy = invData
         try {
           const result = await signInWithPopup(auth, googleProvider)
-          if (result.user && invData) {
-            await procesarInvitacion(result.user, invData)
+          if (result.user && invDataCopy) {
+            await procesarInvitacion(result.user, invDataCopy)
           }
         } catch { }
         setLoading(false)
