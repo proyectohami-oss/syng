@@ -550,8 +550,10 @@ export default function App() {
             }
           }
           window.history.replaceState({}, '', window.location.pathname)
-          setGrupoDestino({ grupoId: invData.grupoId, modulo: invData.modulo })
+          localStorage.setItem('syng_grupo_activo_pizarron', invData.grupoId)
+          setGrupoDestinoId(invData.grupoId)
           setInvId(null); setInvData(null)
+          setPantalla('pizarron')
         } catch(e) { console.error(e) }
       }}
       onGoogle={async () => {
