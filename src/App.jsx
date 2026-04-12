@@ -434,14 +434,11 @@ export default function App() {
     setInvCargando(true)
     const cargarInv = async () => {
       try {
-        const invSnap = await getDoc(doc(db, 'invitaciones', id))
-        if (!invSnap.exists()) { setInvId(null); setInvCargando(false); return }
-        const inv = invSnap.data()
-        if (inv.usado) { setInvId(null); setInvCargando(false); return }
-        const gSnap = await getDoc(doc(db, 'grupos', inv.grupoId))
-        if (!gSnap.exists()) { setInvId(null); setInvCargando(false); return }
-        const grupo = gSnap.data()
-        setInvData({ grupoId: inv.grupoId, modulo: inv.modulo, grupoNombre: grupo.nombre, adminNombre: grupo.adminNombre || 'un administrador' })
+        const res = await fetch('/api/invitacion?id=' + id)
+        if (!res.ok) { setInvId(null); setInvCargando(false); return }
+        const data = await res.json()
+        if (data.error) { setInvId(null); setInvCargando(false); return }
+        setInvData(data)
       } catch { setInvId(null) }
       setInvCargando(false)
     }
