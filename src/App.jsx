@@ -523,13 +523,15 @@ export default function App() {
   if (invData && !user) return (
     <PantallaInvitacion
       invData={invData}
-      onEntrar={() => {
-        // Entrar como visitante — limpiar URL y ir al módulo sin cuenta
-        window.history.replaceState({}, '', window.location.pathname)
-        setInvId(null); setInvData(null)
-        // Solo puede ver, no modificar — para esto simplemente lo mandamos al login
-        // con un mensaje de que necesita cuenta para participar
-        setPantalla('inicio')
+      onEntrar={async () => {
+        if (user && !user.isAnonymous) {
+          await procesarInvitacion(user, invData)
+        } else {
+          localStorage.setItem('syng_grupo_activo_pizarron', invData.grupoId)
+          window.history.replaceState({}, '', window.location.pathname)
+          setInvId(null); setInvData(null)
+          setPantalla('pizarron')
+        }
       }}
       onIrLogin={() => {
         window.history.replaceState({}, '', window.location.pathname)
