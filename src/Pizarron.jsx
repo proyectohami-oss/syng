@@ -132,7 +132,16 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
 
   // — Effects —
   useEffect(() => {
-    if (!userId) return
+    if (!userId) {
+      // Visitante sin cuenta — cargar grupo desde localStorage
+      const gId = localStorage.getItem('syng_grupo_activo_pizarron')
+      if (gId) {
+        getDoc(doc(db, 'grupos', gId)).then(gSnap => {
+          if (gSnap.exists()) setGrupos([{ id: gId, ...gSnap.data() }])
+        })
+      }
+      return
+    }
     const unsub = onSnapshot(collection(db, 'users', userId, 'misGrupos'), async snap => {
       const lista = []
       for (const d of snap.docs) {
