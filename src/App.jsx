@@ -544,7 +544,7 @@ export default function App() {
   // Módulos
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} />
   if (user && pantalla === 'listasuper')  return <ListaSuper  onVolver={() => setPantalla('inicio')} />
-  if (user && pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} />
+  if (pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} />
 
   // Pantalla principal
   if (user) return (
