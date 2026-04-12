@@ -97,8 +97,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
 
   // — Grupos —
   const [grupos, setGrupos] = useState([])
-  const [grupoActivo, setGrupoActivo] = useState(grupoInicialId || localStorage.getItem('syng_grupo_activo_pizarron') || 'personal')
-  useEffect(() => { if (grupoInicialId) setGrupoActivo(grupoInicialId) }, [grupoInicialId])
+  const [grupoActivo, setGrupoActivo] = useState(() => localStorage.getItem('syng_grupo_activo_pizarron') || 'personal')
   const [modalGrupos, setModalGrupos] = useState(false)
   const [modalCrearGrupo, setModalCrearGrupo] = useState(false)
   const [modalVerGrupo, setModalVerGrupo] = useState(null)
