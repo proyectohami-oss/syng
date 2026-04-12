@@ -120,6 +120,8 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
   const getPizarronRef = () => grupoActivo === 'personal'
     ? (userId ? collection(db, 'users', userId, 'pizarron') : null)
     : collection(db, 'grupos', grupoActivo, 'pizarron')
+  // Si visitante sin cuenta y grupoActivo es personal, usar el grupo del localStorage
+  const grupoActivoReal = (!userId && grupoActivo === 'personal') ? (localStorage.getItem('syng_grupo_activo_pizarron') || 'personal') : grupoActivo
 
   const buildCeldas = (a, m) => {
     const primer = new Date(a, m, 1).getDay()
