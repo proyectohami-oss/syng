@@ -419,7 +419,6 @@ export default function App() {
   const [invData, setInvData] = useState(null) // { grupoNombre, adminNombre, grupoId, modulo }
   const [invCargando, setInvCargando] = useState(false)
   const [grupoDestino, setGrupoDestino] = useState(null) // para navegar al grupo tras login
-  const [grupoDestinoId, setGrupoDestinoId] = useState(null)
 
   const t = TEXTOS[idioma] || TEXTOS.es
 
@@ -434,11 +433,14 @@ export default function App() {
     setInvCargando(true)
     const cargarInv = async () => {
       try {
-        const res = await fetch('/api/invitacion?id=' + id)
-        if (!res.ok) { setInvId(null); setInvCargando(false); return }
-        const data = await res.json()
-        if (data.error) { setInvId(null); setInvCargando(false); return }
-        setInvData(data)
+        const invSnap = await getDoc(doc(db, 'invitaciones', id))
+        if (!invSnap.exists()) { setInvId(null); setInvCargando(false); return }
+        const inv = invSnap.data()
+        if (inv.usado) { setInvId(null); setInvCargando(false); return }
+        const gSnap = await getDoc(doc(db, 'grupos', inv.grupoId))
+        if (!gSnap.exists()) { setInvId(null); setInvCargando(false); return }
+        const grupo = gSnap.data()
+        setInvData({ grupoId: inv.grupoId, modulo: inv.modulo, grupoNombre: grupo.nombre, adminNombre: grupo.adminNombre || 'un administrador' })
       } catch { setInvId(null) }
       setInvCargando(false)
     }
@@ -472,21 +474,20 @@ export default function App() {
   }
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
+    const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u)
+      if (u && invData) {
+        await procesarInvitacion(u, invData)
+      }
     })
     return unsub
-  }, [])
+  }, [invData])
 
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
     if (user && grupoDestino) {
-      const gId = grupoDestino.grupoId
-      const mod = grupoDestino.modulo
-      localStorage.setItem('syng_grupo_activo_pizarron', gId)
-      setGrupoDestinoId(gId)
+      setPantalla(grupoDestino.modulo === 'pizarron' ? 'pizarron' : 'listasuper')
       setGrupoDestino(null)
-      setTimeout(() => setPantalla(mod === 'pizarron' ? 'pizarron' : 'listasuper'), 50)
     }
   }, [user, grupoDestino])
 
@@ -516,42 +517,17 @@ export default function App() {
     </div>
   )
 
-  // Pantalla de invitación — se muestra SIEMPRE que haya invitación, sin importar auth
-  if (invData || invId) return (
+  // Pantalla de invitación
+  if (invData && !user) return (
     <PantallaInvitacion
       invData={invData}
-      userActual={user}
-      onEntrar={async () => {
-        // Flujo 1: usuario ya logueado — procesar invitación y entrar al grupo
-        if (user && !user.isAnonymous) {
-          await procesarInvitacion(user, invData)
-          return
-        }
-        // Flujo 2: sin cuenta — entrar como anónimo
-        try {
-          const { signInAnonymously } = await import('firebase/auth')
-          const cred = await signInAnonymously(auth)
-          const uid = cred.user.uid
-          const { updateDoc, arrayUnion, setDoc, doc, getDoc } = await import('firebase/firestore')
-          const gSnap = await getDoc(doc(db, 'grupos', invData.grupoId))
-          if (gSnap.exists()) {
-            const grupo = gSnap.data()
-            const yaMiembro = (grupo.miembros || []).some(m => m.uid === uid)
-            if (!yaMiembro) {
-              await updateDoc(doc(db, 'grupos', invData.grupoId), {
-                miembros: arrayUnion({ uid, email: '', nombre: 'Invitado', rol: 'miembro' })
-              })
-              await setDoc(doc(db, 'users', uid, 'misGrupos', invData.grupoId), {
-                nombre: grupo.nombre, modulo: invData.modulo
-              })
-            }
-          }
-          window.history.replaceState({}, '', window.location.pathname)
-          localStorage.setItem('syng_grupo_activo_pizarron', invData.grupoId)
-          setGrupoDestinoId(invData.grupoId)
-          setInvId(null); setInvData(null)
-          setPantalla('pizarron')
-        } catch(e) { console.error(e) }
+      onEntrar={() => {
+        // Entrar como visitante — limpiar URL y ir al módulo sin cuenta
+        window.history.replaceState({}, '', window.location.pathname)
+        setInvId(null); setInvData(null)
+        // Solo puede ver, no modificar — para esto simplemente lo mandamos al login
+        // con un mensaje de que necesita cuenta para participar
+        setPantalla('inicio')
       }}
       onGoogle={async () => {
         setLoading(true)
@@ -562,6 +538,7 @@ export default function App() {
       onRegistrar={() => {
         window.history.replaceState({}, '', window.location.pathname)
         setInvId(null)
+        // invData se mantiene para procesar tras registro
       }}
     />
   )
@@ -643,3 +620,4 @@ export default function App() {
       </div>
     </div>
   )
+}
