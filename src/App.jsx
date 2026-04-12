@@ -530,6 +530,7 @@ export default function App() {
         setPantalla('inicio')
       }}
       onGoogle={async () => {
+        if (invData) localStorage.setItem('syng_inv_pendiente', JSON.stringify(invData))
         setLoading(true)
         try { await signInWithPopup(auth, googleProvider) }
         catch { }
