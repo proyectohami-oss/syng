@@ -531,17 +531,9 @@ export default function App() {
         // con un mensaje de que necesita cuenta para participar
         setPantalla('inicio')
       }}
-      onGoogle={async () => {
-        if (invData) localStorage.setItem('syng_inv_pendiente', JSON.stringify(invData))
-        setLoading(true)
-        try { await signInWithPopup(auth, googleProvider) }
-        catch { }
-        setLoading(false)
-      }}
-      onRegistrar={() => {
+      onIrLogin={() => {
         window.history.replaceState({}, '', window.location.pathname)
-        setInvId(null)
-        // invData se mantiene para procesar tras registro
+        setInvId(null); setInvData(null)
       }}
     />
   )
