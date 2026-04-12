@@ -484,10 +484,12 @@ export default function App() {
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
     if (user && grupoDestino) {
-      setGrupoDestinoId(grupoDestino.grupoId)
-      localStorage.setItem('syng_grupo_activo_pizarron', grupoDestino.grupoId)
-      setPantalla(grupoDestino.modulo === 'pizarron' ? 'pizarron' : 'listasuper')
+      const gId = grupoDestino.grupoId
+      const mod = grupoDestino.modulo
+      localStorage.setItem('syng_grupo_activo_pizarron', gId)
+      setGrupoDestinoId(gId)
       setGrupoDestino(null)
+      setTimeout(() => setPantalla(mod === 'pizarron' ? 'pizarron' : 'listasuper'), 50)
     }
   }, [user, grupoDestino])
 
