@@ -488,6 +488,7 @@ export default function App() {
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
     if (user && grupoDestino) {
+      localStorage.setItem('syng_grupo_activo_pizarron', grupoDestino.grupoId)
       setPantalla(grupoDestino.modulo === 'pizarron' ? 'pizarron' : 'listasuper')
       setGrupoDestino(null)
     }
