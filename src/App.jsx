@@ -476,8 +476,10 @@ export default function App() {
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (u) => {
       setUser(u)
-      if (u && invData) {
-        await procesarInvitacion(u, invData)
+      const invPendiente = invData || JSON.parse(localStorage.getItem('syng_inv_pendiente') || 'null')
+      if (u && invPendiente) {
+        localStorage.removeItem('syng_inv_pendiente')
+        await procesarInvitacion(u, invPendiente)
       }
     })
     return unsub
