@@ -419,6 +419,7 @@ export default function App() {
   const [invData, setInvData] = useState(null) // { grupoNombre, adminNombre, grupoId, modulo }
   const [invCargando, setInvCargando] = useState(false)
   const [grupoDestino, setGrupoDestino] = useState(null) // para navegar al grupo tras login
+  const [grupoDestinoId, setGrupoDestinoId] = useState(null)
 
   const t = TEXTOS[idioma] || TEXTOS.es
 
@@ -483,6 +484,7 @@ export default function App() {
   // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
     if (user && grupoDestino) {
+      setGrupoDestinoId(grupoDestino.grupoId)
       localStorage.setItem('syng_grupo_activo_pizarron', grupoDestino.grupoId)
       setPantalla(grupoDestino.modulo === 'pizarron' ? 'pizarron' : 'listasuper')
       setGrupoDestino(null)
@@ -566,7 +568,7 @@ export default function App() {
   // Módulos
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} />
   if (user && pantalla === 'listasuper')  return <ListaSuper  onVolver={() => setPantalla('inicio')} />
-  if (user && pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} grupoInicialId={localStorage.getItem('syng_grupo_activo_pizarron')} />
+  if (user && pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} grupoInicialId={grupoDestinoId} />
 
   // Pantalla principal
   if (user) return (
