@@ -1,4 +1,4 @@
-export default function PantallaInvitacion({ invData, onEntrar, onIrLogin }) {
+export default function PantallaInvitacion({ invData, onEntrar }) {
   if (!invData) return null
   return (
     <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#0f2a4a,#185FA5,#534AB7)', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'40px 32px', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', gap:'24px' }}>
