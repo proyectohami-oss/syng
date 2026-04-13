@@ -22,10 +22,6 @@ export default function PantallaInvitacion({ invData, onEntrar, onIrLogin }) {
       <button onClick={onEntrar} style={{ width:'100%', maxWidth:'360px', padding:'18px', background:'white', color:'#185FA5', border:'none', borderRadius:'16px', fontSize:'17px', fontWeight:'700', cursor:'pointer' }}>
         Entrar al grupo
       </button>
-      <div style={{ textAlign:'center' }}>
-        <span style={{ color:'rgba(255,255,255,0.5)', fontSize:'13px' }}>¿Ya tienes tu propio Syng? </span>
-        <span onClick={onIrLogin} style={{ color:'white', fontSize:'13px', fontWeight:'600', textDecoration:'underline', cursor:'pointer' }}>Iniciar sesión</span>
-      </div>
     </div>
   )
 }
