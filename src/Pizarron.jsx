@@ -337,6 +337,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
 
   const agregarAnotacion = async () => {
     if (!userId) { setModalVisitante(true); return }
+    if (!userId) { setModalVisitante(true); return }
     if (!textoNuevo.trim()) return
     const repeatGroupId = fechasRepetir.length > 1 ? generarId() : null
     const nuevas = { ...anotaciones }
@@ -355,6 +356,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
 
   // — Anotaciones CRUD —
   const toggleRealizada = async (dia, id) => {
+    if (!userId) { setModalVisitante(true); return }
     if (!userId) { setModalVisitante(true); return }
     const key = getKey(anio, mes, dia)
     const lista = (anotaciones[key] || []).map(a => a.id === id ? { ...a, realizada: !a.realizada } : a)
