@@ -451,10 +451,7 @@ export default function App() {
           <div style={{ fontSize:'18px', fontWeight:'700', color:'#185FA5', marginBottom:'4px' }}>{t.pizarron}</div>
           <div style={{ color:'#888', fontSize:'14px' }}>{t.pizarronDesc}</div>
         </div>
-        <div onClick={() => setPantalla('listatareas')} style={{ background:'white', borderRadius:'20px', padding:'24px', marginBottom:'16px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', cursor:'pointer' }}>
-          <div style={{ fontSize:'18px', fontWeight:'700', color:'#534AB7', marginBottom:'4px' }}>{t.tareas}</div>
-          <div style={{ color:'#888', fontSize:'14px' }}>{t.tareasDesc}</div>
-        </div>
+
         <div onClick={() => setPantalla('listasuper')} style={{ background:'white', borderRadius:'20px', padding:'24px', marginBottom:'16px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', cursor:'pointer' }}>
           <div style={{ fontSize:'18px', fontWeight:'700', color:'#0F6E56', marginBottom:'4px' }}>{t.super}</div>
           <div style={{ color:'#888', fontSize:'14px' }}>{t.superDesc}</div>
