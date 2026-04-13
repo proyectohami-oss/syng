@@ -42,6 +42,19 @@ function MiniMes({ anio, mes, hoy, anotaciones }) {
         })}
       </div>
     </div>
+
+    {/* Modal visitante sin cuenta */}
+    {modalVisitante && (
+      <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:'24px'}}>
+        <div style={{background:'white',borderRadius:'24px',padding:'32px',maxWidth:'340px',width:'100%',textAlign:'center'}}>
+          <div style={{fontSize:'40px',marginBottom:'12px'}}>🎉</div>
+          <div style={{fontSize:'19px',fontWeight:'800',color:'#2C2C2A',marginBottom:'8px'}}>¡Bienvenido a Syng!</div>
+          <div style={{fontSize:'14px',color:'#888',marginBottom:'24px',lineHeight:'1.5'}}>Estás explorando como invitado. Para guardar tus tareas, colaborar y tener tu propio Syng, inicia sesión gratis.</div>
+          <button onClick={()=>{window.location.href='/'}} style={{width:'100%',padding:'14px',background:'linear-gradient(135deg,#534AB7,#185FA5)',color:'white',border:'none',borderRadius:'14px',fontSize:'16px',fontWeight:'700',cursor:'pointer',marginBottom:'10px'}}>Iniciar sesión</button>
+          <button onClick={()=>setModalVisitante(false)} style={{width:'100%',padding:'12px',background:'#f5f5f7',color:'#888',border:'none',borderRadius:'14px',fontSize:'15px',cursor:'pointer'}}>Seguir explorando</button>
+        </div>
+      </div>
+    )}
   )
 }
 
@@ -77,6 +90,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
 
   // — Edición de anotación existente —
   const [editando, setEditando] = useState(null)       // id de la anotación en edición
+  const [modalVisitante, setModalVisitante] = useState(false)
   const [textoEditar, setTextoEditar] = useState('')
   const [editModo, setEditModo] = useState(null)       // null | 'fecha' | 'repetir'
 
@@ -322,6 +336,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
   const esFechaSeleccionada = (d) => fechasRepetir.some(f => f.dia === d && f.mes === mesRepetir && f.anio === anioRepetir)
 
   const agregarAnotacion = async () => {
+    if (!userId) { setModalVisitante(true); return }
     if (!textoNuevo.trim()) return
     const repeatGroupId = fechasRepetir.length > 1 ? generarId() : null
     const nuevas = { ...anotaciones }
@@ -340,6 +355,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
 
   // — Anotaciones CRUD —
   const toggleRealizada = async (dia, id) => {
+    if (!userId) { setModalVisitante(true); return }
     const key = getKey(anio, mes, dia)
     const lista = (anotaciones[key] || []).map(a => a.id === id ? { ...a, realizada: !a.realizada } : a)
     setAnotaciones({ ...anotaciones, [key]: lista })
@@ -371,6 +387,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
 
   // — Edición —
   const iniciarEdicion = (a) => {
+    if (!userId) { setModalVisitante(true); return }
     setEditando(a.id)
     setTextoEditar(a.texto)
     setEditModo(null)
