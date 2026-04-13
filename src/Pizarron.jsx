@@ -352,6 +352,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
   const confirmarEliminarFn = (dia, anotacion) => setConfirmEliminar({ dia, anotacion })
 
   const ejecutarEliminar = async (soloEsta) => {
+    if (!userId) { setModalVisitante(true); setConfirmEliminar(null); return }
     if (!confirmEliminar) return
     const { dia, anotacion } = confirmEliminar
     const nuevas = { ...anotaciones }
