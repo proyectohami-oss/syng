@@ -42,6 +42,8 @@ function MiniMes({ anio, mes, hoy, anotaciones }) {
         })}
       </div>
     </div>
+  )
+}
 
 export default function Pizarron({ onVolver, grupoInicialId }) {
   const user = auth.currentUser
