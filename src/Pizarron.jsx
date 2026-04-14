@@ -636,6 +636,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
   if (cargando) return <div style={{minHeight:'100vh',display:'flex',alignItems:'center',justifyContent:'center',background:'#f5f5f7'}}><div style={{fontSize:'15px',color:'#aaa'}}>Cargando pizarrón...</div></div>
 
   return (
+    <>
     <div style={{minHeight:'100vh',background:'#f5f5f7',fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif'}}>
 
       {/* Header */}
@@ -956,7 +957,6 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
       )}
 
     </div>
-
     {modalVisitante && (
       <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:'24px'}}>
         <div style={{background:'white',borderRadius:'24px',padding:'32px',maxWidth:'340px',width:'100%',textAlign:'center'}}>
@@ -968,5 +968,6 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
         </div>
       </div>
     )}
+    </>
   )
 }
