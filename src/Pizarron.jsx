@@ -862,11 +862,8 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
                   {editando === a.id ? (
                     /* ── MODO EDICIÓN ── */
                     <div>
-                      {/* Fila: checkbox + input + guardar */}
+                      {/* Fila: input + guardar */}
                       <div style={{display:'flex',gap:'8px',marginBottom:'10px',alignItems:'center'}}>
-                        <button onClick={()=>toggleRealizada(modalDia,a.id)} style={{width:'22px',height:'22px',borderRadius:'6px',border:a.realizada?'none':'2px solid #d0d0d0',background:a.realizada?'#534AB7':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,...T}}>
-                          {a.realizada && <span style={{color:'white',fontSize:'13px'}}>✓</span>}
-                        </button>
                         <input value={textoEditar} onChange={e=>setTextoEditar(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarEdicion()} autoFocus style={{flex:1,padding:'6px 10px',borderRadius:'8px',border:'1.5px solid #534AB7',fontSize:'15px',outline:'none'}}/>
                         <button onClick={guardarEdicion} style={{background:'#534AB7',border:'none',borderRadius:'8px',padding:'6px 12px',color:'white',fontSize:'14px',...T}}>✓</button>
                       </div>
