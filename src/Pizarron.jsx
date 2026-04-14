@@ -642,7 +642,6 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
       {/* Header */}
       <div style={{background:'linear-gradient(135deg,#185FA5,#534AB7)',padding:'12px 16px'}}>
         <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-          <button onClick={onVolver} style={{background:'rgba(255,255,255,0.2)',border:'none',color:'white',borderRadius:'20px',padding:'8px 14px',fontSize:'14px',fontWeight:'500',...T}}>‹ Atrás</button>
           <div style={{color:'white',fontSize:'17px',fontWeight:'700',flex:1,textAlign:'center'}}>Pizarrón</div>
           <button onClick={()=>setModalGrupos(true)} style={{background:'rgba(255,255,255,0.25)',border:'1.5px solid rgba(255,255,255,0.5)',color:'white',borderRadius:'16px',padding:'8px 14px',fontSize:'13px',fontWeight:'600',display:'flex',alignItems:'center',gap:'4px',...T}}>
             <span style={{maxWidth:'72px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{nombreGrupoActivo}</span>

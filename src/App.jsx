@@ -436,7 +436,7 @@ export default function App() {
           <button onClick={() => setMostrarConfig(!mostrarConfig)} style={{ background:'rgba(255,255,255,0.2)', color:'white', border:'none', borderRadius:'20px', padding:'6px 12px', fontSize:'13px', cursor:'pointer' }}>
             {IDIOMAS.find(l => l.codigo === idioma)?.bandera}
           </button>
-          <button onClick={() => signOut(auth)} style={{ background:'rgba(255,255,255,0.2)', color:'white', border:'none', borderRadius:'20px', padding:'6px 14px', fontSize:'13px', cursor:'pointer' }}>{t.salir}</button>
+
         </div>
       </div>
       {mostrarConfig && (
