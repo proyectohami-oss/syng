@@ -3,6 +3,7 @@ import { auth, googleProvider, db } from './firebase'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth'
 import { doc, getDoc, updateDoc, setDoc, arrayUnion } from 'firebase/firestore'
 import Pizarron from './Pizarron'
+import PantallaInvitacion from './PantallaInvitacion'
 import ListaTareas from './ListaTareas'
 import ListaSuper from './ListaSuper'
 
