@@ -391,6 +391,16 @@ export default function App() {
     setLoading(false)
   }
 
+  useEffect(() => {
+    const handlePopState = () => setPantalla('inicio')
+    window.addEventListener('popstate', handlePopState)
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
+  useEffect(() => {
+    if (pantalla !== 'inicio') window.history.pushState({ pantalla }, '')
+  }, [pantalla])
+
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
 
   // Cargando invitación
