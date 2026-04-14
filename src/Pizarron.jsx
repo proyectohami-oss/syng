@@ -917,7 +917,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
                       <button onClick={()=>toggleRealizada(modalDia,a.id)} style={{width:'22px',height:'22px',borderRadius:'6px',border:a.realizada?'none':'2px solid #d0d0d0',background:a.realizada?'#534AB7':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:'1px',...T}}>
                         {a.realizada && <span style={{color:'white',fontSize:'13px'}}>✓</span>}
                       </button>
-                      <div style={{flex:1,fontSize:'15px',color:a.realizada?'#aaa':'#2C2C2A',background:a.realizada?'#FFFDE7':'transparent',borderRadius:'4px',padding:a.realizada?'2px 6px':'0',textDecoration:a.realizada?'line-through':'none',lineHeight:'1.4',wordBreak:'break-word'}}>{a.texto}</div>
+                      <div style={{flex:1,fontSize:'15px',color:a.realizada?'#aaa':'#2C2C2A',background:a.realizada?'#FFFDE7':'transparent',borderRadius:'4px',padding:a.realizada?'2px 6px':'0',textDecoration:a.realizada?'line-through':'none',lineHeight:'1.4',wordBreak:'break-word',textAlign:'left'}}>{a.texto}</div>
                       <div style={{display:'flex',gap:'4px',flexShrink:0}}>
                         <button onClick={e=>{e.stopPropagation();iniciarEdicion(a)}} style={{background:'#E8F0FE',border:'none',borderRadius:'8px',padding:'5px 8px',color:'#185FA5',fontSize:'18px',...T}}>✎</button>
                         <button onClick={e=>{e.stopPropagation();confirmarEliminarFn(modalDia,a)}} style={{background:'#FEECEC',border:'none',borderRadius:'8px',padding:'5px 8px',color:'#A32D2D',fontSize:'18px',...T}}>🗑</button>
