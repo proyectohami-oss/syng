@@ -243,7 +243,7 @@ function Sinyi({ idioma, nombre, pantalla }) {
 
   return (
     <>
-      <button onClick={activarManual} title="Sinyi" style={{ position:'fixed', bottom:'28px', right:'24px', width:'58px', height:'58px', borderRadius:'50%', border:`2px solid ${color}`, background: estado !== 'idle' ? `${color}22` : 'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, transition:'all 0.3s', boxShadow: estado !== 'idle' ? `0 0 0 6px ${color}22, 0 4px 20px ${color}44` : '0 4px 16px rgba(0,0,0,0.15)' }}>
+      <button onClick={activarManual} title="Sinyi" style={{ position:'fixed', bottom:'28px', right:'24px', width:'58px', height:'58px', borderRadius:'50%', border:`2px solid ${color}`, background: estado !== 'idle' ? `${color}22` : 'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, transition:'all 0.3s', boxShadow: estado !== 'idle' ? `0 0 0 6px ${color}22, 0 4px 20px ${color}44` : '0 4px 16px rgba(0,0,0,0.15)', display:'none' }}>
         {estado === 'escuchando' || estado === 'hablando' ? (
           <div style={{ display:'flex', alignItems:'center', gap:'3px', height:'22px' }}>
             {ondas.map((h,i) => <div key={i} style={{ width:'3px', height:`${h*20}px`, background:color, borderRadius:'2px', transition:'height 0.1s' }} />)}
