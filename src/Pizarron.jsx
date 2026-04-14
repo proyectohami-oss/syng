@@ -78,6 +78,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
   // — Edición de anotación existente —
   const [editando, setEditando] = useState(null)       // id de la anotación en edición
   const [modalVisitante, setModalVisitante] = useState(false)
+  const [seleccionadas, setSeleccionadas] = useState([])
   const [textoEditar, setTextoEditar] = useState('')
   const [editModo, setEditModo] = useState(null)       // null | 'fecha' | 'repetir'
 
@@ -832,8 +833,28 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
               </div>
             )}
 
-            {/* Lista de anotaciones */}
-            {(anotaciones[getKey(anio, mes, modalDia)] || []).map((a, i) => (
+            {/* Botón eliminar múltiple */}
+            {seleccionadas.length > 0 && (
+              <div style={{display:'flex',justifyContent:'flex-end',marginBottom:'8px'}}>
+                <button onClick={async()=>{
+                  if(!userId){setModalVisitante(true);return}
+                  const key=getKey(anio,mes,modalDia)
+                  const lista=(anotaciones[key]||[]).filter(a=>!seleccionadas.includes(a.id))
+                  const nuevas={...anotaciones,[key]:lista}
+                  setAnotaciones(nuevas)
+                  await guardarKey(key,lista)
+                  setSeleccionadas([])
+                }} style={{background:'#A32D2D',color:'white',border:'none',borderRadius:'10px',padding:'8px 16px',fontSize:'14px',fontWeight:'600',...T}}>
+                  🗑 Eliminar {seleccionadas.length} seleccionada{seleccionadas.length>1?'s':''}
+                </button>
+              </div>
+            )}
+
+            {/* Pendientes */}
+            {(anotaciones[getKey(anio,mes,modalDia)]||[]).filter(a=>!a.realizada).length > 0 && (
+              <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'4px'}}>Pendientes</div>
+            )}
+            {(anotaciones[getKey(anio, mes, modalDia)] || []).filter(a=>!a.realizada).map((a, i) => (
               <div key={a.id}>
                 {dragOverModal === i && <div style={{height:'3px',background:'#534AB7',borderRadius:'2px',margin:'3px 0'}}/>}
                 <div data-modalidx={i} onMouseDown={e=>onMouseDownModal(e,i)} onTouchStart={e=>onTouchStartModal(e,i)} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{padding:'8px 0',borderBottom:'1px solid #f5f5f7',userSelect:'none',opacity:draggingModalIdx===i?0.4:1,borderRadius:'8px',touchAction:'pan-y'}}>
@@ -914,10 +935,10 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
                   ) : (
                     /* ── MODO NORMAL ── */
                     <div style={{display:'flex',alignItems:'flex-start',gap:'10px'}}>
-                      <button onClick={()=>toggleRealizada(modalDia,a.id)} style={{width:'22px',height:'22px',borderRadius:'6px',border:a.realizada?'none':'2px solid #d0d0d0',background:a.realizada?'#534AB7':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:'1px',...T}}>
-                        {a.realizada && <span style={{color:'white',fontSize:'13px'}}>✓</span>}
+                      <button onClick={e=>{e.stopPropagation();const id=a.id;setSeleccionadas(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id])}} style={{width:'22px',height:'22px',borderRadius:'6px',border:seleccionadas.includes(a.id)?'none':'2px solid #d0d0d0',background:seleccionadas.includes(a.id)?'#A32D2D':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:'1px',...T}}>
+                        {seleccionadas.includes(a.id) && <span style={{color:'white',fontSize:'13px'}}>✓</span>}
                       </button>
-                      <div style={{flex:1,fontSize:'15px',color:a.realizada?'#aaa':'#2C2C2A',background:a.realizada?'#FFFDE7':'transparent',borderRadius:'4px',padding:a.realizada?'2px 6px':'0',textDecoration:a.realizada?'line-through':'none',lineHeight:'1.4',wordBreak:'break-word',textAlign:'left'}}>{a.texto}</div>
+                      <div onClick={()=>toggleRealizada(modalDia,a.id)} style={{flex:1,fontSize:'15px',color:a.realizada?'#aaa':'#2C2C2A',background:a.realizada?'#FFFDE7':'transparent',borderRadius:'4px',padding:a.realizada?'2px 6px':'0',textDecoration:a.realizada?'line-through':'none',lineHeight:'1.4',wordBreak:'break-word',textAlign:'left',...T}}>{a.texto}</div>
                       <div style={{display:'flex',gap:'4px',flexShrink:0}}>
                         <button onClick={e=>{e.stopPropagation();iniciarEdicion(a)}} style={{background:'#E8F0FE',border:'none',borderRadius:'8px',padding:'5px 8px',color:'#185FA5',fontSize:'18px',...T}}>✎</button>
                         <button onClick={e=>{e.stopPropagation();confirmarEliminarFn(modalDia,a)}} style={{background:'#FEECEC',border:'none',borderRadius:'8px',padding:'5px 8px',color:'#A32D2D',fontSize:'18px',...T}}>🗑</button>
@@ -928,6 +949,26 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
               </div>
             ))}
 
+            {/* Atendidas */}
+            {(anotaciones[getKey(anio,mes,modalDia)]||[]).filter(a=>a.realizada).length > 0 && (
+              <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'12px'}}>Atendidas</div>
+            )}
+            {(anotaciones[getKey(anio, mes, modalDia)] || []).filter(a=>a.realizada).map((a, i) => (
+              <div key={a.id}>
+                <div style={{padding:'8px 0',borderBottom:'1px solid #f5f5f7',userSelect:'none'}}>
+                  <div style={{display:'flex',alignItems:'flex-start',gap:'10px'}}>
+                    <button onClick={e=>{e.stopPropagation();const id=a.id;setSeleccionadas(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id])}} style={{width:'22px',height:'22px',borderRadius:'6px',border:seleccionadas.includes(a.id)?'none':'2px solid #d0d0d0',background:seleccionadas.includes(a.id)?'#A32D2D':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:'1px',...T}}>
+                      {seleccionadas.includes(a.id) && <span style={{color:'white',fontSize:'13px'}}>✓</span>}
+                    </button>
+                    <div onClick={()=>toggleRealizada(modalDia,a.id)} style={{flex:1,fontSize:'15px',color:'#aaa',background:'#FFFDE7',borderRadius:'4px',padding:'2px 6px',textDecoration:'line-through',lineHeight:'1.4',wordBreak:'break-word',textAlign:'left',...T}}>{a.texto}</div>
+                    <div style={{display:'flex',gap:'4px',flexShrink:0}}>
+                      <button onClick={e=>{e.stopPropagation();iniciarEdicion(a)}} style={{background:'#E8F0FE',border:'none',borderRadius:'8px',padding:'5px 8px',color:'#185FA5',fontSize:'18px',...T}}>✎</button>
+                      <button onClick={e=>{e.stopPropagation();confirmarEliminarFn(modalDia,a)}} style={{background:'#FEECEC',border:'none',borderRadius:'8px',padding:'5px 8px',color:'#A32D2D',fontSize:'18px',...T}}>🗑</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
             {!(anotaciones[getKey(anio,mes,modalDia)]||[]).length && <div style={{textAlign:'center',color:'#aaa',fontSize:'14px',padding:'20px 0'}}>No hay anotaciones para este día</div>}
           </div>
         </div>
