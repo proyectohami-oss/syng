@@ -196,7 +196,7 @@ export default function ListaSuper({ onVolver }) {
 
       {/* Header */}
       <div style={{ background: '#185FA5', padding: '12px 16px 0' }}>
-        <button onClick={onVolver} style={{ background: 'rgba(255,255,255,0.2)', border: 'none', color: 'white', borderRadius: '20px', padding: '4px 11px', cursor: 'pointer', fontSize: '12px', marginBottom: '8px', display: 'inline-block' }}>
+        <button onClick={onVolver} style={{ display:'none' }}>
           ‹ Atras
         </button>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingBottom: '12px' }}>
