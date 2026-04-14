@@ -694,7 +694,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
                     {lista.slice(0, 2).map((a, i) => (
                       <div key={i} draggable onDragStart={e=>onDragStartCalendario(e,key,i)} style={{display:'flex',alignItems:'flex-start',gap:'2px',marginBottom:'1px',userSelect:'none'}}>
                         <span onTouchStart={e=>{e.stopPropagation();limpiarDragCalendario();touchStartPos.current={x:e.touches[0].clientX,y:e.touches[0].clientY};isDraggingCalendario.current=true;dragItem.current={fromKey:key,idx:i};const g=document.createElement('div');g.style.cssText='position:fixed;padding:6px 12px;background:#534AB7;color:white;border-radius:10px;font-size:12px;pointer-events:none;z-index:9999;opacity:0.9;';g.innerText='moviendo...';document.body.appendChild(g);dragGhost.current=g;}} onTouchMove={onTouchMoveCalendario} onTouchEnd={onTouchEndCalendario} style={{fontSize:'13px',color:'#bbb',flexShrink:0,lineHeight:'1.3',padding:'0 2px',touchAction:'none',cursor:'grab'}}>⠿</span>
-                        <span onClick={()=>abrirModal(dia)} style={{fontSize:'9px',color:a.realizada?'#ccc':'#2C2C2A',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1,textDecoration:a.realizada?'line-through':'none',lineHeight:'1.3',...T}}>{a.texto}</span>
+                        <span onClick={()=>abrirModal(dia)} style={{fontSize:'9px',color:a.realizada?'#ccc':'#2C2C2A',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1,textDecoration:a.realizada?'line-through':'none',lineHeight:'1.3',textAlign:'left',...T}}>{a.texto}</span>
                       </div>
                     ))}
                     {lista.length === 0 && <div onClick={()=>abrirModal(dia)} style={{height:'44px',...T}}/>}
