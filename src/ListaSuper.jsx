@@ -47,8 +47,8 @@ export default function ListaSuper({ onVolver }) {
     { id: 'familia', nombre: 'Familia', color: '#5DCAA5', miembros: ['Tú', 'Mamá', 'Papá'] }
   ])
   const [grupoActivo, setGrupoActivo] = useState(0)
-  const [seleccionados, setSeleccionados] = useState({}) // { producto: { qty, done, dep } }
-  const [customProds, setCustomProds] = useState({})     // { dep: [prod, ...] }
+  const [seleccionados, setSeleccionados] = useState(() => { try { return JSON.parse(localStorage.getItem('syng_super_seleccionados') || '{}') } catch { return {} } })
+  const [customProds, setCustomProds] = useState(() => { try { return JSON.parse(localStorage.getItem('syng_super_custom') || '{}') } catch { return {} } })
   const [tab, setTab] = useState('cat')
   const [listSelMode, setListSelMode] = useState(false)
   const [listSelIds, setListSelIds] = useState([])
@@ -56,6 +56,10 @@ export default function ListaSuper({ onVolver }) {
   const [filtroList, setFiltroList] = useState('')
   const [modal, setModal] = useState(null)
   const [mData, setMData] = useState({})
+
+  // Guardar en localStorage cuando cambien
+  useEffect(() => { localStorage.setItem('syng_super_seleccionados', JSON.stringify(seleccionados)) }, [seleccionados])
+  useEffect(() => { localStorage.setItem('syng_super_custom', JSON.stringify(customProds)) }, [customProds])
 
   const catInputRef = useRef(null)
   const listInputRef = useRef(null)
@@ -121,6 +125,15 @@ export default function ListaSuper({ onVolver }) {
     setSeleccionados({})
     setListSelIds([])
     setListSelMode(false)
+    setModal(null)
+  }
+
+  function borrarMarcados() {
+    setSeleccionados(prev => {
+      const next = {}
+      Object.entries(prev).forEach(([k, v]) => { if (!v.done) next[k] = v })
+      return next
+    })
     setModal(null)
   }
 
@@ -427,7 +440,14 @@ export default function ListaSuper({ onVolver }) {
           )}
 
           {/* Confirmación borrar lista */}
-          {modal === 'confirm-borrar' && (
+          {modal === 'confirm-borrar-marcados' &&
+        <ModalConfirm
+          title="¿Borrar marcados?"
+          onConfirm={borrarMarcados}
+          onCancel={() => setModal(null)}
+        />
+      }
+      {modal === 'confirm-borrar' && (
             <ModalConfirm
               title="¿Borrar lista?"
               msg="Se eliminarán todos los productos de tu lista actual."
