@@ -379,9 +379,13 @@ export default function ListaSuper({ onVolver }) {
           )}
 
           {nSel > 0 && (
-            <div style={{ padding: '10px 14px', borderTop: '0.5px solid #e5e5e5' }}>
+            <div style={{ padding: '10px 14px', borderTop: '0.5px solid #e5e5e5', display:'flex', gap:'8px' }}>
+              <button onClick={() => setModal('confirm-borrar-marcados')}
+                style={{ flex:1, padding: '10px', border: '0.5px solid #A32D2D', borderRadius: '9px', background: 'none', cursor: 'pointer', fontSize: '13px', color: '#A32D2D', fontFamily: 'inherit', fontWeight: '500' }}>
+                Borrar marcados
+              </button>
               <button onClick={() => setModal('confirm-borrar')}
-                style={{ width: '100%', padding: '10px', border: '0.5px solid #A32D2D', borderRadius: '9px', background: 'none', cursor: 'pointer', fontSize: '13px', color: '#A32D2D', fontFamily: 'inherit', fontWeight: '500' }}>
+                style={{ flex:1, padding: '10px', border: '0.5px solid #A32D2D', borderRadius: '9px', background: 'none', cursor: 'pointer', fontSize: '13px', color: '#A32D2D', fontFamily: 'inherit', fontWeight: '500' }}>
                 Borrar lista
               </button>
             </div>
