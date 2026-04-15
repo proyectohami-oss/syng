@@ -867,7 +867,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
               return (
               <div key={a.id} style={{display:editando&&editando!==a.id?'none':'block'}}>
                 {dragOverModal === i && <div style={{height:'3px',background:'#534AB7',borderRadius:'2px',margin:'3px 0'}}/>}
-                <div data-modalidx={i} onMouseDown={e=>onMouseDownModal(e,i)} onTouchStart={e=>onTouchStartModal(e,i)} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{padding:'8px 0',borderBottom:'1px solid #f5f5f7',userSelect:'none',opacity:draggingModalIdx===i?0.4:1,borderRadius:'8px',touchAction:'pan-y'}}>
+                <div data-modalidx={i} style={{padding:'8px 0',borderBottom:'1px solid #f5f5f7',userSelect:'none',opacity:draggingModalIdx===i?0.4:1,borderRadius:'8px',touchAction:'pan-y'}}>
 
                   {editando === a.id ? (
                     /* ── MODO EDICIÓN ── */
@@ -942,10 +942,10 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
                   ) : (
                     /* ── MODO NORMAL ── */
                     <div style={{display:'flex',alignItems:'flex-start',gap:'10px'}}>
-                      <span style={{fontSize:'16px',color:'#ccc',flexShrink:0,lineHeight:'1.4',padding:'0 2px',cursor:'grab',touchAction:'none',...T}}>⠿</span>
                       <button onClick={e=>{e.stopPropagation();const id=a.id;setSeleccionadas(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id])}} style={{width:'22px',height:'22px',borderRadius:'6px',border:seleccionadas.includes(a.id)?'none':'2px solid #d0d0d0',background:seleccionadas.includes(a.id)?'#A32D2D':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:'1px',...T}}>
                         {seleccionadas.includes(a.id) && <span style={{color:'white',fontSize:'13px'}}>✓</span>}
                       </button>
+                      <span onTouchStart={e=>onTouchStartModal(e,i)} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} onMouseDown={e=>onMouseDownModal(e,i)} style={{fontSize:'18px',color:'#ccc',flexShrink:0,lineHeight:'1.4',padding:'0 2px',cursor:'grab',touchAction:'none',userSelect:'none'}}>⠿</span>
                       <div onClick={()=>toggleRealizada(modalDia,a.id)} style={{flex:1,fontSize:'15px',color:a.realizada?'#aaa':'#2C2C2A',background:a.realizada?'#FFFDE7':'transparent',borderRadius:'4px',padding:a.realizada?'2px 6px':'0',textDecoration:a.realizada?'line-through':'none',lineHeight:'1.4',wordBreak:'break-word',textAlign:'left',...T}}>{a.texto}</div>
                       <div style={{display:'flex',gap:'4px',flexShrink:0}}>
                         <button onClick={e=>{e.stopPropagation();iniciarEdicion(a)}} style={{background:'#E8F0FE',border:'none',borderRadius:'8px',padding:'5px 8px',color:'#185FA5',fontSize:'18px',...T}}>✎</button>
