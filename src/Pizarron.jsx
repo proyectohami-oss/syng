@@ -589,10 +589,18 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
       if (fromIdx !== toIdx) {
         const toKey = getKey(anio, mes, modalDia)
         const lista = [...(anotaciones[toKey] || [])]
-        const [item] = lista.splice(fromIdx, 1)
-        lista.splice(toIdx, 0, item)
-        setAnotaciones({ ...anotaciones, [toKey]: lista })
-        await guardarKey(toKey, lista)
+        // Reordenar solo pendientes, mantener atendidas al final
+        const pendientes = lista.filter(a=>!a.realizada)
+        const atendidas = lista.filter(a=>a.realizada)
+        const fromIdxP = pendientes.findIndex((_,i) => lista.indexOf(pendientes[i]) === fromIdx)
+        const toIdxP = pendientes.findIndex((_,i) => lista.indexOf(pendientes[i]) === toIdx)
+        if (fromIdxP !== -1 && toIdxP !== -1) {
+          const [item] = pendientes.splice(fromIdxP, 1)
+          pendientes.splice(toIdxP, 0, item)
+        }
+        const nuevaLista = [...pendientes, ...atendidas]
+        setAnotaciones({ ...anotaciones, [toKey]: nuevaLista })
+        await guardarKey(toKey, nuevaLista)
       }
     }
     setDragOverModal(null); setDraggingModalIdx(null); isDraggingModal.current = false; modalDragItem.current = null
@@ -854,7 +862,9 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
             {(anotaciones[getKey(anio,mes,modalDia)]||[]).filter(a=>!a.realizada).length > 0 && (
               <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'4px'}}>Pendientes</div>
             )}
-            {(anotaciones[getKey(anio, mes, modalDia)] || []).filter(a=>!a.realizada).map((a, i) => (
+            {(anotaciones[getKey(anio, mes, modalDia)] || []).filter(a=>!a.realizada).map((a) => {
+              const i = (anotaciones[getKey(anio,mes,modalDia)]||[]).findIndex(x=>x.id===a.id)
+              return (
               <div key={a.id} style={{display:editando&&editando!==a.id?'none':'block'}}>
                 {dragOverModal === i && <div style={{height:'3px',background:'#534AB7',borderRadius:'2px',margin:'3px 0'}}/>}
                 <div data-modalidx={i} onMouseDown={e=>onMouseDownModal(e,i)} onTouchStart={e=>onTouchStartModal(e,i)} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{padding:'8px 0',borderBottom:'1px solid #f5f5f7',userSelect:'none',opacity:draggingModalIdx===i?0.4:1,borderRadius:'8px',touchAction:'pan-y'}}>
@@ -944,7 +954,8 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
                   )}
                 </div>
               </div>
-            ))}
+              )}
+            )}
 
             {/* Atendidas */}
             {(anotaciones[getKey(anio,mes,modalDia)]||[]).filter(a=>a.realizada).length > 0 && (
