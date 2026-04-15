@@ -4,18 +4,144 @@ const SV = '✓'
 
 const DEP_ORDER = [
   'Lácteos','Carnes y embutidos','Frutas y verduras','Abarrotes',
-  'Panadería','Bebidas','Limpieza','Higiene personal'
+  'Panadería','Bebidas','Limpieza','Higiene personal',
+  'Congelados','Snacks y dulces','Artículos de cocina','Bebés','Mascotas','Farmacia básica'
 ]
 
 const CATALOGO_BASE = {
-  'Lácteos': ['Crema','Jocoque','Leche entera','Leche light','Mantequilla','Queso manchego','Queso Oaxaca','Yogur natural'],
-  'Carnes y embutidos': ['Bistec de res','Carne molida','Chorizo','Jamón','Pechuga de pollo','Pollo entero','Salchicha','Tocino'],
-  'Frutas y verduras': ['Aguacate','Ajo','Cebolla','Chile serrano','Lechuga','Limón','Manzana','Naranja','Papa','Plátano','Tomate','Zanahoria'],
-  'Abarrotes': ['Aceite','Aceite de oliva','Arroz blanco','Atún','Azúcar','Frijol negro','Frijol pinto','Harina','Mayonesa','Pasta','Pasta para lasaña','Sal','Salsa','Sardina'],
-  'Panadería': ['Bolillo','Galletas marías','Galletas maravillas','Pan blanco','Pan integral','Tortillas'],
-  'Bebidas': ['Agua natural','Café en grano','Café molido','Café soluble','Jugo de naranja','Leche de soya','Refresco'],
-  'Limpieza': ['Cloro','Detergente','Fabuloso','Jabón de trastes Salvo','Jerga','Multiusos','Pinol','Suavitel','Vanish'],
-  'Higiene personal': ['Desodorante','Jabón de baño','Papel higiénico','Pasta dental','Shampoo']
+  'Lácteos': [
+    'Crema','Crema ácida','Jocoque','Jocoque seco','Leche condensada','Leche descremada',
+    'Leche entera','Leche evaporada','Leche light','Leche sin lactosa','Mantequilla',
+    'Mantequilla sin sal','Margarina','Queso amarillo','Queso Chihuahua','Queso cottage',
+    'Queso crema','Queso fresco','Queso manchego','Queso Oaxaca','Queso panela',
+    'Queso parmesano','Queso ricotta','Requesón','Yogur bebible','Yogur griego',
+    'Yogur natural','Yogur sin azúcar','Crema para batir','Leche de almendras'
+  ],
+  'Carnes y embutidos': [
+    'Bistec de res','Carne de cerdo','Carne molida','Carne para asar','Chambarete',
+    'Chuleta de cerdo','Chorizo','Costilla de res','Costilla de cerdo','Filete de res',
+    'Jamón','Jamón serrano','Lomo de cerdo','Milanesa de res','Milanesa de pollo',
+    'Pechuga de pollo','Pierna de pollo','Pollo entero','Salchicha','Salchicha de pavo',
+    'Tocino','Atún en lata','Camarón','Filete de pescado','Mariscos','Salami',
+    'Mortadela','Pepperoni','Longaniza','Barbacoa'
+  ],
+  'Frutas y verduras': [
+    'Aguacate','Ajo','Apio','Arándanos','Betabel','Brócoli','Calabacita','Calabaza',
+    'Cebolla','Cebolla morada','Cebollín','Chile ancho','Chile chipotle','Chile güero',
+    'Chile habanero','Chile jalapeño','Chile mulato','Chile pasilla','Chile poblano',
+    'Chile serrano','Chícharo','Cilantro','Col','Coliflor','Durazno','Ejote',
+    'Elote','Espárrago','Espinaca','Fresa','Granada','Guayaba','Higo','Hongos',
+    'Jitomate','Kiwi','Lechuga','Lechuga romanita','Limón','Mandarina','Mango',
+    'Manzana','Maracuyá','Melón','Mora','Naranja','Nopales','Papa','Papaya',
+    'Pepino','Perejil','Pera','Piña','Pimiento','Plátano','Sandía','Tomate',
+    'Tomate cherry','Uvas','Zanahoria','Zucchini','Alcachofa','Camote'
+  ],
+  'Abarrotes': [
+    'Aceite','Aceite de coco','Aceite de oliva','Aceite de oliva extra virgen',
+    'Aceitunas','Adobo','Ajo en polvo','Albahaca','Arroz blanco','Arroz integral',
+    'Atún','Azúcar','Azúcar mascabado','Bicarbonato','Cajeta','Canela','Chiles en vinagre',
+    'Chocolate','Coco rallado','Comino','Consomé de pollo','Crema de cacahuate',
+    'Cúrcuma','Curry','Chile en polvo','Extracto de vainilla','Fécula de maíz',
+    'Frijol negro','Frijol pinto','Frijol bayo','Gelatina','Granos de café',
+    'Harina','Harina integral','Hierbas de olor','Honey','Jamoncillo',
+    'Ketchup','Laurel','Lentejas','Levadura','Macarrón','Maicena',
+    'Miel de abeja','Miel de maple','Mostaza','Nuez','Orégano',
+    'Papel aluminio','Papel encerado','Pasta','Pasta para lasaña','Pepinillos',
+    'Pimienta negra','Pimienta blanca','Polvo para hornear','Sal','Sal de mar',
+    'Salsa catsup','Salsa inglesa','Salsa picante','Salsa soya','Salsa valentina',
+    'Sardina','Sopa de pasta','Sopa de arroz','Sopa instantánea','Splenda',
+    'Stevia','Tabasco','Tomillo','Tortillas de harina','Tuna en lata',
+    'Vinagre','Vinagre balsámico','Cajeta','Chamoy','Amaranto',
+    'Avena','Linaza','Chía','Granola','Cereales','Mermelada',
+    'Mantequilla de maní','Nutella','Cajeta de membrillo'
+  ],
+  'Panadería': [
+    'Bagel','Bolillo','Baguette','Croissant','Galletas de avena','Galletas marías',
+    'Galletas maravillas','Galletas saladas','Muffin','Pan blanco','Pan de caja integral',
+    'Pan de dulce','Pan de hot dog','Pan de hamburguesa','Pan integral','Pan multigrano',
+    'Pan pita','Pan sin gluten','Tortillas','Waffles','Donas','Conchas'
+  ],
+  'Bebidas': [
+    'Agua mineral','Agua natural','Agua saborizada','Bebida energética','Bebida isotónica',
+    'Café en grano','Café molido','Café soluble','Café descafeinado','Cerveza',
+    'Champagne','Chocolate en polvo','Cidra','Clamato','Coctel de frutas',
+    'Jamaica','Jugo de manzana','Jugo de naranja','Jugo de uva','Leche de almendras',
+    'Leche de coco','Leche de soya','Limonada','Naranjada','Refresco',
+    'Sidra','Té verde','Té negro','Té de manzanilla','Tepache',
+    'Tonicwater','Vino blanco','Vino rosado','Vino tinto','Vino lambrusco',
+    'Whisky','Ron','Vodka','Tequila','Mezcal'
+  ],
+  'Limpieza': [
+    'Ariel','Cloro','Cloro para ropa de color','Desengrasante','Detergente en polvo',
+    'Detergente líquido','Escoba','Esponja','Fabuloso','Fibra de acero',
+    'Guantes de hule','Jabón de trastes','Jabón de trastes Salvo líquido',
+    'Jerga','Limpiador de baño','Limpiador multiusos','Mistol',
+    'Multiusos','Papel de cocina','Pinol','Pledger','Roma',
+    'Sanitas','Suavitel','Vanish','Vim','Zest',
+    'Bolsas de basura','Bolsas ziploc','Rastrillo de piso','Trapeador',
+    'Aromatizante','Mata insectos','Raid'
+  ],
+  'Higiene personal': [
+    'Acondicionador','Algodón','Bloqueador solar','Ciertos días','Cepillo de dientes',
+    'Condón','Crema corporal','Crema facial','Desodorante','Enjuague bucal',
+    'Exfoliante','Gel para cabello','Hilo dental','Jabón de baño',
+    'Jabón íntimo','Loción','Mascarilla facial','Máquina de afeitar',
+    'Papel higiénico','Pasta dental','Rastrillos','Sérum',
+    'Shampoo','Shampoo seco','Tampones','Tónico facial',
+    'Toallas húmedas','Toallas sanitarias','Vitaminas','Pañuelos desechables',
+    'Talco','Vaselina','Alcohol','Agua oxigenada'
+  ],
+  'Congelados': [
+    'Burrito congelado','Caldo de res congelado','Dedos de pescado',
+    'Elote congelado','Empanadas congeladas','Fresas congeladas',
+    'Helado','Lasaña congelada','Malteada','Mezcla de vegetales',
+    'Nuggets de pollo','Paletas','Papa a la francesa','Pizza congelada',
+    'Pollo empanizado','Taquitos congelados','Waffles congelados',
+    'Edamame','Mango congelado','Betabel congelado'
+  ],
+  'Snacks y dulces': [
+    'Botana de maíz','Cacahuates','Cajeta','Caramelos','Chicharrón',
+    'Chicles','Chocorroles','Chocolates','Doritos','Dulces de tamarindo',
+    'Frituras','Gansito','Gomitas','Hot Cheetos','Lunetas',
+    'Maíz palomero','Mazapán','Obleas','Palomitas de microondas',
+    'Papas fritas','Pasas','Pay de queso','Pelon Pelo Rico',
+    'Pistaches','Pretzels','Rielito','Sabritas','Takis',
+    'Tostadas','Turrones','Nuez de la India'
+  ],
+  'Artículos de cocina': [
+    'Bolsas de basura','Bolsas para sandwich','Cubiertos desechables',
+    'Filtros de café','Foil de aluminio','Horno de microondas',
+    'Lavavajillas','Moldes para hornear','Palillos de madera',
+    'Papel encerado','Papel para hornear','Platos desechables',
+    'Popotes','Porta vasos','Recipientes de plástico',
+    'Servilletas','Tazas desechables','Tenedores desechables',
+    'Toallas de papel','Vasos desechables','Palillos de dientes',
+    'Hilo cáñamo','Cuchillos desechables'
+  ],
+  'Bebés': [
+    'Biberón','Chupón','Crema para rozaduras','Formula láctea',
+    'Jabón para bebé','Jugo para bebé','Leche de fórmula',
+    'Pañales','Pañitos húmedos','Papilla de frutas',
+    'Papilla de verduras','Pasta dental para bebé','Polvo para bebé',
+    'Ropa interior','Shampoo para bebé','Silla para auto',
+    'Talco para bebé','Termómetro','Ungüento','Vitaminas para bebé'
+  ],
+  'Mascotas': [
+    'Alimento para gato','Alimento para perro','Arena para gato',
+    'Cama para mascota','Collar antipulgas','Correa',
+    'Galletas para perro','Juguete para gato','Juguete para perro',
+    'Medicamento antipulgas','Ropa para mascota','Shampoo para mascotas',
+    'Snack para gato','Snack para perro','Vitaminas para mascotas',
+    'Bebedero','Comedero','Jaula'
+  ],
+  'Farmacia básica': [
+    'Alcohol','Agua oxigenada','Antigripal','Antiácido',
+    'Aspirina','Benzal','Crema antibiótica','Gasas',
+    'Ibuprofeno','Loperamida','Omeprazol','Paracetamol',
+    'Pastillas para la tos','Pomada','Suero oral',
+    'Termómetro','Tiritas','Vitamina C',
+    'Vitamina D','Zinc'
+  ]
 }
 
 const GRUPO_COLORS = ['#5DCAA5','#378ADD','#D85A30','#7F77DD','#1D9E75','#BA7517']
