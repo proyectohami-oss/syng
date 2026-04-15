@@ -855,7 +855,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
               <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'4px'}}>Pendientes</div>
             )}
             {(anotaciones[getKey(anio, mes, modalDia)] || []).filter(a=>!a.realizada).map((a, i) => (
-              <div key={a.id}>
+              <div key={a.id} style={{display:editando&&editando!==a.id?'none':'block'}}>
                 {dragOverModal === i && <div style={{height:'3px',background:'#534AB7',borderRadius:'2px',margin:'3px 0'}}/>}
                 <div data-modalidx={i} onMouseDown={e=>onMouseDownModal(e,i)} onTouchStart={e=>onTouchStartModal(e,i)} onTouchMove={onTouchMoveModal} onTouchEnd={onTouchEndModal} style={{padding:'8px 0',borderBottom:'1px solid #f5f5f7',userSelect:'none',opacity:draggingModalIdx===i?0.4:1,borderRadius:'8px',touchAction:'pan-y'}}>
 
@@ -951,7 +951,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
               <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'12px'}}>Atendidas</div>
             )}
             {(anotaciones[getKey(anio, mes, modalDia)] || []).filter(a=>a.realizada).map((a, i) => (
-              <div key={a.id}>
+              <div key={a.id} style={{display:editando&&editando!==a.id?'none':'block'}}>
                 <div style={{padding:'8px 0',borderBottom:'1px solid #f5f5f7',userSelect:'none'}}>
                   <div style={{display:'flex',alignItems:'flex-start',gap:'10px'}}>
                     <button onClick={e=>{e.stopPropagation();const id=a.id;setSeleccionadas(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id])}} style={{width:'22px',height:'22px',borderRadius:'6px',border:seleccionadas.includes(a.id)?'none':'2px solid #d0d0d0',background:seleccionadas.includes(a.id)?'#A32D2D':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:'1px',...T}}>
