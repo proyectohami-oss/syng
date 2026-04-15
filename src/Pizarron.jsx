@@ -942,6 +942,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
                   ) : (
                     /* ── MODO NORMAL ── */
                     <div style={{display:'flex',alignItems:'flex-start',gap:'10px'}}>
+                      <span style={{fontSize:'16px',color:'#ccc',flexShrink:0,lineHeight:'1.4',padding:'0 2px',cursor:'grab',touchAction:'none',...T}}>⠿</span>
                       <button onClick={e=>{e.stopPropagation();const id=a.id;setSeleccionadas(prev=>prev.includes(id)?prev.filter(x=>x!==id):[...prev,id])}} style={{width:'22px',height:'22px',borderRadius:'6px',border:seleccionadas.includes(a.id)?'none':'2px solid #d0d0d0',background:seleccionadas.includes(a.id)?'#A32D2D':'white',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,marginTop:'1px',...T}}>
                         {seleccionadas.includes(a.id) && <span style={{color:'white',fontSize:'13px'}}>✓</span>}
                       </button>
