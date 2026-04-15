@@ -411,7 +411,7 @@ export default function ListaSuper({ onVolver }) {
                       <div style={{ width: '20px', height: '20px', borderRadius: '5px', border: isSel ? 'none' : '1.5px solid #ccc', background: isSel ? '#185FA5' : 'white', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '12px', color: 'white', transition: 'all .15s' }}>
                         {isSel ? '✓' : ''}
                       </div>
-                      <div style={{ flex: 1, fontSize: '13px', color: isSel ? '#0C447C' : '#2C2C2A', fontWeight: isSel ? '500' : '400' }}>{p}</div>
+                      <div style={{ flex: 1, fontSize: '13px', color: isSel ? '#0C447C' : '#2C2C2A', fontWeight: isSel ? '500' : '400', textAlign: 'left' }}>{p}</div>
                       {isSel && (
                         <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <button onClick={() => cambiarQty(p, -1)} style={{ width: '26px', height: '26px', borderRadius: '5px', background: '#B5D4F4', border: '0.5px solid #85B7EB', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#0C447C' }}>−</button>
