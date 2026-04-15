@@ -490,7 +490,7 @@ export default function ListaSuper({ onVolver }) {
                             {d.done ? '✓' : ''}
                           </div>
                         )}
-                        <div style={{ flex: 1, fontSize: '13px', color: d.done ? '#aaa' : '#2C2C2A', textDecoration: d.done ? 'line-through' : 'none' }}>{p}</div>
+                        <div style={{ flex: 1, fontSize: '13px', color: d.done ? '#aaa' : '#2C2C2A', textDecoration: d.done ? 'line-through' : 'none', textAlign: 'left' }}>{p}</div>
                         <div onClick={e => e.stopPropagation()} style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
                           <button onClick={() => cambiarQty(p, -1)} style={{ width: '26px', height: '26px', borderRadius: '5px', background: '#F5F5F7', border: '0.5px solid #e5e5e5', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#2C2C2A' }}>−</button>
                           <span style={{ fontSize: '13px', fontWeight: '500', minWidth: '20px', textAlign: 'center' }}>{d.qty}</span>
