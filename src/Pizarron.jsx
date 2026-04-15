@@ -175,6 +175,37 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
     return () => unsub()
   }, [userId, grupoActivo])
 
+  // — Mover tareas pendientes de días anteriores al día de hoy (solo pizarrón personal) —
+  useEffect(() => {
+    if (!userId || grupoActivo !== 'personal') return
+    if (Object.keys(anotaciones).length === 0) return
+    const hoyKey = getKey(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
+    const nuevas = { ...anotaciones }
+    const promises = []
+    let haycambios = false
+
+    Object.keys(nuevas).forEach(key => {
+      if (key === hoyKey) return
+      const partes = key.split('-').map(Number)
+      const fechaKey = new Date(partes[0], partes[1], partes[2])
+      if (fechaKey >= new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())) return
+      const pendientes = (nuevas[key] || []).filter(a => !a.realizada)
+      if (pendientes.length === 0) return
+      // Mover pendientes al día de hoy
+      nuevas[hoyKey] = [...(nuevas[hoyKey] || []), ...pendientes.map(a => ({...a, dia: hoy.getDate(), mes: hoy.getMonth(), anio: hoy.getFullYear()}))]
+      nuevas[key] = (nuevas[key] || []).filter(a => a.realizada)
+      promises.push(guardarKey(hoyKey, nuevas[hoyKey]))
+      if (nuevas[key].length === 0) promises.push(guardarKey(key, []))
+      else promises.push(guardarKey(key, nuevas[key]))
+      hayambios = true
+    })
+
+    if (hayambios) {
+      setAnotaciones(nuevas)
+      Promise.all(promises)
+    }
+  }, [anotaciones, grupoActivo, userId])
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const invId = params.get('invitacion')
