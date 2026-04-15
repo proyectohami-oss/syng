@@ -837,16 +837,18 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
       {/* Modal del día */}
       {modalDia && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.4)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:100}} onClick={e=>{if(e.target===e.currentTarget)cerrarModal()}}>
-          <div style={{background:'white',borderRadius:'24px 24px 0 0',width:'100%',maxWidth:'600px',maxHeight:'88vh',overflowY:'auto',padding:'24px',overscrollBehavior:'contain',touchAction:'pan-y'}} onClick={e=>e.stopPropagation()}>
+          <div style={{background:'white',borderRadius:'24px 24px 0 0',width:'100%',maxWidth:'600px',maxHeight:'88vh',display:'flex',flexDirection:'column',overscrollBehavior:'contain'}} onClick={e=>e.stopPropagation()}>
 
-            {/* Título del día */}
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
-              <div style={{fontSize:'18px',fontWeight:'700',color:'#2C2C2A'}}>{modalDia} de {MESES[mes]} {anio}</div>
-              <button onClick={cerrarModal} style={{background:'#f5f5f7',border:'none',borderRadius:'50%',width:'32px',height:'32px',fontSize:'16px',color:'#888',...T}}>✕</button>
-            </div>
+            {/* Header fijo */}
+            <div style={{padding:'24px 24px 0 24px',flexShrink:0}}>
+              {/* Título del día */}
+              <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'16px'}}>
+                <div style={{fontSize:'18px',fontWeight:'700',color:'#2C2C2A'}}>{modalDia} de {MESES[mes]} {anio}</div>
+                <button onClick={cerrarModal} style={{background:'#f5f5f7',border:'none',borderRadius:'50%',width:'32px',height:'32px',fontSize:'16px',color:'#888',...T}}>✕</button>
+              </div>
 
-            {/* Input nueva anotación — oculto cuando hay edición activa */}
-            <div style={{marginBottom:'12px',display:editando?'none':'block'}}>
+              {/* Input nueva anotación — oculto cuando hay edición activa */}
+              <div style={{marginBottom:'12px',display:editando?'none':'block'}}>
               <div style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
                 <input value={textoNuevo} onChange={e=>setTextoNuevo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&agregarAnotacion()} placeholder="Nueva anotación..." style={{flex:1,padding:'10px 14px',borderRadius:'10px',border:'1.5px solid #e5e5e5',fontSize:'15px',outline:'none'}}/>
                 <button onClick={agregarAnotacion} style={{background:'linear-gradient(135deg,#185FA5,#534AB7)',color:'white',border:'none',borderRadius:'10px',padding:'10px 18px',fontWeight:'600',fontSize:'16px',...T}}>+</button>
@@ -873,6 +875,11 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
                 <div style={{marginTop:'8px',fontSize:'12px',color:'#534AB7',textAlign:'center'}}>{fechasRepetir.length} fecha{fechasRepetir.length!==1?'s':''} seleccionada{fechasRepetir.length!==1?'s':''}</div>
               </div>
             )}
+
+            </div>{/* fin header fijo */}
+
+            {/* Contenido scrolleable */}
+            <div style={{overflowY:'auto',flex:1,padding:'0 24px 24px 24px',touchAction:'pan-y'}}>
 
             {/* Botón eliminar múltiple */}
             {seleccionadas.length > 0 && (
@@ -1012,6 +1019,7 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
               </div>
             ))}
             {!(anotaciones[getKey(anio,mes,modalDia)]||[]).length && <div style={{textAlign:'center',color:'#aaa',fontSize:'14px',padding:'20px 0'}}>No hay anotaciones para este día</div>}
+            </div>{/* fin scrolleable */}
           </div>
         </div>
       )}
