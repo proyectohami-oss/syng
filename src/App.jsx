@@ -249,7 +249,7 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
     rec.lang = t.vozVoz; rec.continuous = true; rec.interimResults = false
     rec.onresult = (e) => {
       const txt = e.results[e.results.length-1][0].transcript.toLowerCase()
-      if (!activadaRef.current && (txt.includes('sinyi') || txt.includes('siniy') || txt.includes('sing'))) {
+      if (!activadaRef.current && (txt.includes('sinyi') || txt.includes('siniy') || txt.includes('sing') || txt.includes('syng') || txt.includes('siny') || txt.includes('singi') || txt.includes('sin yi'))) {
         activadaRef.current = true
         rec.stop()
         hablar(saludos[Math.floor(Math.random() * saludos.length)])
