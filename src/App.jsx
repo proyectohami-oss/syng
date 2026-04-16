@@ -197,7 +197,7 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
     const voz = voces.find(v => v.lang.startsWith(idioma) && v.name.toLowerCase().includes('female'))
       || voces.find(v => v.lang.startsWith(idioma)) || voces.find(v => v.lang.startsWith('es'))
     if (voz) u.voice = voz
-    u.onend = () => { activadaRef.current = false; iniciarWake() }
+    u.onend = () => { activadaRef.current = false; setTimeout(iniciarWake, 300) }
     window.speechSynthesis.speak(u)
   }
 
