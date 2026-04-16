@@ -177,6 +177,24 @@ export default function Pizarron({ onVolver, grupoInicialId }) {
 
   // — Mover tareas pendientes de días anteriores al día de hoy (solo pizarrón personal) —
   const moverPendientesRef = useRef(false)
+
+  // — Listener de Sinyi —
+  useEffect(() => {
+    const handleAgregarTarea = async (e) => {
+      const { texto, dia, mes: m, anio: a } = e.detail
+      if (!userId) return
+      const key = `${a}-${m}-${dia}`
+      const lista = [...(anotaciones[key] || []), { id: generarId(), texto, dia, mes: m, anio: a, realizada: false }]
+      const nuevas = { ...anotaciones, [key]: lista }
+      setAnotaciones(nuevas)
+      const ref = grupoActivo === 'personal'
+        ? collection(db, 'users', userId, 'pizarron')
+        : collection(db, 'grupos', grupoActivo, 'pizarron')
+      await setDoc(doc(ref, key), { items: lista })
+    }
+    window.addEventListener('sinyi:agregar_tarea', handleAgregarTarea)
+    return () => window.removeEventListener('sinyi:agregar_tarea', handleAgregarTarea)
+  }, [userId, grupoActivo, anotaciones])
   useEffect(() => {
     if (!userId || grupoActivo !== 'personal') return
     if (Object.keys(anotaciones).length === 0) return

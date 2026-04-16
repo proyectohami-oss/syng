@@ -187,6 +187,17 @@ export default function ListaSuper({ onVolver }) {
   useEffect(() => { localStorage.setItem('syng_super_seleccionados', JSON.stringify(seleccionados)) }, [seleccionados])
   useEffect(() => { localStorage.setItem('syng_super_custom', JSON.stringify(customProds)) }, [customProds])
 
+  // — Listener de Sinyi —
+  useEffect(() => {
+    const handleAgregarProducto = (e) => {
+      const { producto, departamento } = e.detail
+      const dep = departamento || 'Abarrotes'
+      setSeleccionados(prev => ({ ...prev, [producto]: { qty: 1, done: false, dep } }))
+    }
+    window.addEventListener('sinyi:agregar_producto', handleAgregarProducto)
+    return () => window.removeEventListener('sinyi:agregar_producto', handleAgregarProducto)
+  }, [])
+
   const catInputRef = useRef(null)
   const listInputRef = useRef(null)
 
