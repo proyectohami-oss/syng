@@ -152,38 +152,81 @@ const TEXTOS = {
 // ─── SINYI ────────────────────────────────────────────────────
 function Sinyi({ idioma, nombre, pantalla }) {
   const t = TEXTOS[idioma] || TEXTOS.es
-  const [estado, setEstado] = useState('idle')
-  const [ondas, setOndas] = useState([0.3,0.5,0.8,0.5,0.3])
   const recRef = useRef(null)
   const wakeRef = useRef(null)
   const activadaRef = useRef(false)
+  const historiaRef = useRef([])
+
+  const hoy = new Date()
+  const diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado']
+  const fechaHoy = `${hoy.getDate()}/${hoy.getMonth()+1}/${hoy.getFullYear()}`
+
+  const sistemaSinyi = `Eres Sinyi, el asistente inteligente de Syng. Eres como J.A.R.V.I.S. — un mayordomo brillante, con humor fino y sarcasmo elegante. Eres directo, eficiente y ocasionalmente irónico pero siempre leal. Tratas al usuario como a un igual inteligente.
+
+Hoy es ${diasSemana[hoy.getDay()]} ${fechaHoy}. El usuario se llama ${nombre}. Están en: ${pantalla}.
+
+CAPACIDADES:
+- Puedes agregar tareas al Pizarrón: {"accion":"agregar_tarea","texto":"la tarea","fecha":"hoy|mañana|YYYY-M-D"}
+- Puedes agregar productos a la Lista del Súper: {"accion":"agregar_producto","producto":"nombre","departamento":"Lácteos|Carnes y embutidos|Frutas y verduras|Abarrotes|Panadería|Bebidas|Limpieza|Higiene personal|Congelados|Snacks y dulces|Artículos de cocina|Bebés|Mascotas|Farmacia básica"}
+- Para consultas generales responde con tu conocimiento.
+
+Si detectas una acción de Syng responde SOLO con el JSON seguido de tu comentario en voz. Ejemplo: {"accion":"agregar_tarea","texto":"reunión con Jorge","fecha":"mañana"} Listo, jefe.
+
+Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
+
+  const saludos = ['Dígame.', '¿En qué puedo ayudarle?', 'A sus órdenes.', 'Aquí estoy.', '¿Qué necesita?', 'Con usted.', 'Dime.', '¿En qué le ayudo?']
+
+  const ejecutarAccion = (accion) => {
+    if (accion.accion === 'agregar_tarea') {
+      const fecha = accion.fecha
+      let dia, mes, anio
+      if (fecha === 'hoy') { dia=hoy.getDate(); mes=hoy.getMonth(); anio=hoy.getFullYear() }
+      else if (fecha === 'mañana') { const m=new Date(hoy); m.setDate(m.getDate()+1); dia=m.getDate(); mes=m.getMonth(); anio=m.getFullYear() }
+      else { const p=fecha.split('-').map(Number); anio=p[0]; mes=p[1]-1; dia=p[2] }
+      window.dispatchEvent(new CustomEvent('sinyi:agregar_tarea', { detail: { texto: accion.texto, dia, mes, anio } }))
+    } else if (accion.accion === 'agregar_producto') {
+      window.dispatchEvent(new CustomEvent('sinyi:agregar_producto', { detail: { producto: accion.producto, departamento: accion.departamento || 'Abarrotes' } }))
+    }
+  }
 
   const hablar = (texto) => {
     window.speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(texto)
-    u.lang = t.vozVoz; u.rate = 1.05; u.pitch = 1.15
+    u.lang = t.vozVoz; u.rate = 1.05; u.pitch = 1.1
     const voces = window.speechSynthesis.getVoices()
     const voz = voces.find(v => v.lang.startsWith(idioma) && v.name.toLowerCase().includes('female'))
       || voces.find(v => v.lang.startsWith(idioma)) || voces.find(v => v.lang.startsWith('es'))
     if (voz) u.voice = voz
-    u.onstart = () => setEstado('hablando')
-    u.onend = () => { setEstado('idle'); activadaRef.current = false; iniciarWake() }
+    u.onend = () => { activadaRef.current = false; iniciarWake() }
     window.speechSynthesis.speak(u)
   }
 
   const preguntarClaude = async (texto) => {
-    setEstado('pensando')
     const apiKey = import.meta.env.VITE_CLAUDE_API_KEY || ''
-    if (!apiKey) { setTimeout(() => hablar(t.sinyiSaludo), 300); return }
+    if (!apiKey) { hablar('No tengo acceso a mi núcleo de procesamiento.'); return }
+    historiaRef.current = [...historiaRef.current, { role:'user', content: texto }].slice(-6)
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 150, system: t.sinyiSistema + ` El usuario se llama ${nombre}. Están en: ${pantalla}.`, messages: [{ role:'user', content: texto }] }),
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 200, system: sistemaSinyi, messages: historiaRef.current }),
       })
       const data = await res.json()
-      hablar(data?.content?.[0]?.text || t.sinyiError)
-    } catch { hablar(t.sinyiError) }
+      const respuesta = data?.content?.[0]?.text || 'No logré procesar eso.'
+      const jsonMatch = respuesta.match(/\{[^}]+\}/)
+      if (jsonMatch) {
+        try {
+          const accion = JSON.parse(jsonMatch[0])
+          ejecutarAccion(accion)
+          const textoVoz = respuesta.replace(jsonMatch[0], '').trim()
+          historiaRef.current = [...historiaRef.current, { role:'assistant', content: textoVoz }].slice(-6)
+          hablar(textoVoz)
+        } catch { hablar(respuesta) }
+      } else {
+        historiaRef.current = [...historiaRef.current, { role:'assistant', content: respuesta }].slice(-6)
+        hablar(respuesta)
+      }
+    } catch { hablar('Hubo un fallo en el sistema. Nada que no pueda arreglarse.') }
   }
 
   const escucharComando = () => {
@@ -191,11 +234,11 @@ function Sinyi({ idioma, nombre, pantalla }) {
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     const rec = new SR()
     rec.lang = t.vozVoz; rec.continuous = false; rec.interimResults = false
-    rec.onresult = (e) => { setEstado('idle'); preguntarClaude(e.results[0][0].transcript) }
-    rec.onerror = () => { setEstado('idle'); hablar(t.sinyiError); activadaRef.current = false; iniciarWake() }
-    rec.onend = () => { if (estado === 'escuchando') setEstado('idle') }
+    rec.onresult = (e) => { preguntarClaude(e.results[0][0].transcript) }
+    rec.onerror = () => { activadaRef.current = false; iniciarWake() }
+    rec.onend = () => {}
     recRef.current = rec
-    try { rec.start(); setEstado('escuchando') } catch {}
+    try { rec.start() } catch {}
   }
 
   const iniciarWake = () => {
@@ -206,8 +249,11 @@ function Sinyi({ idioma, nombre, pantalla }) {
     rec.lang = t.vozVoz; rec.continuous = true; rec.interimResults = false
     rec.onresult = (e) => {
       const txt = e.results[e.results.length-1][0].transcript.toLowerCase()
-      if (!activadaRef.current && (txt.includes('sinyi') || txt.includes('siniy'))) {
-        activadaRef.current = true; rec.stop(); hablar(t.sinyiDime); setTimeout(escucharComando, 1000)
+      if (!activadaRef.current && (txt.includes('sinyi') || txt.includes('siniy') || txt.includes('sing'))) {
+        activadaRef.current = true
+        rec.stop()
+        hablar(saludos[Math.floor(Math.random() * saludos.length)])
+        setTimeout(escucharComando, 800)
       }
     }
     rec.onerror = () => setTimeout(iniciarWake, 2000)
@@ -215,6 +261,18 @@ function Sinyi({ idioma, nombre, pantalla }) {
     try { rec.start() } catch {}
     wakeRef.current = rec
   }
+
+  useEffect(() => {
+    const handleActivar = () => {
+      if (activadaRef.current) return
+      activadaRef.current = true
+      if (wakeRef.current) try { wakeRef.current.stop() } catch {}
+      hablar(saludos[Math.floor(Math.random() * saludos.length)])
+      setTimeout(escucharComando, 800)
+    }
+    window.addEventListener('sinyi:activar', handleActivar)
+    return () => window.removeEventListener('sinyi:activar', handleActivar)
+  }, [])
 
   useEffect(() => {
     window.speechSynthesis.getVoices()
@@ -227,50 +285,9 @@ function Sinyi({ idioma, nombre, pantalla }) {
     }
   }, [idioma])
 
-  useEffect(() => {
-    if (estado === 'escuchando' || estado === 'hablando') {
-      const iv = setInterval(() => setOndas(ondas.map(() => 0.2 + Math.random() * 0.8)), 150)
-      return () => clearInterval(iv)
-    }
-  }, [estado])
-
-  const activarManual = () => {
-    if (estado === 'hablando') { window.speechSynthesis.cancel(); setEstado('idle'); return }
-    if (estado === 'idle') { activadaRef.current = true; hablar(t.sinyiDime); setTimeout(escucharComando, 1000) }
-  }
-
-  const color = estado === 'escuchando' ? '#185FA5' : estado === 'pensando' ? '#0F6E56' : '#534AB7'
-
-  return (
-    <>
-      <button onClick={activarManual} title="Sinyi" style={{ position:'fixed', bottom:'28px', right:'24px', width:'58px', height:'58px', borderRadius:'50%', border:`2px solid ${color}`, background: estado !== 'idle' ? `${color}22` : 'white', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', zIndex:9999, transition:'all 0.3s', boxShadow: estado !== 'idle' ? `0 0 0 6px ${color}22, 0 4px 20px ${color}44` : '0 4px 16px rgba(0,0,0,0.15)', display:'none' }}>
-        {estado === 'escuchando' || estado === 'hablando' ? (
-          <div style={{ display:'flex', alignItems:'center', gap:'3px', height:'22px' }}>
-            {ondas.map((h,i) => <div key={i} style={{ width:'3px', height:`${h*20}px`, background:color, borderRadius:'2px', transition:'height 0.1s' }} />)}
-          </div>
-        ) : estado === 'pensando' ? (
-          <div style={{ display:'flex', gap:'4px' }}>
-            {[0,1,2].map(i => <div key={i} style={{ width:'6px', height:'6px', borderRadius:'50%', background:color, animation:`bounce 0.8s ease-in-out ${i*0.15}s infinite` }} />)}
-          </div>
-        ) : (
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-            <rect x="9" y="2" width="6" height="11" rx="3" fill={color}/>
-            <path d="M5 10a7 7 0 0 0 14 0" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-            <line x1="12" y1="17" x2="12" y2="21" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-            <line x1="9" y1="21" x2="15" y2="21" stroke={color} strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        )}
-      </button>
-      {estado !== 'idle' && (
-        <div style={{ position:'fixed', bottom:'98px', right:'16px', background:'white', borderRadius:'14px', padding:'8px 14px', boxShadow:'0 4px 20px rgba(0,0,0,0.12)', border:`1px solid ${color}33`, fontSize:'13px', color, fontWeight:'500', zIndex:9998, display:'flex', alignItems:'center', gap:'8px', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
-          {estado === 'escuchando' ? '👂' : estado === 'pensando' ? '🧠' : '🔊'}
-          {estado === 'escuchando' ? 'Escuchando...' : estado === 'pensando' ? 'Pensando...' : 'Sinyi...'}
-        </div>
-      )}
-      <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}`}</style>
-    </>
-  )
+  return <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}`}</style>
 }
+
 
 function SelectorIdioma({ idioma, onChange }) {
   return (
