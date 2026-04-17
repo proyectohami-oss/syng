@@ -7,6 +7,49 @@ import PantallaInvitacion from './PantallaInvitacion'
 import ListaTareas from './ListaTareas'
 import ListaSuper from './ListaSuper'
 
+// ─── TEMA ──────────────────────────────────────────────────────
+const TEMA = {
+  oscuro: {
+    bg: '#0D0D1A',
+    bgCard: '#1A1A2E',
+    bgCardAlt: '#16213E',
+    bgInput: '#1E1E35',
+    header: 'linear-gradient(135deg,#534AB7,#2D2B6B)',
+    headerSolido: '#534AB7',
+    texto: '#F0F0FF',
+    textoSub: '#9090B8',
+    textoMuted: 'rgba(255,255,255,0.45)',
+    borde: 'rgba(255,255,255,0.08)',
+    bordeInput: 'rgba(255,255,255,0.15)',
+    acento: '#7B6EF6',
+    acentoVerde: '#2ECC9A',
+    navBg: '#13132A',
+    navBorde: 'rgba(255,255,255,0.08)',
+    sombra: '0 4px 24px rgba(0,0,0,0.5)',
+    nombre: 'oscuro',
+  },
+  claro: {
+    bg: '#F5F5F7',
+    bgCard: '#FFFFFF',
+    bgCardAlt: '#F0F0F8',
+    bgInput: '#F5F5F7',
+    header: 'linear-gradient(135deg,#534AB7,#185FA5)',
+    headerSolido: '#534AB7',
+    texto: '#1C1C2E',
+    textoSub: '#666680',
+    textoMuted: 'rgba(0,0,0,0.28)',
+    borde: '#EAEAEA',
+    bordeInput: '#D8D8E8',
+    acento: '#534AB7',
+    acentoVerde: '#0F6E56',
+    navBg: '#FFFFFF',
+    navBorde: '#EAEAEA',
+    sombra: '0 2px 12px rgba(0,0,0,0.07)',
+    nombre: 'claro',
+  },
+}
+
+// ─── IDIOMAS ───────────────────────────────────────────────────
 const IDIOMAS = [
   { codigo:'es', bandera:'🇲🇽', nombre:'Español' },
   { codigo:'en', bandera:'🇺🇸', nombre:'English' },
@@ -20,7 +63,7 @@ const IDIOMAS = [
 
 const TEXTOS = {
   es: {
-    hola:'Hola', queOrganizar:'¿Qué quieres organizar hoy?', salir:'Salir',
+    hola:'Hola', queOrganizar:'¿Qué quieres organizar hoy?', salir:'Cerrar sesión',
     pizarron:'Pizarrón Interactivo', pizarronDesc:'Calendario colaborativo en tiempo real',
     tareas:'Lista de Tareas', tareasDesc:'Tu lista personal estilo libreta',
     super:'Lista del Súper', superDesc:'Lista de compras colaborativa con catálogo',
@@ -34,6 +77,9 @@ const TEXTOS = {
     sinyiSaludo:'¿En qué te puedo ayudar?', sinyiDime:'Dime, ¿en qué te ayudo?',
     sinyiError:'No te escuché bien. ¿Puedes repetirlo?',
     sinyiSistema:'Eres Sinyi, asistente de voz de la app Syng. Eres una mujer inteligente y cálida. Responde siempre en español mexicano, muy breve, máximo 2 oraciones. No digas que eres IA.',
+    perfil:'Perfil', modoOscuro:'Modo oscuro', modoClaro:'Modo claro',
+    idioma:'Idioma', privacidad:'Privacidad', cerrarSesion:'Cerrar sesión',
+    apariencia:'Apariencia',
   },
   en: {
     hola:'Hello', queOrganizar:'What do you want to organize today?', salir:'Sign out',
@@ -50,6 +96,9 @@ const TEXTOS = {
     sinyiSaludo:'How can I help you?', sinyiDime:'Tell me, how can I help?',
     sinyiError:"I didn't hear you. Can you repeat that?",
     sinyiSistema:'You are Sinyi, voice assistant of the Syng app. You are an intelligent and warm woman. Always respond in English, very briefly, maximum 2 sentences. Do not say you are AI.',
+    perfil:'Profile', modoOscuro:'Dark mode', modoClaro:'Light mode',
+    idioma:'Language', privacidad:'Privacy', cerrarSesion:'Sign out',
+    apariencia:'Appearance',
   },
   fr: {
     hola:'Bonjour', queOrganizar:"Que voulez-vous organiser aujourd'hui?", salir:'Déconnexion',
@@ -66,6 +115,9 @@ const TEXTOS = {
     sinyiSaludo:'Comment puis-je vous aider?', sinyiDime:'Dites-moi, comment puis-je aider?',
     sinyiError:"Je n'ai pas entendu. Pouvez-vous répéter?",
     sinyiSistema:"Vous êtes Sinyi, assistante vocale de l'app Syng. Vous êtes une femme intelligente et chaleureuse. Répondez toujours en français, très brièvement, maximum 2 phrases.",
+    perfil:'Profil', modoOscuro:'Mode sombre', modoClaro:'Mode clair',
+    idioma:'Langue', privacidad:'Confidentialité', cerrarSesion:'Déconnexion',
+    apariencia:'Apparence',
   },
   de: {
     hola:'Hallo', queOrganizar:'Was möchtest du heute organisieren?', salir:'Abmelden',
@@ -82,6 +134,9 @@ const TEXTOS = {
     sinyiSaludo:'Wie kann ich dir helfen?', sinyiDime:'Sag mir, wie kann ich helfen?',
     sinyiError:'Ich habe dich nicht gehört. Kannst du wiederholen?',
     sinyiSistema:'Du bist Sinyi, Sprachassistentin der Syng App. Du bist eine intelligente und warmherzige Frau. Antworte immer auf Deutsch, sehr kurz, maximal 2 Sätze.',
+    perfil:'Profil', modoOscuro:'Dunkelmodus', modoClaro:'Hellmodus',
+    idioma:'Sprache', privacidad:'Datenschutz', cerrarSesion:'Abmelden',
+    apariencia:'Erscheinungsbild',
   },
   it: {
     hola:'Ciao', queOrganizar:'Cosa vuoi organizzare oggi?', salir:'Esci',
@@ -98,6 +153,9 @@ const TEXTOS = {
     sinyiSaludo:'Come posso aiutarti?', sinyiDime:'Dimmi, come posso aiutarti?',
     sinyiError:'Non ti ho sentito. Puoi ripetere?',
     sinyiSistema:"Sei Sinyi, assistente vocale dell'app Syng. Sei una donna intelligente e calorosa. Rispondi sempre in italiano, molto brevemente, massimo 2 frasi.",
+    perfil:'Profilo', modoOscuro:'Modalità scura', modoClaro:'Modalità chiara',
+    idioma:'Lingua', privacidad:'Privacy', cerrarSesion:'Esci',
+    apariencia:'Aspetto',
   },
   pt: {
     hola:'Olá', queOrganizar:'O que você quer organizar hoje?', salir:'Sair',
@@ -114,6 +172,9 @@ const TEXTOS = {
     sinyiSaludo:'Como posso te ajudar?', sinyiDime:'Me diga, como posso ajudar?',
     sinyiError:'Não ouvi bem. Pode repetir?',
     sinyiSistema:'Você é Sinyi, assistente de voz do app Syng. Você é uma mulher inteligente e calorosa. Responda sempre em português, muito brevemente, máximo 2 frases.',
+    perfil:'Perfil', modoOscuro:'Modo escuro', modoClaro:'Modo claro',
+    idioma:'Idioma', privacidad:'Privacidade', cerrarSesion:'Sair',
+    apariencia:'Aparência',
   },
   ja: {
     hola:'こんにちは', queOrganizar:'今日は何を整理しますか？', salir:'ログアウト',
@@ -130,6 +191,9 @@ const TEXTOS = {
     sinyiSaludo:'どのようにお手伝いできますか？', sinyiDime:'どうぞ、お手伝いします',
     sinyiError:'よく聞こえませんでした。もう一度言っていただけますか？',
     sinyiSistema:'あなたはSinyiです。Syngアプリの音声アシスタントです。インテリジェントで温かみのある女性として、常に日本語で簡潔に、最大2文で回答してください。',
+    perfil:'プロフィール', modoOscuro:'ダークモード', modoClaro:'ライトモード',
+    idioma:'言語', privacidad:'プライバシー', cerrarSesion:'ログアウト',
+    apariencia:'外観',
   },
   zh: {
     hola:'你好', queOrganizar:'今天想整理什么？', salir:'退出',
@@ -146,6 +210,9 @@ const TEXTOS = {
     sinyiSaludo:'我能帮您什么？', sinyiDime:'请说，我能帮您什么？',
     sinyiError:'我没有听清楚。您能重复一遍吗？',
     sinyiSistema:'你是Sinyi，Syng应用的语音助手。你是一位聪明热情的女性。始终用中文回答，非常简短，最多2句话。',
+    perfil:'个人资料', modoOscuro:'深色模式', modoClaro:'浅色模式',
+    idioma:'语言', privacidad:'隐私', cerrarSesion:'退出',
+    apariencia:'外观',
   },
 }
 
@@ -288,18 +355,163 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
   return <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}`}</style>
 }
 
-
-function SelectorIdioma({ idioma, onChange }) {
+// ─── SELECTOR IDIOMA ──────────────────────────────────────────
+function SelectorIdioma({ idioma, onChange, tema }) {
+  const th = tema || TEMA.claro
   return (
     <div style={{ display:'flex', flexWrap:'wrap', justifyContent:'center', gap:'8px', marginBottom:'24px' }}>
       {IDIOMAS.map(l => (
-        <button key={l.codigo} onClick={() => onChange(l.codigo)} style={{ fontSize:'22px', padding:'6px 10px', borderRadius:'12px', cursor:'pointer', border: idioma === l.codigo ? '2px solid #534AB7' : '2px solid #e5e5e5', background: idioma === l.codigo ? 'rgba(83,74,183,0.1)' : 'transparent', transition:'all 0.2s' }} title={l.nombre}>{l.bandera}</button>
+        <button key={l.codigo} onClick={() => onChange(l.codigo)} style={{ fontSize:'22px', padding:'6px 10px', borderRadius:'12px', cursor:'pointer', border: idioma === l.codigo ? `2px solid ${th.acento}` : `2px solid ${th.borde}`, background: idioma === l.codigo ? `${th.acento}22` : 'transparent', transition:'all 0.2s' }} title={l.nombre}>{l.bandera}</button>
       ))}
     </div>
   )
 }
 
+// ─── PANTALLA PERFIL ──────────────────────────────────────────
+function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, onSalir, onVolver }) {
+  const th = TEMA[tema]
+  const nombre = user?.displayName || user?.email?.split('@')[0] || 'Usuario'
+  const email = user?.email || ''
+  const iniciales = nombre.trim().split(' ').slice(0,2).map(p=>p[0]?.toUpperCase()||'').join('')
 
+  const itemStyle = {
+    display:'flex', alignItems:'center', gap:'16px',
+    padding:'16px 20px', borderBottom:`1px solid ${th.borde}`,
+    background:'transparent', border:'none', width:'100%', textAlign:'left',
+    cursor:'pointer', color: th.texto,
+  }
+
+  return (
+    <div style={{ minHeight:'100vh', background: th.bg, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', paddingBottom:'100px' }}>
+      {/* Header morado siempre */}
+      <div style={{ background: th.header, padding:'0 0 32px 0' }}>
+        <div style={{ display:'flex', alignItems:'center', padding:'16px 20px 0 20px' }}>
+          <button onClick={onVolver} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'50%', width:'36px', height:'36px', color:'white', fontSize:'18px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center' }}>‹</button>
+          <div style={{ flex:1, textAlign:'center', color:'white', fontSize:'17px', fontWeight:'700' }}>{t.perfil}</div>
+          <div style={{ width:'36px' }} />
+        </div>
+        {/* Avatar */}
+        <div style={{ textAlign:'center', marginTop:'24px' }}>
+          <div style={{ width:'80px', height:'80px', borderRadius:'50%', background:'rgba(255,255,255,0.2)', border:'3px solid rgba(255,255,255,0.5)', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 12px', fontSize:'28px', fontWeight:'800', color:'white' }}>{iniciales || '👤'}</div>
+          <div style={{ color:'white', fontSize:'20px', fontWeight:'700' }}>{nombre}</div>
+          <div style={{ color:'rgba(255,255,255,0.7)', fontSize:'14px', marginTop:'4px' }}>{email}</div>
+        </div>
+      </div>
+
+      {/* Secciones */}
+      <div style={{ padding:'24px 16px' }}>
+
+        {/* Apariencia */}
+        <div style={{ fontSize:'11px', fontWeight:'700', color: th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>{t.apariencia}</div>
+        <div style={{ background: th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow: th.sombra, marginBottom:'20px' }}>
+          <div style={{ ...itemStyle, justifyContent:'space-between', cursor:'default' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+              <span style={{ fontSize:'22px' }}>{tema === 'oscuro' ? '🌙' : '☀️'}</span>
+              <span style={{ fontSize:'16px', fontWeight:'500' }}>{tema === 'oscuro' ? t.modoOscuro : t.modoClaro}</span>
+            </div>
+            {/* Toggle */}
+            <div onClick={onToggleTema} style={{ width:'52px', height:'30px', borderRadius:'15px', background: tema === 'oscuro' ? th.acento : '#ddd', position:'relative', cursor:'pointer', transition:'background 0.3s', flexShrink:0 }}>
+              <div style={{ position:'absolute', top:'3px', left: tema === 'oscuro' ? '24px' : '3px', width:'24px', height:'24px', borderRadius:'50%', background:'white', transition:'left 0.3s', boxShadow:'0 1px 4px rgba(0,0,0,0.3)' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Idioma */}
+        <div style={{ fontSize:'11px', fontWeight:'700', color: th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>{t.idioma}</div>
+        <div style={{ background: th.bgCard, borderRadius:'18px', padding:'16px 20px', boxShadow: th.sombra, marginBottom:'20px' }}>
+          <SelectorIdioma idioma={idioma} onChange={onCambiarIdioma} tema={th} />
+        </div>
+
+        {/* Cuenta */}
+        <div style={{ fontSize:'11px', fontWeight:'700', color: th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>Cuenta</div>
+        <div style={{ background: th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow: th.sombra }}>
+          <button onClick={onSalir} style={{ ...itemStyle, color:'#E53935', borderBottom:'none' }}>
+            <span style={{ fontSize:'22px' }}>🚪</span>
+            <span style={{ fontSize:'16px', fontWeight:'500' }}>{t.cerrarSesion}</span>
+          </button>
+        </div>
+
+        {/* Footer */}
+        <div style={{ textAlign:'center', marginTop:'40px', color: th.textoMuted, fontSize:'12px' }}>
+          Syng · hecho con amor
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── PANTALLA HOME ────────────────────────────────────────────
+function PantallaHome({ user, t, th, tema, onIrPantalla, onIrPerfil }) {
+  const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
+
+  const hoy = new Date()
+  const diasSemana = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
+  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+  const fechaStr = `${diasSemana[hoy.getDay()]}, ${hoy.getDate()} de ${meses[hoy.getMonth()]}`
+
+  const iniciales = (user?.displayName || user?.email || 'U').trim().split(' ').slice(0,2).map(p=>p[0]?.toUpperCase()||'').join('')
+
+  return (
+    <div style={{ minHeight:'100vh', background: th.bg, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', paddingBottom:'30px' }}>
+      {/* Header */}
+      <div style={{ background: th.header, padding:'16px 20px 28px 20px' }}>
+        <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
+          <div>
+            <div style={{ color:'rgba(255,255,255,0.7)', fontSize:'13px' }}>{fechaStr}</div>
+            <div style={{ color:'white', fontSize:'26px', fontWeight:'800', letterSpacing:'-0.5px' }}>Syng</div>
+          </div>
+          <button onClick={onIrPerfil} style={{ width:'42px', height:'42px', borderRadius:'50%', background:'rgba(255,255,255,0.2)', border:'2px solid rgba(255,255,255,0.4)', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'16px', fontWeight:'700', cursor:'pointer' }}>
+            {iniciales || '👤'}
+          </button>
+        </div>
+
+        {/* Saludo */}
+        <div style={{ marginTop:'20px' }}>
+          <div style={{ color:'rgba(255,255,255,0.8)', fontSize:'15px' }}>{t.hola}, {nombre} 👋</div>
+          <div style={{ color:'white', fontSize:'20px', fontWeight:'700', marginTop:'2px' }}>{t.queOrganizar}</div>
+        </div>
+      </div>
+
+      {/* Tarjetas módulos */}
+      <div style={{ padding:'24px 16px', display:'flex', flexDirection:'column', gap:'16px' }}>
+
+        {/* Pizarrón */}
+        <div onClick={() => onIrPantalla('pizarron')} style={{ background: th.bgCard, borderRadius:'22px', padding:'22px', boxShadow: th.sombra, cursor:'pointer', overflow:'hidden', position:'relative' }}>
+          <div style={{ position:'absolute', top:'-20px', right:'-10px', fontSize:'80px', opacity:0.06 }}>📅</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+            <div style={{ width:'52px', height:'52px', borderRadius:'16px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px', flexShrink:0 }}>📅</div>
+            <div>
+              <div style={{ fontSize:'17px', fontWeight:'700', color: th.acento, marginBottom:'3px' }}>{t.pizarron}</div>
+              <div style={{ color: th.textoSub, fontSize:'13px' }}>{t.pizarronDesc}</div>
+            </div>
+            <div style={{ marginLeft:'auto', color: th.textoSub, fontSize:'18px' }}>›</div>
+          </div>
+        </div>
+
+        {/* Lista del Súper */}
+        <div onClick={() => onIrPantalla('listasuper')} style={{ background: th.bgCard, borderRadius:'22px', padding:'22px', boxShadow: th.sombra, cursor:'pointer', overflow:'hidden', position:'relative' }}>
+          <div style={{ position:'absolute', top:'-20px', right:'-10px', fontSize:'80px', opacity:0.06 }}>🛒</div>
+          <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+            <div style={{ width:'52px', height:'52px', borderRadius:'16px', background:`${th.acentoVerde}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'26px', flexShrink:0 }}>🛒</div>
+            <div>
+              <div style={{ fontSize:'17px', fontWeight:'700', color: th.acentoVerde, marginBottom:'3px' }}>{t.super}</div>
+              <div style={{ color: th.textoSub, fontSize:'13px' }}>{t.superDesc}</div>
+            </div>
+            <div style={{ marginLeft:'auto', color: th.textoSub, fontSize:'18px' }}>›</div>
+          </div>
+        </div>
+
+        {/* Espacio reservado — sin etiqueta */}
+        <div style={{ background: th.bgCard, borderRadius:'22px', padding:'22px', boxShadow: th.sombra, opacity:0.4, minHeight:'72px' }} />
+
+      </div>
+
+      <Sinyi idioma={'es'} nombre={nombre} pantalla={'inicio'} />
+    </div>
+  )
+}
+
+// ─── APP PRINCIPAL ────────────────────────────────────────────
 export default function App() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -309,17 +521,23 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [pantalla, setPantalla] = useState('inicio')
   const [idioma, setIdioma] = useState(() => localStorage.getItem('syng_idioma') || 'es')
-  const [mostrarConfig, setMostrarConfig] = useState(false)
+  const [tema, setTema] = useState(() => localStorage.getItem('syng_tema') || 'oscuro')
 
   // Invitación
   const [invId, setInvId] = useState(null)
-  const [invData, setInvData] = useState(null) // { grupoNombre, adminNombre, grupoId, modulo }
+  const [invData, setInvData] = useState(null)
   const [invCargando, setInvCargando] = useState(false)
-  const [grupoDestino, setGrupoDestino] = useState(null) // para navegar al grupo tras login
+  const [grupoDestino, setGrupoDestino] = useState(null)
 
   const t = TEXTOS[idioma] || TEXTOS.es
+  const th = TEMA[tema] || TEMA.oscuro
 
   const cambiarIdioma = (cod) => { setIdioma(cod); localStorage.setItem('syng_idioma', cod) }
+  const toggleTema = () => {
+    const nuevo = tema === 'oscuro' ? 'claro' : 'oscuro'
+    setTema(nuevo)
+    localStorage.setItem('syng_tema', nuevo)
+  }
 
   // Detectar invitación en la URL
   useEffect(() => {
@@ -344,7 +562,6 @@ export default function App() {
     cargarInv()
   }, [])
 
-  // Procesar invitación cuando el usuario ya está logueado
   const procesarInvitacion = async (u, inv) => {
     if (!u || !inv) return
     try {
@@ -356,9 +573,7 @@ export default function App() {
         await updateDoc(doc(db, 'grupos', inv.grupoId), {
           miembros: arrayUnion({ uid: u.uid, email: u.email || '', nombre: u.displayName || u.email?.split('@')[0] || 'Usuario', rol: 'miembro' })
         })
-        await setDoc(doc(db, 'users', u.uid, 'misGrupos', inv.grupoId), {
-          nombre: grupo.nombre, modulo: inv.modulo
-        })
+        await setDoc(doc(db, 'users', u.uid, 'misGrupos', inv.grupoId), { nombre: grupo.nombre, modulo: inv.modulo })
       }
       const invSnap = await getDoc(doc(db, 'invitaciones', invId || ''))
       if (invSnap.exists() && !invSnap.data().usado) {
@@ -382,7 +597,6 @@ export default function App() {
     return unsub
   }, [invData])
 
-  // Navegar al grupo destino cuando ya esté listo
   useEffect(() => {
     if (user && grupoDestino) {
       localStorage.setItem('syng_grupo_activo_pizarron', grupoDestino.grupoId)
@@ -418,12 +632,10 @@ export default function App() {
     if (pantalla !== 'inicio') window.history.pushState({ pantalla }, '')
   }, [pantalla])
 
-  const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
-
   // Cargando invitación
   if (invCargando) return (
-    <div style={{ minHeight:'100vh', background:'linear-gradient(160deg,#1a3a6b,#2563a8)', display:'flex', alignItems:'center', justifyContent:'center' }}>
-      <div style={{ color:'white', fontSize:'15px', opacity:0.7 }}>Cargando invitación...</div>
+    <div style={{ minHeight:'100vh', background: th.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ color: th.textoSub, fontSize:'15px' }}>Cargando invitación...</div>
     </div>
   )
 
@@ -450,43 +662,33 @@ export default function App() {
 
   // Módulos
   if (user && pantalla === 'listatareas') return <ListaTareas onVolver={() => setPantalla('inicio')} />
-  if (user && pantalla === 'listasuper')  return <ListaSuper  onVolver={() => setPantalla('inicio')} />
-  if (pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} />
+  if (user && pantalla === 'listasuper')  return <ListaSuper  onVolver={() => setPantalla('inicio')} tema={tema} />
+  if (pantalla === 'pizarron')    return <Pizarron    onVolver={() => setPantalla('inicio')} tema={tema} />
+
+  // Pantalla perfil
+  if (user && pantalla === 'perfil') return (
+    <PantallaPerfil
+      user={user}
+      idioma={idioma}
+      tema={tema}
+      t={t}
+      onCambiarIdioma={cambiarIdioma}
+      onToggleTema={toggleTema}
+      onSalir={() => { signOut(auth); setPantalla('inicio') }}
+      onVolver={() => setPantalla('inicio')}
+    />
+  )
 
   // Pantalla principal
   if (user) return (
-    <div style={{ minHeight:'100vh', background:'#f5f5f7', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
-      <div style={{ background:'linear-gradient(135deg,#534AB7,#185FA5)', padding:'20px 24px', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-        <div style={{ color:'white', fontSize:'24px', fontWeight:'800' }}>Syng</div>
-        <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-          <span style={{ color:'rgba(255,255,255,0.8)', fontSize:'14px' }}>{user.displayName || user.email}</span>
-          <button onClick={() => setMostrarConfig(!mostrarConfig)} style={{ background:'rgba(255,255,255,0.2)', color:'white', border:'none', borderRadius:'20px', padding:'6px 12px', fontSize:'13px', cursor:'pointer' }}>
-            {IDIOMAS.find(l => l.codigo === idioma)?.bandera}
-          </button>
-
-        </div>
-      </div>
-      {mostrarConfig && (
-        <div style={{ background:'white', padding:'20px 24px', borderBottom:'1px solid #e5e5e5' }}>
-          <div style={{ fontSize:'13px', color:'#888', marginBottom:'12px', textAlign:'center' }}>{t.eligeIdioma}</div>
-          <SelectorIdioma idioma={idioma} onChange={(cod) => { cambiarIdioma(cod); setMostrarConfig(false) }} />
-        </div>
-      )}
-      <div style={{ padding:'24px' }}>
-        <div style={{ fontSize:'22px', fontWeight:'700', color:'#2C2C2A', marginBottom:'6px' }}>{t.hola}, {nombre}!</div>
-        <div style={{ color:'#888', fontSize:'15px', marginBottom:'28px' }}>{t.queOrganizar}</div>
-        <div onClick={() => setPantalla('pizarron')} style={{ background:'white', borderRadius:'20px', padding:'24px', marginBottom:'16px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', cursor:'pointer' }}>
-          <div style={{ fontSize:'18px', fontWeight:'700', color:'#185FA5', marginBottom:'4px' }}>{t.pizarron}</div>
-          <div style={{ color:'#888', fontSize:'14px' }}>{t.pizarronDesc}</div>
-        </div>
-
-        <div onClick={() => setPantalla('listasuper')} style={{ background:'white', borderRadius:'20px', padding:'24px', marginBottom:'16px', boxShadow:'0 2px 12px rgba(0,0,0,0.06)', cursor:'pointer' }}>
-          <div style={{ fontSize:'18px', fontWeight:'700', color:'#0F6E56', marginBottom:'4px' }}>{t.super}</div>
-          <div style={{ color:'#888', fontSize:'14px' }}>{t.superDesc}</div>
-        </div>
-      </div>
-      <Sinyi idioma={idioma} nombre={nombre} pantalla={pantalla} />
-    </div>
+    <PantallaHome
+      user={user}
+      t={t}
+      th={th}
+      tema={tema}
+      onIrPantalla={setPantalla}
+      onIrPerfil={() => setPantalla('perfil')}
+    />
   )
 
   // Login
@@ -495,7 +697,7 @@ export default function App() {
       <div style={{ background:'white', borderRadius:'28px', padding:'40px 32px', width:'100%', maxWidth:'380px', boxShadow:'0 20px 60px rgba(0,0,0,0.3)' }}>
         <div style={{ textAlign:'center', marginBottom:'24px' }}>
           <div style={{ fontSize:'42px', fontWeight:'800', background:'linear-gradient(135deg,#534AB7,#185FA5)', WebkitBackgroundClip:'text', WebkitTextFillColor:'transparent', marginBottom:'4px' }}>Syng</div>
-          <div style={{ color:'#888', fontSize:'14px' }}>Sinyi · {t.slogan}</div>
+          <div style={{ color:'#888', fontSize:'14px' }}>{t.slogan}</div>
         </div>
         <div style={{ fontSize:'12px', color:'#888', textAlign:'center', marginBottom:'10px' }}>{t.eligeIdioma}</div>
         <SelectorIdioma idioma={idioma} onChange={cambiarIdioma} />
@@ -505,7 +707,7 @@ export default function App() {
         </div>
         <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginBottom:'20px' }}>
           <input type="email" placeholder={t.correo} value={email} onChange={e=>setEmail(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
-          <input type="password" placeholder={t.contrasena} value={password} onChange={e=>setPassword(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
+          <input type="password" placeholder={t.contrasena} value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleEmailAuth()} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
         </div>
         {error && <div style={{ color:'red', fontSize:'13px', marginBottom:'12px', textAlign:'center' }}>{error}</div>}
         <button onClick={handleEmailAuth} disabled={loading} style={{ width:'100%', padding:'15px', background:'linear-gradient(135deg,#534AB7,#185FA5)', color:'white', border:'none', borderRadius:'14px', fontSize:'16px', fontWeight:'600', cursor:'pointer', marginBottom:'20px' }}>
