@@ -778,7 +778,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
               const lista = anotaciones[key] || []
               const isDragOver = dragOverCelda === dia
               return (
-                <div key={idx} data-dia={dia||''} onDragOver={e=>{e.preventDefault();if(dia)setDragOverCelda(dia)}} onDragLeave={()=>setDragOverCelda(null)} onDrop={e=>onDropCelda(e,dia)} style={{minHeight:'78px',overflow:'hidden',background:isDragOver?'#EEF2FF':dia?(esFinde(idx)?'#F8F8F8':'white'):'transparent',borderRadius:'10px',padding:'4px',border:isDragOver?'2px dashed #534AB7':esHoy(dia)?'2px solid #534AB7':'1px solid #ececec',boxSizing:'border-box'}}>
+                <div key={idx} data-dia={dia||''} onDragOver={e=>{e.preventDefault();if(dia)setDragOverCelda(dia)}} onDragLeave={()=>setDragOverCelda(null)} onDrop={e=>onDropCelda(e,dia)} style={{height:'70px',overflow:'hidden',background:isDragOver?'#EEF2FF':dia?(esFinde(idx)?'#F8F8F8':'white'):'transparent',borderRadius:'10px',padding:'4px',border:isDragOver?'2px dashed #534AB7':esHoy(dia)?'2px solid #534AB7':'1px solid #ececec',boxSizing:'border-box'}}>
                   {dia && (<>
                     <div onClick={()=>abrirModal(dia)} style={{fontSize:'12px',fontWeight:esHoy(dia)?'700':'400',color:esHoy(dia)?'#534AB7':'#2C2C2A',marginBottom:'2px',display:'inline-block',padding:'1px 3px',borderRadius:'4px',...T}}>{dia}</div>
                     {lista.slice(0, 2).map((a, i) => (

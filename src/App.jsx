@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { auth, googleProvider, db } from './firebase'
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, onAuthStateChanged, signOut } from 'firebase/auth'
-import { doc, getDoc, updateDoc, setDoc, arrayUnion, collection, onSnapshot } from 'firebase/firestore'
+import { doc, getDoc, getDocs, updateDoc, setDoc, arrayUnion, collection, onSnapshot } from 'firebase/firestore'
 import Pizarron from './Pizarron'
 import PantallaInvitacion from './PantallaInvitacion'
 import ListaTareas from './ListaTareas'
@@ -400,18 +400,37 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
   const fechaStr = `${diasSemana[hoy.getDay()]}, ${hoy.getDate()} de ${meses[hoy.getMonth()]}`
   const [pendientesHoy, setPendientesHoy] = useState(0)
   const [completadasHoy, setCompletatdasHoy] = useState(0)
+  const [desglosePizarrones, setDesglosePizarrones] = useState([])
+  const [modalStats, setModalStats] = useState(null)
 
   useEffect(() => {
     if (!userId) return
     const hoyKey = `${hoy.getFullYear()}-${hoy.getMonth()}-${hoy.getDate()}`
-    const ref = collection(db, 'users', userId, 'pizarron')
-    const unsub = onSnapshot(ref, snap => {
-      const d = snap.docs.find(d => d.id === hoyKey)
-      const items = d?.data()?.items || []
-      setPendientesHoy(items.filter(i => !i.realizada).length)
-      setCompletatdasHoy(items.filter(i => i.realizada).length)
+    let unsubs = []
+    let datosGrupos = {}
+    const recalcular = () => {
+      const todos = Object.values(datosGrupos)
+      setPendientesHoy(todos.reduce((s, g) => s + g.pendientes, 0))
+      setCompletatdasHoy(todos.reduce((s, g) => s + g.completadas, 0))
+      setDesglosePizarrones(todos.filter(g => g.pendientes > 0 || g.completadas > 0))
+    }
+    const suscribir = (ref, nombre, grupoId) => {
+      const unsub = onSnapshot(ref, snap => {
+        const d = snap.docs.find(d => d.id === hoyKey)
+        const items = d?.data()?.items || []
+        datosGrupos[grupoId] = { nombre, grupoId, pendientes: items.filter(i => !i.realizada).length, completadas: items.filter(i => i.realizada).length }
+        recalcular()
+      })
+      unsubs.push(unsub)
+    }
+    suscribir(collection(db, 'users', userId, 'pizarron'), 'Personal', 'personal')
+    getDocs(collection(db, 'users', userId, 'misGrupos')).then(snap => {
+      snap.docs.forEach(d => {
+        const data = d.data()
+        if (!data.modulo || data.modulo === 'pizarron') suscribir(collection(db, 'grupos', d.id, 'pizarron'), data.nombre || 'Grupo', d.id)
+      })
     })
-    return () => unsub()
+    return () => unsubs.forEach(u => u())
   }, [userId])
 
   const esOscuro = th.nombre === 'oscuro'
@@ -448,11 +467,11 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
 
         {/* Stats */}
         <div style={{ display:'flex', gap:'12px' }}>
-          <div style={{ flex:1, background: esOscuro ? 'rgba(123,110,246,0.12)' : th.statPendBg, border: esOscuro ? '1px solid rgba(123,110,246,0.3)' : 'none', borderRadius:'18px', padding:'18px 16px', backdropFilter: esOscuro ? 'blur(10px)' : 'none' }}>
+          <div onClick={() => setModalStats('pendientes')} style={{ flex:1, background: esOscuro ? 'rgba(123,110,246,0.12)' : th.statPendBg, border: esOscuro ? '1px solid rgba(123,110,246,0.3)' : 'none', borderRadius:'18px', padding:'18px 16px', backdropFilter: esOscuro ? 'blur(10px)' : 'none', cursor:'pointer' }}>
             <div style={{ fontSize:'28px', fontWeight:'800', color: esOscuro ? '#A89EFF' : th.acento }}>{pendientesHoy}</div>
             <div style={{ fontSize:'12px', color: esOscuro ? 'rgba(168,158,255,0.7)' : th.textoSub, marginTop:'4px' }}>{t.pendientes}</div>
           </div>
-          <div style={{ flex:1, background: esOscuro ? 'rgba(46,204,154,0.1)' : th.statCompBg, border: esOscuro ? '1px solid rgba(46,204,154,0.25)' : 'none', borderRadius:'18px', padding:'18px 16px', backdropFilter: esOscuro ? 'blur(10px)' : 'none' }}>
+          <div onClick={() => setModalStats('completadas')} style={{ flex:1, background: esOscuro ? 'rgba(46,204,154,0.1)' : th.statCompBg, border: esOscuro ? '1px solid rgba(46,204,154,0.25)' : 'none', borderRadius:'18px', padding:'18px 16px', backdropFilter: esOscuro ? 'blur(10px)' : 'none', cursor:'pointer' }}>
             <div style={{ fontSize:'28px', fontWeight:'800', color: esOscuro ? '#5EDFB8' : th.acentoVerde }}>{completadasHoy}</div>
             <div style={{ fontSize:'12px', color: esOscuro ? 'rgba(94,223,184,0.7)' : th.textoSub, marginTop:'4px' }}>{t.completadas}</div>
           </div>
@@ -486,6 +505,26 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
       </div>
 
       <Sinyi idioma={'es'} nombre={nombre} pantalla={'inicio'} />
+      {modalStats && (
+        <div onClick={() => setModalStats(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:300, padding:'0 0 90px 0' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background: esOscuro ? '#1A1A35' : 'white', borderRadius:'20px 20px 0 0', padding:'24px 20px', width:'100%', maxWidth:'400px' }}>
+            <div style={{ fontSize:'13px', fontWeight:'700', color: esOscuro ? 'rgba(255,255,255,0.5)' : '#888', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'16px' }}>
+              {modalStats === 'pendientes' ? 'Pendientes hoy por pizarrón' : 'Completadas hoy por pizarrón'}
+            </div>
+            {desglosePizarrones.filter(g => modalStats === 'pendientes' ? g.pendientes > 0 : g.completadas > 0).length === 0 && (
+              <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : '#aaa', fontSize:'14px', textAlign:'center', padding:'12px 0' }}>Sin tareas para mostrar</div>
+            )}
+            {desglosePizarrones.filter(g => modalStats === 'pendientes' ? g.pendientes > 0 : g.completadas > 0).map(g => (
+              <div key={g.grupoId} onClick={() => { setModalStats(null); localStorage.setItem('syng_grupo_activo_pizarron', g.grupoId); onIrPantalla('pizarron') }} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', marginBottom:'8px', borderRadius:'14px', background: esOscuro ? 'rgba(255,255,255,0.06)' : '#f5f5f7', cursor:'pointer' }}>
+                <div style={{ fontSize:'15px', fontWeight:'600', color: esOscuro ? 'white' : '#2C2C2A' }}>{g.nombre}</div>
+                <div style={{ fontSize:'22px', fontWeight:'800', color: modalStats === 'pendientes' ? (esOscuro ? '#A89EFF' : '#534AB7') : (esOscuro ? '#5EDFB8' : '#2ECC9A') }}>
+                  {modalStats === 'pendientes' ? g.pendientes : g.completadas}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       <NavBar pantalla="inicio" onIrPantalla={onIrPantalla} th={th} t={t} />
     </div>
   )
