@@ -9,14 +9,14 @@ import ListaSuper from './ListaSuper'
 
 const TEMA = {
   oscuro: {
-    bg: '#0D0D1A', bgCard: '#1A1A2E', bgCardAlt: '#16213E', bgInput: '#1E1E35',
+    bg: '#070712', bgCard: '#18183A', bgCardAlt: '#1E1E42', bgInput: '#22224A',
     header: 'linear-gradient(135deg,#534AB7,#2D2B6B)', headerSolido: '#534AB7',
     texto: '#F0F0FF', textoSub: '#9090B8', textoMuted: 'rgba(255,255,255,0.45)',
-    borde: 'rgba(255,255,255,0.08)', bordeInput: 'rgba(255,255,255,0.15)',
+    borde: 'rgba(255,255,255,0.13)', bordeInput: 'rgba(255,255,255,0.2)',
     acento: '#7B6EF6', acentoVerde: '#2ECC9A',
-    navBg: '#13132A', navBorde: 'rgba(255,255,255,0.08)',
-    sombra: '0 4px 24px rgba(0,0,0,0.5)', nombre: 'oscuro',
-    statPendBg: '#1E1A3A', statCompBg: '#0D2A22',
+    navBg: '#0E0E24', navBorde: 'rgba(255,255,255,0.12)',
+    sombra: '0 4px 24px rgba(0,0,0,0.7)', nombre: 'oscuro',
+    statPendBg: '#201C48', statCompBg: '#0C2E24',
   },
   claro: {
     bg: '#F5F5F7', bgCard: '#FFFFFF', bgCardAlt: '#F0F0F8', bgInput: '#F5F5F7',
@@ -309,7 +309,7 @@ function NavBar({ pantalla, onIrPantalla, th, t }) {
     { key:'perfil', label:t.perfil, icon:'◯' },
   ]
   return (
-    <div style={{ position:'fixed', bottom:0, left:0, right:0, background:th.navBg, borderTop:`1px solid ${th.navBorde}`, display:'flex', zIndex:50, paddingBottom:'env(safe-area-inset-bottom,0px)' }}>
+    <div style={{ position:'fixed', bottom:0, left:0, right:0, background: th.nombre==='oscuro' ? 'rgba(6,6,15,0.85)' : th.navBg, borderTop: th.nombre==='oscuro' ? '1px solid rgba(255,255,255,0.1)' : `1px solid ${th.navBorde}`, backdropFilter: th.nombre==='oscuro' ? 'blur(20px)' : 'none', display:'flex', zIndex:50, paddingBottom:'env(safe-area-inset-bottom,0px)' }}>
       {items.map(item => {
         const activo = pantalla === item.key
         return (
@@ -414,54 +414,77 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
     return () => unsub()
   }, [userId])
 
+  const esOscuro = th.nombre === 'oscuro'
+
   return (
-    <div style={{ minHeight:'100vh', background:th.bg, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', paddingBottom:'80px' }}>
-      <div style={{ background:th.header, padding:'16px 20px 28px 20px' }}>
+    <div style={{ minHeight:'100vh', background: esOscuro ? '#06060F' : th.bg, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', paddingBottom:'80px', position:'relative', overflow:'hidden' }}>
+      {/* Orbes glassmorphism - solo modo oscuro */}
+      {esOscuro && <>
+        <div style={{ position:'fixed', top:'-80px', left:'-60px', width:'280px', height:'280px', borderRadius:'50%', background:'radial-gradient(circle, rgba(123,110,246,0.2) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
+        <div style={{ position:'fixed', top:'250px', right:'-80px', width:'260px', height:'260px', borderRadius:'50%', background:'radial-gradient(circle, rgba(46,204,154,0.13) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
+        <div style={{ position:'fixed', bottom:'100px', left:'20px', width:'180px', height:'180px', borderRadius:'50%', background:'radial-gradient(circle, rgba(123,110,246,0.1) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
+      </>}
+
+      {/* Header */}
+      <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : th.header, padding:'16px 20px 28px 20px', position:'relative', zIndex:1 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-            <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:'rgba(255,255,255,0.2)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', color:'white', fontWeight:'800' }}>∞</div>
+            <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', color:'white', fontWeight:'800' }}>∞</div>
             <div style={{ color:'white', fontSize:'22px', fontWeight:'800', letterSpacing:'-0.5px' }}>Syng</div>
           </div>
-          <button onClick={() => onIrPantalla('perfil')} style={{ width:'42px', height:'42px', borderRadius:'50%', background:'rgba(255,255,255,0.2)', border:'2px solid rgba(255,255,255,0.4)', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'15px', fontWeight:'700', cursor:'pointer' }}>
+          <button onClick={() => onIrPantalla('perfil')} style={{ width:'42px', height:'42px', borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'1.5px solid rgba(255,255,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'15px', fontWeight:'700', cursor:'pointer' }}>
             {iniciales||'👤'}
           </button>
         </div>
         <div style={{ marginTop:'20px' }}>
-          <div style={{ color:'rgba(255,255,255,0.7)', fontSize:'13px' }}>{fechaStr}</div>
+          <div style={{ color:'rgba(255,255,255,0.65)', fontSize:'13px' }}>{fechaStr}</div>
           <div style={{ color:'white', fontSize:'24px', fontWeight:'800', marginTop:'2px' }}>Hola, {nombre}.</div>
-          <div style={{ color:'rgba(255,255,255,0.75)', fontSize:'14px', marginTop:'2px' }}>{pendientesHoy} {t.pendientesHoy}</div>
+          <div style={{ color:'rgba(255,255,255,0.7)', fontSize:'14px', marginTop:'2px' }}>{pendientesHoy} {t.pendientesHoy}</div>
         </div>
       </div>
-      <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px' }}>
+
+      {/* Contenido */}
+      <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px', position:'relative', zIndex:1 }}>
+
+        {/* Stats */}
         <div style={{ display:'flex', gap:'12px' }}>
-          <div style={{ flex:1, background:th.statPendBg, borderRadius:'18px', padding:'18px 16px' }}>
-            <div style={{ fontSize:'28px', fontWeight:'800', color:th.acento }}>{pendientesHoy}</div>
-            <div style={{ fontSize:'12px', color:th.textoSub, marginTop:'4px' }}>{t.pendientes}</div>
+          <div style={{ flex:1, background: esOscuro ? 'rgba(123,110,246,0.12)' : th.statPendBg, border: esOscuro ? '1px solid rgba(123,110,246,0.3)' : 'none', borderRadius:'18px', padding:'18px 16px', backdropFilter: esOscuro ? 'blur(10px)' : 'none' }}>
+            <div style={{ fontSize:'28px', fontWeight:'800', color: esOscuro ? '#A89EFF' : th.acento }}>{pendientesHoy}</div>
+            <div style={{ fontSize:'12px', color: esOscuro ? 'rgba(168,158,255,0.7)' : th.textoSub, marginTop:'4px' }}>{t.pendientes}</div>
           </div>
-          <div style={{ flex:1, background:th.statCompBg, borderRadius:'18px', padding:'18px 16px' }}>
-            <div style={{ fontSize:'28px', fontWeight:'800', color:th.acentoVerde }}>{completadasHoy}</div>
-            <div style={{ fontSize:'12px', color:th.textoSub, marginTop:'4px' }}>{t.completadas}</div>
+          <div style={{ flex:1, background: esOscuro ? 'rgba(46,204,154,0.1)' : th.statCompBg, border: esOscuro ? '1px solid rgba(46,204,154,0.25)' : 'none', borderRadius:'18px', padding:'18px 16px', backdropFilter: esOscuro ? 'blur(10px)' : 'none' }}>
+            <div style={{ fontSize:'28px', fontWeight:'800', color: esOscuro ? '#5EDFB8' : th.acentoVerde }}>{completadasHoy}</div>
+            <div style={{ fontSize:'12px', color: esOscuro ? 'rgba(94,223,184,0.7)' : th.textoSub, marginTop:'4px' }}>{t.completadas}</div>
           </div>
         </div>
-        <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', paddingLeft:'4px', marginBottom:'-4px' }}>{t.misModulos}</div>
-        <div onClick={() => onIrPantalla('pizarron')} style={{ background:th.bgCard, borderRadius:'18px', padding:'18px 16px', boxShadow:th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px' }}>
-          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>▦</div>
+
+        {/* Label */}
+        <div style={{ fontSize:'11px', fontWeight:'700', color: esOscuro ? 'rgba(255,255,255,0.35)' : th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', paddingLeft:'4px', marginBottom:'-4px' }}>{t.misModulos}</div>
+
+        {/* Pizarrón */}
+        <div onClick={() => onIrPantalla('pizarron')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(123,110,246,0.35)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px', backdropFilter: esOscuro ? 'blur(12px)' : 'none' }}>
+          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(123,110,246,0.2)' : `${th.acento}22`, border: esOscuro ? '1px solid rgba(123,110,246,0.3)' : 'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>▦</div>
           <div style={{ flex:1 }}>
-            <div style={{ fontSize:'16px', fontWeight:'700', color:th.acento }}>{t.pizarron}</div>
-            <div style={{ color:th.textoSub, fontSize:'13px', marginTop:'2px' }}>{t.pizarronDesc}</div>
+            <div style={{ fontSize:'16px', fontWeight:'700', color: esOscuro ? '#A89EFF' : th.acento }}>{t.pizarron}</div>
+            <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : th.textoSub, fontSize:'13px', marginTop:'2px' }}>{t.pizarronDesc}</div>
           </div>
-          <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:th.acento, opacity:0.5 }} />
+          <div style={{ width:'8px', height:'8px', borderRadius:'50%', background: esOscuro ? '#7B6EF6' : th.acento, opacity:0.7 }} />
         </div>
-        <div onClick={() => onIrPantalla('listasuper')} style={{ background:th.bgCard, borderRadius:'18px', padding:'18px 16px', boxShadow:th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px' }}>
-          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background:`${th.acentoVerde}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>◫</div>
+
+        {/* Lista del Súper */}
+        <div onClick={() => onIrPantalla('listasuper')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(46,204,154,0.3)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px', backdropFilter: esOscuro ? 'blur(12px)' : 'none' }}>
+          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(46,204,154,0.15)' : `${th.acentoVerde}22`, border: esOscuro ? '1px solid rgba(46,204,154,0.25)' : 'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>◫</div>
           <div style={{ flex:1 }}>
-            <div style={{ fontSize:'16px', fontWeight:'700', color:th.acentoVerde }}>{t.super}</div>
-            <div style={{ color:th.textoSub, fontSize:'13px', marginTop:'2px' }}>{t.superDesc}</div>
+            <div style={{ fontSize:'16px', fontWeight:'700', color: esOscuro ? '#5EDFB8' : th.acentoVerde }}>{t.super}</div>
+            <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : th.textoSub, fontSize:'13px', marginTop:'2px' }}>{t.superDesc}</div>
           </div>
-          <div style={{ width:'24px', height:'24px', borderRadius:'50%', background:th.acentoVerde, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:'700', color:'white' }}>0</div>
+          <div style={{ width:'24px', height:'24px', borderRadius:'50%', background: esOscuro ? '#2ECC9A' : th.acentoVerde, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:'700', color: esOscuro ? '#04342C' : 'white' }}>0</div>
         </div>
-        <div style={{ background:th.bgCard, borderRadius:'18px', padding:'18px 16px', boxShadow:th.sombra, opacity:0.3, minHeight:'72px' }} />
+
+        {/* Espacio reservado */}
+        <div style={{ background: esOscuro ? 'rgba(255,255,255,0.02)' : th.bgCard, border: esOscuro ? '1px solid rgba(255,255,255,0.08)' : 'none', borderRadius:'18px', padding:'18px 16px', opacity:0.35, minHeight:'72px', backdropFilter: esOscuro ? 'blur(8px)' : 'none' }} />
       </div>
+
       <Sinyi idioma={'es'} nombre={nombre} pantalla={'inicio'} />
       <NavBar pantalla="inicio" onIrPantalla={onIrPantalla} th={th} t={t} />
     </div>
