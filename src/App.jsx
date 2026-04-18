@@ -501,7 +501,7 @@ export default function App() {
   const [user, setUser] = useState(null)
   const [pantalla, setPantalla] = useState('inicio')
   const [idioma, setIdioma] = useState(() => localStorage.getItem('syng_idioma') || 'es')
-  const [tema, setTema] = useState(() => localStorage.getItem('syng_tema') || 'oscuro')
+  const [tema, setTema] = useState(() => localStorage.getItem('syng_tema') || 'claro')
   const [invId, setInvId] = useState(null)
   const [invData, setInvData] = useState(null)
   const [invCargando, setInvCargando] = useState(false)
