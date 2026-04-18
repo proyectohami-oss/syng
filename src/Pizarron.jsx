@@ -997,7 +997,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
               return (
               <div key={a.id} style={{display:editando&&editando!==a.id?'none':'block'}}>
                 {dragOverModal === i && <div style={{height:'3px',background:'#534AB7',borderRadius:'2px',margin:'3px 0'}}/>}
-                <div data-modalidx={i} style={{padding:'8px 0',borderBottom:'1px solid #f5f5f7',userSelect:'none',opacity:draggingModalIdx===i?0.4:1,borderRadius:'8px',touchAction:'pan-y'}}>
+                <div data-modalidx={i} style={{padding:"10px 12px",marginBottom:"6px",borderRadius:"12px",border:"1px solid rgba(83,74,183,0.18)",background:"rgba(83,74,183,0.22)",userSelect:"none",opacity:draggingModalIdx===i?0.4:1,touchAction:"pan-y"}}>
 
                   {editando === a.id ? (
                     /* ── MODO EDICIÓN ── */
