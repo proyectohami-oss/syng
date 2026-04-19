@@ -278,10 +278,26 @@ function Sinyi({ idioma, nombre, pantalla }) {
     if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return
     if (wakeRef.current) try { wakeRef.current.stop() } catch {}
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    const rec = new SR(); rec.lang=t.vozVoz; rec.continuous=true; rec.interimResults=false
-    rec.onresult=(e)=>{ const txt=e.results[e.results.length-1][0].transcript.toLowerCase(); if (!activadaRef.current&&(txt.includes('sinyi')||txt.includes('siniy')||txt.includes('sing')||txt.includes('syng')||txt.includes('siny')||txt.includes('singi')||txt.includes('sin yi'))) { activadaRef.current=true; rec.stop(); hablar(saludos[Math.floor(Math.random()*saludos.length)]); setTimeout(escucharComando,1800) } }
-    rec.onerror=()=>setTimeout(iniciarWake,2000); rec.onend=()=>{ if (!activadaRef.current) setTimeout(iniciarWake,500) }
-    try { rec.start() } catch {}; wakeRef.current=rec
+    const rec = new SR()
+    rec.lang = t.vozVoz
+    rec.continuous = true
+    rec.interimResults = true
+    rec.onresult = (e) => {
+      const txt = e.results[e.results.length-1][0].transcript.toLowerCase()
+      if (!activadaRef.current && (txt.includes('sinyi')||txt.includes('siniy')||txt.includes('sing')||txt.includes('syng')||txt.includes('siny')||txt.includes('singi')||txt.includes('sin yi'))) {
+        activadaRef.current = true
+        try { rec.stop() } catch {}
+        hablar(saludos[Math.floor(Math.random()*saludos.length)])
+        setTimeout(escucharComando, 1800)
+      }
+    }
+    rec.onerror = (e) => {
+      if (e.error === 'not-allowed' || e.error === 'service-not-allowed') return
+      setTimeout(iniciarWake, 3000)
+    }
+    rec.onend = () => { if (!activadaRef.current) setTimeout(iniciarWake, 1500) }
+    try { rec.start() } catch { setTimeout(iniciarWake, 3000) }
+    wakeRef.current = rec
   }
   useEffect(()=>{ const h=()=>{ if(activadaRef.current)return; activadaRef.current=true; if(wakeRef.current)try{wakeRef.current.stop()}catch{}; hablar(saludos[Math.floor(Math.random()*saludos.length)]); setTimeout(escucharComando,1800) }; window.addEventListener('sinyi:activar',h); return()=>window.removeEventListener('sinyi:activar',h) },[])
   useEffect(()=>{ window.speechSynthesis.getVoices(); window.speechSynthesis.onvoiceschanged=()=>window.speechSynthesis.getVoices(); iniciarWake(); return()=>{ if(wakeRef.current)try{wakeRef.current.stop()}catch{}; if(recRef.current)try{recRef.current.stop()}catch{}; window.speechSynthesis.cancel() } },[idioma])
