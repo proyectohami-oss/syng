@@ -315,7 +315,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
         <div style={{ background:th.bgCard, borderRadius:'18px', padding:'16px 20px', boxShadow:th.sombra, marginBottom:'20px' }}>
           <SelectorIdioma idioma={idioma} onChange={onCambiarIdioma} tema={th} />
         </div>
-        {(pwaPrompt || pwaIos) && <div style={{ marginBottom:'20px' }}>
+        <div style={{ marginBottom:'20px' }}>
             <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>App</div>
             <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra }}>
               <div onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
@@ -329,7 +329,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
                 <span style={{ color:th.acento, fontSize:'16px' }}>›</span>
               </div>
           </div>
-        </div>}
+        </div>
         {mostrarInstrucciones && (
           <div onClick={() => setMostrarInstrucciones(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:300, padding:'0 0 90px 0' }}>
             <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', padding:'32px 24px 28px', width:'100%', maxWidth:'400px' }}>
