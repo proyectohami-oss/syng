@@ -238,11 +238,11 @@ function SelectorIdioma({ idioma, onChange, tema }) {
 // ─── BARRA NAVEGACIÓN ─────────────────────────────────────────
 function NavBar({ pantalla, onIrPantalla, th, t }) {
   const items = [
-    { key:'inicio', label:t.inicio, icon:'⌂' },
-    { key:'pizarron', label:t.pizarron, icon:'▦' },
-    { key:'listasuper', label:t.super2, icon:'◫' },
+    { key:'inicio', label:t.inicio, icon:'🏠' },
+    { key:'pizarron', label:t.pizarron, icon:'📅' },
+    { key:'listasuper', label:t.super2, icon:'🛒' },
     { key:'compartir', label:'Compartir', icon:'📤', accion: () => { if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app') } } },
-    { key:'perfil', label:t.perfil, icon:'◯' },
+    { key:'perfil', label:t.perfil, icon:'👤' },
   ]
   return (
     <div style={{ position:'fixed', bottom:0, left:0, right:0, background: th.nombre==='oscuro' ? 'rgba(6,6,15,0.85)' : th.navBg, borderTop: th.nombre==='oscuro' ? '1px solid rgba(255,255,255,0.1)' : `1px solid ${th.navBorde}`, backdropFilter: th.nombre==='oscuro' ? 'blur(20px)' : 'none', display:'flex', zIndex:50, paddingBottom:'env(safe-area-inset-bottom,0px)' }}>
