@@ -1042,9 +1042,9 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
                           <div style={{background:'#f5f5f7',borderRadius:'12px',padding:'12px',marginTop:'4px'}}>
                             <div style={{fontSize:'12px',color:'#888',marginBottom:'8px',textAlign:'center'}}>Toca el día al que quieres mover esta anotación</div>
                             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}}>
-                              <button onClick={()=>{if(mesCalEdit===0){setMesCalEdit(11);setAnioCalEdit(anioCalEdit-1)}else setMesCalEdit(mesCalEdit-1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'3px 10px',...T}}>‹</button>
+                              <button onClick={()=>{if(mesCalEdit===0){setMesCalEdit(11);setAnioCalEdit(anioCalEdit-1)}else setMesCalEdit(mesCalEdit-1)}} style={{background:th.bgCard,border:`1px solid ${th.borde}`,borderRadius:'8px',padding:'3px 10px',color:th.texto,...T}}>‹</button>
                               <div style={{fontSize:'13px',fontWeight:'600'}}>{MESES[mesCalEdit]} {anioCalEdit}</div>
-                              <button onClick={()=>{if(mesCalEdit===11){setMesCalEdit(0);setAnioCalEdit(anioCalEdit+1)}else setMesCalEdit(mesCalEdit+1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'3px 10px',...T}}>›</button>
+                              <button onClick={()=>{if(mesCalEdit===11){setMesCalEdit(0);setAnioCalEdit(anioCalEdit+1)}else setMesCalEdit(mesCalEdit+1)}} style={{background:th.bgCard,border:`1px solid ${th.borde}`,borderRadius:'8px',padding:'3px 10px',color:th.texto,...T}}>›</button>
                             </div>
                             <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px',marginBottom:'4px'}}>
                               {DIAS_SEMANA.map(d => <div key={d} style={{textAlign:'center',fontSize:'10px',color:'#aaa'}}>{d}</div>)}
@@ -1062,9 +1062,9 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
                           <div style={{background:'#f5f5f7',borderRadius:'12px',padding:'12px',marginTop:'4px'}}>
                             <div style={{fontSize:'12px',color:'#888',marginBottom:'8px',textAlign:'center'}}>Toca los días donde quieres copiar esta anotación</div>
                             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:'10px'}}>
-                              <button onClick={()=>{if(mesCalRep===0){setMesCalRep(11);setAnioCalRep(anioCalRep-1)}else setMesCalRep(mesCalRep-1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'3px 10px',fontSize:'16px',...T}}>{'‹'}</button>
+                              <button onClick={()=>{if(mesCalRep===0){setMesCalRep(11);setAnioCalRep(anioCalRep-1)}else setMesCalRep(mesCalRep-1)}} style={{background:th.bgCard,border:`1px solid ${th.borde}`,borderRadius:'8px',padding:'3px 10px',fontSize:'16px',color:th.texto,...T}}>{'‹'}</button>
                               <div style={{fontSize:'13px',fontWeight:'600'}}>{MESES[mesCalRep]} {anioCalRep}</div>
-                              <button onClick={()=>{if(mesCalRep===11){setMesCalRep(0);setAnioCalRep(anioCalRep+1)}else setMesCalRep(mesCalRep+1)}} style={{background:'white',border:'1px solid #e5e5e5',borderRadius:'8px',padding:'3px 10px',fontSize:'16px',...T}}>{'›'}</button>
+                              <button onClick={()=>{if(mesCalRep===11){setMesCalRep(0);setAnioCalRep(anioCalRep+1)}else setMesCalRep(mesCalRep+1)}} style={{background:th.bgCard,border:`1px solid ${th.borde}`,borderRadius:'8px',padding:'3px 10px',fontSize:'16px',color:th.texto,...T}}>{'›'}</button>
                             </div>
                             <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px',marginBottom:'4px'}}>
                               {DIAS_SEMANA.map(d => <div key={d} style={{textAlign:'center',fontSize:'10px',color:'#aaa'}}>{d}</div>)}
