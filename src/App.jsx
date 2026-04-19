@@ -603,6 +603,12 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
   const [completadasHoy, setCompletatdasHoy] = useState(0)
   const [desglosePizarrones, setDesglosePizarrones] = useState([])
   const [modalStats, setModalStats] = useState(null)
+  const [mostrarBannerSinyi, setMostrarBannerSinyi] = useState(true)
+  const activarSinyi = () => {
+    setMostrarBannerSinyi(false)
+    window.speechSynthesis.speak(new SpeechSynthesisUtterance(''))
+    window.dispatchEvent(new CustomEvent('sinyi:activar'))
+  }
 
   useEffect(() => {
     if (!userId) return
@@ -662,6 +668,16 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
           <div style={{ color:'rgba(255,255,255,0.7)', fontSize:'14px', marginTop:'2px' }}>{pendientesHoy} {t.pendientesHoy}</div>
         </div>
       </div>
+
+      {mostrarBannerSinyi && (
+        <div onClick={activarSinyi} style={{ margin:'12px 16px 0', background:'rgba(83,74,183,0.15)', border:'1px solid rgba(83,74,183,0.3)', borderRadius:'14px', padding:'12px 16px', display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer' }}>
+          <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
+            <div style={{ width:'8px', height:'8px', borderRadius:'50%', background:'#5DCAA5', flexShrink:0 }} />
+            <span style={{ fontSize:'14px', fontWeight:'500', color:th.texto }}>Toca para activar a Sinyi</span>
+          </div>
+          <span style={{ color:th.textoSub, fontSize:'18px' }}>›</span>
+        </div>
+      )}
 
       {/* Contenido */}
       <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px', position:'relative', zIndex:1 }}>
