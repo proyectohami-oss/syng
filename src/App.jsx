@@ -314,7 +314,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
         <div style={{ background:th.bgCard, borderRadius:'18px', padding:'16px 20px', boxShadow:th.sombra, marginBottom:'20px' }}>
           <SelectorIdioma idioma={idioma} onChange={onCambiarIdioma} tema={th} />
         </div>
-        {!pwaInstalada && (pwaPrompt || pwaIos) && (
+        {!pwaInstalada && (
           <div style={{ marginBottom:'20px' }}>
             <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>App</div>
             <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra }}>
@@ -383,6 +383,10 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
             </div>
             <span style={{ color:th.textoSub, fontSize:'16px' }}>›</span>
           </div>
+        </div>
+        <div onClick={()=>{ if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app'); alert('Link copiado') }}} style={{ width:'100%', padding:'16px', background:th.editAcentoBg, border:'none', borderRadius:'18px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'12px', color:th.acento, marginBottom:'12px' }}>
+          <span style={{ fontSize:'20px' }}>⬆</span>
+          <span style={{ fontSize:'15px', fontWeight:'600' }}>Compartir Syng</span>
         </div>
         <button onClick={onSalir} style={{ width:'100%', padding:'16px', background:'rgba(197,48,48,0.15)', border:'none', borderRadius:'18px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'12px', color:'#E53935' }}>
           <span style={{ fontSize:'20px' }}>↪</span>
