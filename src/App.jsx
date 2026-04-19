@@ -241,6 +241,7 @@ function NavBar({ pantalla, onIrPantalla, th, t }) {
     { key:'inicio', label:t.inicio, icon:'⌂' },
     { key:'pizarron', label:t.pizarron, icon:'▦' },
     { key:'listasuper', label:t.super2, icon:'◫' },
+    { key:'compartir', label:'Compartir', icon:'📤', accion: () => { if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app') } } },
     { key:'perfil', label:t.perfil, icon:'◯' },
   ]
   return (
@@ -248,7 +249,7 @@ function NavBar({ pantalla, onIrPantalla, th, t }) {
       {items.map(item => {
         const activo = pantalla === item.key
         return (
-          <button key={item.key} onClick={() => onIrPantalla(item.key)} style={{ flex:1, padding:'10px 0 8px', background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'3px', color: activo ? th.acento : th.textoSub, transition:'color 0.2s' }}>
+          <button key={item.key} onClick={() => item.accion ? item.accion() : onIrPantalla(item.key)} style={{ flex:1, padding:'10px 0 8px', background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'3px', color: activo ? th.acento : th.textoSub, transition:'color 0.2s' }}>
             <span style={{ fontSize:'20px', lineHeight:1 }}>{item.icon}</span>
             <span style={{ fontSize:'10px', fontWeight: activo ? '700' : '400' }}>{item.label}</span>
           </button>
