@@ -1004,7 +1004,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
                     <div>
                       {/* Fila: input + guardar */}
                       <div style={{display:'flex',gap:'8px',marginBottom:'10px',alignItems:'center'}}>
-                        <input value={textoEditar} onChange={e=>setTextoEditar(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarEdicion()} autoFocus style={{flex:1,padding:'6px 10px',borderRadius:'8px',border:'1.5px solid #534AB7',fontSize:'15px',outline:'none'}}/>
+                        <input value={textoEditar} onChange={e=>setTextoEditar(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarEdicion()} autoFocus onFocus={e=>setTimeout(()=>e.target.scrollIntoView({behavior:'smooth',block:'center'}),300)} style={{flex:1,padding:'6px 10px',borderRadius:'8px',border:'1.5px solid #534AB7',fontSize:'15px',outline:'none'}}/>
                         <button onClick={guardarEdicion} style={{background:'#534AB7',border:'none',borderRadius:'8px',padding:'6px 12px',color:'white',fontSize:'14px',...T}}>✓</button>
                       </div>
 
