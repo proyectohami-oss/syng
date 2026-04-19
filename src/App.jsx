@@ -319,30 +319,16 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
           <div style={{ marginBottom:'20px' }}>
             <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>App</div>
             <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra }}>
-              {pwaPrompt && (
-                <div onClick={instalarPwa} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-                    <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>📲</div>
-                    <div>
-                      <div style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>Instalar Syng</div>
-                      <div style={{ fontSize:'12px', color:th.textoSub }}>Agrega la app a tu pantalla de inicio</div>
-                    </div>
+              <div onClick={pwaPrompt ? instalarPwa : () => setMostrarIos(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                  <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>📲</div>
+                  <div>
+                    <div style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>Instalar Syng</div>
+                    <div style={{ fontSize:'12px', color:th.textoSub }}>Agrega la app a tu pantalla de inicio</div>
                   </div>
-                  <span style={{ color:th.acento, fontSize:'16px' }}>›</span>
                 </div>
-              )}
-              {pwaIos && (
-                <div onClick={() => setMostrarIos(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
-                  <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-                    <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>📲</div>
-                    <div>
-                      <div style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>Instalar Syng</div>
-                      <div style={{ fontSize:'12px', color:th.textoSub }}>Ver instrucciones para iPhone</div>
-                    </div>
-                  </div>
-                  <span style={{ color:th.acento, fontSize:'16px' }}>›</span>
-                </div>
-              )}
+                <span style={{ color:th.acento, fontSize:'16px' }}>›</span>
+              </div>
             </div>
           </div>
         )}
