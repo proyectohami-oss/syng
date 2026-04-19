@@ -223,37 +223,37 @@ const TEXTOS = {
 // ─── SINYI ────────────────────────────────────────────────────
 function Sinyi({ idioma, nombre, pantalla }) {
   const t = TEXTOS[idioma] || TEXTOS.es
-  const recRef = useRef(null)
-  const activadaRef = useRef(false)
-  const conversandoRef = useRef(false)
+  const wakeRecRef = useRef(null)
+  const cmdRecRef = useRef(null)
+  const modoRef = useRef('wake') // 'wake' | 'escuchando' | 'procesando'
   const timeoutRef = useRef(null)
   const historiaRef = useRef([])
   const hoy = new Date()
-  const diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado']
+  const diasSemana = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado']
   const fechaHoy = `${hoy.getDate()}/${hoy.getMonth()+1}/${hoy.getFullYear()}`
-  const saludos = ['Dígame.', 'A sus órdenes.', 'Aquí estoy.', 'Con usted.', 'Dime.']
-  const palabrasWake = ['sinyi','siniy','sing','syng','siny','singi','sin yi','ciri']
-  const despedidas = ['gracias','hasta luego','adiós','adios','bye','chao','nos vemos','hasta pronto']
+  const saludos = ['Digame.', 'A sus ordenes.', 'Aqui estoy.', 'Con usted.', 'Dime.']
+  const palabrasWake = ['sinyi','siniy','siny','singi','sin yi']
+  const despedidas = ['gracias','hasta luego','adios','bye','chao','nos vemos','hasta pronto']
 
   const sistemaSinyi = `Eres Sinyi, el asistente inteligente de Syng. Eres como J.A.R.V.I.S. — brillante, con humor fino y sarcasmo elegante. Directo, eficiente y siempre leal. Tratas al usuario como a un igual inteligente.
 
-Hoy es ${diasSemana[hoy.getDay()]} ${fechaHoy}. El usuario se llama ${nombre}. Están en: ${pantalla}.
+Hoy es ${diasSemana[hoy.getDay()]} ${fechaHoy}. El usuario se llama ${nombre}. Estan en: ${pantalla}.
 
 CAPACIDADES:
-- Agregar tarea al Pizarrón: {"accion":"agregar_tarea","texto":"la tarea","fecha":"hoy|mañana|YYYY-M-D"}
-- Agregar producto al Súper: {"accion":"agregar_producto","producto":"nombre","departamento":"Lácteos|Carnes y embutidos|Frutas y verduras|Abarrotes|Panadería|Bebidas|Limpieza|Higiene personal|Congelados|Snacks y dulces|Artículos de cocina|Bebés|Mascotas|Farmacia básica"}
+- Agregar tarea al Pizarron: {"accion":"agregar_tarea","texto":"la tarea","fecha":"hoy|manana|YYYY-M-D"}
+- Agregar producto al Super: {"accion":"agregar_producto","producto":"nombre","departamento":"Lacteos|Carnes y embutidos|Frutas y verduras|Abarrotes|Panaderia|Bebidas|Limpieza|Higiene personal|Congelados|Snacks y dulces|Articulos de cocina|Bebes|Mascotas|Farmacia basica"}
 - Navegar en Syng: {"accion":"navegar","destino":"inicio|pizarron|listasuper|perfil"}
 - Consultas generales: responde con tu conocimiento.
 
-Si detectas una acción responde SOLO con el JSON seguido de tu comentario. Ejemplo: {"accion":"agregar_tarea","texto":"reunión con Jorge","fecha":"mañana"} Listo, jefe.
+Si detectas una accion responde SOLO con el JSON seguido de tu comentario. Ejemplo: {"accion":"agregar_tarea","texto":"reunion con Jorge","fecha":"manana"} Listo, jefe.
 
-Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
+Maximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
 
   const ejecutarAccion = (accion) => {
     if (accion.accion === 'agregar_tarea') {
       const fecha = accion.fecha; let dia, mes, anio
       if (fecha === 'hoy') { dia=hoy.getDate(); mes=hoy.getMonth(); anio=hoy.getFullYear() }
-      else if (fecha === 'mañana') { const m=new Date(hoy); m.setDate(m.getDate()+1); dia=m.getDate(); mes=m.getMonth(); anio=m.getFullYear() }
+      else if (fecha === 'manana') { const m=new Date(hoy); m.setDate(m.getDate()+1); dia=m.getDate(); mes=m.getMonth(); anio=m.getFullYear() }
       else { const p=fecha.split('-').map(Number); anio=p[0]; mes=p[1]-1; dia=p[2] }
       window.dispatchEvent(new CustomEvent('sinyi:agregar_tarea', { detail: { texto: accion.texto, dia, mes, anio } }))
     } else if (accion.accion === 'agregar_producto') {
@@ -263,8 +263,24 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
     }
   }
 
-  const hablar = (texto, continuar = true) => {
+  const detenerTodo = () => {
+    if (wakeRecRef.current) try { wakeRecRef.current.stop() } catch {}
+    if (cmdRecRef.current) try { cmdRecRef.current.stop() } catch {}
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
     window.speechSynthesis.cancel()
+  }
+
+  const volverAWake = () => {
+    modoRef.current = 'wake'
+    historiaRef.current = []
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    if (cmdRecRef.current) try { cmdRecRef.current.stop() } catch {}
+    setTimeout(iniciarWake, 800)
+  }
+
+  const hablar = (texto, seguir = true) => {
+    window.speechSynthesis.cancel()
+    if (cmdRecRef.current) try { cmdRecRef.current.stop() } catch {}
     const u = new SpeechSynthesisUtterance(texto)
     u.lang = t.vozVoz; u.rate = 1.0; u.pitch = 1.1
     const voces = window.speechSynthesis.getVoices()
@@ -273,42 +289,26 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
       || voces.find(v => v.lang.startsWith('es'))
     if (voz) u.voice = voz
     u.onend = () => {
-      activadaRef.current = false
-      if (continuar && conversandoRef.current) {
-        reiniciarTimeout()
-        arrancarEscucha()
+      if (seguir && modoRef.current !== 'wake') {
+        iniciarEscucha()
+        timeoutRef.current = setTimeout(volverAWake, 30000)
       } else {
-        terminarConversacion()
+        volverAWake()
       }
     }
     window.speechSynthesis.speak(u)
   }
 
-  const reiniciarTimeout = () => {
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    timeoutRef.current = setTimeout(() => {
-      terminarConversacion()
-    }, 30000)
-  }
-
-  const terminarConversacion = () => {
-    conversandoRef.current = false
-    activadaRef.current = false
-    historiaRef.current = []
-    if (timeoutRef.current) clearTimeout(timeoutRef.current)
-    if (recRef.current) try { recRef.current.stop() } catch {}
-    setTimeout(arrancarEscucha, 500)
-  }
-
   const procesarTexto = async (texto) => {
+    if (modoRef.current !== 'escuchando') return
+    modoRef.current = 'procesando'
     if (timeoutRef.current) clearTimeout(timeoutRef.current)
     if (despedidas.some(d => texto.toLowerCase().includes(d))) {
-      conversandoRef.current = false
-      hablar('Hasta luego. Aquí estaré.', false)
+      hablar('Hasta luego. Aqui estare.', false)
       return
     }
     const apiKey = import.meta.env.VITE_CLAUDE_API_KEY || ''
-    if (!apiKey) { hablar('Sin acceso al núcleo. Revise la configuración.', false); return }
+    if (!apiKey) { hablar('Sin acceso al nucleo.', false); return }
     historiaRef.current = [...historiaRef.current, { role: 'user', content: texto }].slice(-10)
     try {
       const res = await fetch('https://api.anthropic.com/v1/messages', {
@@ -317,7 +317,7 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
         body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 200, system: sistemaSinyi, messages: historiaRef.current })
       })
       const data = await res.json()
-      const respuesta = data?.content?.[0]?.text || 'No logré procesar eso.'
+      const respuesta = data?.content?.[0]?.text || 'No logre procesar eso.'
       const jsonMatch = respuesta.match(/\{[^}]+\}/)
       if (jsonMatch) {
         try {
@@ -334,39 +334,57 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
     } catch { hablar('Fallo en el sistema. Intente de nuevo.') }
   }
 
-  const arrancarEscucha = () => {
+  const iniciarEscucha = () => {
     if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return
-    if (recRef.current) try { recRef.current.stop() } catch {}
+    modoRef.current = 'escuchando'
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+    const rec = new SR()
+    rec.lang = t.vozVoz
+    rec.continuous = false
+    rec.interimResults = false
+    rec.onresult = (e) => {
+      const txt = e.results[0][0].transcript
+      procesarTexto(txt)
+    }
+    rec.onerror = () => {
+      if (modoRef.current === 'escuchando') {
+        timeoutRef.current = setTimeout(volverAWake, 30000)
+        iniciarEscucha()
+      }
+    }
+    rec.onend = () => {}
+    cmdRecRef.current = rec
+    try { rec.start() } catch { setTimeout(volverAWake, 1000) }
+  }
+
+  const iniciarWake = () => {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return
+    if (modoRef.current !== 'wake') return
+    if (wakeRecRef.current) try { wakeRecRef.current.stop() } catch {}
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     const rec = new SR()
     rec.lang = t.vozVoz
     rec.continuous = true
     rec.interimResults = true
     rec.onresult = (e) => {
-      const ultimo = e.results[e.results.length - 1]
-      const txt = ultimo[0].transcript.toLowerCase()
-      if (!conversandoRef.current) {
-        if (!activadaRef.current && palabrasWake.some(w => txt.includes(w))) {
-          activadaRef.current = true
-          conversandoRef.current = true
-          historiaRef.current = []
-          window.speechSynthesis.cancel()
-          hablar(saludos[Math.floor(Math.random() * saludos.length)])
-        }
-      } else if (ultimo.isFinal && !activadaRef.current) {
-        if (timeoutRef.current) clearTimeout(timeoutRef.current)
-        procesarTexto(txt)
+      if (modoRef.current !== 'wake') return
+      const txt = e.results[e.results.length-1][0].transcript.toLowerCase()
+      if (palabrasWake.some(w => txt.includes(w))) {
+        modoRef.current = 'procesando'
+        historiaRef.current = []
+        try { rec.stop() } catch {}
+        hablar(saludos[Math.floor(Math.random() * saludos.length)])
       }
     }
     rec.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') return
-      setTimeout(arrancarEscucha, 3000)
+      if (modoRef.current === 'wake') setTimeout(iniciarWake, 3000)
     }
     rec.onend = () => {
-      if (!window.speechSynthesis.speaking) setTimeout(arrancarEscucha, 1000)
+      if (modoRef.current === 'wake') setTimeout(iniciarWake, 1500)
     }
-    try { rec.start() } catch { setTimeout(arrancarEscucha, 3000) }
-    recRef.current = rec
+    try { rec.start() } catch { setTimeout(iniciarWake, 3000) }
+    wakeRecRef.current = rec
   }
 
   useEffect(() => {
@@ -377,11 +395,10 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
 
   useEffect(() => {
     const h = () => {
-      if (activadaRef.current) return
-      activadaRef.current = true
-      conversandoRef.current = true
+      if (modoRef.current !== 'wake') return
+      modoRef.current = 'procesando'
       historiaRef.current = []
-      if (recRef.current) try { recRef.current.stop() } catch {}
+      if (wakeRecRef.current) try { wakeRecRef.current.stop() } catch {}
       hablar(saludos[Math.floor(Math.random() * saludos.length)])
     }
     window.addEventListener('sinyi:activar', h)
@@ -391,12 +408,11 @@ Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
   useEffect(() => {
     window.speechSynthesis.getVoices()
     window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices()
-    const timer = setTimeout(arrancarEscucha, 1500)
+    const timer = setTimeout(iniciarWake, 1500)
     return () => {
       clearTimeout(timer)
       if (timeoutRef.current) clearTimeout(timeoutRef.current)
-      if (recRef.current) try { recRef.current.stop() } catch {}
-      window.speechSynthesis.cancel()
+      detenerTodo()
     }
   }, [idioma])
 
