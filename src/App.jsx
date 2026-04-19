@@ -318,7 +318,7 @@ Maximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
       })
       const data = await res.json()
       const respuesta = data?.content?.[0]?.text || 'No logre procesar eso.'
-      const jsonMatch = respuesta.match(/\{[^}]+\}/)
+      const jsonMatch = respuesta.match(/\{[\s\S]*?\}/)
       if (jsonMatch) {
         try {
           const accion = JSON.parse(jsonMatch[0])
