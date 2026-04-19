@@ -315,10 +315,10 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
         <div style={{ background:th.bgCard, borderRadius:'18px', padding:'16px 20px', boxShadow:th.sombra, marginBottom:'20px' }}>
           <SelectorIdioma idioma={idioma} onChange={onCambiarIdioma} tema={th} />
         </div>
-        {(pwaPrompt || pwaIos) && <div style={{ marginBottom:'20px' }}>
+        {!pwaInstalada && <div style={{ marginBottom:'20px' }}>
             <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>App</div>
             <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra }}>
-              <div onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
+              <div onClick={() => setMostrarInstrucciones(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                   <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>📲</div>
                   <div>
@@ -336,10 +336,10 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
               <div style={{ textAlign:'center', marginBottom:'20px' }}>
                 <div style={{ fontSize:'40px', marginBottom:'12px' }}>📲</div>
                 <div style={{ fontSize:'18px', fontWeight:'700', color:th.texto, marginBottom:'8px' }}>¿Instalar Syng?</div>
-                <div style={{ fontSize:'14px', color:th.textoSub, lineHeight:'1.4' }}>Accede más rápido desde tu pantalla de inicio, sin abrir el navegador</div>
+                <div style={{ fontSize:'14px', color:th.textoSub, lineHeight:'1.4' }}>{pwaPrompt ? 'Accede más rápido desde tu pantalla de inicio, sin abrir el navegador' : pwaIos ? 'Abre Safari, toca compartir ⬆ y selecciona Agregar a pantalla de inicio' : 'Abre el menú del navegador (⋮) y selecciona Agregar a pantalla de inicio'}</div>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
-                <button onClick={instalarPwa} style={{ width:'100%', padding:'15px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>Instalar</button>
+                <button onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>{pwaPrompt ? 'Instalar' : 'Entendido'}</button>
                 <button onClick={() => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:'transparent', border:'none', borderRadius:'14px', color:th.textoSub, fontSize:'15px', cursor:'pointer' }}>Ahora no</button>
               </div>
             </div>
