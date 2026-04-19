@@ -884,7 +884,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
 
       {/* Modal del día */}
       {modalDia && (
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.4)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:100}} onClick={e=>{if(e.target===e.currentTarget)cerrarModal()}}>
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.4)',display:'flex',alignItems:'flex-end',justifyContent:'center',zIndex:100,paddingBottom:'env(keyboard-inset-height,0px)'}} onClick={e=>{if(e.target===e.currentTarget)cerrarModal()}}>
           <div style={{background:th.modalBg,borderRadius:'24px 24px 0 0',width:'100%',maxWidth:'600px',maxHeight:'70vh',display:'flex',flexDirection:'column',overscrollBehavior:'contain'}} onClick={e=>e.stopPropagation()}>
 
             {/* Header fijo */}
