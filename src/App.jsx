@@ -224,16 +224,31 @@ const TEXTOS = {
 function Sinyi({ idioma, nombre, pantalla }) {
   const t = TEXTOS[idioma] || TEXTOS.es
   const recRef = useRef(null)
-  const wakeRef = useRef(null)
   const activadaRef = useRef(false)
   const conversandoRef = useRef(false)
-  const timeoutConvRef = useRef(null)
+  const timeoutRef = useRef(null)
   const historiaRef = useRef([])
   const hoy = new Date()
   const diasSemana = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado']
   const fechaHoy = `${hoy.getDate()}/${hoy.getMonth()+1}/${hoy.getFullYear()}`
-  const sistemaSinyi = `Eres Sinyi, el asistente inteligente de Syng. Eres como J.A.R.V.I.S. — un mayordomo brillante, con humor fino y sarcasmo elegante. Eres directo, eficiente y ocasionalmente irónico pero siempre leal. Tratas al usuario como a un igual inteligente.\n\nHoy es ${diasSemana[hoy.getDay()]} ${fechaHoy}. El usuario se llama ${nombre}. Están en: ${pantalla}.\n\nCAPACIDADES:\n- Puedes agregar tareas al Pizarrón: {"accion":"agregar_tarea","texto":"la tarea","fecha":"hoy|mañana|YYYY-M-D"}\n- Puedes agregar productos a la Lista del Súper: {"accion":"agregar_producto","producto":"nombre","departamento":"Lácteos|Carnes y embutidos|Frutas y verduras|Abarrotes|Panadería|Bebidas|Limpieza|Higiene personal|Congelados|Snacks y dulces|Artículos de cocina|Bebés|Mascotas|Farmacia básica"}\n- Puedes navegar en Syng: {"accion":"navegar","destino":"inicio|pizarron|listasuper|perfil"}\n- Para consultas generales responde con tu conocimiento.\n\nSi detectas una acción de Syng responde SOLO con el JSON seguido de tu comentario en voz. Ejemplo: {"accion":"agregar_tarea","texto":"reunión con Jorge","fecha":"mañana"} Listo, jefe.\n\nMáximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
   const saludos = ['Dígame.', 'A sus órdenes.', 'Aquí estoy.', 'Con usted.', 'Dime.']
+  const palabrasWake = ['sinyi','siniy','sing','syng','siny','singi','sin yi','ciri']
+  const despedidas = ['gracias','hasta luego','adiós','adios','bye','chao','nos vemos','hasta pronto']
+
+  const sistemaSinyi = `Eres Sinyi, el asistente inteligente de Syng. Eres como J.A.R.V.I.S. — brillante, con humor fino y sarcasmo elegante. Directo, eficiente y siempre leal. Tratas al usuario como a un igual inteligente.
+
+Hoy es ${diasSemana[hoy.getDay()]} ${fechaHoy}. El usuario se llama ${nombre}. Están en: ${pantalla}.
+
+CAPACIDADES:
+- Agregar tarea al Pizarrón: {"accion":"agregar_tarea","texto":"la tarea","fecha":"hoy|mañana|YYYY-M-D"}
+- Agregar producto al Súper: {"accion":"agregar_producto","producto":"nombre","departamento":"Lácteos|Carnes y embutidos|Frutas y verduras|Abarrotes|Panadería|Bebidas|Limpieza|Higiene personal|Congelados|Snacks y dulces|Artículos de cocina|Bebés|Mascotas|Farmacia básica"}
+- Navegar en Syng: {"accion":"navegar","destino":"inicio|pizarron|listasuper|perfil"}
+- Consultas generales: responde con tu conocimiento.
+
+Si detectas una acción responde SOLO con el JSON seguido de tu comentario. Ejemplo: {"accion":"agregar_tarea","texto":"reunión con Jorge","fecha":"mañana"} Listo, jefe.
+
+Máximo 2 oraciones. Sin asteriscos ni emojis en el texto hablado.`
+
   const ejecutarAccion = (accion) => {
     if (accion.accion === 'agregar_tarea') {
       const fecha = accion.fecha; let dia, mes, anio
@@ -247,131 +262,144 @@ function Sinyi({ idioma, nombre, pantalla }) {
       window.dispatchEvent(new CustomEvent('sinyi:navegar', { detail: { destino: accion.destino } }))
     }
   }
-  const iniciarTimeoutConversacion = () => {
-    if (timeoutConvRef.current) clearTimeout(timeoutConvRef.current)
-    timeoutConvRef.current = setTimeout(() => {
-      conversandoRef.current = false
-      activadaRef.current = false
-      historiaRef.current = []
-      iniciarWake()
-    }, 30000)
-  }
-  const hablar = (texto, seguirConversando = true) => {
+
+  const hablar = (texto, continuar = true) => {
     window.speechSynthesis.cancel()
     const u = new SpeechSynthesisUtterance(texto)
-    u.lang = t.vozVoz; u.rate = 1.05; u.pitch = 1.1
+    u.lang = t.vozVoz; u.rate = 1.0; u.pitch = 1.1
     const voces = window.speechSynthesis.getVoices()
-    const voz = voces.find(v => v.lang.startsWith(idioma) && v.name.toLowerCase().includes('female')) || voces.find(v => v.lang.startsWith(idioma)) || voces.find(v => v.lang.startsWith('es'))
+    const voz = voces.find(v => v.lang.startsWith(idioma) && v.name.toLowerCase().includes('female'))
+      || voces.find(v => v.lang.startsWith(idioma))
+      || voces.find(v => v.lang.startsWith('es'))
     if (voz) u.voice = voz
     u.onend = () => {
       activadaRef.current = false
-      if (seguirConversando && conversandoRef.current) {
-        escucharComando()
-        iniciarTimeoutConversacion()
+      if (continuar && conversandoRef.current) {
+        reiniciarTimeout()
+        arrancarEscucha()
       } else {
-        conversandoRef.current = false
-        setTimeout(iniciarWake, 800)
+        terminarConversacion()
       }
     }
     window.speechSynthesis.speak(u)
   }
-  const preguntarClaude = async (texto) => {
-    const apiKey = import.meta.env.VITE_CLAUDE_API_KEY || ''
-    if (!apiKey) { hablar('No tengo acceso a mi núcleo de procesamiento.', false); return }
-    if (timeoutConvRef.current) clearTimeout(timeoutConvRef.current)
-    historiaRef.current = [...historiaRef.current, { role:'user', content: texto }].slice(-10)
-    const despedidas = ['gracias','hasta luego','adiós','adios','bye','chao','nos vemos']
+
+  const reiniciarTimeout = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    timeoutRef.current = setTimeout(() => {
+      terminarConversacion()
+    }, 30000)
+  }
+
+  const terminarConversacion = () => {
+    conversandoRef.current = false
+    activadaRef.current = false
+    historiaRef.current = []
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
+    if (recRef.current) try { recRef.current.stop() } catch {}
+    setTimeout(arrancarEscucha, 500)
+  }
+
+  const procesarTexto = async (texto) => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current)
     if (despedidas.some(d => texto.toLowerCase().includes(d))) {
       conversandoRef.current = false
-      hablar('Hasta luego. Estaré aquí cuando me necesite.', false)
+      hablar('Hasta luego. Aquí estaré.', false)
       return
     }
+    const apiKey = import.meta.env.VITE_CLAUDE_API_KEY || ''
+    if (!apiKey) { hablar('Sin acceso al núcleo. Revise la configuración.', false); return }
+    historiaRef.current = [...historiaRef.current, { role: 'user', content: texto }].slice(-10)
     try {
-      const res = await fetch('https://api.anthropic.com/v1/messages', { method:'POST', headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'}, body:JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:200, system:sistemaSinyi, messages:historiaRef.current }) })
+      const res = await fetch('https://api.anthropic.com/v1/messages', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+        body: JSON.stringify({ model: 'claude-sonnet-4-20250514', max_tokens: 200, system: sistemaSinyi, messages: historiaRef.current })
+      })
       const data = await res.json()
       const respuesta = data?.content?.[0]?.text || 'No logré procesar eso.'
       const jsonMatch = respuesta.match(/\{[^}]+\}/)
       if (jsonMatch) {
-        try { const accion=JSON.parse(jsonMatch[0]); ejecutarAccion(accion); const textoVoz=respuesta.replace(jsonMatch[0],'').trim(); historiaRef.current=[...historiaRef.current,{role:'assistant',content:textoVoz}].slice(-10); hablar(textoVoz) }
-        catch { hablar(respuesta) }
+        try {
+          const accion = JSON.parse(jsonMatch[0])
+          ejecutarAccion(accion)
+          const textoVoz = respuesta.replace(jsonMatch[0], '').trim()
+          historiaRef.current = [...historiaRef.current, { role: 'assistant', content: textoVoz }].slice(-10)
+          hablar(textoVoz)
+        } catch { hablar(respuesta) }
       } else {
-        historiaRef.current=[...historiaRef.current,{role:'assistant',content:respuesta}].slice(-10)
+        historiaRef.current = [...historiaRef.current, { role: 'assistant', content: respuesta }].slice(-10)
         hablar(respuesta)
       }
-    } catch { hablar('Hubo un fallo en el sistema. Nada que no pueda arreglarse.') }
+    } catch { hablar('Fallo en el sistema. Intente de nuevo.') }
   }
-  const escucharComando = () => {
+
+  const arrancarEscucha = () => {
     if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return
-    const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-    const rec = new SR()
-    rec.lang = t.vozVoz
-    rec.continuous = false
-    rec.interimResults = false
-    rec.onresult = (e) => {
-      if (timeoutConvRef.current) clearTimeout(timeoutConvRef.current)
-      preguntarClaude(e.results[0][0].transcript)
-    }
-    rec.onerror = () => { activadaRef.current = false; if (conversandoRef.current) { iniciarTimeoutConversacion(); escucharComando() } else iniciarWake() }
-    rec.onend = () => {}
-    recRef.current = rec
-    try { rec.start() } catch {}
-  }
-  const iniciarWake = () => {
-    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) return
-    if (wakeRef.current) try { wakeRef.current.stop() } catch {}
+    if (recRef.current) try { recRef.current.stop() } catch {}
     const SR = window.SpeechRecognition || window.webkitSpeechRecognition
     const rec = new SR()
     rec.lang = t.vozVoz
     rec.continuous = true
     rec.interimResults = true
     rec.onresult = (e) => {
-      const txt = e.results[e.results.length-1][0].transcript.toLowerCase()
-      if (!activadaRef.current && (txt.includes('sinyi')||txt.includes('siniy')||txt.includes('sing')||txt.includes('syng')||txt.includes('siny')||txt.includes('singi')||txt.includes('sin yi')||txt.includes('ciri')||txt.includes('siri'))) {
-        activadaRef.current = true
-        conversandoRef.current = true
-        historiaRef.current = []
-        try { rec.stop() } catch {}
-        hablar(saludos[Math.floor(Math.random()*saludos.length)])
+      const ultimo = e.results[e.results.length - 1]
+      const txt = ultimo[0].transcript.toLowerCase()
+      if (!conversandoRef.current) {
+        if (!activadaRef.current && palabrasWake.some(w => txt.includes(w))) {
+          activadaRef.current = true
+          conversandoRef.current = true
+          historiaRef.current = []
+          window.speechSynthesis.cancel()
+          hablar(saludos[Math.floor(Math.random() * saludos.length)])
+        }
+      } else if (ultimo.isFinal && !activadaRef.current) {
+        if (timeoutRef.current) clearTimeout(timeoutRef.current)
+        procesarTexto(txt)
       }
     }
     rec.onerror = (e) => {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') return
-      setTimeout(iniciarWake, 3000)
+      setTimeout(arrancarEscucha, 3000)
     }
-    rec.onend = () => { if (!activadaRef.current) setTimeout(iniciarWake, 1500) }
-    try { rec.start() } catch { setTimeout(iniciarWake, 3000) }
-    wakeRef.current = rec
+    rec.onend = () => {
+      if (!window.speechSynthesis.speaking) setTimeout(arrancarEscucha, 1000)
+    }
+    try { rec.start() } catch { setTimeout(arrancarEscucha, 3000) }
+    recRef.current = rec
   }
+
+  useEffect(() => {
+    const h = (e) => window.dispatchEvent(new CustomEvent('syng:navegar', { detail: e.detail }))
+    window.addEventListener('sinyi:navegar', h)
+    return () => window.removeEventListener('sinyi:navegar', h)
+  }, [])
+
   useEffect(() => {
     const h = () => {
       if (activadaRef.current) return
       activadaRef.current = true
       conversandoRef.current = true
       historiaRef.current = []
-      if (wakeRef.current) try { wakeRef.current.stop() } catch {}
-      hablar(saludos[Math.floor(Math.random()*saludos.length)])
+      if (recRef.current) try { recRef.current.stop() } catch {}
+      hablar(saludos[Math.floor(Math.random() * saludos.length)])
     }
     window.addEventListener('sinyi:activar', h)
     return () => window.removeEventListener('sinyi:activar', h)
   }, [])
-  useEffect(() => {
-    const h = (e) => {
-      window.dispatchEvent(new CustomEvent('syng:navegar', { detail: e.detail }))
-    }
-    window.addEventListener('sinyi:navegar', h)
-    return () => window.removeEventListener('sinyi:navegar', h)
-  }, [])
+
   useEffect(() => {
     window.speechSynthesis.getVoices()
     window.speechSynthesis.onvoiceschanged = () => window.speechSynthesis.getVoices()
-    setTimeout(iniciarWake, 1000)
+    const timer = setTimeout(arrancarEscucha, 1500)
     return () => {
-      if (wakeRef.current) try { wakeRef.current.stop() } catch {}
+      clearTimeout(timer)
+      if (timeoutRef.current) clearTimeout(timeoutRef.current)
       if (recRef.current) try { recRef.current.stop() } catch {}
-      if (timeoutConvRef.current) clearTimeout(timeoutConvRef.current)
       window.speechSynthesis.cancel()
     }
   }, [idioma])
+
   return <style>{`@keyframes bounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}`}</style>
 }
 
