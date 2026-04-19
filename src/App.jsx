@@ -336,10 +336,10 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
               <div style={{ textAlign:'center', marginBottom:'20px' }}>
                 <div style={{ fontSize:'40px', marginBottom:'12px' }}>📲</div>
                 <div style={{ fontSize:'18px', fontWeight:'700', color:th.texto, marginBottom:'8px' }}>¿Instalar Syng?</div>
-                <div style={{ fontSize:'14px', color:th.textoSub, lineHeight:'1.4' }}>Accede más rápido desde tu pantalla de inicio, sin abrir el navegador</div>
+                <div style={{ fontSize:'14px', color:th.textoSub, lineHeight:'1.4' }}>{pwaIos ? 'En Safari: toca Compartir y selecciona Agregar a pantalla de inicio' : 'Accede más rápido desde tu pantalla de inicio, sin abrir el navegador'}</div>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
-                <button onClick={instalarPwa} style={{ width:'100%', padding:'15px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>Instalar</button>
+                <button onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>{pwaPrompt ? 'Instalar' : 'Entendido'}</button>
                 <button onClick={() => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:'transparent', border:'none', borderRadius:'14px', color:th.textoSub, fontSize:'15px', cursor:'pointer' }}>Ahora no</button>
               </div>
             </div>
