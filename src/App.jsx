@@ -315,7 +315,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
         <div style={{ background:th.bgCard, borderRadius:'18px', padding:'16px 20px', boxShadow:th.sombra, marginBottom:'20px' }}>
           <SelectorIdioma idioma={idioma} onChange={onCambiarIdioma} tema={th} />
         </div>
-        <div style={{ marginBottom:'20px' }}>
+        {(pwaPrompt || pwaIos) && <div style={{ marginBottom:'20px' }}>
             <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>App</div>
             <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra }}>
               <div onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
@@ -329,7 +329,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
                 <span style={{ color:th.acento, fontSize:'16px' }}>›</span>
               </div>
           </div>
-        </div>
+        </div>}
         {mostrarInstrucciones && (
           <div onClick={() => setMostrarInstrucciones(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:300, padding:'0 0 90px 0' }}>
             <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', padding:'32px 24px 28px', width:'100%', maxWidth:'400px' }}>
@@ -339,7 +339,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
                 <div style={{ fontSize:'14px', color:th.textoSub, lineHeight:'1.4' }}>Accede más rápido desde tu pantalla de inicio, sin abrir el navegador</div>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
-                <button onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>Instalar</button>
+                <button onClick={instalarPwa} style={{ width:'100%', padding:'15px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>Instalar</button>
                 <button onClick={() => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:'transparent', border:'none', borderRadius:'14px', color:th.textoSub, fontSize:'15px', cursor:'pointer' }}>Ahora no</button>
               </div>
             </div>
