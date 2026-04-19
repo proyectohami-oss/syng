@@ -762,13 +762,13 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
           {/* Navegación mes */}
           <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 16px'}}>
             <button onClick={()=>{if(mes===0){setMes(11);setAnio(anio-1)}else setMes(mes-1)}} style={{background:'#185FA5',border:'none',borderRadius:'10px',padding:'8px 16px',fontSize:'20px',color:'white',...T}}>‹</button>
-            <button onClick={()=>setVistaAnual(true)} style={{background:'none',border:'none',fontSize:'17px',fontWeight:'700',color:'rgba(255,255,255,0.95)',...T}}>{MESES[mes]} {anio} ▾</button>
+            <button onClick={()=>setVistaAnual(true)} style={{background:'none',border:'none',fontSize:'17px',fontWeight:'700',color:th.texto,...T}}>{MESES[mes]} {anio} ▾</button>
             <button onClick={()=>{if(mes===11){setMes(0);setAnio(anio+1)}else setMes(mes+1)}} style={{background:'#185FA5',border:'none',borderRadius:'10px',padding:'8px 16px',fontSize:'20px',color:'white',...T}}>›</button>
           </div>
 
           {/* Días de semana */}
           <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',padding:'0 10px',gap:'2px',marginBottom:'4px'}}>
-            {DIAS_SEMANA.map(d => <div key={d} style={{textAlign:'center',fontSize:'11px',fontWeight:'600',color:'rgba(255,255,255,0.9)',padding:'4px 0'}}>{d}</div>)}
+            {DIAS_SEMANA.map(d => <div key={d} style={{textAlign:'center',fontSize:'11px',fontWeight:'600',color:th.texto,padding:'4px 0'}}>{d}</div>)}
           </div>
 
           {/* Celdas del mes */}
