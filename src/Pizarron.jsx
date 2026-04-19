@@ -1037,7 +1037,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
                             </div>
                             <div style={{display:'grid',gridTemplateColumns:'repeat(7,1fr)',gap:'3px'}}>
                               {celdasCalEdit.map((d, idx) => (
-                                <button key={idx} onClick={()=>d&&seleccionarFechaEdicion(d)} style={{height:'32px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',fontSize:'12px',background:d?'white':'transparent',color:d?'#2C2C2A':'transparent',border:d?'1px solid #e5e5e5':'none',...T}}>{d||''}</button>
+                                <button key={idx} onClick={()=>d&&seleccionarFechaEdicion(d)} style={{height:'32px',display:'flex',alignItems:'center',justifyContent:'center',borderRadius:'6px',fontSize:'12px',background:d?(anioCalEdit===hoy.getFullYear()&&mesCalEdit===hoy.getMonth()&&d===hoy.getDate()?'#534AB7':'white'):'transparent',color:d?(anioCalEdit===hoy.getFullYear()&&mesCalEdit===hoy.getMonth()&&d===hoy.getDate()?'white':'#2C2C2A'):'transparent',border:d?'1px solid #e5e5e5':'none',fontWeight:d&&anioCalEdit===hoy.getFullYear()&&mesCalEdit===hoy.getMonth()&&d===hoy.getDate()?'700':'400',...T}}>{d||''}</button>
                               ))}
                             </div>
                           </div>
