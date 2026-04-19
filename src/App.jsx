@@ -384,9 +384,14 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
             <span style={{ color:th.textoSub, fontSize:'16px' }}>›</span>
           </div>
         </div>
-        <div onClick={()=>{ if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app'); alert('Link copiado') }}} style={{ width:'100%', padding:'16px', background:th.editAcentoBg, border:'none', borderRadius:'18px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'12px', color:th.acento, marginBottom:'12px' }}>
-          <span style={{ fontSize:'20px' }}>⬆</span>
-          <span style={{ fontSize:'15px', fontWeight:'600' }}>Compartir Syng</span>
+        <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra, marginBottom:'20px' }}>
+          <div onClick={()=>{ if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app'); alert('Link copiado') }}} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+              <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>⬆</div>
+              <span style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>Compartir Syng</span>
+            </div>
+            <span style={{ color:th.textoSub, fontSize:'16px' }}>›</span>
+          </div>
         </div>
         <button onClick={onSalir} style={{ width:'100%', padding:'16px', background:'rgba(197,48,48,0.15)', border:'none', borderRadius:'18px', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'12px', color:'#E53935' }}>
           <span style={{ fontSize:'20px' }}>↪</span>
