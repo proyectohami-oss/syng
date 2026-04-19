@@ -269,7 +269,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
   const [pwaPrompt, setPwaPrompt] = useState(null)
   const [pwaInstalada, setPwaInstalada] = useState(() => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true)
   const [pwaIos, setPwaIos] = useState(false)
-  const [mostrarIos, setMostrarIos] = useState(false)
+  const [mostrarInstrucciones, setMostrarInstrucciones] = useState(false)
   useEffect(() => {
     const esIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
     const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
@@ -318,7 +318,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
         <div style={{ marginBottom:'20px' }}>
             <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>App</div>
             <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra }}>
-              <div onClick={pwaPrompt ? instalarPwa : () => setMostrarIos(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
+              <div onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
                 <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                   <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>📲</div>
                   <div>
@@ -330,25 +330,18 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
               </div>
           </div>
         </div>
-        {mostrarIos && (
-          <div onClick={() => setMostrarIos(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:300, padding:'0 0 90px 0' }}>
-            <div onClick={e => e.stopPropagation()} style={{ background:th.modalBg, borderRadius:'20px 20px 0 0', padding:'24px 20px', width:'100%', maxWidth:'400px' }}>
-              <div style={{ fontSize:'16px', fontWeight:'700', color:th.texto, marginBottom:'16px' }}>Instalar Syng en iPhone</div>
-              <div style={{ display:'flex', flexDirection:'column', gap:'12px' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-                  <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', flexShrink:0 }}>1</div>
-                  <span style={{ fontSize:'14px', color:th.texto }}>Toca el botón compartir <strong>⬆</strong> en Safari</span>
-                </div>
-                <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-                  <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', flexShrink:0 }}>2</div>
-                  <span style={{ fontSize:'14px', color:th.texto }}>Selecciona "Agregar a pantalla de inicio"</span>
-                </div>
-                <div style={{ display:'flex', alignItems:'center', gap:'12px' }}>
-                  <div style={{ width:'32px', height:'32px', borderRadius:'50%', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'16px', flexShrink:0 }}>3</div>
-                  <span style={{ fontSize:'14px', color:th.texto }}>Toca "Agregar" — listo</span>
-                </div>
+        {mostrarInstrucciones && (
+          <div onClick={() => setMostrarInstrucciones(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:300, padding:'0 0 90px 0' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', padding:'32px 24px 28px', width:'100%', maxWidth:'400px' }}>
+              <div style={{ textAlign:'center', marginBottom:'20px' }}>
+                <div style={{ fontSize:'40px', marginBottom:'12px' }}>📲</div>
+                <div style={{ fontSize:'18px', fontWeight:'700', color:th.texto, marginBottom:'8px' }}>¿Instalar Syng?</div>
+                <div style={{ fontSize:'14px', color:th.textoSub, lineHeight:'1.4' }}>Accede más rápido desde tu pantalla de inicio, sin abrir el navegador</div>
               </div>
-              <button onClick={() => setMostrarIos(false)} style={{ width:'100%', marginTop:'20px', padding:'14px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>Entendido</button>
+              <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
+                <button onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>Instalar</button>
+                <button onClick={() => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:'transparent', border:'none', borderRadius:'14px', color:th.textoSub, fontSize:'15px', cursor:'pointer' }}>Ahora no</button>
+              </div>
             </div>
           </div>
         )}
