@@ -64,6 +64,7 @@ const TEXTOS = {
     pendientesHoy:'pendientes para hoy',
     pendientes:'Pendientes hoy', completadas:'Completadas',
     misModulos:'MIS MÓDULOS', inicio:'Inicio', super2:'Súper',
+    instalarSyng:'Instalar Syng', instalarDesc:'Agrega la app a tu pantalla de inicio', instalarTitulo:'¿Instalar Syng?', instalarIos:'En Safari: toca Compartir y selecciona Agregar a pantalla de inicio', instalarAndroid:'Accede más rápido desde tu pantalla de inicio, sin abrir el navegador', ahoraNO:'Ahora no', compartirSyng:'Compartir Syng', miAgenda:'Mi Agenda', miAgendaDesc:'Todos tus pendientes en un solo lugar', pendientesPizarron:'Pendientes hoy por pizarrón', completadasPizarron:'Completadas hoy por pizarrón', sinTareas:'Sin tareas para mostrar',
   },
   en: {
     hola:'Hello', queOrganizar:'What do you want to organize today?', salir:'Sign out',
@@ -86,6 +87,7 @@ const TEXTOS = {
     pendientesHoy:'pending for today',
     pendientes:'Pending today', completadas:'Completed',
     misModulos:'MY MODULES', inicio:'Home', super2:'Super',
+    instalarSyng:'Install Syng', instalarDesc:'Add the app to your home screen', instalarTitulo:'Install Syng?', instalarIos:'In Safari: tap Share and select Add to Home Screen', instalarAndroid:'Access faster from your home screen, without opening the browser', ahoraNO:'Not now', compartirSyng:'Share Syng', miAgenda:'My Agenda', miAgendaDesc:'All your tasks in one place', pendientesPizarron:'Pending today by board', completadasPizarron:'Completed today by board', sinTareas:'No tasks to show',
   },
   fr: {
     hola:'Bonjour', queOrganizar:"Que voulez-vous organiser aujourd'hui?", salir:'Déconnexion',
@@ -108,6 +110,7 @@ const TEXTOS = {
     pendientesHoy:"en attente aujourd'hui",
     pendientes:'En attente', completadas:'Terminées',
     misModulos:'MES MODULES', inicio:'Accueil', super2:'Courses',
+    instalarSyng:'Installer Syng', instalarDesc:'Ajouter l app à votre écran d accueil', instalarTitulo:'Installer Syng?', instalarIos:'Dans Safari: appuyez sur Partager et sélectionnez Ajouter à l écran d accueil', instalarAndroid:'Accédez plus rapidement depuis votre écran d accueil', ahoraNO:'Pas maintenant', compartirSyng:'Partager Syng', miAgenda:'Mon Agenda', miAgendaDesc:'Toutes vos tâches en un seul endroit', pendientesPizarron:'En attente aujourd hui par tableau', completadasPizarron:'Terminées aujourd hui par tableau', sinTareas:'Aucune tâche à afficher',
   },
   de: {
     hola:'Hallo', queOrganizar:'Was möchtest du heute organisieren?', salir:'Abmelden',
@@ -130,6 +133,7 @@ const TEXTOS = {
     pendientesHoy:'ausstehend heute',
     pendientes:'Ausstehend', completadas:'Erledigt',
     misModulos:'MEINE MODULE', inicio:'Start', super2:'Einkauf',
+    instalarSyng:'Syng installieren', instalarDesc:'App zum Startbildschirm hinzufügen', instalarTitulo:'Syng installieren?', instalarIos:'In Safari: Teilen antippen und Zum Home-Bildschirm hinzufügen wählen', instalarAndroid:'Schneller vom Startbildschirm aus zugreifen', ahoraNO:'Nicht jetzt', compartirSyng:'Syng teilen', miAgenda:'Mein Kalender', miAgendaDesc:'Alle Aufgaben an einem Ort', pendientesPizarron:'Heute ausstehend nach Board', completadasPizarron:'Heute erledigt nach Board', sinTareas:'Keine Aufgaben anzuzeigen',
   },
   it: {
     hola:'Ciao', queOrganizar:'Cosa vuoi organizzare oggi?', salir:'Esci',
@@ -152,6 +156,7 @@ const TEXTOS = {
     pendientesHoy:'in sospeso oggi',
     pendientes:'In sospeso', completadas:'Completate',
     misModulos:'I MIEI MODULI', inicio:'Home', super2:'Spesa',
+    instalarSyng:'Installa Syng', instalarDesc:'Aggiungi l app alla schermata iniziale', instalarTitulo:'Installare Syng?', instalarIos:'In Safari: tocca Condividi e seleziona Aggiungi alla schermata iniziale', instalarAndroid:'Accedi più velocemente dalla schermata iniziale', ahoraNO:'Non ora', compartirSyng:'Condividi Syng', miAgenda:'La Mia Agenda', miAgendaDesc:'Tutte le tue attività in un unico posto', pendientesPizarron:'In sospeso oggi per lavagna', completadasPizarron:'Completate oggi per lavagna', sinTareas:'Nessuna attività da mostrare',
   },
   pt: {
     hola:'Olá', queOrganizar:'O que você quer organizar hoje?', salir:'Sair',
@@ -174,6 +179,7 @@ const TEXTOS = {
     pendientesHoy:'pendentes hoje',
     pendientes:'Pendentes', completadas:'Concluídas',
     misModulos:'MEUS MÓDULOS', inicio:'Início', super2:'Compras',
+    instalarSyng:'Instalar Syng', instalarDesc:'Adicionar o app à tela inicial', instalarTitulo:'Instalar Syng?', instalarIos:'No Safari: toque em Compartilhar e selecione Adicionar à tela inicial', instalarAndroid:'Acesse mais rápido pela tela inicial', ahoraNO:'Agora não', compartirSyng:'Compartilhar Syng', miAgenda:'Minha Agenda', miAgendaDesc:'Todas as suas tarefas em um só lugar', pendientesPizarron:'Pendentes hoje por quadro', completadasPizarron:'Concluídas hoje por quadro', sinTareas:'Sem tarefas para mostrar',
   },
   ja: {
     hola:'こんにちは', queOrganizar:'今日は何を整理しますか？', salir:'ログアウト',
@@ -196,6 +202,7 @@ const TEXTOS = {
     pendientesHoy:'本日の保留中',
     pendientes:'保留中', completadas:'完了',
     misModulos:'マイモジュール', inicio:'ホーム', super2:'買い物',
+    instalarSyng:'Syngをインストール', instalarDesc:'アプリをホーム画面に追加', instalarTitulo:'Syngをインストールしますか?', instalarIos:'Safariで共有をタップしてホーム画面に追加を選択', instalarAndroid:'ホーム画面からすばやくアクセス', ahoraNO:'今はしない', compartirSyng:'Syngを共有', miAgenda:'マイアジェンダ', miAgendaDesc:'すべてのタスクを一か所で', pendientesPizarron:'本日の保留中（ボード別）', completadasPizarron:'本日の完了（ボード別）', sinTareas:'表示するタスクなし',
   },
   zh: {
     hola:'你好', queOrganizar:'今天想整理什么？', salir:'退出',
@@ -218,6 +225,7 @@ const TEXTOS = {
     pendientesHoy:'今日待办',
     pendientes:'待办', completadas:'已完成',
     misModulos:'我的模块', inicio:'主页', super2:'购物',
+    instalarSyng:'安装Syng', instalarDesc:'将应用添加到主屏幕', instalarTitulo:'安装Syng?', instalarIos:'在Safari中点击分享并选择添加到主屏幕', instalarAndroid:'从主屏幕更快地访问', ahoraNO:'暂不', compartirSyng:'分享Syng', miAgenda:'我的日程', miAgendaDesc:'所有待办事项集中在一处', pendientesPizarron:'今日待办（按白板）', completadasPizarron:'今日完成（按白板）', sinTareas:'没有任务可显示',
   },
 }
 
@@ -323,8 +331,8 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
                 <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
                   <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>📲</div>
                   <div>
-                    <div style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>Instalar Syng</div>
-                    <div style={{ fontSize:'12px', color:th.textoSub }}>Agrega la app a tu pantalla de inicio</div>
+                    <div style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>{t.instalarSyng}</div>
+                    <div style={{ fontSize:'12px', color:th.textoSub }}>{t.instalarDesc}</div>
                   </div>
                 </div>
                 <span style={{ color:th.acento, fontSize:'16px' }}>›</span>
@@ -336,12 +344,12 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
             <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', padding:'32px 24px 28px', width:'100%', maxWidth:'400px' }}>
               <div style={{ textAlign:'center', marginBottom:'20px' }}>
                 <div style={{ fontSize:'40px', marginBottom:'12px' }}>📲</div>
-                <div style={{ fontSize:'18px', fontWeight:'700', color:th.texto, marginBottom:'8px' }}>¿Instalar Syng?</div>
-                <div style={{ fontSize:'14px', color:th.textoSub, lineHeight:'1.4' }}>{pwaIos ? 'En Safari: toca Compartir y selecciona Agregar a pantalla de inicio' : 'Accede más rápido desde tu pantalla de inicio, sin abrir el navegador'}</div>
+                <div style={{ fontSize:'18px', fontWeight:'700', color:th.texto, marginBottom:'8px' }}>{t.instalarTitulo}</div>
+                <div style={{ fontSize:'14px', color:th.textoSub, lineHeight:'1.4' }}>{pwaIos ? t.instalarIos : t.instalarAndroid}</div>
               </div>
               <div style={{ display:'flex', flexDirection:'column', gap:'10px' }}>
                 <button onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:th.acento, border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>{pwaPrompt ? 'Instalar' : 'Entendido'}</button>
-                <button onClick={() => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:'transparent', border:'none', borderRadius:'14px', color:th.textoSub, fontSize:'15px', cursor:'pointer' }}>Ahora no</button>
+                <button onClick={() => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:'transparent', border:'none', borderRadius:'14px', color:th.textoSub, fontSize:'15px', cursor:'pointer' }}>{t.ahoraNO}</button>
               </div>
             </div>
           </div>
@@ -367,7 +375,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
           <div onClick={()=>{ if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app'); alert('Link copiado') }}} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
               <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>⬆</div>
-              <span style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>Compartir Syng</span>
+              <span style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>{t.compartirSyng}</span>
             </div>
             <span style={{ color:th.textoSub, fontSize:'16px' }}>›</span>
           </div>
@@ -481,8 +489,8 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
         <div onClick={() => onIrPantalla('miagenda')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(123,110,246,0.35)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px' }}>
           <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(123,110,246,0.2)' : th.acento+'22', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>📅</div>
           <div style={{ flex:1 }}>
-            <div style={{ fontSize:'16px', fontWeight:'700', color: esOscuro ? '#A89EFF' : th.acento }}>Mi Agenda</div>
-            <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : th.textoSub, fontSize:'13px', marginTop:'2px' }}>Todos tus pendientes en un solo lugar</div>
+            <div style={{ fontSize:'16px', fontWeight:'700', color: esOscuro ? '#A89EFF' : th.acento }}>{t.miAgenda}</div>
+            <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : th.textoSub, fontSize:'13px', marginTop:'2px' }}>{t.miAgendaDesc}</div>
           </div>
           <div style={{ width:'8px', height:'8px', borderRadius:'50%', background: esOscuro ? '#7B6EF6' : th.acento, opacity:0.7 }} />
         </div>
@@ -517,10 +525,10 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
         <div onClick={() => setModalStats(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:300, padding:'0 0 90px 0' }}>
           <div onClick={e => e.stopPropagation()} style={{ background: esOscuro ? '#1A1A35' : 'white', borderRadius:'20px 20px 0 0', padding:'24px 20px', width:'100%', maxWidth:'400px' }}>
             <div style={{ fontSize:'13px', fontWeight:'700', color: esOscuro ? 'rgba(255,255,255,0.5)' : '#888', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'16px' }}>
-              {modalStats === 'pendientes' ? 'Pendientes hoy por pizarrón' : 'Completadas hoy por pizarrón'}
+              {modalStats === 'pendientes' ? t.pendientesPizarron : t.completadasPizarron}
             </div>
             {desglosePizarrones.filter(g => modalStats === 'pendientes' ? g.pendientes > 0 : g.completadas > 0).length === 0 && (
-              <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : '#aaa', fontSize:'14px', textAlign:'center', padding:'12px 0' }}>Sin tareas para mostrar</div>
+              <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : '#aaa', fontSize:'14px', textAlign:'center', padding:'12px 0' }}>{t.sinTareas}</div>
             )}
             {desglosePizarrones.filter(g => modalStats === 'pendientes' ? g.pendientes > 0 : g.completadas > 0).map(g => (
               <div key={g.grupoId} onClick={() => { setModalStats(null); localStorage.setItem('syng_grupo_activo_pizarron', g.grupoId); onIrPantalla('pizarron') }} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', marginBottom:'8px', borderRadius:'14px', background: esOscuro ? 'rgba(255,255,255,0.06)' : '#f5f5f7', cursor:'pointer' }}>
