@@ -646,7 +646,7 @@ export default function App() {
       onIrLogin={()=>{ window.history.replaceState({},'',window.location.pathname);setInvId(null);setInvData(null) }} />
   )
 
-  if (user && pantalla==='miagenda') return <MiAgenda userId={user.uid} tema={tema} onVolver={()=>setPantalla('inicio')} />
+  if (user && pantalla==='miagenda') return <MiAgenda userId={user.uid} tema={tema} idioma={idioma} t={t} onVolver={()=>setPantalla('inicio')} onNavegar={navegar} />
   if (user && pantalla==='listatareas') return <div style={{paddingBottom:'80px'}}><ListaTareas onVolver={()=>setPantalla('inicio')} /><NavBar pantalla='listatareas' onIrPantalla={navegar} th={th} t={t} /></div>
   if (user && pantalla==='listasuper')  return <div style={{paddingBottom:'80px'}}><ListaSuper onVolver={()=>setPantalla('inicio')} tema={tema} /><NavBar pantalla='listasuper' onIrPantalla={navegar} th={th} t={t} /></div>
   if (pantalla==='pizarron') return <div style={{paddingBottom:'80px'}}><Pizarron onVolver={()=>setPantalla('inicio')} tema={tema} /><NavBar pantalla='pizarron' onIrPantalla={navegar} th={th} t={t} /></div>
