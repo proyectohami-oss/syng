@@ -6,6 +6,7 @@ import Pizarron from './Pizarron'
 import PantallaInvitacion from './PantallaInvitacion'
 import ListaTareas from './ListaTareas'
 import ListaSuper from './ListaSuper'
+import MiAgenda from './MiAgenda'
 
 const TEMA = {
   oscuro: {
@@ -275,7 +276,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
     const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
     if (esStandalone) { setPwaInstalada(true); return }
     if (esIos) { setPwaIos(true); return }
-    const handler = (e) => { e.preventDefault(); setPwaPrompt(e) }
+    const handler = (e) => { e.preventDefault(); setPwaPrompt(e); console.log('PWA prompt capturado') }
     window.addEventListener('beforeinstallprompt', handler)
     window.addEventListener('appinstalled', () => setPwaInstalada(true))
     return () => window.removeEventListener('beforeinstallprompt', handler)
@@ -477,6 +478,14 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
         </div>
 
         {/* Label */}
+        <div onClick={() => onIrPantalla('miagenda')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(123,110,246,0.35)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px' }}>
+          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(123,110,246,0.2)' : th.acento+'22', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>📅</div>
+          <div style={{ flex:1 }}>
+            <div style={{ fontSize:'16px', fontWeight:'700', color: esOscuro ? '#A89EFF' : th.acento }}>Mi Agenda</div>
+            <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : th.textoSub, fontSize:'13px', marginTop:'2px' }}>Todos tus pendientes en un solo lugar</div>
+          </div>
+          <div style={{ width:'8px', height:'8px', borderRadius:'50%', background: esOscuro ? '#7B6EF6' : th.acento, opacity:0.7 }} />
+        </div>
         <div style={{ fontSize:'11px', fontWeight:'700', color: esOscuro ? 'rgba(255,255,255,0.35)' : th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', paddingLeft:'4px', marginBottom:'-4px' }}>{t.misModulos}</div>
 
         {/* Pizarrón */}
@@ -637,6 +646,7 @@ export default function App() {
       onIrLogin={()=>{ window.history.replaceState({},'',window.location.pathname);setInvId(null);setInvData(null) }} />
   )
 
+  if (user && pantalla==='miagenda') return <MiAgenda userId={user.uid} tema={tema} onVolver={()=>setPantalla('inicio')} />
   if (user && pantalla==='listatareas') return <div style={{paddingBottom:'80px'}}><ListaTareas onVolver={()=>setPantalla('inicio')} /><NavBar pantalla='listatareas' onIrPantalla={navegar} th={th} t={t} /></div>
   if (user && pantalla==='listasuper')  return <div style={{paddingBottom:'80px'}}><ListaSuper onVolver={()=>setPantalla('inicio')} tema={tema} /><NavBar pantalla='listasuper' onIrPantalla={navegar} th={th} t={t} /></div>
   if (pantalla==='pizarron') return <div style={{paddingBottom:'80px'}}><Pizarron onVolver={()=>setPantalla('inicio')} tema={tema} /><NavBar pantalla='pizarron' onIrPantalla={navegar} th={th} t={t} /></div>
