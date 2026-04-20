@@ -999,7 +999,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
                   await guardarKey(key,lista)
                   setSeleccionadas([])
                 }} style={{background:'#A32D2D',color:'white',border:'none',borderRadius:'10px',padding:'8px 16px',fontSize:'14px',fontWeight:'600',...T}}>
-                  🗑 Eliminar {seleccionadas.length} seleccionada{seleccionadas.length>1?'s':''}
+                  {`🗑 ${tx.eliminar} ${seleccionadas.length}`}
                 </button>
               </div>
             )}
@@ -1030,12 +1030,12 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
                           <button
                             onClick={()=>setEditModo(editModo==='fecha'?null:'fecha')}
                             style={{background:editModo==='fecha'?'#534AB7':'#EEF2FF',border:'none',borderRadius:'8px',padding:'7px 12px',fontSize:'13px',color:editModo==='fecha'?'white':'#534AB7',fontWeight:'600',...T}}>
-                            📅 Cambiar fecha
+                            {`📅 ${tx.cambiarFecha}`}
                           </button>
                           <button
                             onClick={()=>setEditModo(editModo==='repetir'?null:'repetir')}
                             style={{background:editModo==='repetir'?'#534AB7':'#EEF2FF',border:'none',borderRadius:'8px',padding:'7px 12px',fontSize:'13px',color:editModo==='repetir'?'white':'#534AB7',fontWeight:'600',...T}}>
-                            🔁 Repetir en más fechas
+                            {`🔁 ${tx.repetirFechas}`}
                           </button>
                         </div>
 

@@ -390,7 +390,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
       <div style={{ background: th.header, padding: '12px 16px 0' }}>
         <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', paddingBottom: '12px' }}>
           <div>
-            <div style={{ fontSize: '19px', fontWeight: '700', color: 'white' }}>Lista del Súper</div>
+            <div style={{ fontSize: '19px', fontWeight: '700', color: 'white' }}>{tx.listSuper}</div>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', marginTop: '1px' }}>
               {nSel} producto{nSel !== 1 ? 's' : ''} en lista
             </div>
@@ -412,7 +412,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
         </button>
         <button onClick={() => setModal('nuevo-grupo')}
           style={{ marginLeft: 'auto', background: 'rgba(255,255,255,0.15)', border: 'none', color: 'white', borderRadius: '8px', padding: '5px 10px', fontSize: '11px', cursor: 'pointer', fontFamily: 'inherit' }}>
-          + Nuevo grupo
+          {tx.nuevoGrupoSuper}
         </button>
       </div>
 
@@ -502,14 +502,14 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 14px', background: th.selBg, borderBottom: `0.5px solid ${th.selBorde}` }}>
               <span style={{ fontSize: '12px', color: th.selTexto }}>{listSelIds.length} seleccionado{listSelIds.length !== 1 ? 's' : ''}</span>
               <div style={{ display: 'flex', gap: '6px' }}>
-                <button onClick={() => { setListSelMode(false); setListSelIds([]) }} style={{ background: 'none', border: 'none', color: th.selTexto, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>Cancelar</button>
-                <button onClick={() => setModal('confirm-del-lista')} style={{ background: 'none', border: '1px solid #A32D2D', color: '#A32D2D', fontSize: '11px', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>Eliminar</button>
+                <button onClick={() => { setListSelMode(false); setListSelIds([]) }} style={{ background: 'none', border: 'none', color: th.selTexto, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>{tx.cancelar}</button>
+                <button onClick={() => setModal('confirm-del-lista')} style={{ background: 'none', border: '1px solid #A32D2D', color: '#A32D2D', fontSize: '11px', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>{tx.eliminar}</button>
               </div>
             </div>
           ) : (
             <div style={{ padding: '6px 14px', background: th.bgStripe, borderBottom: `0.5px solid ${th.borde}`, display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '11px', color: th.textoMuted }}>Toca el círculo o el texto para marcar como jalado</span>
-              <button onClick={() => setListSelMode(true)} style={{ fontSize: '11px', color: th.acento, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}>Seleccionar</button>
+              <span style={{ fontSize: '11px', color: th.textoMuted }}>{tx.tocaCirculo}</span>
+              <button onClick={() => setListSelMode(true)} style={{ fontSize: '11px', color: th.acento, cursor: 'pointer', background: 'none', border: 'none', fontFamily: 'inherit' }}>{tx.seleccionar}</button>
             </div>
           )}
 
@@ -558,11 +558,11 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
             <div style={{ padding: '10px 14px', borderTop: `0.5px solid ${th.borde}`, display:'flex', gap:'8px' }}>
               <button onClick={() => setModal('confirm-borrar-marcados')}
                 style={{ flex:1, padding: '10px', border: '0.5px solid #A32D2D', borderRadius: '9px', background: 'none', cursor: 'pointer', fontSize: '13px', color: '#A32D2D', fontFamily: 'inherit', fontWeight: '500' }}>
-                Borrar marcados
+                {tx.borrarMarcados}
               </button>
               <button onClick={() => setModal('confirm-borrar')}
                 style={{ flex:1, padding: '10px', border: '0.5px solid #A32D2D', borderRadius: '9px', background: 'none', cursor: 'pointer', fontSize: '13px', color: '#A32D2D', fontFamily: 'inherit', fontWeight: '500' }}>
-                Borrar lista
+                {tx.borrarLista}
               </button>
             </div>
           )}
@@ -589,21 +589,21 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
             </div>
           )}
 
-          {modal === 'nuevo-grupo' && <ModalInput title="Nuevo grupo" placeholder="Nombre del grupo (ej. Amigos)" onConfirm={v => crearGrupo(v)} onCancel={() => setModal(null)} th={th} />}
+          {modal === 'nuevo-grupo' && <ModalInput title={tx.nuevoGrupo} placeholder={tx.nombreGrupoPlaceholder} onConfirm={v => crearGrupo(v)} onCancel={() => setModal(null)} th={th} />}
           {modal === 'add-prod' && <ModalInput title={`Agregar a ${mData.dep}`} placeholder={tx.nombreProd} onConfirm={v => agregarProducto(mData.dep, v)} onCancel={() => setModal(null)} th={th} />}
           {modal === 'edit-prod' && <ModalInput title="Editar producto" placeholder={tx.nombre} defaultValue={mData.prod} onConfirm={v => editarProducto(mData.dep, mData.prod, v)} onCancel={() => setModal(null)} th={th} />}
 
           {modal === 'confirm-del-cat' && (
-            <ModalConfirm title={`¿Eliminar "${mData.prod}"?`} msg="Este producto se eliminará de tu catálogo personal." onConfirm={() => eliminarProductoCat(mData.dep, mData.prod)} onCancel={() => setModal(null)} th={th} />
+            <ModalConfirm title={`${tx.eliminar} "${mData.prod}"?`} msg={tx.confirmarEliminarProd} onConfirm={() => eliminarProductoCat(mData.dep, mData.prod)} onCancel={() => setModal(null)} th={th} />
           )}
           {modal === 'confirm-del-lista' && (
-            <ModalConfirm title={`¿Eliminar ${listSelIds.length} producto${listSelIds.length !== 1 ? 's' : ''}?`} msg="Se quitarán de tu lista actual." onConfirm={eliminarSeleccion} onCancel={() => setModal(null)} th={th} />
+            <ModalConfirm title={`${tx.eliminar} ${listSelIds.length} ${tx.productos}?`} msg={tx.confirmarEliminarLista} onConfirm={eliminarSeleccion} onCancel={() => setModal(null)} th={th} />
           )}
           {modal === 'confirm-borrar-marcados' && (
-            <ModalConfirm title="¿Borrar marcados?" onConfirm={borrarMarcados} onCancel={() => setModal(null)} th={th} />
+            <ModalConfirm title={tx.confirmarBorrarMarcados} onConfirm={borrarMarcados} onCancel={() => setModal(null)} th={th} />
           )}
           {modal === 'confirm-borrar' && (
-            <ModalConfirm title="¿Borrar lista?" msg="Se eliminarán todos los productos de tu lista actual." onConfirm={borrarLista} onCancel={() => setModal(null)} th={th} />
+            <ModalConfirm title={tx.borrarLista} msg={tx.confirmarBorrarLista} onConfirm={borrarLista} onCancel={() => setModal(null)} th={th} />
           )}
         </div>
       )}
@@ -622,7 +622,7 @@ function ModalInput({ title, placeholder, defaultValue = '', onConfirm, onCancel
         placeholder={placeholder}
         style={{ width: '100%', padding: '9px 11px', border: `1px solid ${th.bgInputBorder}`, borderRadius: '8px', fontSize: '13px', outline: 'none', fontFamily: 'inherit', color: th.texto, background: th.bgInput, marginBottom: '12px', boxSizing: 'border-box' }} />
       <div style={{ display: 'flex', gap: '8px' }}>
-        <button onClick={onCancel} style={{ flex: 1, padding: '10px', borderRadius: '10px', background: th.bgStripe, border: `0.5px solid ${th.borde}`, cursor: 'pointer', fontSize: '13px', color: th.textoSub, fontFamily: 'inherit' }}>Cancelar</button>
+        <button onClick={onCancel} style={{ flex: 1, padding: '10px', borderRadius: '10px', background: th.bgStripe, border: `0.5px solid ${th.borde}`, cursor: 'pointer', fontSize: '13px', color: th.textoSub, fontFamily: 'inherit' }}>{tx.cancelar}</button>
         <button onClick={() => val.trim() && onConfirm(val.trim())} disabled={!val.trim()}
           style={{ flex: 1, padding: '10px', borderRadius: '10px', background: val.trim() ? th.acento : th.bgStripe, border: 'none', cursor: val.trim() ? 'pointer' : 'default', fontSize: '13px', color: val.trim() ? 'white' : th.textoMuted, fontWeight: '500', fontFamily: 'inherit' }}>
           Guardar
@@ -638,8 +638,8 @@ function ModalConfirm({ title, msg, onConfirm, onCancel, th }) {
       <div style={{ fontSize: '15px', fontWeight: '600', color: th.texto, marginBottom: '8px' }}>{title}</div>
       <div style={{ fontSize: '13px', color: th.textoSub, marginBottom: '22px', lineHeight: '1.5' }}>{msg}</div>
       <div style={{ display: 'flex', gap: '8px' }}>
-        <button onClick={onCancel} style={{ flex: 1, padding: '11px', borderRadius: '10px', background: th.bgStripe, border: `0.5px solid ${th.borde}`, cursor: 'pointer', fontSize: '13px', color: th.textoSub, fontFamily: 'inherit' }}>Cancelar</button>
-        <button onClick={onConfirm} style={{ flex: 1, padding: '11px', borderRadius: '10px', background: '#A32D2D', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'white', fontWeight: '500', fontFamily: 'inherit' }}>Eliminar</button>
+        <button onClick={onCancel} style={{ flex: 1, padding: '11px', borderRadius: '10px', background: th.bgStripe, border: `0.5px solid ${th.borde}`, cursor: 'pointer', fontSize: '13px', color: th.textoSub, fontFamily: 'inherit' }}>{tx.cancelar}</button>
+        <button onClick={onConfirm} style={{ flex: 1, padding: '11px', borderRadius: '10px', background: '#A32D2D', border: 'none', cursor: 'pointer', fontSize: '13px', color: 'white', fontWeight: '500', fontFamily: 'inherit' }}>{tx.eliminar}</button>
       </div>
     </div>
   )
