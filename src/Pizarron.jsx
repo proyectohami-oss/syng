@@ -829,7 +829,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
               <div key={g.id} style={{display:'flex',marginBottom:'8px'}}>
                 <button onClick={()=>{setGrupoActivo(g.id);setModalGrupos(false)}} style={{display:'flex',alignItems:'center',gap:'14px',padding:'14px 16px',borderRadius:'14px 0 0 14px',background:grupoActivo===g.id?'#EEF2FF':'#f8f8f8',flex:1,border:grupoActivo===g.id?'2px solid #534AB7':'2px solid transparent',borderRight:'none',textAlign:'left',...T}}>
                   <Iniciales nombre={g.nombre} size={44} fontSize={18}/>
-                  <div style={{flex:1}}><div style={{fontSize:'16px',fontWeight:'600',color:'#2C2C2A'}}>{g.nombre}</div><div style={{fontSize:'12px',color:'#888'}}>{g.miembros?.length||1} miembro{(g.miembros?.length||1)!==1?'s':''}</div></div>
+                  <div style={{flex:1}}><div style={{fontSize:'16px',fontWeight:'600',color:'#2C2C2A'}}>{g.nombre}</div><div style={{fontSize:'12px',color:'#888'}}>{g.miembros?.length||1} {tx.miembro}{(g.miembros?.length||1)!==1?'s':''}</div></div>
                   {grupoActivo===g.id&&<span style={{color:'#534AB7',fontSize:'20px'}}>✓</span>}
                 </button>
                 <button onClick={()=>{setModalVerGrupo(g);setNombreGrupoEdit(g.nombre);setModalGrupos(false)}} style={{background:grupoActivo===g.id?'#EEF2FF':'#f8f8f8',border:grupoActivo===g.id?'2px solid #534AB7':'2px solid transparent',borderLeft:'none',borderRadius:'0 14px 14px 0',padding:'0 14px',fontSize:'16px',color:'#888',...T}}>⚙</button>
@@ -877,7 +877,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
               )}
               <button onClick={()=>{setModalVerGrupo(null);setEditandoNombreGrupo(false)}} style={{background:'#f0f0f0',border:'none',borderRadius:'50%',width:'32px',height:'32px',fontSize:'16px',flexShrink:0,...T}}>✕</button>
             </div>
-            <div style={{fontSize:'13px',fontWeight:'600',color:'#888',marginBottom:'10px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Miembros ({modalVerGrupo.miembros?.length||1})</div>
+            <div style={{fontSize:'13px',fontWeight:'600',color:'#888',marginBottom:'10px',textTransform:'uppercase',letterSpacing:'0.05em'}}>{tx.miembros} ({modalVerGrupo.miembros?.length||1})</div>
             {(modalVerGrupo.miembros||[]).map((m,i) => (
               <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:'0.5px solid #f0f0f0'}}>
                 <Iniciales nombre={m.nombre||m.email} size={36} fontSize={14}/>

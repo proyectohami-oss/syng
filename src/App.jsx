@@ -120,7 +120,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', borderBottom:`1px solid ${th.borde}` }}>
             <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
               <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>☀️</div>
-              <span style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>Modo oscuro</span>
+              <span style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>{t.modoOscuro}</span>
             </div>
             <div onClick={onToggleTema} style={{ width:'52px', height:'30px', borderRadius:'15px', background:tema==='oscuro'?th.acento:'#ccc', position:'relative', cursor:'pointer', transition:'background 0.3s', flexShrink:0 }}>
               <div style={{ position:'absolute', top:'3px', left:tema==='oscuro'?'24px':'3px', width:'24px', height:'24px', borderRadius:'50%', background:'white', transition:'left 0.3s', boxShadow:'0 1px 4px rgba(0,0,0,0.3)' }} />
@@ -169,7 +169,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
             </div>
           </div>
         )}
-        <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>Cuenta</div>
+        <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>{t.cuentaLabel}</div>
         <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra, marginBottom:'16px' }}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', borderBottom:`1px solid ${th.borde}` }}>
             <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
@@ -199,7 +199,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
           <span style={{ fontSize:'20px' }}>↪</span>
           <span style={{ fontSize:'15px', fontWeight:'600' }}>{t.cerrarSesion}</span>
         </button>
-        <div style={{ textAlign:'center', marginTop:'32px', color:th.textoMuted, fontSize:'12px' }}>Syng v1.0 — Hecho con amor 🖤</div>
+        <div style={{ textAlign:'center', marginTop:'32px', color:th.textoMuted, fontSize:'12px' }}>{t.version}</div>
       </div>
       <NavBar pantalla="perfil" onIrPantalla={onNavegar} th={th} t={t} />
     </div>

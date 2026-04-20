@@ -297,7 +297,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         {diaSeleccionado && (
           <div style={{ background:th.bgCard, borderRadius:'20px', padding:'16px', boxShadow:th.sombra }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
-              <span style={{ fontSize:'14px', fontWeight:'600', color:th.texto }}>{diaSeleccionado} de {meses[mes]}</span>
+              <span style={{ fontSize:'14px', fontWeight:'600', color:th.texto }}>{diaSeleccionado} {meses[mes]}</span>
               <button onClick={() => { setMostrarForm(true); setTareaAccion(null); setModoEditar(null); setConfirmarEliminar(null); setMostrarRepetir(false); setFechasRepetir([]) }} style={{ fontSize:'12px', padding:'6px 14px', borderRadius:'20px', background:th.acento, color:'white', border:'none', cursor:'pointer', fontWeight:'600' }}>{tx.agregar}</button>
             </div>
 
@@ -347,7 +347,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                     )}
                     {tareaAccion?.id === tarea.id && !modoEditar && !confirmarEliminar && (
                       <div style={{ display:'flex', gap:'8px', marginTop:'6px', paddingLeft:'8px' }}>
-                        <button onClick={() => { setModoEditar({grupoId:grupo.grupoId,tareaId:tarea.id}); setTextoEditar(tarea.texto); setEditModo(null); setTareaAccion(null) }} style={{ flex:1, padding:'8px', background:`${grupo.color}18`, border:`0.5px solid ${grupo.color}33`, borderRadius:'10px', color:grupo.color, fontSize:'13px', fontWeight:'600', cursor:'pointer' }}>✏️ Editar</button>
+                        <button onClick={() => { setModoEditar({grupoId:grupo.grupoId,tareaId:tarea.id}); setTextoEditar(tarea.texto); setEditModo(null); setTareaAccion(null) }} style={{ flex:1, padding:'8px', background:`${grupo.color}18`, border:`0.5px solid ${grupo.color}33`, borderRadius:'10px', color:grupo.color, fontSize:'13px', fontWeight:'600', cursor:'pointer' }}>{`✏️ ${tx.agendaGuardar === 'Guardar' ? 'Editar' : tx.agendaGuardarCambios.split(' ')[0]}`}</button>
                         <button onClick={() => { setConfirmarEliminar(tarea); setTareaAccion(null) }} style={{ flex:1, padding:'8px', background:'rgba(226,75,74,0.08)', border:'0.5px solid rgba(226,75,74,0.25)', borderRadius:'10px', color:'#E24B4A', fontSize:'13px', fontWeight:'600', cursor:'pointer' }}>🗑 {tx.eliminar}</button>
                       </div>
                     )}
