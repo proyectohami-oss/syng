@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { TEXTOS } from './idiomas'
 
 const SV = '✓'
 
@@ -214,8 +215,9 @@ function fuzzyMatch(query, text) {
 function generarId() { return Math.random().toString(36).substr(2, 9) }
 
 // ── Componente principal ──────────────────────────────────────
-export default function ListaSuper({ onVolver, tema = 'oscuro' }) {
+export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' }) {
   const th = TEMAS[tema] || TEMAS.oscuro
+  const tx = TEXTOS[idioma] || TEXTOS.es
 
   const [grupos, setGrupos] = useState([
     { id: 'familia', nombre: 'Familia', color: '#5DCAA5', miembros: ['Tú', 'Mamá', 'Papá'] }
@@ -419,7 +421,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro' }) {
         {['cat', 'list'].map(t => (
           <div key={t} onClick={() => { setTab(t); setListSelMode(false); setListSelIds([]) }}
             style={{ flex: 1, padding: '10px', textAlign: 'center', fontSize: '13px', fontWeight: '500', cursor: 'pointer', borderBottom: tab === t ? '2px solid white' : '2px solid transparent', color: tab === t ? 'white' : 'rgba(255,255,255,0.5)', position: 'relative' }}>
-            {t === 'cat' ? 'Catálogo' : 'Mi lista'}
+            {t === 'cat' ? tx.catalogo : tx.miLista}
             {t === 'list' && nSel > 0 && (
               <span style={{ position: 'absolute', top: '5px', right: '10px', background: '#E24B4A', color: 'white', borderRadius: '10px', fontSize: '9px', fontWeight: '700', padding: '1px 5px' }}>{nSel}</span>
             )}
@@ -432,7 +434,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro' }) {
         <div>
           <div style={{ padding: '8px 12px', background: th.bgStripe, borderBottom: `0.5px solid ${th.borde}` }}>
             <input ref={catInputRef} value={filtroCat} onChange={e => setFiltroCat(e.target.value)}
-              placeholder="Buscar en catálogo..." style={inp} />
+              placeholder={tx.buscarCatalogo} style={inp} />
           </div>
 
           {DEP_ORDER.map(dep => {
@@ -493,7 +495,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro' }) {
         <div>
           <div style={{ padding: '8px 12px', background: th.bgStripe, borderBottom: `0.5px solid ${th.borde}` }}>
             <input ref={listInputRef} value={filtroList} onChange={e => setFiltroList(e.target.value)}
-              placeholder="Buscar en mi lista..." style={inp} />
+              placeholder={tx.buscarLista} style={inp} />
           </div>
 
           {listSelMode ? (
@@ -588,8 +590,8 @@ export default function ListaSuper({ onVolver, tema = 'oscuro' }) {
           )}
 
           {modal === 'nuevo-grupo' && <ModalInput title="Nuevo grupo" placeholder="Nombre del grupo (ej. Amigos)" onConfirm={v => crearGrupo(v)} onCancel={() => setModal(null)} th={th} />}
-          {modal === 'add-prod' && <ModalInput title={`Agregar a ${mData.dep}`} placeholder="Nombre del producto" onConfirm={v => agregarProducto(mData.dep, v)} onCancel={() => setModal(null)} th={th} />}
-          {modal === 'edit-prod' && <ModalInput title="Editar producto" placeholder="Nombre" defaultValue={mData.prod} onConfirm={v => editarProducto(mData.dep, mData.prod, v)} onCancel={() => setModal(null)} th={th} />}
+          {modal === 'add-prod' && <ModalInput title={`Agregar a ${mData.dep}`} placeholder={tx.nombreProd} onConfirm={v => agregarProducto(mData.dep, v)} onCancel={() => setModal(null)} th={th} />}
+          {modal === 'edit-prod' && <ModalInput title="Editar producto" placeholder={tx.nombre} defaultValue={mData.prod} onConfirm={v => editarProducto(mData.dep, mData.prod, v)} onCancel={() => setModal(null)} th={th} />}
 
           {modal === 'confirm-del-cat' && (
             <ModalConfirm title={`¿Eliminar "${mData.prod}"?`} msg="Este producto se eliminará de tu catálogo personal." onConfirm={() => eliminarProductoCat(mData.dep, mData.prod)} onCancel={() => setModal(null)} th={th} />

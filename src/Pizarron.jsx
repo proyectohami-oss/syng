@@ -1,13 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
+import { TEXTOS } from './idiomas'
 import { db, auth } from './firebase'
 import {
   collection, doc, onSnapshot, setDoc, deleteDoc,
   getDoc, updateDoc, arrayUnion, arrayRemove, writeBatch
 } from 'firebase/firestore'
 
-const DIAS_SEMANA = ['Dom', 'Lun', 'Mar', 'Mie', 'Jue', 'Vie', 'Sab']
-const MESES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
-const MESES_CORTO = ['Ene','Feb','Mar','Abr','May','Jun','Jul','Ago','Sep','Oct','Nov','Dic']
 function generarId() { return Math.random().toString(36).substr(2, 9) }
 const TEMAS = {
   oscuro: {
@@ -68,11 +66,14 @@ function MiniMes({ anio, mes, hoy, anotaciones }) {
   )
 }
 
-export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) {
+export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', idioma = 'es' }) {
   const user = auth.currentUser
   const userId = user?.uid
   const userEmail = user?.email
   const th = TEMAS[tema] || TEMAS.claro
+  const tx = TEXTOS[idioma] || TEXTOS.es
+  const MESES = tx.meses
+  const DIAS_SEMANA = tx.diasSemana
   const userName = user?.displayName || user?.email?.split('@')[0] || 'Usuario'
   const hoy = new Date()
 
@@ -649,7 +650,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
       isDraggingModal.current = true; modalDragItem.current = { fromIdx: idx }; setDraggingModalIdx(idx)
       const ghost = document.createElement('div')
       ghost.style.cssText = 'position:fixed;padding:8px 14px;background:#534AB7;color:white;border-radius:10px;font-size:13px;pointer-events:none;z-index:9999;opacity:0.9;'
-      ghost.innerText = 'reordenando...'; document.body.appendChild(ghost); modalGhost.current = ghost
+      ghost.innerText = tx.reordenando; document.body.appendChild(ghost); modalGhost.current = ghost
     }, 500)
   }
 
@@ -746,7 +747,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
       {/* Header */}
       <div style={{background:th.header,padding:'12px 16px'}}>
         <div style={{display:'flex',alignItems:'center',gap:'8px'}}>
-          <div style={{color:'white',fontSize:'17px',fontWeight:'700',flex:1,textAlign:'center'}}>Pizarrón</div>
+          <div style={{color:'white',fontSize:'17px',fontWeight:'700',flex:1,textAlign:'center'}}>{tx.pizarron}</div>
           <button onClick={()=>setModalGrupos(true)} style={{background:'rgba(255,255,255,0.25)',border:'1.5px solid rgba(255,255,255,0.5)',color:'white',borderRadius:'16px',padding:'8px 14px',fontSize:'13px',fontWeight:'600',display:'flex',alignItems:'center',gap:'4px',...T}}>
             <span style={{maxWidth:'72px',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{nombreGrupoActivo}</span>
             <span style={{fontSize:'9px'}}>▾</span>
@@ -797,7 +798,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
                     <div onClick={()=>abrirModal(dia)} style={{fontSize:'12px',fontWeight:esHoy(dia)?'700':'400',color:esHoy(dia)?'#534AB7':'#2C2C2A',marginBottom:'2px',display:'inline-block',padding:'1px 3px',borderRadius:'4px',...T}}>{dia}</div>
                     {lista.slice(0, 2).map((a, i) => (
                       <div key={i} draggable onDragStart={e=>onDragStartCalendario(e,key,i)} style={{display:'flex',alignItems:'flex-start',gap:'2px',marginBottom:'1px',userSelect:'none'}}>
-                        <span onTouchStart={e=>{e.stopPropagation();limpiarDragCalendario();touchStartPos.current={x:e.touches[0].clientX,y:e.touches[0].clientY};isDraggingCalendario.current=true;dragItem.current={fromKey:key,idx:i};const g=document.createElement('div');g.style.cssText='position:fixed;padding:6px 12px;background:#534AB7;color:white;border-radius:10px;font-size:12px;pointer-events:none;z-index:9999;opacity:0.9;';g.innerText='moviendo...';document.body.appendChild(g);dragGhost.current=g;}} onTouchMove={onTouchMoveCalendario} onTouchEnd={onTouchEndCalendario} style={{fontSize:'13px',color:'#bbb',flexShrink:0,lineHeight:'1.3',padding:'0 2px',touchAction:'none',cursor:'grab'}}>⠿</span>
+                        <span onTouchStart={e=>{e.stopPropagation();limpiarDragCalendario();touchStartPos.current={x:e.touches[0].clientX,y:e.touches[0].clientY};isDraggingCalendario.current=true;dragItem.current={fromKey:key,idx:i};const g=document.createElement('div');g.style.cssText='position:fixed;padding:6px 12px;background:#534AB7;color:white;border-radius:10px;font-size:12px;pointer-events:none;z-index:9999;opacity:0.9;';g.innerText=tx.moviendo;document.body.appendChild(g);dragGhost.current=g;}} onTouchMove={onTouchMoveCalendario} onTouchEnd={onTouchEndCalendario} style={{fontSize:'13px',color:'#bbb',flexShrink:0,lineHeight:'1.3',padding:'0 2px',touchAction:'none',cursor:'grab'}}>⠿</span>
                         <span onClick={()=>abrirModal(dia)} style={{fontSize:'9px',color:a.realizada?'#ccc':'#2C2C2A',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',flex:1,textDecoration:a.realizada?'line-through':'none',lineHeight:'1.3',textAlign:'left',...T}}>{a.texto}</span>
                       </div>
                     ))}
@@ -816,12 +817,12 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:200,display:'flex',alignItems:'flex-end',justifyContent:'center'}} onClick={e=>{if(e.target===e.currentTarget)setModalGrupos(false)}}>
           <div style={{background:'white',borderRadius:'24px 24px 0 0',width:'100%',maxWidth:'600px',padding:'24px',maxHeight:'80vh',overflowY:'auto'}}>
             <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:'20px'}}>
-              <div style={{fontSize:'18px',fontWeight:'700',color:'#2C2C2A'}}>Mis Pizarrones</div>
+              <div style={{fontSize:'18px',fontWeight:'700',color:'#2C2C2A'}}>{tx.misPizarrones}</div>
               <button onClick={()=>setModalGrupos(false)} style={{background:'#f0f0f0',border:'none',borderRadius:'50%',width:'32px',height:'32px',fontSize:'16px',...T}}>✕</button>
             </div>
             <button onClick={()=>{setGrupoActivo('personal');setModalGrupos(false)}} style={{display:'flex',alignItems:'center',gap:'14px',padding:'14px 16px',borderRadius:'14px',background:grupoActivo==='personal'?'#EEF2FF':'#f8f8f8',marginBottom:'8px',border:grupoActivo==='personal'?'2px solid #534AB7':'2px solid transparent',width:'100%',textAlign:'left',...T}}>
               <Iniciales nombre={userName} size={44} fontSize={18}/>
-              <div style={{flex:1}}><div style={{fontSize:'16px',fontWeight:'600',color:'#2C2C2A'}}>Personal</div><div style={{fontSize:'12px',color:'#888'}}>Solo yo</div></div>
+              <div style={{flex:1}}><div style={{fontSize:'16px',fontWeight:'600',color:'#2C2C2A'}}>{tx.personal}</div><div style={{fontSize:'12px',color:'#888'}}>{tx.soloYo}</div></div>
               {grupoActivo==='personal'&&<span style={{color:'#534AB7',fontSize:'20px'}}>✓</span>}
             </button>
             {grupos.map(g => (
@@ -836,7 +837,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
             ))}
             <button onClick={()=>{setModalCrearGrupo(true);setModalGrupos(false)}} style={{display:'flex',alignItems:'center',gap:'14px',padding:'14px 16px',borderRadius:'14px',background:'#f8f8f8',border:'2px dashed #ddd',width:'100%',textAlign:'left',marginTop:'8px',...T}}>
               <div style={{width:'44px',height:'44px',borderRadius:'50%',background:'#EEF2FF',display:'flex',alignItems:'center',justifyContent:'center',fontSize:'22px',color:'#534AB7'}}>+</div>
-              <div style={{fontSize:'16px',fontWeight:'600',color:'#534AB7'}}>Nuevo pizarrón compartido</div>
+              <div style={{fontSize:'16px',fontWeight:'600',color:'#534AB7'}}>{tx.nuevoPizarron}</div>
             </button>
           </div>
         </div>
@@ -846,12 +847,12 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
       {modalCrearGrupo && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',zIndex:200,display:'flex',alignItems:'center',justifyContent:'center',padding:'20px'}} onClick={e=>{if(e.target===e.currentTarget)setModalCrearGrupo(false)}}>
           <div style={{background:'white',borderRadius:'20px',width:'100%',maxWidth:'400px',padding:'24px'}}>
-            <div style={{fontSize:'18px',fontWeight:'700',color:'#2C2C2A',marginBottom:'20px',textAlign:'center'}}>Nuevo grupo</div>
-            <div style={{fontSize:'13px',fontWeight:'500',color:'#666',marginBottom:'6px'}}>Nombre del grupo</div>
-            <input value={nuevoNombreGrupo} onChange={e=>setNuevoNombreGrupo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&crearGrupo()} placeholder="Ej: Familia, Trabajo..." autoFocus style={{width:'100%',padding:'12px 14px',border:'1.5px solid #ddd',borderRadius:'12px',fontSize:'16px',outline:'none',boxSizing:'border-box',marginBottom:'20px'}}/>
+            <div style={{fontSize:'18px',fontWeight:'700',color:'#2C2C2A',marginBottom:'20px',textAlign:'center'}}>{tx.nuevoGrupo}</div>
+            <div style={{fontSize:'13px',fontWeight:'500',color:'#666',marginBottom:'6px'}}>{tx.nombreGrupo}</div>
+            <input value={nuevoNombreGrupo} onChange={e=>setNuevoNombreGrupo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&crearGrupo()} placeholder={tx.nombreGrupo} autoFocus style={{width:'100%',padding:'12px 14px',border:'1.5px solid #ddd',borderRadius:'12px',fontSize:'16px',outline:'none',boxSizing:'border-box',marginBottom:'20px'}}/>
             <div style={{display:'flex',gap:'10px'}}>
-              <button onClick={()=>setModalCrearGrupo(false)} style={{flex:1,padding:'13px',background:'#E0E0E0',border:'none',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#333',...T}}>Cancelar</button>
-              <button onClick={crearGrupo} style={{flex:1,padding:'13px',background:nuevoNombreGrupo.trim()?'linear-gradient(135deg,#185FA5,#534AB7)':'#e5e5e5',color:nuevoNombreGrupo.trim()?'white':'#aaa',border:'none',borderRadius:'12px',fontSize:'15px',fontWeight:'600',...T}}>Crear</button>
+              <button onClick={()=>setModalCrearGrupo(false)} style={{flex:1,padding:'13px',background:'#E0E0E0',border:'none',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#333',...T}}>{tx.cancelar}</button>
+              <button onClick={crearGrupo} style={{flex:1,padding:'13px',background:nuevoNombreGrupo.trim()?'linear-gradient(135deg,#185FA5,#534AB7)':'#e5e5e5',color:nuevoNombreGrupo.trim()?'white':'#aaa',border:'none',borderRadius:'12px',fontSize:'15px',fontWeight:'600',...T}}>{tx.crearGrupo}</button>
             </div>
           </div>
         </div>
@@ -880,13 +881,13 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
             {(modalVerGrupo.miembros||[]).map((m,i) => (
               <div key={i} style={{display:'flex',alignItems:'center',gap:'12px',padding:'10px 0',borderBottom:'0.5px solid #f0f0f0'}}>
                 <Iniciales nombre={m.nombre||m.email} size={36} fontSize={14}/>
-                <div style={{flex:1}}><div style={{fontSize:'14px',fontWeight:'500',color:'#2C2C2A'}}>{m.nombre||m.email}</div><div style={{fontSize:'12px',color:'#aaa'}}>{m.rol==='admin'?'Administrador':'Miembro'}</div></div>
-                {modalVerGrupo.adminId===userId&&m.uid!==userId&&<button onClick={()=>setConfirmEliminarMiembro(m)} style={{background:'#FEECEC',border:'none',borderRadius:'8px',padding:'6px 10px',fontSize:'12px',color:'#A32D2D',fontWeight:'500',...T}}>Quitar</button>}
+                <div style={{flex:1}}><div style={{fontSize:'14px',fontWeight:'500',color:'#2C2C2A'}}>{m.nombre||m.email}</div><div style={{fontSize:'12px',color:'#aaa'}}>{m.rol==='admin'?tx.administrador:tx.miembro}</div></div>
+                {modalVerGrupo.adminId===userId&&m.uid!==userId&&<button onClick={()=>setConfirmEliminarMiembro(m)} style={{background:'#FEECEC',border:'none',borderRadius:'8px',padding:'6px 10px',fontSize:'12px',color:'#A32D2D',fontWeight:'500',...T}}>{tx.quitarMiembro}</button>}
               </div>
             ))}
-            {modalVerGrupo.adminId===userId&&(<div style={{marginTop:'20px'}}><div style={{fontSize:'13px',fontWeight:'600',color:'#888',marginBottom:'10px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Invitar personas</div><button onClick={generarInvitacion} disabled={cargandoInvitacion} style={{width:'100%',padding:'13px',background:cargandoInvitacion?'#e5e5e5':'linear-gradient(135deg,#185FA5,#534AB7)',color:cargandoInvitacion?'#aaa':'white',border:'none',borderRadius:'12px',fontSize:'15px',fontWeight:'600',...T}}>{cargandoInvitacion?'Enviando invitación...':'Invitar al grupo'}</button><div style={{fontSize:'11px',color:'#aaa',textAlign:'center',marginTop:'8px'}}>Cada link funciona una sola vez. Puedes generar los que necesites.</div></div>)}
-            {modalVerGrupo.adminId!==userId&&<div style={{marginTop:'20px'}}><button onClick={()=>setConfirmSalirGrupo(true)} style={{width:'100%',padding:'13px',background:'none',border:'1.5px solid #A32D2D',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#A32D2D',...T}}>Salir del grupo</button></div>}
-            {modalVerGrupo.adminId===userId&&<div style={{marginTop:'12px'}}><button onClick={()=>setConfirmEliminarGrupo(true)} style={{width:'100%',padding:'13px',background:'none',border:'1.5px solid #A32D2D',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#A32D2D',...T}}>Eliminar grupo</button></div>}
+            {modalVerGrupo.adminId===userId&&(<div style={{marginTop:'20px'}}><div style={{fontSize:'13px',fontWeight:'600',color:'#888',marginBottom:'10px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Invitar personas</div><button onClick={generarInvitacion} disabled={cargandoInvitacion} style={{width:'100%',padding:'13px',background:cargandoInvitacion?'#e5e5e5':'linear-gradient(135deg,#185FA5,#534AB7)',color:cargandoInvitacion?'#aaa':'white',border:'none',borderRadius:'12px',fontSize:'15px',fontWeight:'600',...T}}>{cargandoInvitacion?tx.invitandoGrupo:'Invitar al grupo'}</button><div style={{fontSize:'11px',color:'#aaa',textAlign:'center',marginTop:'8px'}}>Cada link funciona una sola vez. Puedes generar los que necesites.</div></div>)}
+            {modalVerGrupo.adminId!==userId&&<div style={{marginTop:'20px'}}><button onClick={()=>setConfirmSalirGrupo(true)} style={{width:'100%',padding:'13px',background:'none',border:'1.5px solid #A32D2D',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#A32D2D',...T}}>{tx.salirGrupo}</button></div>}
+            {modalVerGrupo.adminId===userId&&<div style={{marginTop:'12px'}}><button onClick={()=>setConfirmEliminarGrupo(true)} style={{width:'100%',padding:'13px',background:'none',border:'1.5px solid #A32D2D',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#A32D2D',...T}}>{tx.eliminarGrupo}</button></div>}
           </div>
         </div>
       )}
@@ -923,7 +924,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
                     autoFocus
                     value={busquedaGrupo}
                     onChange={e=>setBusquedaGrupo(e.target.value)}
-                    placeholder="Buscar grupo..."
+                    placeholder={tx.buscarGrupo}
                     style={{width:'100%',padding:'8px 12px',borderRadius:'10px',border:`1px solid ${th.bordeInput}`,fontSize:'14px',outline:'none',background:th.bgInput,color:th.texto,boxSizing:'border-box',marginBottom:'8px'}}
                   />
                   {/* Personal */}
@@ -954,7 +955,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
               {/* Input nueva anotación — oculto cuando hay edición activa */}
               <div style={{marginBottom:'12px',display:editando?'none':'block'}}>
               <div style={{display:'flex',gap:'8px',marginBottom:'8px'}}>
-                <input value={textoNuevo} onChange={e=>setTextoNuevo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&agregarAnotacion()} placeholder="Nueva anotación..." style={{flex:1,padding:'10px 14px',borderRadius:'10px',border:'1.5px solid #e5e5e5',fontSize:'15px',outline:'none'}}/>
+                <input value={textoNuevo} onChange={e=>setTextoNuevo(e.target.value)} onKeyDown={e=>e.key==='Enter'&&agregarAnotacion()} placeholder={tx.nuevaAnotacion} style={{flex:1,padding:'10px 14px',borderRadius:'10px',border:'1.5px solid #e5e5e5',fontSize:'15px',outline:'none'}}/>
                 <button onClick={agregarAnotacion} style={{background:'linear-gradient(135deg,#185FA5,#534AB7)',color:'white',border:'none',borderRadius:'10px',padding:'10px 18px',fontWeight:'600',fontSize:'16px',...T}}>+</button>
               </div>
               <button onClick={()=>{setMostrarRepetir(!mostrarRepetir);if(!mostrarRepetir)setFechasRepetir([{dia:modalDia,mes,anio}])}} style={{background:mostrarRepetir?'#EEF2FF':'#f5f5f7',border:'none',borderRadius:'8px',padding:'6px 14px',fontSize:'13px',color:mostrarRepetir?'#534AB7':'#888',fontWeight:'500',...T}}>🔁 Repetir {mostrarRepetir?'▲':'▼'}</button>
@@ -1004,7 +1005,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
 
             {/* Pendientes */}
             {(anotaciones[getKey(anio,mes,modalDia)]||[]).filter(a=>!a.realizada).length > 0 && (
-              <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'4px'}}>Pendientes</div>
+              <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'4px'}}>{tx.pendientesLabel}</div>
             )}
             {(anotaciones[getKey(anio, mes, modalDia)] || []).filter(a=>!a.realizada).map((a) => {
               const i = (anotaciones[getKey(anio,mes,modalDia)]||[]).findIndex(x=>x.id===a.id)
@@ -1104,7 +1105,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
 
             {/* Atendidas */}
             {(anotaciones[getKey(anio,mes,modalDia)]||[]).filter(a=>a.realizada).length > 0 && (
-              <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'12px'}}>Atendidas</div>
+              <div style={{fontSize:'11px',fontWeight:'700',color:'#888',textTransform:'uppercase',letterSpacing:'0.05em',marginBottom:'4px',marginTop:'12px'}}>{tx.atendidasLabel}</div>
             )}
             {(anotaciones[getKey(anio, mes, modalDia)] || []).filter(a=>a.realizada).map((a, i) => (
               <div key={a.id} style={{display:editando&&editando!==a.id?'none':'block'}}>
@@ -1132,7 +1133,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
       {confirmEliminar && (
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300}}>
           <div style={{background:'white',borderRadius:'20px',padding:'28px 24px',width:'300px',textAlign:'center'}}>
-            <div style={{fontSize:'16px',fontWeight:'700',color:'#2C2C2A',marginBottom:'8px'}}>{confirmEliminar.anotacion.repeatGroupId?'¿Qué deseas eliminar?':'¿Eliminar esta tarea?'}</div>
+            <div style={{fontSize:'16px',fontWeight:'700',color:'#2C2C2A',marginBottom:'8px'}}>{confirmEliminar.anotacion.repeatGroupId?tx.queDeseasEliminar:tx.confirmarEliminar}</div>
             <div style={{fontSize:'14px',color:'#888',marginBottom:'20px'}}>"{confirmEliminar.anotacion.texto}"</div>
             {confirmEliminar.anotacion.repeatGroupId ? (
               <div style={{display:'flex',flexDirection:'column',gap:'10px'}}>
@@ -1157,8 +1158,8 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro' }) 
           <div style={{fontSize:'40px',marginBottom:'12px'}}>🎉</div>
           <div style={{fontSize:'19px',fontWeight:'800',color:'#2C2C2A',marginBottom:'8px'}}>¡Bienvenido a Syng!</div>
           <div style={{fontSize:'14px',color:'#888',marginBottom:'24px',lineHeight:'1.5'}}>Estás explorando como invitado. Para guardar tus tareas, colaborar y tener tu propio Syng, inicia sesión gratis.</div>
-          <button onClick={()=>{window.location.href='/'}} style={{width:'100%',padding:'14px',background:'linear-gradient(135deg,#534AB7,#185FA5)',color:'white',border:'none',borderRadius:'14px',fontSize:'16px',fontWeight:'700',cursor:'pointer',marginBottom:'10px'}}>Iniciar sesión</button>
-          <button onClick={()=>setModalVisitante(false)} style={{width:'100%',padding:'12px',background:'#f5f5f7',color:'#888',border:'none',borderRadius:'14px',fontSize:'15px',cursor:'pointer'}}>Seguir explorando</button>
+          <button onClick={()=>{window.location.href='/'}} style={{width:'100%',padding:'14px',background:'linear-gradient(135deg,#534AB7,#185FA5)',color:'white',border:'none',borderRadius:'14px',fontSize:'16px',fontWeight:'700',cursor:'pointer',marginBottom:'10px'}}>{tx.iniciarSesion}</button>
+          <button onClick={()=>setModalVisitante(false)} style={{width:'100%',padding:'12px',background:'#f5f5f7',color:'#888',border:'none',borderRadius:'14px',fontSize:'15px',cursor:'pointer'}}>{tx.seguirExplorando}</button>
         </div>
       </div>
     )}
