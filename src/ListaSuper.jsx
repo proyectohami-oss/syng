@@ -392,7 +392,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
           <div>
             <div style={{ fontSize: '19px', fontWeight: '700', color: 'white' }}>{tx.listSuper}</div>
             <div style={{ fontSize: '11px', color: 'rgba(255,255,255,0.65)', marginTop: '1px' }}>
-              {nSel} producto{nSel !== 1 ? 's' : ''} en lista
+              {nSel} {tx.productos}
             </div>
           </div>
           <div style={{ textAlign: 'right' }}>
@@ -448,7 +448,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
                   {dep}
                   <button onClick={() => { setMData({ dep }); setModal('add-prod') }}
                     style={{ fontSize: '10px', color: th.acento, background: 'none', border: 'none', cursor: 'pointer', fontFamily: 'inherit' }}>
-                    + agregar
+                    {tx.agregarProd}
                   </button>
                 </div>
                 {prods.map(p => {
@@ -590,7 +590,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
           )}
 
           {modal === 'nuevo-grupo' && <ModalInput title={tx.nuevoGrupo} placeholder={tx.nombreGrupoPlaceholder} onConfirm={v => crearGrupo(v)} onCancel={() => setModal(null)} th={th} />}
-          {modal === 'add-prod' && <ModalInput title={`Agregar a ${mData.dep}`} placeholder={tx.nombreProd} onConfirm={v => agregarProducto(mData.dep, v)} onCancel={() => setModal(null)} th={th} />}
+          {modal === 'add-prod' && <ModalInput title={`${tx.agregarProd} ${mData.dep}`} placeholder={tx.nombreProd} onConfirm={v => agregarProducto(mData.dep, v)} onCancel={() => setModal(null)} th={th} />}
           {modal === 'edit-prod' && <ModalInput title="Editar producto" placeholder={tx.nombre} defaultValue={mData.prod} onConfirm={v => editarProducto(mData.dep, mData.prod, v)} onCancel={() => setModal(null)} th={th} />}
 
           {modal === 'confirm-del-cat' && (
