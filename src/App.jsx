@@ -65,7 +65,7 @@ function NavBar({ pantalla, onIrPantalla, th, t }) {
     { key:'inicio', label:t.inicio, icon:'🏠' },
     { key:'pizarron', label:t.pizarron, icon:'📅' },
     { key:'listasuper', label:t.super2, icon:'🛒' },
-    { key:'compartir', label:'Compartir', icon:'📤', accion: () => { if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app') } } },
+    { key:'compartir', label:t.compartir, icon:'📤', accion: () => { if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app') } } },
     { key:'perfil', label:t.perfil, icon:'👤' },
   ]
   return (
@@ -211,9 +211,9 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
   const iniciales = (user?.displayName||user?.email||'U').trim().split(' ').slice(0,2).map(p=>p[0]?.toUpperCase()||'').join('')
   const hoy = new Date()
-  const diasSemana = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
-  const meses = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
-  const fechaStr = `${diasSemana[hoy.getDay()]}, ${hoy.getDate()} de ${meses[hoy.getMonth()]}`
+  const diasSemana = t.diasSemanaLargo
+  const mesesHome = t.mesesLargo
+  const fechaStr = `${diasSemana[hoy.getDay()]}, ${hoy.getDate()} ${mesesHome[hoy.getMonth()]}`
   const [pendientesHoy, setPendientesHoy] = useState(0)
   const [completadasHoy, setCompletatdasHoy] = useState(0)
   const [desglosePizarrones, setDesglosePizarrones] = useState([])
@@ -245,7 +245,7 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
       })
       unsubs.push(unsub)
     }
-    suscribir(collection(db, 'users', userId, 'pizarron'), 'Personal', 'personal')
+    suscribir(collection(db, 'users', userId, 'pizarron'), t.personal, 'personal')
     getDocs(collection(db, 'users', userId, 'misGrupos')).then(snap => {
       snap.docs.forEach(d => {
         const data = d.data()
@@ -279,7 +279,7 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
         </div>
         <div style={{ marginTop:'20px' }}>
           <div style={{ color:'rgba(255,255,255,0.65)', fontSize:'13px' }}>{fechaStr}</div>
-          <div style={{ color:'white', fontSize:'24px', fontWeight:'800', marginTop:'2px' }}>Hola, {nombre}.</div>
+          <div style={{ color:'white', fontSize:'24px', fontWeight:'800', marginTop:'2px' }}>{t.hola}, {nombre}.</div>
           <div style={{ color:'rgba(255,255,255,0.7)', fontSize:'14px', marginTop:'2px' }}>{pendientesHoy} {t.pendientesHoy}</div>
         </div>
       </div>

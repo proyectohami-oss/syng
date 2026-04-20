@@ -297,7 +297,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         {diaSeleccionado && (
           <div style={{ background:th.bgCard, borderRadius:'20px', padding:'16px', boxShadow:th.sombra }}>
             <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
-              <span style={{ fontSize:'14px', fontWeight:'600', color:th.texto }}>{diaSeleccionado} {meses[mes]}</span>
+              <span style={{ fontSize:'14px', fontWeight:'600', color:th.texto }}>{diaSeleccionado} {meses[mes]} {anio}</span>
               <button onClick={() => { setMostrarForm(true); setTareaAccion(null); setModoEditar(null); setConfirmarEliminar(null); setMostrarRepetir(false); setFechasRepetir([]) }} style={{ fontSize:'12px', padding:'6px 14px', borderRadius:'20px', background:th.acento, color:'white', border:'none', cursor:'pointer', fontWeight:'600' }}>{tx.agregar}</button>
             </div>
 
