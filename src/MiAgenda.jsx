@@ -356,31 +356,36 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </div>
             ))}
 
-            {mostrarForm && (
-              <div style={{ borderTop: tareasDia.length>0?`0.5px solid ${th.borde}`:'none', paddingTop: tareasDia.length>0?'14px':'0' }}>
-                <input autoFocus placeholder={tx.nuevaTarea} value={nuevaTarea} onChange={e=>setNuevaTarea(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarTarea()} style={{ width:'100%', padding:'12px 14px', borderRadius:'12px', border:`1.5px solid ${th.acento}`, background:th.bg, color:th.texto, fontSize:'14px', outline:'none', boxSizing:'border-box', marginBottom:'12px' }} />
-                <div onClick={() => setMostrarSelectorGrupo(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 14px', background:`${th.acento}11`, borderRadius:'12px', cursor:'pointer', marginBottom:'10px' }}>
-                  <div>
-                    <div style={{ fontSize:'10px', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'2px' }}>{tx.guardarEn}</div>
-                    <div style={{ fontSize:'14px', fontWeight:'600', color:th.acento }}>{grupoSeleccionado.nombre}</div>
-                  </div>
-                  <span style={{ color:th.textoSub, fontSize:'16px' }}>›</span>
-                </div>
-                <button onClick={()=>{setMostrarRepetir(!mostrarRepetir);if(!mostrarRepetir){setFechasRepetir([]);setMesRepetir(mes);setAnioRepetir(anio)}}} style={{ background: mostrarRepetir?th.acento:`${th.acento}18`, border:'none', borderRadius:'8px', padding:'6px 14px', fontSize:'13px', color: mostrarRepetir?'white':th.acento, fontWeight:'600', cursor:'pointer', marginBottom:'10px' }}>🔁 {tx.repetir} {mostrarRepetir?'▲':'▼'}</button>
-                {mostrarRepetir && <>
-                  <MiniCal a={anioRepetir} m={mesRepetir} setA={setAnioRepetir} setM={setMesRepetir} onDia={toggleFechaRepetir} selFn={(d,a,m) => fechasRepetir.some(f=>f.dia===d&&f.mes===m&&f.anio===a)} hint={null} />
-                  <div style={{ fontSize:'12px', color:th.acento, textAlign:'center', marginTop:'6px', marginBottom:'8px' }}>{fechasRepetir.length} {tx.fechasSeleccionadas}</div>
-                </>}
-                <div style={{ display:'flex', gap:'8px' }}>
-                  <button onClick={guardarTarea} disabled={cargando||!nuevaTarea.trim()} style={{ flex:1, padding:'11px', background:th.acento, color:'white', border:'none', borderRadius:'12px', fontSize:'14px', fontWeight:'600', cursor:'pointer', opacity:!nuevaTarea.trim()?0.5:1 }}>{cargando?'...':tx.guardar}</button>
-                  <button onClick={()=>{setMostrarForm(false);setNuevaTarea('');setMostrarRepetir(false);setFechasRepetir([])}} style={{ padding:'11px 16px', background:'transparent', color:th.textoSub, border:`0.5px solid ${th.borde}`, borderRadius:'12px', fontSize:'14px', cursor:'pointer' }}>{tx.cancelar}</button>
-                </div>
-              </div>
-            )}
+            {/* formulario movido a modal */}
           </div>
         )}
       </div>
 
+
+      {mostrarForm && (
+        <div onClick={() => { setMostrarForm(false); setNuevaTarea(''); setMostrarRepetir(false); setFechasRepetir([]) }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:400 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', padding:'24px 20px 40px', width:'100%', maxWidth:'500px' }}>
+            <div style={{ fontSize:'13px', fontWeight:'700', color:th.textoSub, textAlign:'center', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'16px' }}>{diaSeleccionado} {meses[mes]} {anio}</div>
+            <input autoFocus placeholder={tx.nuevaTarea} value={nuevaTarea} onChange={e=>setNuevaTarea(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarTarea()} style={{ width:'100%', padding:'12px 14px', borderRadius:'12px', border:`1.5px solid ${th.acento}`, background:th.bg, color:th.texto, fontSize:'14px', outline:'none', boxSizing:'border-box', marginBottom:'12px' }} />
+            <div onClick={() => setMostrarSelectorGrupo(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 14px', background:`${th.acento}11`, borderRadius:'12px', cursor:'pointer', marginBottom:'10px' }}>
+              <div>
+                <div style={{ fontSize:'10px', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'2px' }}>{tx.guardarEn}</div>
+                <div style={{ fontSize:'14px', fontWeight:'600', color:th.acento }}>{grupoSeleccionado.nombre}</div>
+              </div>
+              <span style={{ color:th.textoSub, fontSize:'16px' }}>›</span>
+            </div>
+            <button onClick={()=>{setMostrarRepetir(!mostrarRepetir);if(!mostrarRepetir){setFechasRepetir([]);setMesRepetir(mes);setAnioRepetir(anio)}}} style={{ background: mostrarRepetir?th.acento:`${th.acento}18`, border:'none', borderRadius:'8px', padding:'6px 14px', fontSize:'13px', color: mostrarRepetir?'white':th.acento, fontWeight:'600', cursor:'pointer', marginBottom:'10px' }}>🔁 {tx.repetir} {mostrarRepetir?'▲':'▼'}</button>
+            {mostrarRepetir && <>
+              <MiniCal a={anioRepetir} m={mesRepetir} setA={setAnioRepetir} setM={setMesRepetir} onDia={toggleFechaRepetir} selFn={(d,a,m) => fechasRepetir.some(f=>f.dia===d&&f.mes===m&&f.anio===a)} hint={null} />
+              <div style={{ fontSize:'12px', color:th.acento, textAlign:'center', marginTop:'6px', marginBottom:'8px' }}>{fechasRepetir.length} {tx.fechasSeleccionadas}</div>
+            </>}
+            <div style={{ display:'flex', gap:'8px', marginTop:'4px' }}>
+              <button onClick={guardarTarea} disabled={cargando||!nuevaTarea.trim()} style={{ flex:1, padding:'14px', background:th.acento, color:'white', border:'none', borderRadius:'12px', fontSize:'15px', fontWeight:'600', cursor:'pointer', opacity:!nuevaTarea.trim()?0.5:1 }}>{cargando?'...':tx.guardar}</button>
+              <button onClick={()=>{setMostrarForm(false);setNuevaTarea('');setMostrarRepetir(false);setFechasRepetir([])}} style={{ padding:'14px 18px', background:'transparent', color:th.textoSub, border:`0.5px solid ${th.borde}`, borderRadius:'12px', fontSize:'14px', cursor:'pointer' }}>{tx.cancelar}</button>
+            </div>
+          </div>
+        </div>
+      )}
       {mostrarSelectorGrupo && (
         <div onClick={() => setMostrarSelectorGrupo(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:300 }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'20px 20px 0 0', padding:'20px 20px 40px', width:'100%', maxWidth:'400px' }}>
