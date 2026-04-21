@@ -62,6 +62,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const [grupoSeleccionado, setGrupoSeleccionado] = useState({ id:'personal', nombre:'Personal', color: COLORES[0] })
   const [mostrarSelectorGrupo, setMostrarSelectorGrupo] = useState(false)
   const [cargando, setCargando] = useState(false)
+  const [keyboardOffset, setKeyboardOffset] = useState(0)
   const [mostrarRepetir, setMostrarRepetir] = useState(false)
   const [fechasRepetir, setFechasRepetir] = useState([])
   const [mesRepetir, setMesRepetir] = useState(hoy.getMonth())
@@ -76,6 +77,20 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const [anioCalRep, setAnioCalRep] = useState(hoy.getFullYear())
   const [fechasEditRepetir, setFechasEditRepetir] = useState([])
   const [confirmarEliminar, setConfirmarEliminar] = useState(null)
+
+  useEffect(() => {
+    if (!window.visualViewport) return
+    const handler = () => {
+      const offset = window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop
+      setKeyboardOffset(Math.max(0, offset))
+    }
+    window.visualViewport.addEventListener('resize', handler)
+    window.visualViewport.addEventListener('scroll', handler)
+    return () => {
+      window.visualViewport.removeEventListener('resize', handler)
+      window.visualViewport.removeEventListener('scroll', handler)
+    }
+  }, [])
 
   useEffect(() => {
     if (!userId) return
@@ -363,7 +378,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
 
 
       {mostrarForm && (
-        <div onClick={() => { setMostrarForm(false); setNuevaTarea(''); setMostrarRepetir(false); setFechasRepetir([]) }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:400 }}>
+        <div onClick={() => { setMostrarForm(false); setNuevaTarea(''); setMostrarRepetir(false); setFechasRepetir([]) }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:400, paddingBottom:`${keyboardOffset}px` }}>
           <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', padding:'24px 20px 40px', width:'100%', maxWidth:'500px' }}>
             <div style={{ fontSize:'13px', fontWeight:'700', color:th.textoSub, textAlign:'center', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'16px' }}>{diaSeleccionado} {meses[mes]} {anio}</div>
             <input autoFocus placeholder={tx.nuevaTarea} value={nuevaTarea} onChange={e=>setNuevaTarea(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarTarea()} style={{ width:'100%', padding:'12px 14px', borderRadius:'12px', border:`1.5px solid ${th.acento}`, background:th.bg, color:th.texto, fontSize:'14px', outline:'none', boxSizing:'border-box', marginBottom:'12px' }} />
