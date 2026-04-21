@@ -397,7 +397,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
           </div>
           <div style={{ textAlign: 'right' }}>
             <div style={{ fontSize: '26px', fontWeight: '700', color: 'white', lineHeight: 1 }}>{nSel}</div>
-            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>productos</div>
+            <div style={{ fontSize: '10px', color: 'rgba(255,255,255,0.6)' }}>{tx.productos}</div>
           </div>
         </div>
       </div>
@@ -484,7 +484,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
 
           {filtroCat && DEP_ORDER.every(dep => !todo[dep].some(p => fuzzyMatch(filtroCat, p))) && (
             <div style={{ padding: '32px 16px', textAlign: 'center', color: th.textoMuted, fontSize: '13px' }}>
-              Sin resultados para "{filtroCat}"
+              {`${tx.sinResultados} "${filtroCat}"`}
             </div>
           )}
         </div>
@@ -500,7 +500,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
 
           {listSelMode ? (
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '7px 14px', background: th.selBg, borderBottom: `0.5px solid ${th.selBorde}` }}>
-              <span style={{ fontSize: '12px', color: th.selTexto }}>{listSelIds.length} seleccionado{listSelIds.length !== 1 ? 's' : ''}</span>
+              <span style={{ fontSize: '12px', color: th.selTexto }}>{listSelIds.length} {tx.seleccionados}</span>
               <div style={{ display: 'flex', gap: '6px' }}>
                 <button onClick={() => { setListSelMode(false); setListSelIds([]) }} style={{ background: 'none', border: 'none', color: th.selTexto, fontSize: '12px', cursor: 'pointer', fontFamily: 'inherit' }}>{tx.cancelar}</button>
                 <button onClick={() => setModal('confirm-del-lista')} style={{ background: 'none', border: '1px solid #A32D2D', color: '#A32D2D', fontSize: '11px', borderRadius: '6px', padding: '3px 10px', cursor: 'pointer', fontFamily: 'inherit' }}>{tx.eliminar}</button>
@@ -515,7 +515,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
 
           {nSel === 0 ? (
             <div style={{ padding: '40px 16px', textAlign: 'center', color: th.textoMuted, fontSize: '13px' }}>
-              Selecciona productos del catálogo para armar tu lista
+              {tx.seleccionarProd}
             </div>
           ) : (
             DEP_ORDER.map(dep => {
@@ -576,34 +576,34 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
 
           {modal === 'grupos' && (
             <div style={{ background: th.modalBg, borderRadius: '16px', padding: '22px 20px', width: '100%', maxWidth: '340px' }}>
-              <div style={{ fontSize: '15px', fontWeight: '600', color: th.texto, marginBottom: '14px' }}>Mis grupos</div>
+              <div style={{ fontSize: '15px', fontWeight: '600', color: th.texto, marginBottom: '14px' }}>{tx.misGrupos}</div>
               {grupos.map((gr, i) => (
                 <div key={gr.id} onClick={() => cambiarGrupo(i)}
                   style={{ display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 0', borderBottom: `0.5px solid ${th.borde}`, cursor: 'pointer' }}>
                   <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: gr.color, flexShrink: 0 }} />
                   <div style={{ flex: 1, fontSize: '14px', color: th.texto }}>{gr.nombre}{i === grupoActivo ? ' ✓' : ''}</div>
-                  <div style={{ fontSize: '11px', color: th.textoMuted }}>{gr.miembros.length} integrantes</div>
+                  <div style={{ fontSize: '11px', color: th.textoMuted }}>{gr.miembros.length} {tx.integrantes}</div>
                 </div>
               ))}
-              <button onClick={() => setModal(null)} style={{ width: '100%', padding: '10px', marginTop: '12px', borderRadius: '10px', background: th.bgStripe, border: `0.5px solid ${th.borde}`, cursor: 'pointer', fontSize: '13px', color: th.textoSub, fontFamily: 'inherit' }}>Cerrar</button>
+              <button onClick={() => setModal(null)} style={{ width: '100%', padding: '10px', marginTop: '12px', borderRadius: '10px', background: th.bgStripe, border: `0.5px solid ${th.borde}`, cursor: 'pointer', fontSize: '13px', color: th.textoSub, fontFamily: 'inherit' }}>{tx.cerrar}</button>
             </div>
           )}
 
-          {modal === 'nuevo-grupo' && <ModalInput title={tx.nuevoGrupo} placeholder={tx.nombreGrupoPlaceholder} onConfirm={v => crearGrupo(v)} onCancel={() => setModal(null)} th={th} />}
-          {modal === 'add-prod' && <ModalInput title={`${tx.agregarProd} ${mData.dep}`} placeholder={tx.nombreProd} onConfirm={v => agregarProducto(mData.dep, v)} onCancel={() => setModal(null)} th={th} />}
-          {modal === 'edit-prod' && <ModalInput title="Editar producto" placeholder={tx.nombre} defaultValue={mData.prod} onConfirm={v => editarProducto(mData.dep, mData.prod, v)} onCancel={() => setModal(null)} th={th} />}
+          {modal === 'nuevo-grupo' && <ModalInput title={tx.nuevoGrupo} placeholder={tx.nombreGrupoPlaceholder} onConfirm={v => crearGrupo(v)} onCancel={() => setModal(null)} th={th} tx={tx} />}
+          {modal === 'add-prod' && <ModalInput title={`${tx.agregarProd} ${mData.dep}`} placeholder={tx.nombreProd} onConfirm={v => agregarProducto(mData.dep, v)} onCancel={() => setModal(null)} th={th} tx={tx} />}
+          {modal === 'edit-prod' && <ModalInput title={tx.editarProd} placeholder={tx.nombre} defaultValue={mData.prod} onConfirm={v => editarProducto(mData.dep, mData.prod, v)} onCancel={() => setModal(null)} th={th} tx={tx} />}
 
           {modal === 'confirm-del-cat' && (
-            <ModalConfirm title={`${tx.eliminar} "${mData.prod}"?`} msg={tx.confirmarEliminarProd} onConfirm={() => eliminarProductoCat(mData.dep, mData.prod)} onCancel={() => setModal(null)} th={th} />
+            <ModalConfirm title={`${tx.eliminar} "${mData.prod}"?`} msg={tx.confirmarEliminarProd} onConfirm={() => eliminarProductoCat(mData.dep, mData.prod)} onCancel={() => setModal(null)} th={th} tx={tx} />
           )}
           {modal === 'confirm-del-lista' && (
-            <ModalConfirm title={`${tx.eliminar} ${listSelIds.length} ${tx.productos}?`} msg={tx.confirmarEliminarLista} onConfirm={eliminarSeleccion} onCancel={() => setModal(null)} th={th} />
+            <ModalConfirm title={`${tx.eliminar} ${listSelIds.length} ${tx.productos}?`} msg={tx.confirmarEliminarLista} onConfirm={eliminarSeleccion} onCancel={() => setModal(null)} th={th} tx={tx} />
           )}
           {modal === 'confirm-borrar-marcados' && (
-            <ModalConfirm title={tx.confirmarBorrarMarcados} onConfirm={borrarMarcados} onCancel={() => setModal(null)} th={th} />
+            <ModalConfirm title={tx.confirmarBorrarMarcados} onConfirm={borrarMarcados} onCancel={() => setModal(null)} th={th} tx={tx} />
           )}
           {modal === 'confirm-borrar' && (
-            <ModalConfirm title={tx.borrarLista} msg={tx.confirmarBorrarLista} onConfirm={borrarLista} onCancel={() => setModal(null)} th={th} />
+            <ModalConfirm title={tx.borrarLista} msg={tx.confirmarBorrarLista} onConfirm={borrarLista} onCancel={() => setModal(null)} th={th} tx={tx} />
           )}
         </div>
       )}
@@ -612,7 +612,7 @@ export default function ListaSuper({ onVolver, tema = 'oscuro', idioma = 'es' })
 }
 
 // ── Componentes auxiliares ──────────────────────────────────────
-function ModalInput({ title, placeholder, defaultValue = '', onConfirm, onCancel, th }) {
+function ModalInput({ title, placeholder, defaultValue = '', onConfirm, onCancel, th, tx }) {
   const [val, setVal] = useState(defaultValue)
   return (
     <div style={{ background: th.modalBg, borderRadius: '16px', padding: '22px 20px', width: '100%', maxWidth: '340px' }}>
@@ -625,14 +625,14 @@ function ModalInput({ title, placeholder, defaultValue = '', onConfirm, onCancel
         <button onClick={onCancel} style={{ flex: 1, padding: '10px', borderRadius: '10px', background: th.bgStripe, border: `0.5px solid ${th.borde}`, cursor: 'pointer', fontSize: '13px', color: th.textoSub, fontFamily: 'inherit' }}>{tx.cancelar}</button>
         <button onClick={() => val.trim() && onConfirm(val.trim())} disabled={!val.trim()}
           style={{ flex: 1, padding: '10px', borderRadius: '10px', background: val.trim() ? th.acento : th.bgStripe, border: 'none', cursor: val.trim() ? 'pointer' : 'default', fontSize: '13px', color: val.trim() ? 'white' : th.textoMuted, fontWeight: '500', fontFamily: 'inherit' }}>
-          Guardar
+          {tx ? tx.guardar : 'Guardar'}
         </button>
       </div>
     </div>
   )
 }
 
-function ModalConfirm({ title, msg, onConfirm, onCancel, th }) {
+function ModalConfirm({ title, msg, onConfirm, onCancel, th, tx }) {
   return (
     <div style={{ background: th.modalBg, borderRadius: '16px', padding: '22px 20px', width: '100%', maxWidth: '340px', textAlign: 'center' }}>
       <div style={{ fontSize: '15px', fontWeight: '600', color: th.texto, marginBottom: '8px' }}>{title}</div>
