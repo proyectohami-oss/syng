@@ -378,8 +378,8 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
 
 
       {mostrarForm && (
-        <div onClick={() => { setMostrarForm(false); setNuevaTarea(''); setMostrarRepetir(false); setFechasRepetir([]) }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:400, paddingBottom:`${keyboardOffset}px` }}>
-          <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', padding:'24px 20px 40px', width:'100%', maxWidth:'500px' }}>
+        <div onClick={() => { setMostrarForm(false); setNuevaTarea(''); setMostrarRepetir(false); setFechasRepetir([]) }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:400 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', padding:'24px 20px', width:'100%', maxWidth:'500px', paddingBottom:`max(40px, ${keyboardOffset}px)` }}>
             <div style={{ fontSize:'13px', fontWeight:'700', color:th.textoSub, textAlign:'center', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'16px' }}>{diaSeleccionado} {meses[mes]} {anio}</div>
             <input autoFocus placeholder={tx.nuevaTarea} value={nuevaTarea} onChange={e=>setNuevaTarea(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarTarea()} style={{ width:'100%', padding:'12px 14px', borderRadius:'12px', border:`1.5px solid ${th.acento}`, background:th.bg, color:th.texto, fontSize:'14px', outline:'none', boxSizing:'border-box', marginBottom:'12px' }} />
             <div onClick={() => setMostrarSelectorGrupo(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 14px', background:`${th.acento}11`, borderRadius:'12px', cursor:'pointer', marginBottom:'10px' }}>
