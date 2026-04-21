@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import { TEXTOS } from './idiomas'
+import { CATALOGOS, DEP_ORDER_BY_LANG } from './catalogos'
 
 const DEP_ORDER = [
   'Lácteos','Carnes y embutidos','Frutas y verduras','Abarrotes',
@@ -100,12 +101,15 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es'}){
   const catInputRef=useRef(null)
   const listInputRef=useRef(null)
 
+  const depOrder = DEP_ORDER_BY_LANG[idioma] || DEP_ORDER_BY_LANG.es
+  const catalogoBase = CATALOGOS[idioma] || CATALOGOS.es
+
   function getTodo(){
     const todo={}
-    DEP_ORDER.forEach(dep=>{
-      const base=CATALOGO_BASE[dep]||[]
+    depOrder.forEach(dep=>{
+      const base=catalogoBase[dep]||[]
       const custom=customProds[dep]||[]
-      todo[dep]=[...new Set([...base,...custom])].sort((a,b)=>a.localeCompare(b,'es',{sensitivity:'base'}))
+      todo[dep]=[...new Set([...base,...custom])].sort((a,b)=>a.localeCompare(b,idioma,{sensitivity:'base'}))
     })
     return todo
   }
@@ -166,7 +170,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es'}){
           <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
             <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={inp}/>
           </div>
-          {DEP_ORDER.map(dep=>{
+          {depOrder.map(dep=>{
             const prods=filtroCat?todo[dep].filter(p=>fuzzyMatch(filtroCat,p)):todo[dep]
             if(!prods.length) return null
             return(
@@ -202,7 +206,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es'}){
               </div>
             )
           })}
-          {filtroCat&&DEP_ORDER.every(dep=>!todo[dep].some(p=>fuzzyMatch(filtroCat,p)))&&(
+          {filtroCat&&depOrder.every(dep=>!todo[dep].some(p=>fuzzyMatch(filtroCat,p)))&&(
             <div style={{padding:'32px 16px',textAlign:'center',color:th.textoMuted,fontSize:'13px'}}>{tx.sinResultados} "{filtroCat}"</div>
           )}
         </div>
@@ -230,7 +234,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es'}){
           {nSel===0?(
             <div style={{padding:'40px 16px',textAlign:'center',color:th.textoMuted,fontSize:'13px'}}>{tx.seleccionarProd}</div>
           ):(
-            DEP_ORDER.map(dep=>{
+            depOrder.map(dep=>{
               const items=Object.entries(seleccionados).filter(([p,d])=>d.dep===dep&&(!filtroList||fuzzyMatch(filtroList,p))).sort((a,b)=>a[0].localeCompare(b[0],'es',{sensitivity:'base'}))
               if(!items.length) return null
               return(
