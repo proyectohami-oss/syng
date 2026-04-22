@@ -102,6 +102,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
 
   useEffect(()=>{
     if(!userId||!grupoActivo) return
+    setSeleccionados({})
     const listaRef=grupoActivo==='personal'
       ?collection(db,'users',userId,'lista')
       :collection(db,'grupos',grupoActivo,'lista')
@@ -196,7 +197,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     setGrupoActivo(grupoId)
     setModal(null)
   }
-  function cambiarGrupo(id){setGrupoActivo(id);setModal(null)}
+  function cambiarGrupo(id){setGrupoActivo(id);setTab('cat');setModal(null)}
   async function invitarMiembro(){
     if(!emailInvitar.trim()||!modalVerGrupo) return
     setInvitandoMsg('Enviando...')
