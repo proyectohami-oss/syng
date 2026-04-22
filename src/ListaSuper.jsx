@@ -61,12 +61,12 @@ function ModalConfirm({title,msg,onConfirm,onCancel,th,tx}){
   )
 }
 
-export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=null,userName='Tú',userEmail=''}){
+export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=null,userName='Tú',userEmail='',grupoInicial=null}){
   const th=TEMAS[tema]||TEMAS.oscuro
   const tx=TEXTOS[idioma]||TEXTOS.es
 
   const [grupos,setGrupos]=useState([])
-  const [grupoActivo,setGrupoActivo]=useState('personal')
+  const [grupoActivo,setGrupoActivo]=useState(grupoInicial||'personal')
   const [cargando,setCargando]=useState(true)
   const [seleccionados,setSeleccionados]=useState({})
   const [customProds,setCustomProds]=useState(()=>{try{return JSON.parse(localStorage.getItem('syng_super_custom')||'{}')}catch{return{}}})
@@ -81,11 +81,21 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   const [confirmEliminarMiembro,setConfirmEliminarMiembro]=useState(null)
   const [confirmSalirGrupo,setConfirmSalirGrupo]=useState(false)
   const [confirmEliminarGrupo,setConfirmEliminarGrupo]=useState(false)
-  const [emailInvitar,setEmailInvitar]=useState('')
-  const [invitandoMsg,setInvitandoMsg]=useState('')
+  const [cargandoInvitacion,setCargandoInvitacion]=useState(false)
+  const [modalVisitante,setModalVisitante]=useState(false)
 
   useEffect(()=>{
-    if(!userId){ setCargando(false); return }
+    setCargando(false)
+    if(!userId){
+      if(grupoInicial){
+        const cargarGrupo=async()=>{
+          const gSnap=await getDoc(doc(db,'grupos',grupoInicial))
+          if(gSnap.exists()) setGrupos([{id:gSnap.id,...gSnap.data()}])
+        }
+        cargarGrupo()
+      }
+      return
+    }
     const unsub=onSnapshot(collection(db,'users',userId,'misGrupos'),async snap=>{
       const lista=[]
       for(const d of snap.docs){
@@ -149,17 +159,20 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     await setDoc(getListaRef(p),{qty:1,done:false,dep})
   }
   async function toggleProd(p,dep){
-    if(!userId||!grupoActivo) return
+    if(!userId){ setModalVisitante(true); return }
+    if(!grupoActivo) return
     if(seleccionados[p]){ await deleteDoc(getListaRef(p)) }
     else { await setDoc(getListaRef(p),{qty:1,done:false,dep}) }
   }
   async function cambiarQty(p,delta){
-    if(!userId||!grupoActivo) return
+    if(!userId){ setModalVisitante(true); return }
+    if(!grupoActivo) return
     const qty=Math.max(1,(seleccionados[p]?.qty||1)+delta)
     await updateDoc(getListaRef(p),{qty})
   }
   async function toggleDone(p){
-    if(!userId||!grupoActivo) return
+    if(!userId){ setModalVisitante(true); return }
+    if(!grupoActivo) return
     await updateDoc(getListaRef(p),{done:!seleccionados[p]?.done})
   }
   function toggleListSel(p){setListSelIds(prev=>prev.includes(p)?prev.filter(i=>i!==p):[...prev,p])}
@@ -198,15 +211,20 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     setModal(null)
   }
   function cambiarGrupo(id){setGrupoActivo(id);setTab('cat');setModal(null)}
-  async function invitarMiembro(){
-    if(!emailInvitar.trim()||!modalVerGrupo) return
-    setInvitandoMsg('Enviando...')
-    try{
-      await setDoc(doc(db,'invitaciones',generarId()),{grupoId:modalVerGrupo.id,grupoNombre:modalVerGrupo.nombre,emailInvitado:emailInvitar.trim().toLowerCase(),invitadoPor:userName,modulo:'lista',creadoEn:Date.now()})
-      setInvitandoMsg('✓ Invitación enviada')
-      setEmailInvitar('')
-    }catch(e){ setInvitandoMsg('Error al enviar') }
-    setTimeout(()=>setInvitandoMsg(''),3000)
+  async function generarInvitacion(){
+    if(!modalVerGrupo||!userId) return
+    setCargandoInvitacion(true)
+    const invId=generarId()
+    await setDoc(doc(db,'invitaciones',invId),{grupoId:modalVerGrupo.id,grupoNombre:modalVerGrupo.nombre,modulo:'lista',creadoPor:userId,creadoEn:Date.now(),expiresEn:Date.now()+7*24*60*60*1000,usado:false})
+    const link=`${window.location.origin}?invitacion=${invId}`
+    setCargandoInvitacion(false)
+    if(navigator.share){
+      try{await navigator.share({title:'Syng',text:`Te invito al grupo "${modalVerGrupo.nombre}" en Syng`,url:link})}
+      catch(e){if(e.name!=='AbortError'){await navigator.clipboard.writeText(link);alert('Link copiado')}}
+    }else{
+      await navigator.clipboard.writeText(link)
+      alert('Link copiado: '+link)
+    }
   }
   async function eliminarMiembro(miembro){
     if(!modalVerGrupo) return
@@ -424,12 +442,9 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
             <div style={{fontSize:'12px',color:th.textoMuted,marginBottom:'18px'}}>Admin: {modalVerGrupo.adminNombre}</div>
             {modalVerGrupo.adminId===userId&&(
               <div style={{marginBottom:'18px'}}>
-                <div style={{fontSize:'12px',fontWeight:'600',color:th.textoSub,marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Invitar por email</div>
-                <div style={{display:'flex',gap:'8px'}}>
-                  <input value={emailInvitar} onChange={e=>setEmailInvitar(e.target.value)} placeholder="correo@ejemplo.com" style={{...inp,marginBottom:0,flex:1,fontSize:'13px',padding:'8px 10px'}}/>
-                  <button onClick={invitarMiembro} style={{padding:'8px 12px',borderRadius:'9px',background:th.acento,border:'none',color:'white',fontSize:'12px',fontWeight:'600',...T}}>Invitar</button>
-                </div>
-                {invitandoMsg&&<div style={{fontSize:'12px',color:th.acento,marginTop:'6px'}}>{invitandoMsg}</div>}
+                <div style={{fontSize:'12px',fontWeight:'600',color:th.textoSub,marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Invitar al grupo</div>
+                <button onClick={generarInvitacion} disabled={cargandoInvitacion} style={{width:'100%',padding:'13px',background:cargandoInvitacion?th.bgStripe:'linear-gradient(135deg,#185FA5,#534AB7)',color:cargandoInvitacion?th.textoMuted:'white',border:'none',borderRadius:'12px',fontSize:'15px',fontWeight:'600',...T}}>{cargandoInvitacion?'Generando link...':'Invitar al grupo'}</button>
+                <div style={{fontSize:'11px',color:th.textoMuted,textAlign:'center',marginTop:'8px'}}>Cada link funciona una sola vez.</div>
               </div>
             )}
             <div style={{fontSize:'12px',fontWeight:'600',color:th.textoSub,marginBottom:'10px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Miembros ({modalVerGrupo.miembros?.length||1})</div>
@@ -487,6 +502,18 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
               <button onClick={()=>setConfirmEliminarGrupo(false)} style={{flex:1,padding:'12px',background:th.bgStripe,border:'none',borderRadius:'12px',fontSize:'15px',color:th.textoSub,...T}}>{tx.cancelar}</button>
               <button onClick={eliminarGrupo} style={{flex:1,padding:'12px',background:'#A32D2D',border:'none',borderRadius:'12px',fontSize:'15px',color:'white',fontWeight:'600',...T}}>Eliminar</button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {modalVisitante&&(
+        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:'24px'}}>
+          <div style={{background:th.modalBg,borderRadius:'24px',padding:'32px',maxWidth:'340px',width:'100%',textAlign:'center'}}>
+            <div style={{fontSize:'40px',marginBottom:'12px'}}>🎉</div>
+            <div style={{fontSize:'19px',fontWeight:'800',color:th.texto,marginBottom:'8px'}}>¡Únete a Syng!</div>
+            <div style={{fontSize:'14px',color:th.textoSub,marginBottom:'24px',lineHeight:'1.5'}}>Inicia sesión para agregar productos, crear grupos y compartir tu lista.</div>
+            <button onClick={()=>{window.location.href='/'}} style={{width:'100%',padding:'14px',background:'linear-gradient(135deg,#185FA5,#534AB7)',color:'white',border:'none',borderRadius:'14px',fontSize:'16px',fontWeight:'700',cursor:'pointer',marginBottom:'10px'}}>Iniciar sesión</button>
+            <button onClick={()=>setModalVisitante(false)} style={{width:'100%',padding:'12px',background:th.bgStripe,color:th.textoSub,border:'none',borderRadius:'14px',fontSize:'15px',cursor:'pointer'}}>Seguir explorando</button>
           </div>
         </div>
       )}
