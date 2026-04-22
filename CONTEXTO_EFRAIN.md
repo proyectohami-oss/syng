@@ -24,3 +24,28 @@
 - Se identificó que el estado vivía solo en React y no persistía
 - Solución acordada: agregar dos `useEffect` para cargar y guardar en Firestore usando la colección `listas/{grupoId}`
 - Pendiente verificar: reglas de Firestore (lectura/escritura)
+
+## Sesión 20-21 abril 2026
+- v2.61 - sistema de traducciones centralizado en idiomas.js
+- v2.62 - traducciones home, navbar, stats completas
+- v2.63 - traducciones corregidas Cuenta, modal instalar
+- v2.64 - Pizarron.jsx traducciones completas
+- v2.65 - traducciones Pizarron y ListaSuper
+- v2.66 - traducciones home, navbar, stats, agenda completas
+- v2.67 - ListaSuper traducciones completas
+- v2.68 - ListaSuper modales con traducciones
+- v2.69 - ListaSuper reescrito completo con traducciones
+- v2.70 - catálogo traducido en 8 idiomas adaptado por país (archivo catalogos.js)
+- v2.71 - Mi Agenda formulario como modal al tocar + agregar
+- v2.72 - Mi Agenda modal sube con teclado (visualViewport)
+- v2.73 - Mi Agenda modal padding teclado corregido
+
+## Estado actual v2.73
+- Traducciones: 95% completas en toda la app
+- Catálogo Lista del Súper: traducido y adaptado por país en 8 idiomas
+- Mi Agenda: modal para agregar tarea funcionando correctamente
+- Pendiente: editar/eliminar grupos en Lista del Súper
+- Pendiente: buscadores digan "Buscar en Syng"
+- Pendiente: decidir si grupos Lista del Súper van a Firebase
+- Pendiente: pulir Mi Agenda (visual y funcional)
+- Pendiente: logo Syng nuevas propuestas
