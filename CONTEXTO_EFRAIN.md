@@ -52,3 +52,21 @@
 - Las invitaciones se guardan en colección "invitaciones" en Firestore y son de un solo uso
 - App.jsx pasa userId, userName, userEmail y grupoInicial a ListaSuper
 - Al compartir invitación de Pizarrón sin login: se guarda grupoId en localStorage antes de cargar
+
+## Historia de Syng (para pantalla de demo)
+- Origen: pizarrón físico en casa para tareas familiares
+- Problema 1: había que estar frente al pizarrón para verlo o actualizarlo
+- Problema 2: muchos pendientes del día se perdían sin poder consultarlo
+- Problema 3: lista del súper de memoria = productos olvidados + gastos de más
+- Solución: Syng — el pizarrón de casa en el bolsillo, compartido, en tiempo real
+
+## Mercado objetivo
+- Familias: coordinación del hogar, lista del súper compartida
+- Empresas públicas y privadas: jefes y subjefes coordinados en tiempo real
+- Equipos de trabajo: tareas con fecha, sin correos largos, palabras clave y precisas
+
+## Pantalla de demo (pendiente construir)
+- Mostrar historia real de Efraín de forma emotiva
+- Destacar los 3 módulos: Pizarrón, Mi Agenda, Lista del Súper
+- Usar lenguaje de marketing atractivo
+- Incluir ángulo empresarial además del familiar
