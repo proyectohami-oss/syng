@@ -8,6 +8,7 @@ import PantallaInvitacion from './PantallaInvitacion'
 import ListaTareas from './ListaTareas'
 import ListaSuper from './ListaSuper'
 import MiAgenda from './MiAgenda'
+import PantallaDemo from './PantallaDemo'
 
 const TEMA = {
   oscuro: {
@@ -61,7 +62,7 @@ function NavBar({ pantalla, onIrPantalla, th, t }) {
     { key:'inicio', label:t.inicio, icon:'🏠' },
     { key:'pizarron', label:t.pizarron, icon:'📅' },
     { key:'listasuper', label:t.super2, icon:'🛒' },
-    { key:'compartir', label:t.compartir, icon:'📤', accion: () => { if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app') } } },
+    { key:'compartir', label:t.compartir, icon:'📤', accion: () => { if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app?demo=true'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app?demo=true') } } },
     { key:'perfil', label:t.perfil, icon:'👤' },
   ]
   return (
@@ -182,7 +183,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
           </div>
         </div>
         <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra, marginBottom:'20px' }}>
-          <div onClick={()=>{ if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app'); alert('Link copiado') }}} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
+          <div onClick={()=>{ if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app?demo=true'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app?demo=true'); alert('Link copiado') }}} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
               <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>⬆</div>
               <span style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>{t.compartirSyng}</span>
@@ -446,6 +447,9 @@ export default function App() {
   useEffect(() => { if (pantalla !== 'inicio') window.history.pushState({ pantalla }, '') }, [pantalla])
 
   // Pantalla de carga mientras se verifica la invitación
+  const esDemo = new URLSearchParams(window.location.search).get('demo') === 'true'
+  if (esDemo) return <PantallaDemo onEntrar={()=>{ window.history.replaceState({},'',window.location.pathname); setPantalla('inicio') }} />
+
   if (invCargando) return (
     <div style={{ minHeight:'100vh', background:th.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ color:th.textoSub, fontSize:'15px' }}>Cargando invitación...</div>
