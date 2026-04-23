@@ -466,6 +466,9 @@ export default function App() {
           const modulo = invData.modulo
           setInvId(null)
           setInvData(null)
+          if (modulo === 'pizarron') {
+            localStorage.setItem('syng_grupo_activo_pizarron', grupoId)
+          }
           setGrupoDestino({ grupoId, modulo })
           setPantalla(modulo === 'lista' ? 'listasuper' : 'pizarron')
         }
