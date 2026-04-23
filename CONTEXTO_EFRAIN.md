@@ -12,49 +12,43 @@
 - Evitar explicaciones largas en inglés o términos técnicos sin aclarar
 - Si algo puede salir mal, advertirlo de forma simple antes de que lo intente
 - Siempre decirle si es terminal izquierda o derecha
+- No dar parches — si algo no funciona, reescribir el archivo completo
 
 ## Proyecto: Syng
 - Repositorio: https://github.com/proyectohami-oss/syng
-- Es una app de lista del súper con catálogo, grupos y productos personalizados
+- App de organización familiar: pizarrón, lista del súper, agenda
 - Stack: React + Firebase (Firestore)
-- Archivos principales: ListaSuper.jsx, Pizarron.jsx, App.jsx
+- Desplegado en Vercel: https://syng-psi.vercel.app
+- Archivos principales: ListaSuper.jsx, Pizarron.jsx, App.jsx, PantallaInvitacion.jsx
 
 ## Historial de versiones
-- v2.61 - sistema de traducciones centralizado en idiomas.js
-- v2.62 - traducciones home, navbar, stats completas
-- v2.63 - traducciones corregidas Cuenta, modal instalar
-- v2.64 - Pizarron.jsx traducciones completas
-- v2.65 - traducciones Pizarron y ListaSuper
-- v2.66 - traducciones home, navbar, stats, agenda completas
-- v2.67 - ListaSuper traducciones completas
-- v2.68 - ListaSuper modales con traducciones
-- v2.69 - ListaSuper reescrito completo con traducciones
-- v2.70 - catálogo traducido en 8 idiomas adaptado por país (catalogos.js)
-- v2.71 - Mi Agenda formulario como modal al tocar + agregar
-- v2.72 - Mi Agenda modal sube con teclado (visualViewport)
-- v2.73 - Mi Agenda modal padding teclado corregido
-- v2.74 - ListaSuper grupos conectados a Firebase (crear, invitar, salir, eliminar miembro, eliminar grupo, grupo Personal de fábrica)
+- v2.61 a v2.70 — traducciones completas y catálogo en 8 idiomas
+- v2.71 a v2.73 — Mi Agenda modal funcionando correctamente
+- v2.74 — ListaSuper grupos conectados a Firebase, grupo Personal de fábrica
+- v2.75 — ListaSuper invitaciones con link compartible
+- v2.76 — Invitaciones completas: ListaSuper y Pizarrón, logueado y visitante
 
-## Estado actual v2.74
+## Estado actual v2.76
 - Traducciones: 95% completas en toda la app
 - Catálogo Lista del Súper: traducido y adaptado por país en 8 idiomas
 - Mi Agenda: modal para agregar tarea funcionando correctamente
-- ListaSuper: grupos en Firebase, grupo Personal siempre disponible
-- ListaSuper: admin puede invitar, quitar miembros y eliminar grupo
-- ListaSuper: miembro puede salirse del grupo (sigue en Syng)
+- ListaSuper: grupos en Firebase, Personal siempre disponible
+- ListaSuper: invitaciones con link, miembros, salir, eliminar grupo
+- Pizarrón: invitaciones con link funcionando correctamente
+- Visitante sin login: puede ver el grupo, si intenta interactuar se le invita a loguearse
 
 ## Pendientes
-- BUG: la lista se repite en todos los grupos (no cambia al cambiar de grupo)
-- Invitaciones con link compartible en ListaSuper (igual que Pizarrón)
-- Buscadores digan "Buscar en Syng"
-- Decidir si catálogo de grupo va a Firebase
+- Buscadores que digan "Buscar en Syng"
+- Catálogo de grupo — decidir si va a Firebase
 - Pulir Mi Agenda (visual y funcional)
 - Logo Syng nuevas propuestas
+- Pantalla de demo + "Por qué de Syng" al compartir la app (historia del pizarrón físico de la casa)
 
 ## Notas importantes
 - Salir de un grupo NO es salir de Syng
 - Eliminar a un miembro del grupo NO lo elimina de Syng
-- El grupo Personal siempre existe, no se puede eliminar, guarda en users/{userId}/lista
+- El grupo Personal siempre existe, guarda en users/{userId}/lista
 - Los grupos compartidos guardan en grupos/{grupoId}/lista
-- Las invitaciones se guardan en colección "invitaciones" en Firestore
-- App.jsx pasa userId, userName, userEmail a ListaSuper
+- Las invitaciones se guardan en colección "invitaciones" en Firestore y son de un solo uso
+- App.jsx pasa userId, userName, userEmail y grupoInicial a ListaSuper
+- Al compartir invitación de Pizarrón sin login: se guarda grupoId en localStorage antes de cargar
