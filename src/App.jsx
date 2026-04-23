@@ -43,11 +43,8 @@ const IDIOMAS = [
   { codigo:'zh', bandera:'🇨🇳', nombre:'中文' },
 ]
 
-
-// ─── SINYI ────────────────────────────────────────────────────
 function Sinyi() { return null }
 
-// ─── SELECTOR IDIOMA ──────────────────────────────────────────
 function SelectorIdioma({ idioma, onChange, tema }) {
   const th = tema || TEMA.claro
   return (
@@ -59,7 +56,6 @@ function SelectorIdioma({ idioma, onChange, tema }) {
   )
 }
 
-// ─── BARRA NAVEGACIÓN ─────────────────────────────────────────
 function NavBar({ pantalla, onIrPantalla, th, t }) {
   const items = [
     { key:'inicio', label:t.inicio, icon:'🏠' },
@@ -83,7 +79,6 @@ function NavBar({ pantalla, onIrPantalla, th, t }) {
   )
 }
 
-// ─── PANTALLA PERFIL ──────────────────────────────────────────
 function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, onSalir, onNavegar }) {
   const th = TEMA[tema]
   const nombre = user?.displayName || user?.email?.split('@')[0] || 'Usuario'
@@ -99,7 +94,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
     const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
     if (esStandalone) { setPwaInstalada(true); return }
     if (esIos) { setPwaIos(true); return }
-    const handler = (e) => { e.preventDefault(); setPwaPrompt(e); console.log('PWA prompt capturado') }
+    const handler = (e) => { e.preventDefault(); setPwaPrompt(e) }
     window.addEventListener('beforeinstallprompt', handler)
     window.addEventListener('appinstalled', () => setPwaInstalada(true))
     return () => window.removeEventListener('beforeinstallprompt', handler)
@@ -140,18 +135,18 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
           <SelectorIdioma idioma={idioma} onChange={onCambiarIdioma} tema={th} />
         </div>
         <div style={{ marginBottom:'20px' }}>
-            <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>App</div>
-            <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra }}>
-              <div onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
-                <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
-                  <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>📲</div>
-                  <div>
-                    <div style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>{t.instalarSyng}</div>
-                    <div style={{ fontSize:'12px', color:th.textoSub }}>{t.instalarDesc}</div>
-                  </div>
+          <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', marginBottom:'8px', paddingLeft:'4px' }}>App</div>
+          <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra }}>
+            <div onClick={pwaPrompt ? instalarPwa : () => setMostrarInstrucciones(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
+              <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
+                <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>📲</div>
+                <div>
+                  <div style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>{t.instalarSyng}</div>
+                  <div style={{ fontSize:'12px', color:th.textoSub }}>{t.instalarDesc}</div>
                 </div>
-                <span style={{ color:th.acento, fontSize:'16px' }}>›</span>
               </div>
+              <span style={{ color:th.acento, fontSize:'16px' }}>›</span>
+            </div>
           </div>
         </div>
         {mostrarInstrucciones && (
@@ -206,7 +201,6 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
   )
 }
 
-// ─── PANTALLA HOME ────────────────────────────────────────────
 function PantallaHome({ user, t, th, onIrPantalla, userId }) {
   const nombre = user?.displayName?.split(' ')[0] || 'bienvenido'
   const iniciales = (user?.displayName||user?.email||'U').trim().split(' ').slice(0,2).map(p=>p[0]?.toUpperCase()||'').join('')
@@ -218,12 +212,6 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
   const [completadasHoy, setCompletatdasHoy] = useState(0)
   const [desglosePizarrones, setDesglosePizarrones] = useState([])
   const [modalStats, setModalStats] = useState(null)
-  const [mostrarBannerSinyi, setMostrarBannerSinyi] = useState(true)
-  const activarSinyi = () => {
-    setMostrarBannerSinyi(false)
-    window.speechSynthesis.speak(new SpeechSynthesisUtterance(''))
-    window.dispatchEvent(new CustomEvent('sinyi:activar'))
-  }
 
   useEffect(() => {
     if (!userId) return
@@ -259,14 +247,11 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
 
   return (
     <div style={{ minHeight:'100vh', background: esOscuro ? '#06060F' : th.bg, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', paddingBottom:'80px', position:'relative', overflow:'hidden' }}>
-      {/* Orbes glassmorphism - solo modo oscuro */}
       {esOscuro && <>
         <div style={{ position:'fixed', top:'-80px', left:'-60px', width:'280px', height:'280px', borderRadius:'50%', background:'radial-gradient(circle, rgba(123,110,246,0.2) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
         <div style={{ position:'fixed', top:'250px', right:'-80px', width:'260px', height:'260px', borderRadius:'50%', background:'radial-gradient(circle, rgba(46,204,154,0.13) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
         <div style={{ position:'fixed', bottom:'100px', left:'20px', width:'180px', height:'180px', borderRadius:'50%', background:'radial-gradient(circle, rgba(123,110,246,0.1) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
       </>}
-
-      {/* Header */}
       <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : th.header, padding:'16px 20px 28px 20px', position:'relative', zIndex:1 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
@@ -283,12 +268,7 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
           <div style={{ color:'rgba(255,255,255,0.7)', fontSize:'14px', marginTop:'2px' }}>{pendientesHoy} {t.pendientesHoy}</div>
         </div>
       </div>
-
-
-      {/* Contenido */}
       <div style={{ padding:'20px 16px', display:'flex', flexDirection:'column', gap:'16px', position:'relative', zIndex:1 }}>
-
-        {/* Stats */}
         <div style={{ display:'flex', gap:'12px' }}>
           <div onClick={() => setModalStats('pendientes')} style={{ flex:1, background: esOscuro ? 'rgba(123,110,246,0.12)' : th.statPendBg, border: esOscuro ? '1px solid rgba(123,110,246,0.3)' : 'none', borderRadius:'18px', padding:'18px 16px', backdropFilter: esOscuro ? 'blur(10px)' : 'none', cursor:'pointer' }}>
             <div style={{ fontSize:'28px', fontWeight:'800', color: esOscuro ? '#A89EFF' : th.acento }}>{pendientesHoy}</div>
@@ -299,8 +279,6 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
             <div style={{ fontSize:'12px', color: esOscuro ? 'rgba(94,223,184,0.7)' : th.textoSub, marginTop:'4px' }}>{t.completadas}</div>
           </div>
         </div>
-
-        {/* Label */}
         <div onClick={() => onIrPantalla('miagenda')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(123,110,246,0.35)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px' }}>
           <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(123,110,246,0.2)' : th.acento+'22', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>📅</div>
           <div style={{ flex:1 }}>
@@ -310,8 +288,6 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
           <div style={{ width:'8px', height:'8px', borderRadius:'50%', background: esOscuro ? '#7B6EF6' : th.acento, opacity:0.7 }} />
         </div>
         <div style={{ fontSize:'11px', fontWeight:'700', color: esOscuro ? 'rgba(255,255,255,0.35)' : th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', paddingLeft:'4px', marginBottom:'-4px' }}>{t.misModulos}</div>
-
-        {/* Pizarrón */}
         <div onClick={() => onIrPantalla('pizarron')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(123,110,246,0.35)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px', backdropFilter: esOscuro ? 'blur(12px)' : 'none' }}>
           <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(123,110,246,0.2)' : `${th.acento}22`, border: esOscuro ? '1px solid rgba(123,110,246,0.3)' : 'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>▦</div>
           <div style={{ flex:1 }}>
@@ -320,8 +296,6 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
           </div>
           <div style={{ width:'8px', height:'8px', borderRadius:'50%', background: esOscuro ? '#7B6EF6' : th.acento, opacity:0.7 }} />
         </div>
-
-        {/* Lista del Súper */}
         <div onClick={() => onIrPantalla('listasuper')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(46,204,154,0.3)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px', backdropFilter: esOscuro ? 'blur(12px)' : 'none' }}>
           <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(46,204,154,0.15)' : `${th.acentoVerde}22`, border: esOscuro ? '1px solid rgba(46,204,154,0.25)' : 'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>◫</div>
           <div style={{ flex:1 }}>
@@ -330,11 +304,8 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
           </div>
           <div style={{ width:'24px', height:'24px', borderRadius:'50%', background: esOscuro ? '#2ECC9A' : th.acentoVerde, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'11px', fontWeight:'700', color: esOscuro ? '#04342C' : 'white' }}>0</div>
         </div>
-
-        {/* Espacio reservado */}
         <div style={{ background: esOscuro ? 'rgba(255,255,255,0.02)' : th.bgCard, border: esOscuro ? '1px solid rgba(255,255,255,0.08)' : 'none', borderRadius:'18px', padding:'18px 16px', opacity:0.35, minHeight:'72px', backdropFilter: esOscuro ? 'blur(8px)' : 'none' }} />
       </div>
-
       <Sinyi idioma={'es'} nombre={nombre} pantalla={'inicio'} />
       {modalStats && (
         <div onClick={() => setModalStats(null)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:300, padding:'0 0 90px 0' }}>
@@ -361,7 +332,6 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
   )
 }
 
-// ─── APP PRINCIPAL ────────────────────────────────────────────
 export default function App() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -381,103 +351,142 @@ export default function App() {
   const cambiarIdioma = (cod) => { setIdioma(cod); localStorage.setItem('syng_idioma', cod) }
   const toggleTema = () => { const nuevo = tema==='oscuro'?'claro':'oscuro'; setTema(nuevo); localStorage.setItem('syng_tema', nuevo) }
   const navegar = (destino) => { setPantalla(destino) }
+
   useEffect(() => {
     const h = (e) => { if (e.detail?.destino) setPantalla(e.detail.destino) }
     window.addEventListener('syng:navegar', h)
     return () => window.removeEventListener('syng:navegar', h)
   }, [])
 
+  // Detectar link de invitación al cargar la app
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const id = params.get('invitacion')
     if (!id) return
-    setInvId(id); setInvCargando(true)
+    setInvId(id)
+    setInvCargando(true)
     const cargarInv = async () => {
       try {
-        const invSnap = await getDoc(doc(db,'invitaciones',id))
+        const invSnap = await getDoc(doc(db, 'invitaciones', id))
         if (!invSnap.exists()) { setInvId(null); setInvCargando(false); return }
         const inv = invSnap.data()
         if (inv.usado) { setInvId(null); setInvCargando(false); return }
-        const gSnap = await getDoc(doc(db,'grupos',inv.grupoId))
+        const gSnap = await getDoc(doc(db, 'grupos', inv.grupoId))
         if (!gSnap.exists()) { setInvId(null); setInvCargando(false); return }
         const grupo = gSnap.data()
-        setInvData({ grupoId:inv.grupoId, modulo:inv.modulo, grupoNombre:grupo.nombre, adminNombre:grupo.adminNombre||'un administrador' })
+        setInvData({ grupoId: inv.grupoId, modulo: inv.modulo, grupoNombre: grupo.nombre, adminNombre: grupo.adminNombre || 'un administrador' })
       } catch { setInvId(null) }
       setInvCargando(false)
     }
     cargarInv()
   }, [])
 
+  // Procesar invitación: agregar al grupo en Firebase
   const procesarInvitacion = async (u, inv) => {
     if (!u || !inv) return
     try {
-      const gSnap = await getDoc(doc(db,'grupos',inv.grupoId))
+      const gSnap = await getDoc(doc(db, 'grupos', inv.grupoId))
       if (!gSnap.exists()) return
       const grupo = gSnap.data()
-      const yaMiembro = (grupo.miembros||[]).some(m => m.uid===u.uid)
+      const yaMiembro = (grupo.miembros || []).some(m => m.uid === u.uid)
       if (!yaMiembro) {
-        await updateDoc(doc(db,'grupos',inv.grupoId), { miembros: arrayUnion({ uid:u.uid, email:u.email||'', nombre:u.displayName||u.email?.split('@')[0]||'Usuario', rol:'miembro' }) })
-        await setDoc(doc(db,'users',u.uid,'misGrupos',inv.grupoId), { nombre:grupo.nombre, modulo:inv.modulo })
+        await updateDoc(doc(db, 'grupos', inv.grupoId), {
+          miembros: arrayUnion({ uid: u.uid, email: u.email || '', nombre: u.displayName || u.email?.split('@')[0] || 'Usuario', rol: 'miembro' })
+        })
+        await setDoc(doc(db, 'users', u.uid, 'misGrupos', inv.grupoId), { nombre: grupo.nombre, modulo: inv.modulo })
       }
-      const invSnap = await getDoc(doc(db,'invitaciones',invId||''))
-      if (invSnap.exists() && !invSnap.data().usado) await updateDoc(doc(db,'invitaciones',invId), { usado:true })
-      window.history.replaceState({},'',window.location.pathname)
-      setInvId(null); setInvData(null)
-      setGrupoDestino({ grupoId:inv.grupoId, modulo:inv.modulo })
+      // Marcar invitación como usada
+      const invSnap = await getDoc(doc(db, 'invitaciones', inv.grupoId === inv.grupoId ? invId : ''))
+      if (invSnap && invSnap.exists && invSnap.exists() && !invSnap.data().usado) {
+        await updateDoc(doc(db, 'invitaciones', invId), { usado: true })
+      }
+      window.history.replaceState({}, '', window.location.pathname)
+      setInvId(null)
+      setInvData(null)
+      // Mandar al grupo correcto
+      setGrupoDestino({ grupoId: inv.grupoId, modulo: inv.modulo })
     } catch(e) { console.error(e) }
   }
 
+  // Detectar login y mandar al grupo destino
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, async (u) => {
+    const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u)
-      const invPendiente = invData || JSON.parse(localStorage.getItem('syng_inv_pendiente')||'null')
-      if (u && invPendiente) { localStorage.removeItem('syng_inv_pendiente'); await procesarInvitacion(u, invPendiente) }
     })
     return unsub
-  }, [invData])
+  }, [])
 
   useEffect(() => {
     if (user && grupoDestino) {
-      localStorage.setItem('syng_grupo_activo_pizarron', grupoDestino.grupoId)
-      setPantalla(grupoDestino.modulo==='pizarron'?'pizarron':'listasuper')
+      if (grupoDestino.modulo === 'pizarron') {
+        localStorage.setItem('syng_grupo_activo_pizarron', grupoDestino.grupoId)
+        setPantalla('pizarron')
+      } else {
+        setPantalla('listasuper')
+      }
       setGrupoDestino(null)
     }
   }, [user, grupoDestino])
 
   const handleEmailAuth = async () => {
-    if (!email||!password) { setError(t.errorCampos); return }
+    if (!email || !password) { setError(t.errorCampos); return }
     setLoading(true); setError('')
-    try { if (isLogin) await signInWithEmailAndPassword(auth,email,password); else await createUserWithEmailAndPassword(auth,email,password) }
+    try { if (isLogin) await signInWithEmailAndPassword(auth, email, password); else await createUserWithEmailAndPassword(auth, email, password) }
     catch { setError(t.errorCred) }
     setLoading(false)
   }
 
   const handleGoogle = async () => {
     setLoading(true); setError('')
-    try { await signInWithPopup(auth,googleProvider) } catch { setError(t.errorGoogle) }
+    try { await signInWithPopup(auth, googleProvider) } catch { setError(t.errorGoogle) }
     setLoading(false)
   }
 
-  useEffect(() => { const h=()=>setPantalla('inicio'); window.addEventListener('popstate',h); return()=>window.removeEventListener('popstate',h) },[])
-  useEffect(() => { if(pantalla!=='inicio') window.history.pushState({pantalla},'') },[pantalla])
+  useEffect(() => { const h = () => setPantalla('inicio'); window.addEventListener('popstate', h); return () => window.removeEventListener('popstate', h) }, [])
+  useEffect(() => { if (pantalla !== 'inicio') window.history.pushState({ pantalla }, '') }, [pantalla])
 
-  if (invCargando) return <div style={{ minHeight:'100vh', background:th.bg, display:'flex', alignItems:'center', justifyContent:'center' }}><div style={{ color:th.textoSub, fontSize:'15px' }}>Cargando invitación...</div></div>
-
-  if (invData && !user) return (
-    <PantallaInvitacion invData={invData}
-      onEntrar={async()=>{ if(user&&!user.isAnonymous){await procesarInvitacion(user,invData)}else{localStorage.setItem('syng_grupo_activo_pizarron',invData.grupoId);window.history.replaceState({},'',window.location.pathname);setInvId(null);setInvData(null);setPantalla('pizarron')} }}
-      onIrLogin={()=>{ window.history.replaceState({},'',window.location.pathname);setInvId(null);setInvData(null) }} />
+  // Pantalla de carga mientras se verifica la invitación
+  if (invCargando) return (
+    <div style={{ minHeight:'100vh', background:th.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
+      <div style={{ color:th.textoSub, fontSize:'15px' }}>Cargando invitación...</div>
+    </div>
   )
 
-  if (user && pantalla==='miagenda') return <MiAgenda userId={user.uid} tema={tema} idioma={idioma} t={t} onVolver={()=>setPantalla('inicio')} onNavegar={navegar} />
-  if (user && pantalla==='listatareas') return <div style={{paddingBottom:'80px'}}><ListaTareas onVolver={()=>setPantalla('inicio')} /><NavBar pantalla='listatareas' onIrPantalla={navegar} th={th} t={t} /></div>
-  if (pantalla==='listasuper') return <div style={{paddingBottom:'80px'}}><ListaSuper onVolver={()=>setPantalla('inicio')} tema={tema} idioma={idioma} userId={user?.uid||null} userName={user?.displayName||user?.email||''} userEmail={user?.email||''} grupoInicial={grupoDestino?.modulo==='lista'?grupoDestino.grupoId:null} /><NavBar pantalla='listasuper' onIrPantalla={navegar} th={th} t={t} /></div>
-  if (pantalla==='pizarron') return <div style={{paddingBottom:'80px'}}><Pizarron onVolver={()=>setPantalla('inicio')} tema={tema} idioma={idioma} /><NavBar pantalla='pizarron' onIrPantalla={navegar} th={th} t={t} /></div>
+  // Pantalla de invitación — se muestra siempre que haya invData, logueado o no
+  if (invData) return (
+    <PantallaInvitacion invData={invData}
+      onEntrar={async () => {
+        if (user && !user.isAnonymous) {
+          // Usuario logueado: procesar invitación y mandar al grupo
+          await procesarInvitacion(user, invData)
+        } else {
+          // Sin login: mandar al módulo como visitante con el grupo de la invitación
+          window.history.replaceState({}, '', window.location.pathname)
+          const grupoId = invData.grupoId
+          const modulo = invData.modulo
+          setInvId(null)
+          setInvData(null)
+          setGrupoDestino({ grupoId, modulo })
+          setPantalla(modulo === 'lista' ? 'listasuper' : 'pizarron')
+        }
+      }}
+      onIrLogin={() => {
+        window.history.replaceState({}, '', window.location.pathname)
+        setInvId(null)
+        setInvData(null)
+      }}
+    />
+  )
 
-  if (user && pantalla==='perfil') return (
+  if (user && pantalla === 'miagenda') return <MiAgenda userId={user.uid} tema={tema} idioma={idioma} t={t} onVolver={() => setPantalla('inicio')} onNavegar={navegar} />
+  if (user && pantalla === 'listatareas') return <div style={{paddingBottom:'80px'}}><ListaTareas onVolver={() => setPantalla('inicio')} /><NavBar pantalla='listatareas' onIrPantalla={navegar} th={th} t={t} /></div>
+  if (pantalla === 'listasuper') return <div style={{paddingBottom:'80px'}}><ListaSuper onVolver={() => setPantalla('inicio')} tema={tema} idioma={idioma} userId={user?.uid || null} userName={user?.displayName || user?.email || ''} userEmail={user?.email || ''} grupoInicial={grupoDestino?.modulo === 'lista' ? grupoDestino.grupoId : null} /><NavBar pantalla='listasuper' onIrPantalla={navegar} th={th} t={t} /></div>
+  if (pantalla === 'pizarron') return <div style={{paddingBottom:'80px'}}><Pizarron onVolver={() => setPantalla('inicio')} tema={tema} idioma={idioma} /><NavBar pantalla='pizarron' onIrPantalla={navegar} th={th} t={t} /></div>
+
+  if (user && pantalla === 'perfil') return (
     <PantallaPerfil user={user} idioma={idioma} tema={tema} t={t}
       onCambiarIdioma={cambiarIdioma} onToggleTema={toggleTema}
-      onSalir={()=>{ signOut(auth); setPantalla('inicio') }}
+      onSalir={() => { signOut(auth); setPantalla('inicio') }}
       onNavegar={navegar} />
   )
 
@@ -493,12 +502,12 @@ export default function App() {
         <div style={{ fontSize:'12px', color:'#888', textAlign:'center', marginBottom:'10px' }}>{t.eligeIdioma}</div>
         <SelectorIdioma idioma={idioma} onChange={cambiarIdioma} />
         <div style={{ display:'flex', background:'#f5f5f7', borderRadius:'12px', padding:'4px', marginBottom:'20px' }}>
-          <button onClick={()=>setIsLogin(true)} style={{ flex:1, padding:'8px', border:'none', borderRadius:'10px', background:isLogin?'white':'transparent', color:isLogin?'#534AB7':'#888', fontWeight:isLogin?'600':'400', cursor:'pointer', fontSize:'14px', boxShadow:isLogin?'0 1px 4px rgba(0,0,0,0.1)':'none' }}>{t.iniciar}</button>
-          <button onClick={()=>setIsLogin(false)} style={{ flex:1, padding:'8px', border:'none', borderRadius:'10px', background:!isLogin?'white':'transparent', color:!isLogin?'#534AB7':'#888', fontWeight:!isLogin?'600':'400', cursor:'pointer', fontSize:'14px', boxShadow:!isLogin?'0 1px 4px rgba(0,0,0,0.1)':'none' }}>{t.registrar}</button>
+          <button onClick={() => setIsLogin(true)} style={{ flex:1, padding:'8px', border:'none', borderRadius:'10px', background:isLogin?'white':'transparent', color:isLogin?'#534AB7':'#888', fontWeight:isLogin?'600':'400', cursor:'pointer', fontSize:'14px', boxShadow:isLogin?'0 1px 4px rgba(0,0,0,0.1)':'none' }}>{t.iniciar}</button>
+          <button onClick={() => setIsLogin(false)} style={{ flex:1, padding:'8px', border:'none', borderRadius:'10px', background:!isLogin?'white':'transparent', color:!isLogin?'#534AB7':'#888', fontWeight:!isLogin?'600':'400', cursor:'pointer', fontSize:'14px', boxShadow:!isLogin?'0 1px 4px rgba(0,0,0,0.1)':'none' }}>{t.registrar}</button>
         </div>
         <div style={{ display:'flex', flexDirection:'column', gap:'12px', marginBottom:'20px' }}>
-          <input type="email" placeholder={t.correo} value={email} onChange={e=>setEmail(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
-          <input type="password" placeholder={t.contrasena} value={password} onChange={e=>setPassword(e.target.value)} onKeyDown={e=>e.key==='Enter'&&handleEmailAuth()} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
+          <input type="email" placeholder={t.correo} value={email} onChange={e => setEmail(e.target.value)} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
+          <input type="password" placeholder={t.contrasena} value={password} onChange={e => setPassword(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleEmailAuth()} style={{ padding:'14px 16px', borderRadius:'12px', border:'1.5px solid #e5e5e5', fontSize:'16px', outline:'none' }} />
         </div>
         {error && <div style={{ color:'red', fontSize:'13px', marginBottom:'12px', textAlign:'center' }}>{error}</div>}
         <button onClick={handleEmailAuth} disabled={loading} style={{ width:'100%', padding:'15px', background:'linear-gradient(135deg,#534AB7,#185FA5)', color:'white', border:'none', borderRadius:'14px', fontSize:'16px', fontWeight:'600', cursor:'pointer', marginBottom:'20px' }}>
