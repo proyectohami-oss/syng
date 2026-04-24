@@ -8,6 +8,7 @@ import PantallaInvitacion from './PantallaInvitacion'
 import ListaTareas from './ListaTareas'
 import ListaSuper from './ListaSuper'
 import MiAgenda from './MiAgenda'
+import PantallaDemo from './PantallaDemo'
 
 const TEMA = {
   oscuro: {
@@ -59,9 +60,10 @@ function SelectorIdioma({ idioma, onChange, tema }) {
 function NavBar({ pantalla, onIrPantalla, th, t }) {
   const items = [
     { key:'inicio', label:t.inicio, icon:'🏠' },
+    { key:'miagenda', label:t.miAgenda, icon:'🗓' },
     { key:'pizarron', label:t.pizarron, icon:'📅' },
     { key:'listasuper', label:t.super2, icon:'🛒' },
-    { key:'compartir', label:t.compartir, icon:'📤', accion: () => { if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app') } } },
+    { key:'compartir', label:t.compartir, icon:'📤', accion: () => { if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app?demo=true'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app?demo=true') } } },
     { key:'perfil', label:t.perfil, icon:'👤' },
   ]
   return (
@@ -69,9 +71,9 @@ function NavBar({ pantalla, onIrPantalla, th, t }) {
       {items.map(item => {
         const activo = pantalla === item.key
         return (
-          <button key={item.key} onClick={() => item.accion ? item.accion() : onIrPantalla(item.key)} style={{ flex:1, padding:'10px 0 8px', background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'3px', color: activo ? th.acento : th.textoSub, transition:'color 0.2s' }}>
-            <span style={{ fontSize:'20px', lineHeight:1 }}>{item.icon}</span>
-            <span style={{ fontSize:'10px', fontWeight: activo ? '700' : '400' }}>{item.label}</span>
+          <button key={item.key} onClick={() => item.accion ? item.accion() : onIrPantalla(item.key)} style={{ flex:1, padding:'8px 0 6px', background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', color: activo ? th.acento : th.textoSub, transition:'color 0.2s' }}>
+            <span style={{ fontSize:'18px', lineHeight:1 }}>{item.icon}</span>
+            <span style={{ fontSize:'9px', fontWeight: activo ? '700' : '400' }}>{item.label}</span>
           </button>
         )
       })}
@@ -182,7 +184,7 @@ function PantallaPerfil({ user, idioma, tema, t, onCambiarIdioma, onToggleTema, 
           </div>
         </div>
         <div style={{ background:th.bgCard, borderRadius:'18px', overflow:'hidden', boxShadow:th.sombra, marginBottom:'20px' }}>
-          <div onClick={()=>{ if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app'); alert('Link copiado') }}} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
+          <div onClick={()=>{ if(navigator.share){ navigator.share({title:'Syng',text:'Te comparto Syng, mi asistente inteligente de vida',url:'https://syng-psi.vercel.app?demo=true'}) } else { navigator.clipboard.writeText('https://syng-psi.vercel.app?demo=true'); alert('Link copiado') }}} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 18px', cursor:'pointer' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'14px' }}>
               <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:`${th.acento}22`, display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px' }}>⬆</div>
               <span style={{ fontSize:'15px', fontWeight:'500', color:th.texto }}>{t.compartirSyng}</span>
@@ -346,6 +348,7 @@ export default function App() {
   const [invData, setInvData] = useState(null)
   const [invCargando, setInvCargando] = useState(false)
   const [grupoDestino, setGrupoDestino] = useState(null)
+  const [verDemo, setVerDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true')
   const t = TEXTOS[idioma] || TEXTOS.es
   const th = TEMA[tema] || TEMA.oscuro
   const cambiarIdioma = (cod) => { setIdioma(cod); localStorage.setItem('syng_idioma', cod) }
@@ -358,7 +361,6 @@ export default function App() {
     return () => window.removeEventListener('syng:navegar', h)
   }, [])
 
-  // Detectar link de invitación al cargar la app
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const id = params.get('invitacion')
@@ -381,7 +383,6 @@ export default function App() {
     cargarInv()
   }, [])
 
-  // Procesar invitación: agregar al grupo en Firebase
   const procesarInvitacion = async (u, inv) => {
     if (!u || !inv) return
     try {
@@ -395,7 +396,6 @@ export default function App() {
         })
         await setDoc(doc(db, 'users', u.uid, 'misGrupos', inv.grupoId), { nombre: grupo.nombre, modulo: inv.modulo })
       }
-      // Marcar invitación como usada
       const invSnap = await getDoc(doc(db, 'invitaciones', inv.grupoId === inv.grupoId ? invId : ''))
       if (invSnap && invSnap.exists && invSnap.exists() && !invSnap.data().usado) {
         await updateDoc(doc(db, 'invitaciones', invId), { usado: true })
@@ -403,12 +403,10 @@ export default function App() {
       window.history.replaceState({}, '', window.location.pathname)
       setInvId(null)
       setInvData(null)
-      // Mandar al grupo correcto
       setGrupoDestino({ grupoId: inv.grupoId, modulo: inv.modulo })
     } catch(e) { console.error(e) }
   }
 
-  // Detectar login y mandar al grupo destino
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (u) => {
       setUser(u)
@@ -445,27 +443,28 @@ export default function App() {
   useEffect(() => { const h = () => setPantalla('inicio'); window.addEventListener('popstate', h); return () => window.removeEventListener('popstate', h) }, [])
   useEffect(() => { if (pantalla !== 'inicio') window.history.pushState({ pantalla }, '') }, [pantalla])
 
-  // Pantalla de carga mientras se verifica la invitación
+  if (verDemo) return <PantallaDemo onEntrar={()=>{ window.history.replaceState({},'',window.location.pathname); setVerDemo(false) }} />
+
   if (invCargando) return (
     <div style={{ minHeight:'100vh', background:th.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
       <div style={{ color:th.textoSub, fontSize:'15px' }}>Cargando invitación...</div>
     </div>
   )
 
-  // Pantalla de invitación — se muestra siempre que haya invData, logueado o no
   if (invData) return (
     <PantallaInvitacion invData={invData}
       onEntrar={async () => {
         if (user && !user.isAnonymous) {
-          // Usuario logueado: procesar invitación y mandar al grupo
           await procesarInvitacion(user, invData)
         } else {
-          // Sin login: mandar al módulo como visitante con el grupo de la invitación
           window.history.replaceState({}, '', window.location.pathname)
           const grupoId = invData.grupoId
           const modulo = invData.modulo
           setInvId(null)
           setInvData(null)
+          if (modulo === 'pizarron') {
+            localStorage.setItem('syng_grupo_activo_pizarron', grupoId)
+          }
           setGrupoDestino({ grupoId, modulo })
           setPantalla(modulo === 'lista' ? 'listasuper' : 'pizarron')
         }
@@ -481,7 +480,9 @@ export default function App() {
   if (user && pantalla === 'miagenda') return <MiAgenda userId={user.uid} tema={tema} idioma={idioma} t={t} onVolver={() => setPantalla('inicio')} onNavegar={navegar} />
   if (user && pantalla === 'listatareas') return <div style={{paddingBottom:'80px'}}><ListaTareas onVolver={() => setPantalla('inicio')} /><NavBar pantalla='listatareas' onIrPantalla={navegar} th={th} t={t} /></div>
   if (pantalla === 'listasuper') return <div style={{paddingBottom:'80px'}}><ListaSuper onVolver={() => setPantalla('inicio')} tema={tema} idioma={idioma} userId={user?.uid || null} userName={user?.displayName || user?.email || ''} userEmail={user?.email || ''} grupoInicial={grupoDestino?.modulo === 'lista' ? grupoDestino.grupoId : null} /><NavBar pantalla='listasuper' onIrPantalla={navegar} th={th} t={t} /></div>
-  if (pantalla === 'pizarron') return <div style={{paddingBottom:'80px'}}><Pizarron onVolver={() => setPantalla('inicio')} tema={tema} idioma={idioma} /><NavBar pantalla='pizarron' onIrPantalla={navegar} th={th} t={t} /></div>
+
+  // ── ARREGLO: key={user?.uid} evita que el Pizarrón se destruya al cambiar de grupo ──
+  if (pantalla === 'pizarron') return <div style={{paddingBottom:'80px'}}><Pizarron key={user?.uid} onVolver={() => setPantalla('inicio')} tema={tema} idioma={idioma} /><NavBar pantalla='pizarron' onIrPantalla={navegar} th={th} t={t} /></div>
 
   if (user && pantalla === 'perfil') return (
     <PantallaPerfil user={user} idioma={idioma} tema={tema} t={t}
