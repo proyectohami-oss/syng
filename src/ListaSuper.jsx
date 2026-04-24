@@ -7,12 +7,6 @@ import {
 import { TEXTOS } from './idiomas'
 import { CATALOGOS, DEP_ORDER_BY_LANG } from './catalogos'
 
-const DEP_ORDER = [
-  'Lácteos','Carnes y embutidos','Frutas y verduras','Abarrotes',
-  'Panadería','Bebidas','Limpieza','Higiene personal',
-  'Congelados','Snacks y dulces','Artículos de cocina','Bebés','Mascotas','Farmacia básica'
-]
-
 const GRUPO_COLORS = ['#5DCAA5','#378ADD','#D85A30','#7F77DD','#1D9E75','#BA7517']
 
 const TEMAS = {
@@ -66,7 +60,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   const tx=TEXTOS[idioma]||TEXTOS.es
 
   const [grupos,setGrupos]=useState([])
-  const [grupoActivo,setGrupoActivo]=useState(grupoInicial||'personal')
+  const [grupoActivo,setGrupoActivo]=useState('personal')  // siempre inicia en personal
   const [cargando,setCargando]=useState(true)
   const [seleccionados,setSeleccionados]=useState({})
   const [customProds,setCustomProds]=useState({})
@@ -84,7 +78,19 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   const [cargandoInvitacion,setCargandoInvitacion]=useState(false)
   const [modalVisitante,setModalVisitante]=useState(false)
 
-
+  // ── Migrar localStorage a Firebase personal (una sola vez) ──
+  useEffect(()=>{
+    if(!userId) return
+    const viejo = localStorage.getItem('syng_super_custom')
+    if(!viejo) return
+    try {
+      const data = JSON.parse(viejo)
+      const ref = doc(db,'users',userId,'catalogoCustom','productos')
+      setDoc(ref,{prods:data}).then(()=>localStorage.removeItem('syng_super_custom'))
+    } catch(e) {
+      localStorage.removeItem('syng_super_custom')
+    }
+  },[userId])
 
   // ── Cargar grupos ──
   useEffect(()=>{
@@ -112,13 +118,13 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     return()=>unsub()
   },[userId])
 
-  // ── Cargar lista de compras ──
+  // ── Cargar lista de compras del grupo activo ──
   useEffect(()=>{
-    if(!userId||!grupoActivo) return
+    if(!userId) return
     setSeleccionados({})
-    const listaRef=grupoActivo==='personal'
-      ?collection(db,'users',userId,'lista')
-      :collection(db,'grupos',grupoActivo,'lista')
+    const listaRef = grupoActivo==='personal'
+      ? collection(db,'users',userId,'lista')
+      : collection(db,'grupos',grupoActivo,'lista')
     const unsub=onSnapshot(listaRef,snap=>{
       const data={}
       snap.docs.forEach(d=>{ data[d.id]={...d.data()} })
@@ -127,43 +133,27 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     return()=>unsub()
   },[userId,grupoActivo])
 
-  // ── Migrar localStorage a Firebase (una sola vez) ──
+  // ── Cargar catálogo custom del grupo activo desde Firebase ──
   useEffect(()=>{
-    if(!userId) return
-    const viejo = localStorage.getItem('syng_super_custom')
-    if(!viejo) return
-    try {
-      const data = JSON.parse(viejo)
-      const ref = doc(db,'users',userId,'catalogoCustom','productos')
-      setDoc(ref, { prods: data }).then(()=>{
-        localStorage.removeItem('syng_super_custom')
-      })
-    } catch(e) {
-      localStorage.removeItem('syng_super_custom')
-    }
-  },[userId])
-
-  // ── Cargar catálogo custom desde Firebase ──
-  useEffect(()=>{
-    if(!userId && grupoActivo==='personal'){ setCustomProds({}); return }
+    if(!userId){ setCustomProds({}); return }
+    setCustomProds({})
     const ref = grupoActivo==='personal'
       ? doc(db,'users',userId,'catalogoCustom','productos')
       : doc(db,'grupos',grupoActivo,'catalogoCustom','productos')
-    setCustomProds({})
     const unsub = onSnapshot(ref, snap=>{
-      if(snap.exists()) setCustomProds(snap.data().prods || {})
+      if(snap.exists()) setCustomProds(snap.data().prods||{})
       else setCustomProds({})
     })
     return()=>unsub()
   },[userId,grupoActivo])
 
-  // ── Guardar catálogo custom en Firebase ──
+  // ── Guardar catálogo custom — siempre recibe el grupo como parámetro ──
   async function guardarCustom(nuevoCustom, grupo){
     if(!userId) return
     const ref = grupo==='personal'
       ? doc(db,'users',userId,'catalogoCustom','productos')
       : doc(db,'grupos',grupo,'catalogoCustom','productos')
-    await setDoc(ref, { prods: nuevoCustom })
+    await setDoc(ref,{prods:nuevoCustom})
   }
 
   useEffect(()=>{
@@ -200,38 +190,35 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   }
   async function toggleProd(p,dep){
     if(!userId){ setModalVisitante(true); return }
-    if(!grupoActivo) return
     if(seleccionados[p]){ await deleteDoc(getListaRef(p)) }
     else { await setDoc(getListaRef(p),{qty:1,done:false,dep}) }
   }
   async function cambiarQty(p,delta){
     if(!userId){ setModalVisitante(true); return }
-    if(!grupoActivo) return
     const qty=Math.max(1,(seleccionados[p]?.qty||1)+delta)
     await updateDoc(getListaRef(p),{qty})
   }
   async function toggleDone(p){
     if(!userId){ setModalVisitante(true); return }
-    if(!grupoActivo) return
     await updateDoc(getListaRef(p),{done:!seleccionados[p]?.done})
   }
   function toggleListSel(p){setListSelIds(prev=>prev.includes(p)?prev.filter(i=>i!==p):[...prev,p])}
   async function eliminarSeleccion(){
-    if(!userId||!grupoActivo) return
+    if(!userId) return
     const batch=writeBatch(db)
     listSelIds.forEach(p=>batch.delete(getListaRef(p)))
     await batch.commit()
     setListSelIds([]);setListSelMode(false)
   }
   async function borrarLista(){
-    if(!userId||!grupoActivo) return
+    if(!userId) return
     const batch=writeBatch(db)
     Object.keys(seleccionados).forEach(p=>batch.delete(getListaRef(p)))
     await batch.commit()
     setListSelIds([]);setListSelMode(false);setModal(null)
   }
   async function borrarMarcados(){
-    if(!userId||!grupoActivo) return
+    if(!userId) return
     const batch=writeBatch(db)
     Object.entries(seleccionados).forEach(([p,v])=>{ if(v.done) batch.delete(getListaRef(p)) })
     await batch.commit()
@@ -239,21 +226,24 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   }
 
   async function agregarProducto(dep,nombre){
+    const grupo=grupoActivo
     const nuevo={...customProds,[dep]:[...(customProds[dep]||[]),nombre]}
     setCustomProds(nuevo)
-    await guardarCustom(nuevo, grupoActivo)
+    await guardarCustom(nuevo,grupo)
     setModal(null)
   }
   async function editarProducto(dep,viejo,nuevo){
+    const grupo=grupoActivo
     const actualizado={...customProds,[dep]:(customProds[dep]||[]).map(p=>p===viejo?nuevo:p)}
     setCustomProds(actualizado)
-    await guardarCustom(actualizado, grupoActivo)
+    await guardarCustom(actualizado,grupo)
     setModal(null)
   }
   async function eliminarProductoCat(dep,prod){
+    const grupo=grupoActivo
     const actualizado={...customProds,[dep]:(customProds[dep]||[]).filter(p=>p!==prod)}
     setCustomProds(actualizado)
-    await guardarCustom(actualizado, grupoActivo)
+    await guardarCustom(actualizado,grupo)
     setModal(null)
   }
 
