@@ -13,6 +13,23 @@ const DEP_ORDER = [
   'Congelados','Snacks y dulces','Artículos de cocina','Bebés','Mascotas','Farmacia básica'
 ]
 
+const CATALOGO_BASE = {
+  'Lácteos': ['Crema','Crema ácida','Jocoque','Jocoque seco','Leche condensada','Leche descremada','Leche entera','Leche evaporada','Leche light','Leche sin lactosa','Mantequilla','Mantequilla sin sal','Margarina','Queso amarillo','Queso Chihuahua','Queso cottage','Queso crema','Queso fresco','Queso manchego','Queso Oaxaca','Queso panela','Queso parmesano','Queso ricotta','Requesón','Yogur bebible','Yogur griego','Yogur natural','Yogur sin azúcar','Crema para batir','Leche de almendras'],
+  'Carnes y embutidos': ['Bistec de res','Carne de cerdo','Carne molida','Carne para asar','Chambarete','Chuleta de cerdo','Chorizo','Costilla de res','Costilla de cerdo','Filete de res','Jamón','Jamón serrano','Lomo de cerdo','Milanesa de res','Milanesa de pollo','Pechuga de pollo','Pierna de pollo','Pollo entero','Salchicha','Salchicha de pavo','Tocino','Atún en lata','Camarón','Filete de pescado','Mariscos','Salami','Mortadela','Pepperoni','Longaniza','Barbacoa'],
+  'Frutas y verduras': ['Aguacate','Ajo','Apio','Arándanos','Betabel','Brócoli','Calabacita','Calabaza','Cebolla','Cebolla morada','Cebollín','Chile ancho','Chile chipotle','Chile güero','Chile habanero','Chile jalapeño','Chile mulato','Chile pasilla','Chile poblano','Chile serrano','Chícharo','Cilantro','Col','Coliflor','Durazno','Ejote','Elote','Espárrago','Espinaca','Fresa','Granada','Guayaba','Higo','Hongos','Jitomate','Kiwi','Lechuga','Lechuga romanita','Limón','Mandarina','Mango','Manzana','Maracuyá','Melón','Mora','Naranja','Nopales','Papa','Papaya','Pepino','Perejil','Pera','Piña','Pimiento','Plátano','Sandía','Tomate','Tomate cherry','Uvas','Zanahoria','Zucchini','Alcachofa','Camote'],
+  'Abarrotes': ['Aceite','Aceite de coco','Aceite de oliva','Aceite de oliva extra virgen','Aceitunas','Adobo','Ajo en polvo','Albahaca','Arroz blanco','Arroz integral','Atún','Azúcar','Azúcar mascabado','Bicarbonato','Cajeta','Canela','Chiles en vinagre','Chocolate','Coco rallado','Comino','Consomé de pollo','Crema de cacahuate','Cúrcuma','Curry','Chile en polvo','Extracto de vainilla','Fécula de maíz','Frijol negro','Frijol pinto','Frijol bayo','Gelatina','Granos de café','Harina','Harina integral','Hierbas de olor','Honey','Jamoncillo','Ketchup','Laurel','Lentejas','Levadura','Macarrón','Maicena','Miel de abeja','Miel de maple','Mostaza','Nuez','Orégano','Papel aluminio','Papel encerado','Pasta','Pasta para lasaña','Pepinillos','Pimienta negra','Pimienta blanca','Polvo para hornear','Sal','Sal de mar','Salsa catsup','Salsa inglesa','Salsa picante','Salsa soya','Salsa valentina','Sardina','Sopa de pasta','Sopa de arroz','Sopa instantánea','Splenda','Stevia','Tabasco','Tomillo','Tortillas de harina','Tuna en lata','Vinagre','Vinagre balsámico','Chamoy','Amaranto','Avena','Linaza','Chía','Granola','Cereales','Mermelada','Mantequilla de maní','Nutella','Cajeta de membrillo'],
+  'Panadería': ['Bagel','Bolillo','Baguette','Croissant','Galletas de avena','Galletas marías','Galletas maravillas','Galletas saladas','Muffin','Pan blanco','Pan de caja integral','Pan de dulce','Pan de hot dog','Pan de hamburguesa','Pan integral','Pan multigrano','Pan pita','Pan sin gluten','Tortillas','Waffles','Donas','Conchas'],
+  'Bebidas': ['Agua mineral','Agua natural','Agua saborizada','Bebida energética','Bebida isotónica','Café en grano','Café molido','Café soluble','Café descafeinado','Cerveza','Champagne','Chocolate en polvo','Cidra','Clamato','Coctel de frutas','Jamaica','Jugo de manzana','Jugo de naranja','Jugo de uva','Leche de almendras','Leche de coco','Leche de soya','Limonada','Naranjada','Refresco','Sidra','Té verde','Té negro','Té de manzanilla','Tepache','Tonicwater','Vino blanco','Vino rosado','Vino tinto','Vino lambrusco','Whisky','Ron','Vodka','Tequila','Mezcal'],
+  'Limpieza': ['Ariel','Cloro','Cloro para ropa de color','Desengrasante','Detergente en polvo','Detergente líquido','Escoba','Esponja','Fabuloso','Fibra de acero','Guantes de hule','Jabón de trastes','Jabón de trastes Salvo líquido','Jerga','Limpiador de baño','Limpiador multiusos','Mistol','Multiusos','Papel de cocina','Pinol','Pledger','Roma','Sanitas','Suavitel','Vanish','Vim','Zest','Bolsas de basura','Bolsas ziploc','Rastrillo de piso','Trapeador','Aromatizante','Mata insectos','Raid'],
+  'Higiene personal': ['Acondicionador','Algodón','Bloqueador solar','Ciertos días','Cepillo de dientes','Condón','Crema corporal','Crema facial','Desodorante','Enjuague bucal','Exfoliante','Gel para cabello','Hilo dental','Jabón de baño','Jabón íntimo','Loción','Mascarilla facial','Máquina de afeitar','Papel higiénico','Pasta dental','Rastrillos','Sérum','Shampoo','Shampoo seco','Tampones','Tónico facial','Toallas húmedas','Toallas sanitarias','Vitaminas','Pañuelos desechables','Talco','Vaselina','Alcohol','Agua oxigenada'],
+  'Congelados': ['Burrito congelado','Caldo de res congelado','Dedos de pescado','Elote congelado','Empanadas congeladas','Fresas congeladas','Helado','Lasaña congelada','Malteada','Mezcla de vegetales','Nuggets de pollo','Paletas','Papa a la francesa','Pizza congelada','Pollo empanizado','Taquitos congelados','Waffles congelados','Edamame','Mango congelado','Betabel congelado'],
+  'Snacks y dulces': ['Botana de maíz','Cacahuates','Cajeta','Caramelos','Chicharrón','Chicles','Chocorroles','Chocolates','Doritos','Dulces de tamarindo','Frituras','Gansito','Gomitas','Hot Cheetos','Lunetas','Maíz palomero','Mazapán','Obleas','Palomitas de microondas','Papas fritas','Pasas','Pay de queso','Pelon Pelo Rico','Pistaches','Pretzels','Rielito','Sabritas','Takis','Tostadas','Turrones','Nuez de la India'],
+  'Artículos de cocina': ['Bolsas de basura','Bolsas para sandwich','Cubiertos desechables','Filtros de café','Foil de aluminio','Horno de microondas','Lavavajillas','Moldes para hornear','Palillos de madera','Papel encerado','Papel para hornear','Platos desechables','Popotes','Porta vasos','Recipientes de plástico','Servilletas','Tazas desechables','Tenedores desechables','Toallas de papel','Vasos desechables','Palillos de dientes','Hilo cáñamo','Cuchillos desechables'],
+  'Bebés': ['Biberón','Chupón','Crema para rozaduras','Formula láctea','Jabón para bebé','Jugo para bebé','Leche de fórmula','Pañales','Pañitos húmedos','Papilla de frutas','Papilla de verduras','Pasta dental para bebé','Polvo para bebé','Ropa interior','Shampoo para bebé','Silla para auto','Talco para bebé','Termómetro','Ungüento','Vitaminas para bebé'],
+  'Mascotas': ['Alimento para gato','Alimento para perro','Arena para gato','Cama para mascota','Collar antipulgas','Correa','Galletas para perro','Juguete para gato','Juguete para perro','Medicamento antipulgas','Ropa para mascota','Shampoo para mascotas','Snack para gato','Snack para perro','Vitaminas para mascotas','Bebedero','Comedero','Jaula'],
+  'Farmacia básica': ['Alcohol','Agua oxigenada','Antigripal','Antiácido','Aspirina','Benzal','Crema antibiótica','Gasas','Ibuprofeno','Loperamida','Omeprazol','Paracetamol','Pastillas para la tos','Pomada','Suero oral','Termómetro','Tiritas','Vitamina C','Vitamina D','Zinc']
+}
+
 const GRUPO_COLORS = ['#5DCAA5','#378ADD','#D85A30','#7F77DD','#1D9E75','#BA7517']
 
 const TEMAS = {
@@ -48,25 +65,25 @@ function ModalInput({title,placeholder,defaultValue='',onConfirm,onCancel,th,tx}
   )
 }
 
-function ModalConfirm({title,msg,onConfirm,onCancel,th,tx}){
+function ModalConfirm({title,msg,onConfirm,onCancel,th,tx,btnTexto}){
   return(
     <div style={{background:th.modalBg,borderRadius:'16px',padding:'22px 20px',width:'100%',maxWidth:'340px',textAlign:'center'}}>
       <div style={{fontSize:'15px',fontWeight:'600',color:th.texto,marginBottom:'8px'}}>{title}</div>
       {msg&&<div style={{fontSize:'13px',color:th.textoSub,marginBottom:'22px',lineHeight:'1.5'}}>{msg}</div>}
       <div style={{display:'flex',gap:'8px'}}>
         <button onClick={onCancel} style={{flex:1,padding:'11px',borderRadius:'10px',background:th.bgStripe,border:`0.5px solid ${th.borde}`,cursor:'pointer',fontSize:'13px',color:th.textoSub,fontFamily:'inherit'}}>{tx.cancelar}</button>
-        <button onClick={onConfirm} style={{flex:1,padding:'11px',borderRadius:'10px',background:'#A32D2D',border:'none',cursor:'pointer',fontSize:'13px',color:'white',fontWeight:'500',fontFamily:'inherit'}}>{tx.eliminar}</button>
+        <button onClick={onConfirm} style={{flex:1,padding:'11px',borderRadius:'10px',background:'#A32D2D',border:'none',cursor:'pointer',fontSize:'13px',color:'white',fontWeight:'500',fontFamily:'inherit'}}>{btnTexto||tx.eliminar}</button>
       </div>
     </div>
   )
 }
 
-export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=null,userName='Tú',userEmail='',grupoInicial=null}){
+export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=null,userName='Tú',userEmail=''}){
   const th=TEMAS[tema]||TEMAS.oscuro
   const tx=TEXTOS[idioma]||TEXTOS.es
 
   const [grupos,setGrupos]=useState([])
-  const [grupoActivo,setGrupoActivo]=useState(grupoInicial||'personal')
+  const [grupoActivo,setGrupoActivo]=useState(null)
   const [cargando,setCargando]=useState(true)
   const [seleccionados,setSeleccionados]=useState({})
   const [customProds,setCustomProds]=useState(()=>{try{return JSON.parse(localStorage.getItem('syng_super_custom')||'{}')}catch{return{}}})
@@ -81,21 +98,12 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   const [confirmEliminarMiembro,setConfirmEliminarMiembro]=useState(null)
   const [confirmSalirGrupo,setConfirmSalirGrupo]=useState(false)
   const [confirmEliminarGrupo,setConfirmEliminarGrupo]=useState(false)
-  const [cargandoInvitacion,setCargandoInvitacion]=useState(false)
-  const [modalVisitante,setModalVisitante]=useState(false)
+  const [emailInvitar,setEmailInvitar]=useState('')
+  const [invitandoMsg,setInvitandoMsg]=useState('')
 
+  // Cargar grupos desde Firebase
   useEffect(()=>{
-    setCargando(false)
-    if(!userId){
-      if(grupoInicial){
-        const cargarGrupo=async()=>{
-          const gSnap=await getDoc(doc(db,'grupos',grupoInicial))
-          if(gSnap.exists()) setGrupos([{id:gSnap.id,...gSnap.data()}])
-        }
-        cargarGrupo()
-      }
-      return
-    }
+    if(!userId){ setCargando(false); return }
     const unsub=onSnapshot(collection(db,'users',userId,'misGrupos'),async snap=>{
       const lista=[]
       for(const d of snap.docs){
@@ -104,19 +112,16 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
         if(gSnap.exists()) lista.push({id:gSnap.id,...gSnap.data()})
       }
       setGrupos(lista)
-      setGrupoActivo(prev=>prev==='personal'?'personal':(lista.length>0?lista[0].id:'personal'))
+      setGrupoActivo(prev=>prev||(lista.length>0?lista[0].id:null))
       setCargando(false)
     })
     return()=>unsub()
   },[userId])
 
+  // Cargar lista del grupo activo desde Firebase en tiempo real
   useEffect(()=>{
     if(!userId||!grupoActivo) return
-    setSeleccionados({})
-    const listaRef=grupoActivo==='personal'
-      ?collection(db,'users',userId,'lista')
-      :collection(db,'grupos',grupoActivo,'lista')
-    const unsub=onSnapshot(listaRef,snap=>{
+    const unsub=onSnapshot(collection(db,'grupos',grupoActivo,'lista'),snap=>{
       const data={}
       snap.docs.forEach(d=>{ data[d.id]={...d.data()} })
       setSeleccionados(data)
@@ -134,15 +139,9 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
 
   const catInputRef=useRef(null)
   const listInputRef=useRef(null)
-  const depOrder=DEP_ORDER_BY_LANG[idioma]||DEP_ORDER_BY_LANG.es
-  const catalogoBase=CATALOGOS[idioma]||CATALOGOS.es
 
-  function getListaRef(p){
-    const base=grupoActivo==='personal'
-      ?collection(db,'users',userId,'lista')
-      :collection(db,'grupos',grupoActivo,'lista')
-    return p?doc(base,p):base
-  }
+  const depOrder = DEP_ORDER_BY_LANG[idioma] || DEP_ORDER_BY_LANG.es
+  const catalogoBase = CATALOGOS[idioma] || CATALOGOS.es
 
   function getTodo(){
     const todo={}
@@ -154,52 +153,62 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     return todo
   }
 
+  // Guardar un producto en Firebase
   async function agregarALista(p,dep){
     if(!userId||!grupoActivo) return
-    await setDoc(getListaRef(p),{qty:1,done:false,dep})
+    await setDoc(doc(db,'grupos',grupoActivo,'lista',p),{qty:1,done:false,dep})
   }
+
   async function toggleProd(p,dep){
-    if(!userId){ setModalVisitante(true); return }
-    if(!grupoActivo) return
-    if(seleccionados[p]){ await deleteDoc(getListaRef(p)) }
-    else { await setDoc(getListaRef(p),{qty:1,done:false,dep}) }
+    if(!userId||!grupoActivo) return
+    if(seleccionados[p]){
+      await deleteDoc(doc(db,'grupos',grupoActivo,'lista',p))
+    } else {
+      await setDoc(doc(db,'grupos',grupoActivo,'lista',p),{qty:1,done:false,dep})
+    }
   }
+
   async function cambiarQty(p,delta){
-    if(!userId){ setModalVisitante(true); return }
-    if(!grupoActivo) return
+    if(!userId||!grupoActivo) return
     const qty=Math.max(1,(seleccionados[p]?.qty||1)+delta)
-    await updateDoc(getListaRef(p),{qty})
+    await updateDoc(doc(db,'grupos',grupoActivo,'lista',p),{qty})
   }
+
   async function toggleDone(p){
-    if(!userId){ setModalVisitante(true); return }
-    if(!grupoActivo) return
-    await updateDoc(getListaRef(p),{done:!seleccionados[p]?.done})
+    if(!userId||!grupoActivo) return
+    await updateDoc(doc(db,'grupos',grupoActivo,'lista',p),{done:!seleccionados[p]?.done})
   }
+
   function toggleListSel(p){setListSelIds(prev=>prev.includes(p)?prev.filter(i=>i!==p):[...prev,p])}
+
   async function eliminarSeleccion(){
     if(!userId||!grupoActivo) return
     const batch=writeBatch(db)
-    listSelIds.forEach(p=>batch.delete(getListaRef(p)))
+    listSelIds.forEach(p=>batch.delete(doc(db,'grupos',grupoActivo,'lista',p)))
     await batch.commit()
     setListSelIds([]);setListSelMode(false)
   }
+
   async function borrarLista(){
     if(!userId||!grupoActivo) return
     const batch=writeBatch(db)
-    Object.keys(seleccionados).forEach(p=>batch.delete(getListaRef(p)))
+    Object.keys(seleccionados).forEach(p=>batch.delete(doc(db,'grupos',grupoActivo,'lista',p)))
     await batch.commit()
     setListSelIds([]);setListSelMode(false);setModal(null)
   }
+
   async function borrarMarcados(){
     if(!userId||!grupoActivo) return
     const batch=writeBatch(db)
-    Object.entries(seleccionados).forEach(([p,v])=>{ if(v.done) batch.delete(getListaRef(p)) })
+    Object.entries(seleccionados).forEach(([p,v])=>{ if(v.done) batch.delete(doc(db,'grupos',grupoActivo,'lista',p)) })
     await batch.commit()
     setModal(null)
   }
-  function agregarProducto(dep,nombre){setCustomProds(prev=>({...prev,[dep]:[...(prev[dep]||[]),nombre]}));setModal(null)}
-  function editarProducto(dep,viejo,nuevo){setCustomProds(prev=>({...prev,[dep]:(prev[dep]||[]).map(p=>p===viejo?nuevo:p)}));setModal(null)}
+
+  function agregarProducto(dep,nombre){setCustomProds(prev=>{const arr=[...(prev[dep]||[]),nombre];return{...prev,[dep]:arr}});setModal(null)}
+  function editarProducto(dep,viejo,nuevo){setCustomProds(prev=>{const arr=(prev[dep]||[]).map(p=>p===viejo?nuevo:p);return{...prev,[dep]:arr}});setModal(null)}
   function eliminarProductoCat(dep,prod){setCustomProds(prev=>({...prev,[dep]:(prev[dep]||[]).filter(p=>p!==prod)}));setModal(null)}
+
   async function crearGrupo(nombre){
     if(!userId) return
     const grupoId=generarId()
@@ -210,22 +219,29 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     setGrupoActivo(grupoId)
     setModal(null)
   }
-  function cambiarGrupo(id){setGrupoActivo(id);setTab('cat');setModal(null)}
-  async function generarInvitacion(){
-    if(!modalVerGrupo||!userId) return
-    setCargandoInvitacion(true)
-    const invId=generarId()
-    await setDoc(doc(db,'invitaciones',invId),{grupoId:modalVerGrupo.id,grupoNombre:modalVerGrupo.nombre,modulo:'lista',creadoPor:userId,creadoEn:Date.now(),expiresEn:Date.now()+7*24*60*60*1000,usado:false})
-    const link=`${window.location.origin}?invitacion=${invId}`
-    setCargandoInvitacion(false)
-    if(navigator.share){
-      try{await navigator.share({title:'Syng',text:`Te invito al grupo "${modalVerGrupo.nombre}" en Syng`,url:link})}
-      catch(e){if(e.name!=='AbortError'){await navigator.clipboard.writeText(link);alert('Link copiado')}}
-    }else{
-      await navigator.clipboard.writeText(link)
-      alert('Link copiado: '+link)
+
+  function cambiarGrupo(id){setGrupoActivo(id);setModal(null)}
+
+  async function invitarMiembro(){
+    if(!emailInvitar.trim()||!modalVerGrupo) return
+    setInvitandoMsg('Enviando invitación...')
+    try{
+      await setDoc(doc(db,'invitaciones',generarId()),{
+        grupoId:modalVerGrupo.id,
+        grupoNombre:modalVerGrupo.nombre,
+        emailInvitado:emailInvitar.trim().toLowerCase(),
+        invitadoPor:userName,
+        modulo:'lista',
+        creadoEn:Date.now()
+      })
+      setInvitandoMsg('✓ Invitación enviada')
+      setEmailInvitar('')
+    }catch(e){
+      setInvitandoMsg('Error al enviar')
     }
+    setTimeout(()=>setInvitandoMsg(''),3000)
   }
+
   async function eliminarMiembro(miembro){
     if(!modalVerGrupo) return
     await updateDoc(doc(db,'grupos',modalVerGrupo.id),{miembros:arrayRemove(miembro)})
@@ -233,25 +249,31 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     setModalVerGrupo(prev=>({...prev,miembros:prev.miembros.filter(m=>m.uid!==miembro.uid)}))
     setConfirmEliminarMiembro(null)
   }
+
   async function salirDelGrupo(){
     if(!modalVerGrupo||!userId) return
     const miembro=(modalVerGrupo.miembros||[]).find(m=>m.uid===userId)
     if(miembro) await updateDoc(doc(db,'grupos',modalVerGrupo.id),{miembros:arrayRemove(miembro)})
     await deleteDoc(doc(db,'users',userId,'misGrupos',modalVerGrupo.id))
-    setModalVerGrupo(null);setConfirmSalirGrupo(false);setGrupoActivo('personal')
+    setModalVerGrupo(null)
+    setConfirmSalirGrupo(false)
+    setGrupoActivo(null)
   }
+
   async function eliminarGrupo(){
     if(!modalVerGrupo||!userId) return
     const batch=writeBatch(db)
     for(const m of (modalVerGrupo.miembros||[])) batch.delete(doc(db,'users',m.uid,'misGrupos',modalVerGrupo.id))
     batch.delete(doc(db,'grupos',modalVerGrupo.id))
     await batch.commit()
-    setModalVerGrupo(null);setConfirmEliminarGrupo(false);setGrupoActivo('personal')
+    setModalVerGrupo(null)
+    setConfirmEliminarGrupo(false)
+    setGrupoActivo(null)
   }
 
   const nSel=Object.keys(seleccionados).length
   const todo=getTodo()
-  const g=grupoActivo==='personal'?{id:'personal',nombre:'Personal',color:'#888'}:(grupos.find(gr=>gr.id===grupoActivo)||null)
+  const g=grupos.find(gr=>gr.id===grupoActivo)||grupos[0]||null
   const inp={width:'100%',padding:'9px 13px',border:`1.5px solid ${th.bgInputBorder}`,borderRadius:'10px',fontSize:'14px',outline:'none',fontFamily:'inherit',background:th.bgInput,color:th.texto,boxSizing:'border-box'}
   const T={fontFamily:'inherit',cursor:'pointer'}
 
@@ -278,8 +300,8 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
 
       <div style={{background:th.headerSub,padding:'7px 12px',display:'flex',alignItems:'center',gap:'8px'}}>
         <button onClick={()=>setModal('grupos')} style={{background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:'8px',padding:'5px 10px',fontSize:'12px',cursor:'pointer',display:'flex',alignItems:'center',gap:'5px',fontFamily:'inherit'}}>
-          <div style={{width:'8px',height:'8px',borderRadius:'50%',background:g?g.color:'#888',flexShrink:0}}/>
-          <span style={{fontWeight:'500'}}>{g?g.nombre:'Personal'}</span>
+          {g&&<div style={{width:'8px',height:'8px',borderRadius:'50%',background:g.color,flexShrink:0}}/>}
+          <span style={{fontWeight:'500'}}>{g?g.nombre:(tx.misGrupos||'Mis grupos')}</span>
           <span style={{opacity:.6,fontSize:'10px'}}>▾</span>
         </button>
         <button onClick={()=>setModal('nuevo-grupo')} style={{marginLeft:'auto',background:'rgba(255,255,255,0.15)',border:'none',color:'white',borderRadius:'8px',padding:'5px 10px',fontSize:'11px',cursor:'pointer',fontFamily:'inherit'}}>{tx.nuevoGrupoSuper}</button>
@@ -294,7 +316,14 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
         ))}
       </div>
 
-      {tab==='cat'&&(
+      {!g&&(
+        <div style={{padding:'40px 16px',textAlign:'center',color:th.textoMuted,fontSize:'14px'}}>
+          <div style={{marginBottom:'12px'}}>No tienes ningún grupo todavía.</div>
+          <button onClick={()=>setModal('nuevo-grupo')} style={{padding:'10px 20px',borderRadius:'10px',background:th.acento,border:'none',color:'white',fontSize:'13px',fontWeight:'600',...T}}>Crear mi primer grupo</button>
+        </div>
+      )}
+
+      {g&&tab==='cat'&&(
         <div>
           <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
             <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={inp}/>
@@ -341,7 +370,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
         </div>
       )}
 
-      {tab==='list'&&(
+      {g&&tab==='list'&&(
         <div>
           <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
             <input ref={listInputRef} value={filtroList} onChange={e=>setFiltroList(e.target.value)} placeholder={tx.buscarLista} style={inp}/>
@@ -400,18 +429,13 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
         </div>
       )}
 
+      {/* MODALES */}
       {modal&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:100,padding:'20px'}} onClick={e=>{if(e.target===e.currentTarget)setModal(null)}}>
           {modal==='grupos'&&(
             <div style={{background:th.modalBg,borderRadius:'16px',padding:'22px 20px',width:'100%',maxWidth:'340px'}}>
               <div style={{fontSize:'15px',fontWeight:'600',color:th.texto,marginBottom:'14px'}}>{tx.misGrupos}</div>
-              <div style={{display:'flex',alignItems:'center',gap:'10px',padding:'10px 0',borderBottom:`0.5px solid ${th.borde}`}}>
-                <div onClick={()=>cambiarGrupo('personal')} style={{display:'flex',alignItems:'center',gap:'10px',flex:1,cursor:'pointer'}}>
-                  <div style={{width:'10px',height:'10px',borderRadius:'50%',background:'#888',flexShrink:0}}/>
-                  <div style={{flex:1,fontSize:'14px',color:th.texto}}>Personal{grupoActivo==='personal'?' ✓':''}</div>
-                  <div style={{fontSize:'11px',color:th.textoMuted}}>Solo tú</div>
-                </div>
-              </div>
+              {grupos.length===0&&<div style={{fontSize:'13px',color:th.textoMuted,marginBottom:'14px'}}>Aún no tienes grupos. ¡Crea el primero!</div>}
               {grupos.map((gr)=>(
                 <div key={gr.id} style={{display:'flex',alignItems:'center',gap:'10px',padding:'10px 0',borderBottom:`0.5px solid ${th.borde}`}}>
                   <div onClick={()=>cambiarGrupo(gr.id)} style={{display:'flex',alignItems:'center',gap:'10px',flex:1,cursor:'pointer'}}>
@@ -419,7 +443,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
                     <div style={{flex:1,fontSize:'14px',color:th.texto}}>{gr.nombre}{gr.id===grupoActivo?' ✓':''}</div>
                     <div style={{fontSize:'11px',color:th.textoMuted}}>{gr.miembros?.length||1} {tx.integrantes}</div>
                   </div>
-                  <button onClick={(e)=>{e.stopPropagation();setModalVerGrupo(gr);setModal(null)}} style={{background:'none',border:'none',cursor:'pointer',fontSize:'20px',color:th.textoSub,padding:'4px 10px',flexShrink:0}}>⋯</button>
+                  <button onClick={()=>{setModalVerGrupo(gr);setModal(null)}} style={{background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoSub,padding:'2px 6px'}}>⋯</button>
                 </div>
               ))}
               <button onClick={()=>setModal(null)} style={{width:'100%',padding:'10px',marginTop:'12px',borderRadius:'10px',background:th.bgStripe,border:`0.5px solid ${th.borde}`,cursor:'pointer',fontSize:'13px',color:th.textoSub,fontFamily:'inherit'}}>{tx.cerrar}</button>
@@ -435,18 +459,26 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
         </div>
       )}
 
+      {/* MODAL VER GRUPO (detalle, invitar, miembros, salir, eliminar) */}
       {modalVerGrupo&&!confirmEliminarMiembro&&!confirmSalirGrupo&&!confirmEliminarGrupo&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.6)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:200,padding:'20px'}} onClick={e=>{if(e.target===e.currentTarget)setModalVerGrupo(null)}}>
           <div style={{background:th.modalBg,borderRadius:'16px',padding:'22px 20px',width:'100%',maxWidth:'340px',maxHeight:'80vh',overflowY:'auto'}}>
             <div style={{fontSize:'16px',fontWeight:'700',color:th.texto,marginBottom:'4px'}}>{modalVerGrupo.nombre}</div>
             <div style={{fontSize:'12px',color:th.textoMuted,marginBottom:'18px'}}>Admin: {modalVerGrupo.adminNombre}</div>
+
+            {/* Invitar */}
             {modalVerGrupo.adminId===userId&&(
               <div style={{marginBottom:'18px'}}>
-                <div style={{fontSize:'12px',fontWeight:'600',color:th.textoSub,marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Invitar al grupo</div>
-                <button onClick={generarInvitacion} disabled={cargandoInvitacion} style={{width:'100%',padding:'13px',background:cargandoInvitacion?th.bgStripe:'linear-gradient(135deg,#185FA5,#534AB7)',color:cargandoInvitacion?th.textoMuted:'white',border:'none',borderRadius:'12px',fontSize:'15px',fontWeight:'600',...T}}>{cargandoInvitacion?'Generando link...':'Invitar al grupo'}</button>
-                <div style={{fontSize:'11px',color:th.textoMuted,textAlign:'center',marginTop:'8px'}}>Cada link funciona una sola vez.</div>
+                <div style={{fontSize:'12px',fontWeight:'600',color:th.textoSub,marginBottom:'8px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Invitar por email</div>
+                <div style={{display:'flex',gap:'8px'}}>
+                  <input value={emailInvitar} onChange={e=>setEmailInvitar(e.target.value)} placeholder="correo@ejemplo.com" style={{...inp,marginBottom:0,flex:1,fontSize:'13px',padding:'8px 10px'}}/>
+                  <button onClick={invitarMiembro} style={{padding:'8px 12px',borderRadius:'9px',background:th.acento,border:'none',color:'white',fontSize:'12px',fontWeight:'600',...T}}>Invitar</button>
+                </div>
+                {invitandoMsg&&<div style={{fontSize:'12px',color:th.acento,marginTop:'6px'}}>{invitandoMsg}</div>}
               </div>
             )}
+
+            {/* Miembros */}
             <div style={{fontSize:'12px',fontWeight:'600',color:th.textoSub,marginBottom:'10px',textTransform:'uppercase',letterSpacing:'0.05em'}}>Miembros ({modalVerGrupo.miembros?.length||1})</div>
             {(modalVerGrupo.miembros||[]).map((m,i)=>(
               <div key={i} style={{display:'flex',alignItems:'center',gap:'10px',padding:'9px 0',borderBottom:`0.5px solid ${th.borde}`}}>
@@ -460,15 +492,21 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
                 )}
               </div>
             ))}
+
             <div style={{marginTop:'20px',display:'flex',flexDirection:'column',gap:'10px'}}>
-              {modalVerGrupo.adminId!==userId&&<button onClick={()=>setConfirmSalirGrupo(true)} style={{width:'100%',padding:'13px',background:'none',border:'1.5px solid #A32D2D',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#A32D2D',...T}}>Salir del grupo</button>}
-              {modalVerGrupo.adminId===userId&&<button onClick={()=>setConfirmEliminarGrupo(true)} style={{width:'100%',padding:'13px',background:'none',border:'1.5px solid #A32D2D',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#A32D2D',...T}}>Eliminar grupo</button>}
+              {modalVerGrupo.adminId!==userId&&(
+                <button onClick={()=>setConfirmSalirGrupo(true)} style={{width:'100%',padding:'13px',background:'none',border:'1.5px solid #A32D2D',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#A32D2D',...T}}>Salir del grupo</button>
+              )}
+              {modalVerGrupo.adminId===userId&&(
+                <button onClick={()=>setConfirmEliminarGrupo(true)} style={{width:'100%',padding:'13px',background:'none',border:'1.5px solid #A32D2D',borderRadius:'12px',fontSize:'15px',fontWeight:'600',color:'#A32D2D',...T}}>Eliminar grupo</button>
+              )}
               <button onClick={()=>setModalVerGrupo(null)} style={{width:'100%',padding:'11px',background:th.bgStripe,border:`0.5px solid ${th.borde}`,borderRadius:'12px',fontSize:'14px',color:th.textoSub,...T}}>{tx.cerrar}</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Confirmar quitar miembro */}
       {confirmEliminarMiembro&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300,padding:'20px'}}>
           <div style={{background:th.modalBg,borderRadius:'20px',padding:'28px 24px',width:'100%',maxWidth:'320px',textAlign:'center'}}>
@@ -481,6 +519,8 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
           </div>
         </div>
       )}
+
+      {/* Confirmar salir del grupo */}
       {confirmSalirGrupo&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300,padding:'20px'}}>
           <div style={{background:th.modalBg,borderRadius:'20px',padding:'28px 24px',width:'100%',maxWidth:'320px',textAlign:'center'}}>
@@ -493,6 +533,8 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
           </div>
         </div>
       )}
+
+      {/* Confirmar eliminar grupo */}
       {confirmEliminarGrupo&&(
         <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:300,padding:'20px'}}>
           <div style={{background:th.modalBg,borderRadius:'20px',padding:'28px 24px',width:'100%',maxWidth:'320px',textAlign:'center'}}>
@@ -506,17 +548,6 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
         </div>
       )}
 
-      {modalVisitante&&(
-        <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.5)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:9999,padding:'24px'}}>
-          <div style={{background:th.modalBg,borderRadius:'24px',padding:'32px',maxWidth:'340px',width:'100%',textAlign:'center'}}>
-            <div style={{fontSize:'40px',marginBottom:'12px'}}>🎉</div>
-            <div style={{fontSize:'19px',fontWeight:'800',color:th.texto,marginBottom:'8px'}}>¡Únete a Syng!</div>
-            <div style={{fontSize:'14px',color:th.textoSub,marginBottom:'24px',lineHeight:'1.5'}}>Inicia sesión para agregar productos, crear grupos y compartir tu lista.</div>
-            <button onClick={()=>{window.location.href='/'}} style={{width:'100%',padding:'14px',background:'linear-gradient(135deg,#185FA5,#534AB7)',color:'white',border:'none',borderRadius:'14px',fontSize:'16px',fontWeight:'700',cursor:'pointer',marginBottom:'10px'}}>Iniciar sesión</button>
-            <button onClick={()=>setModalVisitante(false)} style={{width:'100%',padding:'12px',background:th.bgStripe,color:th.textoSub,border:'none',borderRadius:'14px',fontSize:'15px',cursor:'pointer'}}>Seguir explorando</button>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
