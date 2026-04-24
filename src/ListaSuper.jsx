@@ -344,7 +344,10 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
       {tab==='cat'&&(
         <div>
           <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
-            <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={inp}/>
+            <div style={{position:'relative',display:'flex',alignItems:'center'}}>
+              <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={{...inp,paddingRight:'32px'}}/>
+              {filtroCat&&<button onClick={()=>setFiltroCat('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
+            </div>
           </div>
           {depOrder.map(dep=>{
             const prods=filtroCat?todo[dep].filter(p=>fuzzyMatch(filtroCat,p)):todo[dep]
@@ -391,7 +394,10 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
       {tab==='list'&&(
         <div>
           <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
-            <input ref={listInputRef} value={filtroList} onChange={e=>setFiltroList(e.target.value)} placeholder={tx.buscarLista} style={inp}/>
+            <div style={{position:'relative',display:'flex',alignItems:'center'}}>
+              <input ref={listInputRef} value={filtroList} onChange={e=>setFiltroList(e.target.value)} placeholder={tx.buscarLista} style={{...inp,paddingRight:'32px'}}/>
+              {filtroList&&<button onClick={()=>setFiltroList('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
+            </div>
           </div>
           {listSelMode?(
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 14px',background:th.selBg,borderBottom:`0.5px solid ${th.selBorde}`}}>
