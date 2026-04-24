@@ -2,15 +2,10 @@ import { useState, useEffect, useRef } from 'react'
 
 const TEXTOS_DEMO = {
   es: {
-    historia: 'Compramos un pizarrón para casa. Funcionaba, pero había que estar frente a él para verlo. Un día con demasiados pendientes fue la gota que derramó el vaso — necesitábamos algo mejor.',
+    historia: 'Compramos un pizarrón para casa. Funcionaba, pero había que estar frente a él para verlo. Un día con demasiados pendientes fue la gota que derramó el vaso — necesitábamos algo mejor. Syng nació de esa necesidad real.',
     historiaLabel: '¿Por qué existe Syng?',
     tagline: 'Tu vida organizada,\nen tiempo real.',
     sub: 'Del pizarrón físico de casa a una app que conecta a tu familia, tu equipo y tu mundo.',
-    modulos: [
-      { icon: '▦', titulo: 'Pizarrón', desc: 'Tareas del día por grupo. Familia, trabajo, amigos. Todos en tiempo real.' },
-      { icon: '📅', titulo: 'Mi Agenda', desc: 'Una sola vista con todos tus pendientes del día. Sin perderte nada.' },
-      { icon: '🛒', titulo: 'Lista del Súper', desc: 'Van al súper y todos saben qué comprar. Sin olvidos, sin gastos de más.' },
-    ],
     mercadoLabel: 'Para quién es Syng',
     mercado: ['Familias', 'Empresas', 'Gobierno', 'Equipos de trabajo'],
     planes: [
@@ -19,23 +14,24 @@ const TEXTOS_DEMO = {
       { nombre: 'Pro', precio: '$XX/mes', desc: 'Ilimitado' },
     ],
     cta: 'Empieza gratis →',
-    ctaSub: 'Sin tarjeta de crédito · Cancela cuando quieras',
-    toca: 'Toca la pantalla',
-    demoTareas: ['Llevar a Alexa al médico', 'Pagar el recibo de luz', 'Llamar a mamá', 'Reunión de trabajo 3pm', 'Comprar pan'],
-    demoDeps: ['Lácteos', 'Frutas y verduras', 'Abarrotes'],
-    demoProductos: ['Leche entera', 'Queso fresco', 'Aguacate', 'Jitomate', 'Arroz', 'Frijol'],
+    ctaSub: 'Sin tarjeta · Cancela cuando quieras',
+    modBtns: ['Pizarrón', 'Mi Agenda', 'Lista del Súper'],
+    modDescs: [
+      'Tareas del día por grupo. Familia, trabajo, amigos. Todos en tiempo real.',
+      'Una sola vista con todos tus pendientes. Sin perderte nada del día.',
+      'Van al súper y todos saben qué comprar. Sin olvidos, sin gastos de más.',
+    ],
+    grupoLabel: 'Familia',
+    demoTareas: ['Llevar a Alexa al médico', 'Pagar recibo de luz', 'Llamar a mamá', 'Reunión de trabajo 3pm', 'Comprar pan de dulce'],
+    demoProductos: ['Leche entera', 'Queso fresco', 'Aguacate', 'Jitomate', 'Arroz', 'Frijol negro'],
+    demoAgenda: ['Alexa al médico · Familia', 'Pagar recibo · Personal', 'Reunión 3pm · Trabajo', 'Llamar a mamá · Familia'],
     demoNotif: '¡Mamá marcó "Leche entera" como comprada!',
   },
   en: {
-    historia: 'We bought a whiteboard for home. It worked, but you had to be right in front of it. One day with too many tasks was the last straw — we needed something better.',
+    historia: 'We bought a whiteboard for home. It worked, but you had to stand in front of it. One day with too many tasks was the last straw — we needed something better. Syng was born from that real need.',
     historiaLabel: 'Why does Syng exist?',
     tagline: 'Your life organized,\nin real time.',
     sub: 'From a physical whiteboard at home to an app that connects your family, your team and your world.',
-    modulos: [
-      { icon: '▦', titulo: 'Board', desc: 'Daily tasks by group. Family, work, friends. All in real time.' },
-      { icon: '📅', titulo: 'My Agenda', desc: 'One single view with all your daily tasks. Miss nothing.' },
-      { icon: '🛒', titulo: 'Shopping List', desc: 'Everyone knows what to buy. No forgotten items, no overspending.' },
-    ],
     mercadoLabel: 'Who is Syng for',
     mercado: ['Families', 'Companies', 'Government', 'Work teams'],
     planes: [
@@ -45,49 +41,51 @@ const TEXTOS_DEMO = {
     ],
     cta: 'Start for free →',
     ctaSub: 'No credit card · Cancel anytime',
-    toca: 'Tap the screen',
+    modBtns: ['Board', 'My Agenda', 'Shopping List'],
+    modDescs: [
+      'Daily tasks by group. Family, work, friends. All in real time.',
+      'One view with all your daily tasks. Miss nothing.',
+      'Everyone knows what to buy. No forgotten items, no overspending.',
+    ],
+    grupoLabel: 'Family',
     demoTareas: ['Take Alex to doctor', 'Pay electricity bill', 'Call mom', 'Work meeting 3pm', 'Buy bread'],
-    demoDeps: ['Dairy', 'Fruits & Vegetables', 'Pantry'],
-    demoProductos: ['Whole milk', 'Fresh cheese', 'Avocado', 'Tomato', 'Rice', 'Beans'],
+    demoProductos: ['Whole milk', 'Fresh cheese', 'Avocado', 'Tomato', 'Rice', 'Black beans'],
+    demoAgenda: ['Alex to doctor · Family', 'Pay bill · Personal', 'Meeting 3pm · Work', 'Call mom · Family'],
     demoNotif: 'Mom marked "Whole milk" as bought!',
   },
   fr: {
-    historia: 'Nous avons acheté un tableau blanc pour la maison. Ça marchait, mais il fallait être devant pour le voir. Un jour avec trop de tâches fut la goutte qui a fait déborder le vase.',
+    historia: 'Nous avons acheté un tableau blanc pour la maison. Un jour avec trop de tâches fut la goutte qui a fait déborder le vase. Syng est né de ce besoin réel.',
     historiaLabel: 'Pourquoi Syng existe-t-il?',
     tagline: 'Votre vie organisée,\nen temps réel.',
     sub: 'Du tableau blanc physique à une app qui connecte votre famille, votre équipe et votre monde.',
-    modulos: [
-      { icon: '▦', titulo: 'Tableau', desc: 'Tâches du jour par groupe. Famille, travail, amis. Tout en temps réel.' },
-      { icon: '📅', titulo: 'Mon Agenda', desc: 'Une seule vue avec toutes vos tâches. Ne ratez rien.' },
-      { icon: '🛒', titulo: 'Liste de courses', desc: 'Tout le monde sait quoi acheter. Sans oublis, sans dépenses excessives.' },
-    ],
     mercadoLabel: 'Pour qui est Syng',
-    mercado: ['Familles', 'Entreprises', 'Gouvernement', 'Équipes de travail'],
+    mercado: ['Familles', 'Entreprises', 'Gouvernement', 'Équipes'],
     planes: [
       { nombre: 'Gratuit', precio: '0€', desc: 'Pour commencer' },
       { nombre: 'Basique', precio: 'X€/mois', desc: 'Plus de groupes', destacado: true },
       { nombre: 'Pro', precio: 'XX€/mois', desc: 'Illimité' },
     ],
     cta: 'Commencer gratuitement →',
-    ctaSub: 'Sans carte de crédit · Annulez quand vous voulez',
-    toca: 'Touchez l\'écran',
-    demoTareas: ['Emmener Alex chez le médecin', 'Payer la facture d\'électricité', 'Appeler maman', 'Réunion de travail 15h', 'Acheter du pain'],
-    demoDeps: ['Produits laitiers', 'Fruits et légumes', 'Épicerie'],
+    ctaSub: 'Sans carte · Annulez quand vous voulez',
+    modBtns: ['Tableau', 'Mon Agenda', 'Liste de courses'],
+    modDescs: [
+      'Tâches du jour par groupe. Famille, travail, amis. Tout en temps réel.',
+      'Une vue unique avec toutes vos tâches. Ne ratez rien.',
+      'Tout le monde sait quoi acheter. Sans oublis.',
+    ],
+    grupoLabel: 'Famille',
+    demoTareas: ['Emmener Alex chez le médecin', 'Payer la facture', 'Appeler maman', 'Réunion 15h', 'Acheter du pain'],
     demoProductos: ['Lait entier', 'Fromage frais', 'Avocat', 'Tomate', 'Riz', 'Haricots'],
+    demoAgenda: ['Alex médecin · Famille', 'Facture · Personnel', 'Réunion 15h · Travail', 'Maman · Famille'],
     demoNotif: 'Maman a marqué "Lait entier" comme acheté!',
   },
   de: {
-    historia: 'Wir kauften ein Whiteboard für zu Hause. Es funktionierte, aber man musste davor stehen. Ein Tag mit zu vielen Aufgaben war der Tropfen, der das Fass zum Überlaufen brachte.',
+    historia: 'Wir kauften ein Whiteboard für zu Hause. Ein Tag mit zu vielen Aufgaben war der Tropfen, der das Fass zum Überlaufen brachte. Syng entstand aus diesem echten Bedarf.',
     historiaLabel: 'Warum gibt es Syng?',
     tagline: 'Dein Leben organisiert,\nin Echtzeit.',
     sub: 'Vom physischen Whiteboard zu einer App, die deine Familie, dein Team und deine Welt verbindet.',
-    modulos: [
-      { icon: '▦', titulo: 'Tafel', desc: 'Tagesaufgaben nach Gruppe. Familie, Arbeit, Freunde. Alles in Echtzeit.' },
-      { icon: '📅', titulo: 'Mein Kalender', desc: 'Eine Übersicht mit allen täglichen Aufgaben. Nichts verpassen.' },
-      { icon: '🛒', titulo: 'Einkaufsliste', desc: 'Alle wissen, was zu kaufen ist. Keine vergessenen Artikel, keine Mehrausgaben.' },
-    ],
     mercadoLabel: 'Für wen ist Syng',
-    mercado: ['Familien', 'Unternehmen', 'Behörden', 'Arbeitsteams'],
+    mercado: ['Familien', 'Unternehmen', 'Behörden', 'Teams'],
     planes: [
       { nombre: 'Kostenlos', precio: '0€', desc: 'Zum Starten' },
       { nombre: 'Basis', precio: 'X€/Mo', desc: 'Mehr Gruppen', destacado: true },
@@ -95,22 +93,23 @@ const TEXTOS_DEMO = {
     ],
     cta: 'Kostenlos starten →',
     ctaSub: 'Keine Kreditkarte · Jederzeit kündigen',
-    toca: 'Bildschirm berühren',
-    demoTareas: ['Alex zum Arzt bringen', 'Stromrechnung bezahlen', 'Mama anrufen', 'Arbeitsmeeting 15 Uhr', 'Brot kaufen'],
-    demoDeps: ['Milchprodukte', 'Obst & Gemüse', 'Vorratskammer'],
+    modBtns: ['Tafel', 'Mein Kalender', 'Einkaufsliste'],
+    modDescs: [
+      'Tagesaufgaben nach Gruppe. Familie, Arbeit, Freunde. Alles in Echtzeit.',
+      'Eine Übersicht mit allen täglichen Aufgaben. Nichts verpassen.',
+      'Alle wissen, was zu kaufen ist. Keine Mehrausgaben.',
+    ],
+    grupoLabel: 'Familie',
+    demoTareas: ['Alex zum Arzt', 'Stromrechnung bezahlen', 'Mama anrufen', 'Meeting 15 Uhr', 'Brot kaufen'],
     demoProductos: ['Vollmilch', 'Frischkäse', 'Avocado', 'Tomate', 'Reis', 'Bohnen'],
+    demoAgenda: ['Alex Arzt · Familie', 'Rechnung · Persönlich', 'Meeting 15h · Arbeit', 'Mama · Familie'],
     demoNotif: 'Mama hat "Vollmilch" als gekauft markiert!',
   },
   it: {
-    historia: 'Abbiamo comprato una lavagna per casa. Funzionava, ma bisognava essere davanti per vederla. Un giorno con troppi impegni fu la goccia che fece traboccare il vaso.',
+    historia: 'Abbiamo comprato una lavagna per casa. Un giorno con troppi impegni fu la goccia che fece traboccare il vaso. Syng è nato da questo bisogno reale.',
     historiaLabel: 'Perché esiste Syng?',
     tagline: 'La tua vita organizzata,\nin tempo reale.',
     sub: 'Dalla lavagna fisica di casa a un\'app che connette la tua famiglia, il tuo team e il tuo mondo.',
-    modulos: [
-      { icon: '▦', titulo: 'Lavagna', desc: 'Attività del giorno per gruppo. Famiglia, lavoro, amici. Tutto in tempo reale.' },
-      { icon: '📅', titulo: 'La mia Agenda', desc: 'Un\'unica vista con tutte le attività giornaliere. Non perdere nulla.' },
-      { icon: '🛒', titulo: 'Lista della spesa', desc: 'Tutti sanno cosa comprare. Senza dimenticare nulla, senza spese extra.' },
-    ],
     mercadoLabel: 'Per chi è Syng',
     mercado: ['Famiglie', 'Aziende', 'Governo', 'Team di lavoro'],
     planes: [
@@ -119,23 +118,24 @@ const TEXTOS_DEMO = {
       { nombre: 'Pro', precio: 'XX€/mese', desc: 'Illimitato' },
     ],
     cta: 'Inizia gratis →',
-    ctaSub: 'Senza carta di credito · Annulla quando vuoi',
-    toca: 'Tocca lo schermo',
-    demoTareas: ['Portare Alex dal medico', 'Pagare la bolletta', 'Chiamare la mamma', 'Riunione di lavoro 15:00', 'Comprare il pane'],
-    demoDeps: ['Latticini', 'Frutta e verdura', 'Dispensa'],
+    ctaSub: 'Senza carta · Annulla quando vuoi',
+    modBtns: ['Lavagna', 'La mia Agenda', 'Lista della spesa'],
+    modDescs: [
+      'Attività del giorno per gruppo. Famiglia, lavoro, amici. Tutto in tempo reale.',
+      'Un\'unica vista con tutte le attività. Non perdere nulla.',
+      'Tutti sanno cosa comprare. Senza dimenticare nulla.',
+    ],
+    grupoLabel: 'Famiglia',
+    demoTareas: ['Portare Alex dal medico', 'Pagare la bolletta', 'Chiamare la mamma', 'Riunione 15:00', 'Comprare il pane'],
     demoProductos: ['Latte intero', 'Formaggio fresco', 'Avocado', 'Pomodoro', 'Riso', 'Fagioli'],
+    demoAgenda: ['Alex medico · Famiglia', 'Bolletta · Personale', 'Riunione 15h · Lavoro', 'Mamma · Famiglia'],
     demoNotif: 'La mamma ha segnato "Latte intero" come acquistato!',
   },
   pt: {
-    historia: 'Compramos um quadro branco para casa. Funcionava, mas precisávamos estar na frente dele para ver algo. Um dia com tarefas demais foi a gota d\'água — precisávamos de algo melhor.',
+    historia: 'Compramos um quadro branco para casa. Um dia com tarefas demais foi a gota d\'água — precisávamos de algo melhor. O Syng nasceu dessa necessidade real.',
     historiaLabel: 'Por que o Syng existe?',
     tagline: 'Sua vida organizada,\nem tempo real.',
     sub: 'Do quadro branco físico em casa a um app que conecta sua família, sua equipe e seu mundo.',
-    modulos: [
-      { icon: '▦', titulo: 'Quadro', desc: 'Tarefas do dia por grupo. Família, trabalho, amigos. Tudo em tempo real.' },
-      { icon: '📅', titulo: 'Minha Agenda', desc: 'Uma única visão com todas as tarefas do dia. Não perca nada.' },
-      { icon: '🛒', titulo: 'Lista de compras', desc: 'Todos sabem o que comprar. Sem esquecimentos, sem gastos extras.' },
-    ],
     mercadoLabel: 'Para quem é o Syng',
     mercado: ['Famílias', 'Empresas', 'Governo', 'Equipes de trabalho'],
     planes: [
@@ -144,23 +144,24 @@ const TEXTOS_DEMO = {
       { nombre: 'Pro', precio: 'R$XX/mês', desc: 'Ilimitado' },
     ],
     cta: 'Comece grátis →',
-    ctaSub: 'Sem cartão de crédito · Cancele quando quiser',
-    toca: 'Toque a tela',
-    demoTareas: ['Levar Alex ao médico', 'Pagar conta de luz', 'Ligar para a mamãe', 'Reunião de trabalho 15h', 'Comprar pão'],
-    demoDeps: ['Laticínios', 'Frutas e verduras', 'Mercearia'],
-    demoProductos: ['Leite integral', 'Queijo fresco', 'Abacate', 'Tomate', 'Arroz', 'Feijão'],
+    ctaSub: 'Sem cartão · Cancele quando quiser',
+    modBtns: ['Quadro', 'Minha Agenda', 'Lista de compras'],
+    modDescs: [
+      'Tarefas do dia por grupo. Família, trabalho, amigos. Tudo em tempo real.',
+      'Uma única visão com todas as tarefas. Não perca nada.',
+      'Todos sabem o que comprar. Sem esquecimentos.',
+    ],
+    grupoLabel: 'Família',
+    demoTareas: ['Levar Alex ao médico', 'Pagar conta de luz', 'Ligar para a mamãe', 'Reunião 15h', 'Comprar pão'],
+    demoProductos: ['Leite integral', 'Queijo fresco', 'Abacate', 'Tomate', 'Arroz', 'Feijão preto'],
+    demoAgenda: ['Alex médico · Família', 'Conta · Pessoal', 'Reunião 15h · Trabalho', 'Mamãe · Família'],
     demoNotif: 'Mamãe marcou "Leite integral" como comprado!',
   },
   ja: {
-    historia: '家にホワイトボードを買いました。使えましたが、見るには目の前にいる必要がありました。やることが多すぎた一日が決定打になり、もっと良いものが必要でした。',
+    historia: '家にホワイトボードを買いました。やることが多すぎた一日が決定打になり、もっと良いものが必要でした。Syngはその本物のニーズから生まれました。',
     historiaLabel: 'Syngはなぜ生まれたか',
     tagline: 'あなたの生活を整理、\nリアルタイムで。',
     sub: '家のホワイトボードから、家族・チーム・世界をつなぐアプリへ。',
-    modulos: [
-      { icon: '▦', titulo: 'ボード', desc: 'グループ別の日課。家族、仕事、友人。すべてリアルタイムで。' },
-      { icon: '📅', titulo: 'マイアジェンダ', desc: '今日のすべてのタスクを一目で。何も見逃さない。' },
-      { icon: '🛒', titulo: 'ショッピングリスト', desc: '全員が何を買うか知っている。忘れ物なし、無駄な出費なし。' },
-    ],
     mercadoLabel: 'Syngは誰のためか',
     mercado: ['家族', '企業', '政府', 'チーム'],
     planes: [
@@ -169,23 +170,24 @@ const TEXTOS_DEMO = {
       { nombre: 'プロ', precio: '¥XX/月', desc: '無制限' },
     ],
     cta: '無料で始める →',
-    ctaSub: 'クレジットカード不要 · いつでもキャンセル可',
-    toca: '画面をタップ',
-    demoTareas: ['Alexを病院に連れて行く', '電気代を払う', 'お母さんに電話する', '仕事会議 15時', 'パンを買う'],
-    demoDeps: ['乳製品', '果物と野菜', '食料品'],
-    demoProductos: ['全乳', 'フレッシュチーズ', 'アボカド', 'トマト', '米', '豆'],
+    ctaSub: 'カード不要 · いつでもキャンセル可',
+    modBtns: ['ボード', 'マイアジェンダ', '買い物リスト'],
+    modDescs: [
+      'グループ別の日課。家族、仕事、友人。すべてリアルタイムで。',
+      '今日のすべてのタスクを一目で。何も見逃さない。',
+      '全員が何を買うか知っている。忘れ物なし。',
+    ],
+    grupoLabel: '家族',
+    demoTareas: ['Alexを病院に連れて行く', '電気代を払う', 'お母さんに電話', '仕事会議 15時', 'パンを買う'],
+    demoProductos: ['全乳', 'フレッシュチーズ', 'アボカド', 'トマト', '米', '黒豆'],
+    demoAgenda: ['Alex病院 · 家族', '電気代 · 個人', '会議15時 · 仕事', 'お母さん · 家族'],
     demoNotif: 'お母さんが「全乳」を購入済みにしました！',
   },
   zh: {
-    historia: '我们在家买了一块白板。能用，但必须站在它面前才能看到内容。有一天待办事项太多，那就成了压垮骆驼的最后一根稻草——我们需要更好的东西。',
+    historia: '我们在家买了一块白板。有一天待办事项太多，那就成了压垮骆驼的最后一根稻草。Syng就是从这个真实需求中诞生的。',
     historiaLabel: 'Syng为什么存在？',
     tagline: '您的生活井井有条，\n实时同步。',
     sub: '从家里的实体白板到连接您的家人、团队和世界的应用程序。',
-    modulos: [
-      { icon: '▦', titulo: '白板', desc: '按组分类的日常任务。家人、工作、朋友。全部实时同步。' },
-      { icon: '📅', titulo: '我的日程', desc: '一目了然查看所有日常任务。不错过任何事情。' },
-      { icon: '🛒', titulo: '购物清单', desc: '每个人都知道要买什么。不遗漏，不超支。' },
-    ],
     mercadoLabel: 'Syng适合谁',
     mercado: ['家庭', '企业', '政府', '工作团队'],
     planes: [
@@ -195,438 +197,272 @@ const TEXTOS_DEMO = {
     ],
     cta: '免费开始 →',
     ctaSub: '无需信用卡 · 随时取消',
-    toca: '点击屏幕',
-    demoTareas: ['带Alex去看医生', '缴纳电费', '给妈妈打电话', '下午3点工作会议', '买面包'],
-    demoDeps: ['乳制品', '水果蔬菜', '粮食'],
-    demoProductos: ['全脂牛奶', '新鲜奶酪', '牛油果', '西红柿', '大米', '豆子'],
+    modBtns: ['白板', '我的日程', '购物清单'],
+    modDescs: [
+      '按组分类的日常任务。家人、工作、朋友。全部实时同步。',
+      '一目了然查看所有日常任务。不错过任何事情。',
+      '每个人都知道要买什么。不遗漏。',
+    ],
+    grupoLabel: '家庭',
+    demoTareas: ['带Alex去看医生', '缴纳电费', '给妈妈打电话', '下午3点会议', '买面包'],
+    demoProductos: ['全脂牛奶', '新鲜奶酪', '牛油果', '西红柿', '大米', '黑豆'],
+    demoAgenda: ['Alex看医生 · 家庭', '缴费 · 个人', '会议15时 · 工作', '妈妈 · 家庭'],
     demoNotif: '妈妈把"全脂牛奶"标记为已购买！',
   },
 }
 
 const LANG_MAP = {
-  'es': 'es', 'es-MX': 'es', 'es-ES': 'es', 'es-AR': 'es', 'es-CO': 'es',
-  'en': 'en', 'en-US': 'en', 'en-GB': 'en', 'en-AU': 'en',
-  'fr': 'fr', 'fr-FR': 'fr', 'fr-CA': 'fr',
-  'de': 'de', 'de-DE': 'de', 'de-AT': 'de',
-  'it': 'it', 'it-IT': 'it',
-  'pt': 'pt', 'pt-BR': 'pt', 'pt-PT': 'pt',
-  'ja': 'ja', 'ja-JP': 'ja',
-  'zh': 'zh', 'zh-CN': 'zh', 'zh-TW': 'zh',
+  'es':'es','es-MX':'es','es-ES':'es','es-AR':'es','es-CO':'es','es-CL':'es',
+  'en':'en','en-US':'en','en-GB':'en','en-AU':'en','en-CA':'en',
+  'fr':'fr','fr-FR':'fr','fr-CA':'fr',
+  'de':'de','de-DE':'de','de-AT':'de',
+  'it':'it','it-IT':'it',
+  'pt':'pt','pt-BR':'pt','pt-PT':'pt',
+  'ja':'ja','ja-JP':'ja',
+  'zh':'zh','zh-CN':'zh','zh-TW':'zh',
 }
+
+const COLORES = [
+  { acento: '#534AB7', claro: '#EEF2FF', borde: '#C5BCE8', dot: '#534AB7' },
+  { acento: '#0F6E56', claro: '#E6F7F2', borde: '#A8DDD0', dot: '#2ECC9A' },
+  { acento: '#0891B2', claro: '#E0F7FA', borde: '#80DEEA', dot: '#0891B2' },
+]
 
 function detectarIdioma() {
   const lang = navigator.language || navigator.languages?.[0] || 'es'
   return LANG_MAP[lang] || LANG_MAP[lang.split('-')[0]] || 'es'
 }
 
-// Escenas del modo attract
-const ESCENAS = ['pizarron', 'lista', 'agenda', 'notif']
-
 export default function PantallaDemo({ onEntrar }) {
   const [idioma] = useState(() => detectarIdioma())
   const tx = TEXTOS_DEMO[idioma] || TEXTOS_DEMO.es
 
-  const [tocado, setTocado] = useState(false)
-  const [escena, setEscena] = useState(0)
-  const [tareasVisibles, setTareasVisibles] = useState([])
-  const [productosVisibles, setProductosVisibles] = useState([])
-  const [tareasDone, setTareasDone] = useState([])
-  const [productosDone, setProductosDone] = useState([])
-  const [mostrarNotif, setMostrarNotif] = useState(false)
-  const timerRef = useRef(null)
+  const [modulo, setModulo] = useState(0)
+  const [items, setItems] = useState([])
+  const [done, setDone] = useState([])
+  const [notif, setNotif] = useState(false)
+  const t1 = useRef(null)
+  const t2 = useRef(null)
 
-  // Motor de animación attract
-  useEffect(() => {
-    if (tocado) return
-    let escenaActual = 0
-    let paso = 0
+  function animar(mod) {
+    clearTimeout(t1.current)
+    clearTimeout(t2.current)
+    setItems([])
+    setDone([])
+    setNotif(false)
 
-    const avanzar = () => {
-      const e = ESCENAS[escenaActual]
+    const lista = mod === 0 ? tx.demoTareas : mod === 1 ? tx.demoAgenda : tx.demoProductos
+    let i = 0
 
-      if (e === 'pizarron') {
-        if (paso < tx.demoTareas.length) {
-          setEscena(0)
-          setTareasVisibles(prev => [...prev, tx.demoTareas[paso]])
-          paso++
-          timerRef.current = setTimeout(avanzar, 700)
-        } else if (paso < tx.demoTareas.length + 3) {
-          const idx = paso - tx.demoTareas.length
-          setTareasDone(prev => [...prev, tx.demoTareas[idx]])
-          paso++
-          timerRef.current = setTimeout(avanzar, 600)
-        } else {
-          paso = 0; escenaActual = 1
-          setTareasVisibles([]); setTareasDone([])
-          timerRef.current = setTimeout(avanzar, 800)
+    function agregar() {
+      if (i < lista.length) {
+        const idx = i
+        setItems(prev => [...prev, lista[idx]])
+        i++
+        t1.current = setTimeout(agregar, 550)
+      } else {
+        let d = 0
+        function marcar() {
+          if (d < Math.min(3, lista.length)) {
+            const idx = d
+            setDone(prev => [...prev, lista[idx]])
+            d++
+            t1.current = setTimeout(marcar, 480)
+          } else if (mod === 2) {
+            t2.current = setTimeout(() => {
+              setNotif(true)
+              setTimeout(() => setNotif(false), 3000)
+            }, 400)
+          }
         }
-      } else if (e === 'lista') {
-        if (paso < tx.demoProductos.length) {
-          setEscena(1)
-          setProductosVisibles(prev => [...prev, tx.demoProductos[paso]])
-          paso++
-          timerRef.current = setTimeout(avanzar, 600)
-        } else if (paso < tx.demoProductos.length + 4) {
-          const idx = paso - tx.demoProductos.length
-          setProductosDone(prev => [...prev, tx.demoProductos[idx]])
-          paso++
-          timerRef.current = setTimeout(avanzar, 500)
-        } else {
-          paso = 0; escenaActual = 2
-          setProductosVisibles([]); setProductosDone([])
-          timerRef.current = setTimeout(avanzar, 800)
-        }
-      } else if (e === 'agenda') {
-        setEscena(2)
-        paso++
-        if (paso > 4) {
-          paso = 0; escenaActual = 3
-          timerRef.current = setTimeout(avanzar, 3000)
-        } else {
-          timerRef.current = setTimeout(avanzar, 800)
-        }
-      } else if (e === 'notif') {
-        setEscena(3)
-        setMostrarNotif(true)
-        timerRef.current = setTimeout(() => {
-          setMostrarNotif(false)
-          paso = 0; escenaActual = 0
-          timerRef.current = setTimeout(avanzar, 1000)
-        }, 3000)
+        t1.current = setTimeout(marcar, 600)
       }
     }
 
-    timerRef.current = setTimeout(avanzar, 1000)
-    return () => clearTimeout(timerRef.current)
-  }, [tocado, idioma])
-
-  const handleToque = () => {
-    clearTimeout(timerRef.current)
-    setTocado(true)
+    t1.current = setTimeout(agregar, 200)
   }
 
-  const S = {
-    pantalla: {
-      minHeight: '100vh',
-      background: 'linear-gradient(160deg,#0A1628 0%,#142B52 40%,#1D1D5C 70%,#2D1B6E 100%)',
-      fontFamily: '-apple-system,BlinkMacSystemFont,sans-serif',
-      color: 'white',
-      display: 'flex',
-      flexDirection: 'column',
-      overflowX: 'hidden',
-    },
-    header: {
-      padding: '40px 24px 24px',
-      textAlign: 'center',
-    },
-    logo: {
-      fontSize: '32px',
-      fontWeight: '800',
-      letterSpacing: '0.1em',
-      marginBottom: '20px',
-      opacity: 0.95,
-    },
-    tagline: {
-      fontSize: '28px',
-      fontWeight: '800',
-      lineHeight: 1.2,
-      marginBottom: '12px',
-      whiteSpace: 'pre-line',
-    },
-    sub: {
-      fontSize: '15px',
-      opacity: 0.7,
-      lineHeight: 1.6,
-      maxWidth: '300px',
-      margin: '0 auto',
-    },
-    demoBox: {
-      margin: '24px 20px',
-      background: 'rgba(255,255,255,0.07)',
-      border: '1px solid rgba(255,255,255,0.15)',
-      borderRadius: '20px',
-      overflow: 'hidden',
-      minHeight: '260px',
-    },
-    demoHeader: {
-      padding: '12px 16px',
-      background: 'rgba(255,255,255,0.08)',
-      borderBottom: '1px solid rgba(255,255,255,0.1)',
-      fontSize: '12px',
-      fontWeight: '700',
-      opacity: 0.7,
-      letterSpacing: '0.08em',
-      textTransform: 'uppercase',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '8px',
-    },
-    dot: (color) => ({
-      width: '8px', height: '8px',
-      borderRadius: '50%',
-      background: color,
-      flexShrink: 0,
-    }),
-    tareaItem: (done) => ({
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px',
-      padding: '10px 16px',
-      borderBottom: '0.5px solid rgba(255,255,255,0.06)',
-      animation: 'fadeIn 0.4s ease',
-      opacity: done ? 0.5 : 1,
-    }),
-    check: (done) => ({
-      width: '20px', height: '20px',
-      borderRadius: '50%',
-      border: done ? 'none' : '1.5px solid rgba(255,255,255,0.4)',
-      background: done ? '#2ECC9A' : 'transparent',
-      flexShrink: 0,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '11px',
-    }),
-    historia: {
-      margin: '0 20px 20px',
-      background: 'rgba(255,255,255,0.08)',
-      border: '1px solid rgba(255,255,255,0.15)',
-      borderRadius: '16px',
-      padding: '18px 20px',
-    },
-    historiaLabel: {
-      fontSize: '11px',
-      fontWeight: '700',
-      letterSpacing: '0.1em',
-      opacity: 0.5,
-      textTransform: 'uppercase',
-      marginBottom: '10px',
-    },
-    historiaText: {
-      fontSize: '14px',
-      lineHeight: 1.65,
-      opacity: 0.9,
-    },
-    divider: {
-      height: '1px',
-      background: 'rgba(255,255,255,0.12)',
-      margin: '4px 20px 20px',
-    },
-    modulosGrid: {
-      padding: '0 20px',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: '10px',
-      marginBottom: '20px',
-    },
-    modulo: {
-      background: 'rgba(255,255,255,0.08)',
-      border: '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '14px',
-      padding: '14px 16px',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '14px',
-    },
-    moduloIcon: (bg) => ({
-      width: '44px', height: '44px',
-      borderRadius: '12px',
-      background: bg,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      fontSize: '20px',
-      flexShrink: 0,
-    }),
-    planes: {
-      display: 'flex',
-      gap: '8px',
-      padding: '0 20px',
-      marginBottom: '24px',
-    },
-    plan: (destacado) => ({
-      flex: 1,
-      background: destacado ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.07)',
-      border: destacado ? '1.5px solid rgba(255,255,255,0.4)' : '1px solid rgba(255,255,255,0.12)',
-      borderRadius: '12px',
-      padding: '12px 8px',
-      textAlign: 'center',
-    }),
-    ctaArea: {
-      padding: '4px 20px 48px',
-    },
-    ctaBtn: {
-      width: '100%',
-      padding: '18px',
-      background: 'white',
-      color: '#185FA5',
-      border: 'none',
-      borderRadius: '16px',
-      fontSize: '17px',
-      fontWeight: '800',
-      cursor: 'pointer',
-      marginBottom: '12px',
-      letterSpacing: '-0.3px',
-    },
-    ctaSub: {
-      textAlign: 'center',
-      fontSize: '12px',
-      opacity: 0.55,
-    },
-    notifBanner: {
-      position: 'fixed',
-      top: '20px',
-      left: '20px',
-      right: '20px',
-      background: 'linear-gradient(135deg,#2ECC9A,#1D9E75)',
-      borderRadius: '14px',
-      padding: '14px 16px',
-      fontSize: '13px',
-      fontWeight: '600',
-      color: 'white',
-      zIndex: 999,
-      boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-      display: 'flex',
-      alignItems: 'center',
-      gap: '10px',
-      animation: 'slideDown 0.4s ease',
-    },
-    tocaMensaje: {
-      position: 'fixed',
-      bottom: '120px',
-      left: 0,
-      right: 0,
-      textAlign: 'center',
-      fontSize: '13px',
-      opacity: 0.5,
-      animation: 'pulse 2s infinite',
-    },
+  useEffect(() => {
+    animar(0)
+    return () => { clearTimeout(t1.current); clearTimeout(t2.current) }
+  }, [idioma])
+
+  function cambiarModulo(i) {
+    setModulo(i)
+    animar(i)
   }
 
-  const renderDemo = () => {
-    if (escena === 0 || escena === 2) {
-      return (
-        <div>
-          <div style={S.demoHeader}>
-            <div style={S.dot('#7B6EF6')} />
-            {escena === 0 ? (idioma === 'es' ? 'Pizarrón · Familia' : 'Board · Family') : (idioma === 'es' ? 'Mi Agenda · Hoy' : 'My Agenda · Today')}
-          </div>
-          {tareasVisibles.map((t, i) => (
-            <div key={i} style={S.tareaItem(tareasDone.includes(t))}>
-              <div style={S.check(tareasDone.includes(t))}>
-                {tareasDone.includes(t) && '✓'}
-              </div>
-              <span style={{ fontSize: '14px', textDecoration: tareasDone.includes(t) ? 'line-through' : 'none' }}>{t}</span>
-            </div>
-          ))}
-          {escena === 2 && tx.demoTareas.slice(0, 3).map((t, i) => (
-            <div key={i} style={S.tareaItem(i < 2)}>
-              <div style={S.check(i < 2)}>{i < 2 && '✓'}</div>
-              <span style={{ fontSize: '14px', textDecoration: i < 2 ? 'line-through' : 'none', opacity: i < 2 ? 0.5 : 1 }}>{t}</span>
-              <span style={{ marginLeft: 'auto', fontSize: '10px', opacity: 0.4, background: 'rgba(255,255,255,0.1)', padding: '2px 8px', borderRadius: '10px' }}>
-                {i === 0 ? (idioma === 'es' ? 'Familia' : 'Family') : i === 1 ? (idioma === 'es' ? 'Trabajo' : 'Work') : (idioma === 'es' ? 'Personal' : 'Personal')}
-              </span>
-            </div>
-          ))}
-        </div>
-      )
-    }
-
-    if (escena === 1 || escena === 3) {
-      return (
-        <div>
-          <div style={S.demoHeader}>
-            <div style={S.dot('#2ECC9A')} />
-            {idioma === 'es' ? 'Lista del Súper · Familia' : 'Shopping List · Family'}
-          </div>
-          {productosVisibles.map((p, i) => (
-            <div key={i} style={S.tareaItem(productosDone.includes(p))}>
-              <div style={{ ...S.check(productosDone.includes(p)), borderRadius: '5px' }}>
-                {productosDone.includes(p) && '✓'}
-              </div>
-              <span style={{ fontSize: '14px', textDecoration: productosDone.includes(p) ? 'line-through' : 'none' }}>{p}</span>
-            </div>
-          ))}
-        </div>
-      )
-    }
-  }
+  const col = COLORES[modulo]
 
   return (
-    <div style={S.pantalla} onClick={!tocado ? handleToque : undefined}>
+    <div style={{
+      minHeight: '100vh',
+      background: '#F5F5F7',
+      fontFamily: '-apple-system,BlinkMacSystemFont,sans-serif',
+      color: '#1C1C2E',
+    }}>
       <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes pulse { 0%,100% { opacity: 0.4; } 50% { opacity: 0.8; } }
+        @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        @keyframes sd{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:translateY(0)}}
+        .fi{animation:fi 0.3s ease}
       `}</style>
 
-      {mostrarNotif && (
-        <div style={S.notifBanner}>
-          <span style={{ fontSize: '18px' }}>🔔</span>
-          {tx.demoNotif}
+      {/* Notificación */}
+      {notif && (
+        <div style={{
+          position: 'fixed', top: '16px', left: '16px', right: '16px',
+          background: 'linear-gradient(135deg,#2ECC9A,#0F6E56)',
+          borderRadius: '14px', padding: '13px 16px',
+          fontSize: '13px', fontWeight: '600', color: 'white',
+          zIndex: 999, display: 'flex', alignItems: 'center', gap: '10px',
+          boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+          animation: 'sd 0.3s ease',
+        }}>
+          <span>🔔</span>{tx.demoNotif}
         </div>
       )}
 
-      <div style={S.header}>
-        <div style={S.logo}>SYNG</div>
-        <div style={S.tagline}>{tx.tagline}</div>
-        <div style={S.sub}>{tx.sub}</div>
+      {/* Header */}
+      <div style={{
+        background: 'linear-gradient(135deg,#534AB7,#185FA5)',
+        padding: '48px 24px 32px',
+        textAlign: 'center',
+      }}>
+        <div style={{ fontSize: '30px', fontWeight: '800', letterSpacing: '0.1em', color: 'white', marginBottom: '14px' }}>SYNG</div>
+        <div style={{ fontSize: '24px', fontWeight: '800', color: 'white', lineHeight: 1.25, marginBottom: '10px', whiteSpace: 'pre-line' }}>{tx.tagline}</div>
+        <div style={{ fontSize: '14px', color: 'rgba(255,255,255,0.75)', lineHeight: 1.6, maxWidth: '280px', margin: '0 auto' }}>{tx.sub}</div>
       </div>
 
-      {!tocado ? (
-        <>
-          <div style={S.demoBox}>{renderDemo()}</div>
-          <div style={S.tocaMensaje}>👆 {tx.toca}</div>
-        </>
-      ) : (
-        <>
-          <div style={S.historia}>
-            <div style={S.historiaLabel}>{tx.historiaLabel}</div>
-            <div style={S.historiaText}>{tx.historia}</div>
-          </div>
+      <div style={{ padding: '24px 16px 48px' }}>
 
-          <div style={S.modulosGrid}>
-            {tx.modulos.map((m, i) => (
-              <div key={i} style={S.modulo}>
-                <div style={S.moduloIcon(i === 0 ? 'rgba(123,110,246,0.3)' : i === 1 ? 'rgba(46,204,154,0.3)' : 'rgba(255,185,0,0.25)')}>
-                  {m.icon}
+        {/* Historia */}
+        <div style={{
+          background: 'white', borderRadius: '16px',
+          padding: '18px 20px', marginBottom: '24px',
+          boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+          borderLeft: '4px solid #534AB7',
+        }}>
+          <div style={{ fontSize: '10px', fontWeight: '700', color: '#534AB7', letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '8px' }}>
+            {tx.historiaLabel}
+          </div>
+          <div style={{ fontSize: '14px', lineHeight: 1.7, color: '#444' }}>{tx.historia}</div>
+        </div>
+
+        {/* Botones de módulo */}
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
+          {tx.modBtns.map((btn, i) => (
+            <button key={i} onClick={() => cambiarModulo(i)} style={{
+              flex: 1, padding: '10px 4px',
+              background: modulo === i ? col.claro : 'white',
+              border: modulo === i ? `2px solid ${col.acento}` : '1.5px solid #E5E5E5',
+              borderRadius: '12px', color: modulo === i ? col.acento : '#888',
+              fontSize: '11px', fontWeight: modulo === i ? '700' : '500',
+              cursor: 'pointer', transition: 'all 0.2s',
+              boxShadow: modulo === i ? `0 2px 8px ${col.acento}22` : 'none',
+            }}>{btn}</button>
+          ))}
+        </div>
+
+        {/* Descripción módulo */}
+        <div style={{ fontSize: '13px', color: '#666', lineHeight: 1.5, marginBottom: '12px', minHeight: '38px' }}>
+          {tx.modDescs[modulo]}
+        </div>
+
+        {/* Demo box */}
+        <div style={{
+          background: 'white', borderRadius: '16px',
+          boxShadow: '0 2px 16px rgba(0,0,0,0.08)',
+          overflow: 'hidden', marginBottom: '24px',
+          border: `1px solid ${col.borde}`,
+        }}>
+          <div style={{
+            padding: '10px 16px', background: col.claro,
+            borderBottom: `1px solid ${col.borde}`,
+            fontSize: '12px', fontWeight: '700', color: col.acento,
+            display: 'flex', alignItems: 'center', gap: '8px',
+          }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: col.dot }} />
+            {tx.modBtns[modulo]} · {tx.grupoLabel}
+          </div>
+          <div style={{ minHeight: '160px' }}>
+            {items.map((item, i) => {
+              const isDone = done.includes(item)
+              return (
+                <div key={i} className="fi" style={{
+                  display: 'flex', alignItems: 'center', gap: '12px',
+                  padding: '11px 16px',
+                  borderBottom: '0.5px solid #F0F0F0',
+                  background: isDone ? '#FAFAFA' : 'white',
+                }}>
+                  <div style={{
+                    width: '20px', height: '20px',
+                    borderRadius: modulo === 2 ? '5px' : '50%',
+                    border: isDone ? 'none' : `1.5px solid ${col.borde}`,
+                    background: isDone ? col.dot : 'white',
+                    flexShrink: 0, display: 'flex', alignItems: 'center',
+                    justifyContent: 'center', fontSize: '11px', color: 'white',
+                  }}>{isDone ? '✓' : ''}</div>
+                  <span style={{
+                    fontSize: '14px',
+                    color: isDone ? '#BBB' : '#1C1C2E',
+                    textDecoration: isDone ? 'line-through' : 'none',
+                    flex: 1,
+                  }}>{item}</span>
                 </div>
-                <div>
-                  <div style={{ fontSize: '15px', fontWeight: '700', marginBottom: '3px' }}>{m.titulo}</div>
-                  <div style={{ fontSize: '12px', opacity: 0.65, lineHeight: 1.4 }}>{m.desc}</div>
-                </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
+        </div>
 
-          <div style={S.divider} />
+        {/* Para quién */}
+        <div style={{ fontSize: '11px', fontWeight: '700', color: '#999', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '10px' }}>
+          {tx.mercadoLabel}
+        </div>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '28px' }}>
+          {tx.mercado.map((m, i) => (
+            <div key={i} style={{
+              background: 'white', border: '1.5px solid #E5E5E5',
+              borderRadius: '20px', padding: '6px 16px',
+              fontSize: '13px', fontWeight: '500', color: '#444',
+              boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
+            }}>{m}</div>
+          ))}
+        </div>
 
-          <div style={{ padding: '0 20px', marginBottom: '10px', fontSize: '11px', fontWeight: '700', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>{tx.mercadoLabel}</div>
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', padding: '0 20px', marginBottom: '20px' }}>
-            {tx.mercado.map((m, i) => (
-              <div key={i} style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', borderRadius: '20px', padding: '5px 14px', fontSize: '13px', fontWeight: '500' }}>{m}</div>
-            ))}
-          </div>
+        {/* Divisor */}
+        <div style={{ height: '1px', background: '#EBEBEB', marginBottom: '24px' }} />
 
-          <div style={S.divider} />
+        {/* Planes */}
+        <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+          {tx.planes.map((p, i) => (
+            <div key={i} onClick={onEntrar} style={{
+              flex: 1, textAlign: 'center', cursor: 'pointer',
+              background: p.destacado ? 'linear-gradient(135deg,#534AB7,#185FA5)' : 'white',
+              border: p.destacado ? 'none' : '1.5px solid #E5E5E5',
+              borderRadius: '14px', padding: '14px 8px',
+              boxShadow: p.destacado ? '0 4px 16px rgba(83,74,183,0.3)' : '0 1px 4px rgba(0,0,0,0.05)',
+            }}>
+              <div style={{ fontSize: '10px', fontWeight: '700', color: p.destacado ? 'rgba(255,255,255,0.7)' : '#999', textTransform: 'uppercase', marginBottom: '4px' }}>{p.nombre}</div>
+              <div style={{ fontSize: '20px', fontWeight: '800', color: p.destacado ? 'white' : '#1C1C2E', marginBottom: '3px' }}>{p.precio}</div>
+              <div style={{ fontSize: '10px', color: p.destacado ? 'rgba(255,255,255,0.65)' : '#999' }}>{p.desc}</div>
+            </div>
+          ))}
+        </div>
 
-          <div style={{ padding: '0 20px', marginBottom: '12px', fontSize: '11px', fontWeight: '700', opacity: 0.5, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Planes</div>
-          <div style={S.planes}>
-            {tx.planes.map((p, i) => (
-              <div key={i} style={S.plan(p.destacado)}>
-                <div style={{ fontSize: '10px', fontWeight: '700', opacity: 0.6, textTransform: 'uppercase', marginBottom: '4px' }}>{p.nombre}</div>
-                <div style={{ fontSize: '17px', fontWeight: '800', marginBottom: '2px' }}>{p.precio}</div>
-                <div style={{ fontSize: '10px', opacity: 0.55, lineHeight: 1.3 }}>{p.desc}</div>
-              </div>
-            ))}
-          </div>
+        <div style={{ textAlign:'center', fontSize:'12px', color:'#888', marginBottom:'16px', fontStyle:'italic' }}>Comienza gratis hoy, desbloquea más cuando lo necesites</div>
 
-          <div style={S.ctaArea}>
-            <button style={S.ctaBtn} onClick={onEntrar}>{tx.cta}</button>
-            <div style={S.ctaSub}>{tx.ctaSub}</div>
-          </div>
-        </>
-      )}
+        {/* CTA */}
+        <button onClick={onEntrar} style={{
+          width: '100%', padding: '18px',
+          background: 'linear-gradient(135deg,#534AB7,#185FA5)',
+          color: 'white', border: 'none', borderRadius: '16px',
+          fontSize: '17px', fontWeight: '800', cursor: 'pointer',
+          marginBottom: '8px',
+          boxShadow: '0 6px 20px rgba(83,74,183,0.35)',
+          letterSpacing: '-0.3px',
+        }}>{tx.cta}</button>
+        <div style={{ textAlign: 'center', fontSize: '12px', color: '#AAA' }}>{tx.ctaSub}</div>
+      </div>
     </div>
   )
 }

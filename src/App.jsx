@@ -347,6 +347,7 @@ export default function App() {
   const [invData, setInvData] = useState(null)
   const [invCargando, setInvCargando] = useState(false)
   const [grupoDestino, setGrupoDestino] = useState(null)
+  const [verDemo, setVerDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true')
   const t = TEXTOS[idioma] || TEXTOS.es
   const th = TEMA[tema] || TEMA.oscuro
   const cambiarIdioma = (cod) => { setIdioma(cod); localStorage.setItem('syng_idioma', cod) }
@@ -447,8 +448,7 @@ export default function App() {
   useEffect(() => { if (pantalla !== 'inicio') window.history.pushState({ pantalla }, '') }, [pantalla])
 
   // Pantalla de carga mientras se verifica la invitación
-  const esDemo = new URLSearchParams(window.location.search).get('demo') === 'true'
-  if (esDemo) return <PantallaDemo onEntrar={()=>{ window.history.replaceState({},'',window.location.pathname); setPantalla('inicio') }} />
+  if (verDemo) return <PantallaDemo onEntrar={()=>{ window.history.replaceState({},'',window.location.pathname); setVerDemo(false) }} />
 
   if (invCargando) return (
     <div style={{ minHeight:'100vh', background:th.bg, display:'flex', alignItems:'center', justifyContent:'center' }}>
