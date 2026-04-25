@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import { db } from './firebase'
 import {
   collection, doc, onSnapshot, setDoc, deleteDoc,
-  updateDoc, getDoc, writeBatch, arrayUnion, arrayRemove
+  updateDoc, getDoc, getDocs, writeBatch, arrayUnion, arrayRemove
 } from 'firebase/firestore'
 import { TEXTOS } from './idiomas'
 import { CATALOGOS, DEP_ORDER_BY_LANG } from './catalogos'
@@ -290,7 +290,15 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   async function eliminarGrupo(){
     if(!modalVerGrupo||!userId) return
     const batch=writeBatch(db)
+    // Borrar referencias de todos los miembros
     for(const m of (modalVerGrupo.miembros||[])) batch.delete(doc(db,'users',m.uid,'misGrupos',modalVerGrupo.id))
+    // Borrar subcolección lista
+    const listaSnap=await getDocs(collection(db,'grupos',modalVerGrupo.id,'lista'))
+    listaSnap.docs.forEach(d=>batch.delete(d.ref))
+    // Borrar subcolección catalogoCustom
+    const catSnap=await getDocs(collection(db,'grupos',modalVerGrupo.id,'catalogoCustom'))
+    catSnap.docs.forEach(d=>batch.delete(d.ref))
+    // Borrar documento principal del grupo
     batch.delete(doc(db,'grupos',modalVerGrupo.id))
     await batch.commit()
     setModalVerGrupo(null);setConfirmEliminarGrupo(false);setGrupoActivo('personal')

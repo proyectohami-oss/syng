@@ -3,7 +3,7 @@ import { TEXTOS } from './idiomas'
 import { db, auth } from './firebase'
 import {
   collection, doc, onSnapshot, setDoc, deleteDoc,
-  getDoc, updateDoc, arrayUnion, arrayRemove, writeBatch
+  getDoc, getDocs, updateDoc, arrayUnion, arrayRemove, writeBatch
 } from 'firebase/firestore'
 
 function generarId() { return Math.random().toString(36).substr(2, 9) }
@@ -329,7 +329,12 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
   const eliminarGrupo = async () => {
     if (!modalVerGrupo) return
     const batch = writeBatch(db)
+    // Borrar referencias de todos los miembros
     for (const m of (modalVerGrupo.miembros || [])) batch.delete(doc(db, 'users', m.uid, 'misGrupos', modalVerGrupo.id))
+    // Borrar subcolección pizarron
+    const pizSnap = await getDocs(collection(db, 'grupos', modalVerGrupo.id, 'pizarron'))
+    pizSnap.docs.forEach(d => batch.delete(d.ref))
+    // Borrar documento principal del grupo
     batch.delete(doc(db, 'grupos', modalVerGrupo.id))
     await batch.commit()
     setGrupoActivo('personal'); setConfirmEliminarGrupo(false); setModalVerGrupo(null)
