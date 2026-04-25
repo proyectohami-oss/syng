@@ -125,7 +125,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     if (!userId) return
     const cargar = async () => {
       const snap = await getDocs(collection(db, 'users', userId, 'misGrupos'))
-      const gs = snap.docs.map((d,i) => ({ id: d.id, nombre: d.data().nombre || 'Grupo', color: COLORES[(i+1) % COLORES.length] }))
+      const gs = snap.docs.filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' }).map((d,i) => ({ id: d.id, nombre: d.data().nombre || 'Grupo', color: COLORES[(i+1) % COLORES.length] }))
       setGrupos([{ id:'personal', nombre: tx.personal, color: COLORES[0] }, ...gs])
     }
     cargar()
