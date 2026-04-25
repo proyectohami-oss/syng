@@ -251,9 +251,16 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       : doc(db, 'grupos', tarea.grupoId, 'pizarron', key)
     const snap = await getDoc(ref)
     await setDoc(ref, { items: (snap.data()?.items || []).filter(i => i.id !== tarea.id) })
-    setTareas(prev => prev.filter(t => !(t.id === tarea.id && t.grupoId === tarea.grupoId)))
+    const nuevasTareas = tareas.filter(t => !(t.id === tarea.id && t.grupoId === tarea.grupoId))
+    setTareas(nuevasTareas)
     setTareaSeleccionada(null)
     setConfirmEliminar(false)
+    // Actualizar badge del día
+    const pendientesRestantes = nuevasTareas.filter(t => !t.realizada).length
+    setBadges(prev => ({
+      ...prev,
+      [`${diaSeleccionado}`]: pendientesRestantes > 0 ? pendientesRestantes : undefined
+    }))
   }
 
   // guardar edición
@@ -566,7 +573,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                   setAnioCalEdit(tareaSeleccionada.anio)
                   setMesCalRep(tareaSeleccionada.mes)
                   setAnioCalRep(tareaSeleccionada.anio)
-                }} style={{ background:th.acento, color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:`0 4px 16px ${th.acento}55`, whiteSpace:'nowrap' }}>✏️ {tx.guardarCambios.split(' ')[0]}</button>
+                }} style={{ background:th.acento, color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:`0 4px 16px ${th.acento}55`, whiteSpace:'nowrap' }}>✏️ {tx.editarTarea}</button>
                 <button onClick={() => setConfirmEliminar(true)} style={{ background:'#E24B4A', color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:'0 4px 16px rgba(226,75,74,0.4)', whiteSpace:'nowrap' }}>🗑 {tx.eliminar}</button>
               </div>
             )}
@@ -606,7 +613,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 <button onClick={() => setEditModo(editModo==='fecha'?null:'fecha')} style={{ flex:1, padding:'9px', borderRadius:'10px', background: editModo==='fecha'?th.acento:(esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: editModo==='fecha'?'white':th.acento, cursor:'pointer', fontWeight:'500' }}>📅 {tx.cambiarFecha}</button>
                 <button onClick={() => { setEditModo(editModo==='repetir'?null:'repetir'); setFechasEditRepetir([]) }} style={{ flex:1, padding:'9px', borderRadius:'10px', background: editModo==='repetir'?th.acento:(esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: editModo==='repetir'?'white':th.acento, cursor:'pointer', fontWeight:'500' }}>🔁 {tx.repetirFechas}</button>
               </div>
-              {editModo==='fecha' && <MiniCal a={anioCalEdit} m={mesCalEdit} setA={setAnioCalEdit} setM={setMesCalEdit} onDia={cambiarFechaEdicion} selFn={(d,a,m)=>false} hint={tx.moverA} />}
+              {editModo==='fecha' && <MiniCal a={anioCalEdit} m={mesCalEdit} setA={setAnioCalEdit} setM={setMesCalEdit} onDia={cambiarFechaEdicion} selFn={(d,a,m)=>a===anioCalEdit&&m===mesCalEdit&&d===modoEditar?.dia&&anioCalEdit===modoEditar?.anioT&&mesCalEdit===modoEditar?.mesT} hint={tx.moverA} />}
               {editModo==='repetir' && <>
                 <MiniCal a={anioCalRep} m={mesCalRep} setA={setAnioCalRep} setM={setMesCalRep} onDia={d => { const k=getKey(anioCalRep,mesCalRep,d); setFechasEditRepetir(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]) }} selFn={(d,a,m)=>fechasEditRepetir.includes(getKey(a,m,d))} hint={tx.copiarEn} />
                 <div style={{ fontSize:'12px', color:th.acento, textAlign:'center', marginTop:'6px' }}>{fechasEditRepetir.length} {tx.fechasSeleccionadas}</div>
