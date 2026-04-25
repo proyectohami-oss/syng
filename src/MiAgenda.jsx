@@ -315,6 +315,12 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         const refNew = grupoId === 'personal' ? doc(db, 'users', userId, 'pizarron', keyNew) : doc(db, 'grupos', grupoId, 'pizarron', keyNew)
         const snapNew = await getDoc(refNew)
         await setDoc(refNew, { items: [...(snapNew.data()?.items || []), { ...tarea, dia: nuevaFechaEdit.dia, mes: nuevaFechaEdit.mes, anio: nuevaFechaEdit.anio }] })
+        // Actualizar badge del día origen — quitar punto si ya no hay pendientes
+        const pendientesOrigen = items.filter(i => i.id !== id && !i.realizada).length
+        setBadges(prev => ({
+          ...prev,
+          [`${dia}`]: pendientesOrigen > 0 ? pendientesOrigen : undefined
+        }))
       }
     }
   }
