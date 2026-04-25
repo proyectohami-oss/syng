@@ -499,7 +499,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </div>
 
               {/* calendario elegir fecha */}
-              {mostrarElegirFecha && <MiniCal a={anioElegir} m={mesElegir} setA={setAnioElegir} setM={setMesElegir} onDia={d => { setDiaElegido(d); setMostrarElegirFecha(false) }} selFn={(d,a,m) => d===diaElegido&&a===anioElegir&&m===mesElegir} hint={tx.moverA} />}
+              {mostrarElegirFecha && <MiniCal a={anioElegir} m={mesElegir} setA={setAnioElegir} setM={setMesElegir} onDia={d => { setDiaElegido(d) }} selFn={(d,a,m) => d===diaElegido&&a===anioElegir&&m===mesElegir} hint={tx.moverA} />}
 
               {/* calendario repetir */}
               {mostrarRepetir && <>
