@@ -95,6 +95,9 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const [anioCalRep, setAnioCalRep] = useState(hoy.getFullYear())
   const [fechasEditRepetir, setFechasEditRepetir] = useState([])
 
+  // nueva fecha seleccionada en edición
+  const [nuevaFechaEdit, setNuevaFechaEdit] = useState(null) // {dia, mes, anio}
+
   // confirmar eliminar
   const [confirmEliminar, setConfirmEliminar] = useState(false)
 
@@ -266,6 +269,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   // guardar edición
   const guardarEdicion = async () => {
     if (!textoEditar.trim() || !modoEditar) return
+    if (nuevaFechaEdit) await aplicarCambioFecha()
     const { id, grupoId, dia, mesT, anioT } = modoEditar
     const key = getKey(anioT, mesT, dia)
     const ref = grupoId === 'personal'
@@ -286,29 +290,33 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setModoEditar(null)
     setEditModo(null)
     setFechasEditRepetir([])
+    setNuevaFechaEdit(null)
     setTareaSeleccionada(null)
   }
 
-  // cambiar fecha en edición
-  const cambiarFechaEdicion = async (diaNew) => {
-    if (!modoEditar) return
+  // cambiar fecha en edición — solo marca la fecha, no mueve todavía
+  const cambiarFechaEdicion = (diaNew) => {
+    setNuevaFechaEdit({ dia: diaNew, mes: mesCalEdit, anio: anioCalEdit })
+  }
+
+  // aplicar cambio de fecha al guardar
+  const aplicarCambioFecha = async () => {
+    if (!modoEditar || !nuevaFechaEdit) return
     const { id, grupoId, dia, mesT, anioT } = modoEditar
     const keyOld = getKey(anioT, mesT, dia)
-    const keyNew = getKey(anioCalEdit, mesCalEdit, diaNew)
-    if (keyOld === keyNew) { setEditModo(null); return }
-    const refOld = grupoId === 'personal' ? doc(db, 'users', userId, 'pizarron', keyOld) : doc(db, 'grupos', grupoId, 'pizarron', keyOld)
-    const snapOld = await getDoc(refOld)
-    const items = snapOld.data()?.items || []
-    const tarea = items.find(i => i.id === id)
-    if (!tarea) return
-    await setDoc(refOld, { items: items.filter(i => i.id !== id) })
-    const refNew = grupoId === 'personal' ? doc(db, 'users', userId, 'pizarron', keyNew) : doc(db, 'grupos', grupoId, 'pizarron', keyNew)
-    const snapNew = await getDoc(refNew)
-    await setDoc(refNew, { items: [...(snapNew.data()?.items || []), { ...tarea, dia: diaNew, mes: mesCalEdit, anio: anioCalEdit }] })
-    await cargarTareas(diaSeleccionado, mes, anio)
-    setModoEditar(null)
-    setEditModo(null)
-    setTareaSeleccionada(null)
+    const keyNew = getKey(nuevaFechaEdit.anio, nuevaFechaEdit.mes, nuevaFechaEdit.dia)
+    if (keyOld !== keyNew) {
+      const refOld = grupoId === 'personal' ? doc(db, 'users', userId, 'pizarron', keyOld) : doc(db, 'grupos', grupoId, 'pizarron', keyOld)
+      const snapOld = await getDoc(refOld)
+      const items = snapOld.data()?.items || []
+      const tarea = items.find(i => i.id === id)
+      if (tarea) {
+        await setDoc(refOld, { items: items.filter(i => i.id !== id) })
+        const refNew = grupoId === 'personal' ? doc(db, 'users', userId, 'pizarron', keyNew) : doc(db, 'grupos', grupoId, 'pizarron', keyNew)
+        const snapNew = await getDoc(refNew)
+        await setDoc(refNew, { items: [...(snapNew.data()?.items || []), { ...tarea, dia: nuevaFechaEdit.dia, mes: nuevaFechaEdit.mes, anio: nuevaFechaEdit.anio }] })
+      }
+    }
   }
 
   // reordenar drag & drop
@@ -613,7 +621,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 <button onClick={() => setEditModo(editModo==='fecha'?null:'fecha')} style={{ flex:1, padding:'9px', borderRadius:'10px', background: editModo==='fecha'?th.acento:(esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: editModo==='fecha'?'white':th.acento, cursor:'pointer', fontWeight:'500' }}>📅 {tx.cambiarFecha}</button>
                 <button onClick={() => { setEditModo(editModo==='repetir'?null:'repetir'); setFechasEditRepetir([]) }} style={{ flex:1, padding:'9px', borderRadius:'10px', background: editModo==='repetir'?th.acento:(esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: editModo==='repetir'?'white':th.acento, cursor:'pointer', fontWeight:'500' }}>🔁 {tx.repetirFechas}</button>
               </div>
-              {editModo==='fecha' && <MiniCal a={anioCalEdit} m={mesCalEdit} setA={setAnioCalEdit} setM={setMesCalEdit} onDia={cambiarFechaEdicion} selFn={(d,a,m)=>a===anioCalEdit&&m===mesCalEdit&&d===modoEditar?.dia&&anioCalEdit===modoEditar?.anioT&&mesCalEdit===modoEditar?.mesT} hint={tx.moverA} />}
+              {editModo==='fecha' && <MiniCal a={anioCalEdit} m={mesCalEdit} setA={setAnioCalEdit} setM={setMesCalEdit} onDia={cambiarFechaEdicion} selFn={(d,a,m)=>nuevaFechaEdit?d===nuevaFechaEdit.dia&&a===nuevaFechaEdit.anio&&m===nuevaFechaEdit.mes:d===modoEditar?.dia&&a===modoEditar?.anioT&&m===modoEditar?.mesT} hint={tx.moverA} />}
               {editModo==='repetir' && <>
                 <MiniCal a={anioCalRep} m={mesCalRep} setA={setAnioCalRep} setM={setMesCalRep} onDia={d => { const k=getKey(anioCalRep,mesCalRep,d); setFechasEditRepetir(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]) }} selFn={(d,a,m)=>fechasEditRepetir.includes(getKey(a,m,d))} hint={tx.copiarEn} />
                 <div style={{ fontSize:'12px', color:th.acento, textAlign:'center', marginTop:'6px' }}>{fechasEditRepetir.length} {tx.fechasSeleccionadas}</div>
