@@ -125,7 +125,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     if (!userId) return
     const cargar = async () => {
       const snap = await getDocs(collection(db, 'users', userId, 'misGrupos'))
-      const gs = snap.docs.filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' }).map((d,i) => ({ id: d.id, nombre: d.data().nombre || 'Grupo', color: COLORES[(i+1) % COLORES.length] }))
+      const gs = snap.docs.map((d,i) => ({ id: d.id, nombre: d.data().nombre || 'Grupo', color: COLORES[(i+1) % COLORES.length] }))
       setGrupos([{ id:'personal', nombre: tx.personal, color: COLORES[0] }, ...gs])
     }
     cargar()
@@ -469,8 +469,8 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
 
       {/* MODAL del día */}
       {diaSeleccionado && !modoEditar && (
-        <div onClick={e => { if(e.target===e.currentTarget) cerrarModal() }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:200, paddingBottom:`${keyboardOffset}px`
-          <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', width:'100%', maxWidth:'600px', maxHeight:`calc(${window.visualViewport?.height || window.innerHeight}px - 60px)`, display:'flex', flexDirection:'column', overscrollBehavior:'contain' }}>
+        <div onClick={e => { if(e.target===e.currentTarget) cerrarModal() }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:200, paddingBottom:`${keyboardOffset}px` }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', width:'100%', maxWidth:'600px', maxHeight:'90vh', display:'flex', flexDirection:'column', overscrollBehavior:'contain' }}>
 
             {/* header fijo del modal */}
             <div style={{ padding:'20px 20px 0', flexShrink:0 }}>
