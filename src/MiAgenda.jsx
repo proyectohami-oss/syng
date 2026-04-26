@@ -418,8 +418,8 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
 
       {/* MODAL del día */}
       {diaSeleccionado && !modoEditar && (
-        <div onClick={e => { if(e.target===e.currentTarget) cerrarModal() }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:200 }}>
-          <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', width:'100%', maxWidth:'600px', maxHeight:"calc(100dvh - 60px)", display:'flex', flexDirection:'column', overscrollBehavior:'contain' }}>
+        <div onClick={e => { if(e.target===e.currentTarget) cerrarModal() }} style={{ position:'fixed', inset:0, background:th.bg, zIndex:200, overflowY:'auto' }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:th.bg, width:'100%', maxWidth:'600px', margin:'0 auto', display:'flex', flexDirection:'column', minHeight:'100vh' }}>
 
             <div style={{ padding:'20px 20px 0', flexShrink:0 }}>
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
