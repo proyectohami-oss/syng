@@ -91,8 +91,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const touchStartRef = useRef(null)
   const isDraggingRef = useRef(false)
 
-
-
   useEffect(() => {
     if (!userId) return
     const cargar = async () => {
@@ -382,11 +380,14 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
 
   return (
     <div style={{ minHeight:'100vh', background:th.bg, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', paddingBottom:'80px' }}>
+
+      {/* Header */}
       <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px' }}>
         <button onClick={onVolver} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
         <div style={{ color:'white', fontSize:'20px', fontWeight:'700' }}>{tx.titulo}</div>
       </div>
 
+      {/* Calendario */}
       <div style={{ padding:'16px' }}>
         <div style={{ background:th.bgCard, borderRadius:'20px', padding:'16px', boxShadow:th.sombra, marginBottom:'16px' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
@@ -416,104 +417,98 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       </div>
 
-      {/* MODAL del día */}
-      {diaSeleccionado && !modoEditar && (
-        <div onClick={e => { if(e.target===e.currentTarget) cerrarModal() }} style={{ position:'fixed', inset:0, background:th.bg, zIndex:200, overflowY:'auto' }}>
-          <div onClick={e => e.stopPropagation()} style={{ background:th.bg, width:'100%', maxWidth:'600px', margin:'0 auto', display:'flex', flexDirection:'column', minHeight:'100vh' }}>
-
-            <div style={{ padding:'20px 20px 0', flexShrink:0 }}>
-              <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
-                <div style={{ fontSize:'17px', fontWeight:'700', color:th.texto }}>{diaSeleccionado} {meses[mes]} {anio}</div>
-                <button onClick={cerrarModal} style={{ background: esOscuro ? 'rgba(255,255,255,0.08)' : '#f0f0f0', border:'none', borderRadius:'50%', width:'32px', height:'32px', fontSize:'16px', color:th.textoSub, cursor:'pointer' }}>✕</button>
-              </div>
-
-              <button onClick={() => { setNuevaTarea(''); setModoCapturar(true) }} style={{ width:'100%', padding:'12px', background: th.acento, color:'white', border:'none', borderRadius:'12px', fontSize:'15px', fontWeight:'700', cursor:'pointer', marginBottom:'10px' }}>+ {tx.agregar}</button>
-
-            </div>
-
-            <div style={{ overflowY:'auto', flex:1, padding:'0 20px 100px', touchAction:'pan-y' }}>
-              {cargandoTareas && <div style={{ textAlign:'center', color:th.textoSub, fontSize:'13px', padding:'20px 0' }}>...</div>}
-              {!cargandoTareas && pendientes.length === 0 && atendidas.length === 0 && (
-                <div style={{ textAlign:'center', color:th.textoSub, fontSize:'13px', padding:'20px 0' }}>{tx.sinPendientes}</div>
-              )}
-              {pendientes.length > 0 && (
-                <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'8px', marginTop:'4px' }}>{tx.pendientes}</div>
-              )}
-              {pendientes.map((tarea, idx) => (
-                <div key={`${tarea.id}-${tarea.grupoId}`} data-idx={idx} style={{ opacity: draggingIdx===idx ? 0.4 : 1 }}>
-                  {dragOverIdx===idx && draggingIdx!==idx && <div style={{ height:'3px', background:th.acento, borderRadius:'2px', margin:'3px 0' }} />}
-                  <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? (esOscuro?'rgba(83,74,183,0.2)':'#EEF2FF') : (esOscuro?'rgba(255,255,255,0.04)':'white'), border:`0.5px solid ${tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? th.acento : th.borde}`, userSelect:'none' }}>
-                    <span onTouchStart={e=>onTouchStart(e,idx)} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ fontSize:'18px', color: esOscuro?'rgba(255,255,255,0.2)':'#ccc', cursor:'grab', touchAction:'none', flexShrink:0 }}>⠿</span>
-                    <div onClick={() => {
-                      const key = `${tarea.id}-${tarea.grupoId}`
-                      const selKey = tareaSeleccionada ? `${tareaSeleccionada.id}-${tareaSeleccionada.grupoId}` : null
-                      if (key === selKey) setTareaSeleccionada(null)
-                      else setTareaSeleccionada(tarea)
-                    }} style={{ width:'22px', height:'22px', borderRadius:'6px', border: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? 'none' : `1.5px solid ${esOscuro?'rgba(255,255,255,0.3)':'#ccc'}`, background: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? th.acento : 'transparent', flexShrink:0, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px' }}>
-                      {tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? '✓' : ''}
-                    </div>
-                    <span onClick={() => toggleAtendida(tarea)} style={{ flex:1, fontSize:'14px', color:th.texto, cursor:'pointer', lineHeight:'1.4' }}>{tarea.texto}</span>
-                    <div style={{ display:'flex', alignItems:'center', gap:'4px', background: `${tarea.grupoColor}22`, borderRadius:'20px', padding:'3px 9px', flexShrink:0 }}>
-                      <div style={{ width:'6px', height:'6px', borderRadius:'50%', background: tarea.grupoColor }} />
-                      <span style={{ fontSize:'11px', color: tarea.grupoColor, fontWeight:'500' }}>{tarea.grupoNombre}</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-              {atendidas.length > 0 && (
-                <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'8px', marginTop:'12px' }}>{tx.atendidas}</div>
-              )}
-              {atendidas.map((tarea, idx) => (
-                <div key={`${tarea.id}-${tarea.grupoId}`} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: esOscuro?'rgba(255,255,255,0.02)':'#F5F5F7', border:`0.5px solid ${th.borde}` }}>
-                  <span style={{ fontSize:'18px', color: esOscuro?'rgba(255,255,255,0.1)':'#ddd', flexShrink:0 }}>⠿</span>
-                  <div style={{ width:'22px', height:'22px', borderRadius:'6px', background:'#3B6D11', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px' }}>✓</div>
-                  <span onClick={() => toggleAtendida(tarea)} style={{ flex:1, fontSize:'14px', color:th.textoMuted||th.textoSub, textDecoration:'line-through', cursor:'pointer', lineHeight:'1.4' }}>{tarea.texto}</span>
-                  <div style={{ display:'flex', alignItems:'center', gap:'4px', background: esOscuro?'rgba(255,255,255,0.06)':'white', borderRadius:'20px', padding:'3px 9px', border:`0.5px solid ${th.borde}`, flexShrink:0 }}>
-                    <div style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#888' }} />
-                    <span style={{ fontSize:'11px', color:'#888', fontWeight:'500' }}>{tarea.grupoNombre}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {tareaSeleccionada && !confirmEliminar && (
-              <div style={{ position:'absolute', bottom:'20px', left:'50%', transform:'translateX(-50%)', display:'flex', gap:'10px', zIndex:10 }}>
-                <button onClick={() => {
-                  setModoEditar({ id: tareaSeleccionada.id, grupoId: tareaSeleccionada.grupoId, dia: tareaSeleccionada.dia, mesT: tareaSeleccionada.mes, anioT: tareaSeleccionada.anio, grupoNombre: tareaSeleccionada.grupoNombre, grupoColor: tareaSeleccionada.grupoColor })
-                  setTextoEditar(tareaSeleccionada.texto)
-                  setEditModo(null)
-                  setFechasEditRepetir([])
-                  setMesCalEdit(tareaSeleccionada.mes)
-                  setAnioCalEdit(tareaSeleccionada.anio)
-                  setMesCalRep(tareaSeleccionada.mes)
-                  setAnioCalRep(tareaSeleccionada.anio)
-                }} style={{ background:th.acento, color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:`0 4px 16px ${th.acento}55`, whiteSpace:'nowrap' }}>✏️ {tx.editarTarea}</button>
-                <button onClick={() => setConfirmEliminar(true)} style={{ background:'#E24B4A', color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:'0 4px 16px rgba(226,75,74,0.4)', whiteSpace:'nowrap' }}>🗑 {tx.eliminar}</button>
-              </div>
-            )}
-
-            {confirmEliminar && (
-              <div style={{ position:'absolute', bottom:'20px', left:'20px', right:'20px', background:th.bgCard, borderRadius:'16px', padding:'16px', boxShadow:'0 8px 32px rgba(0,0,0,0.3)', zIndex:10 }}>
-                <div style={{ fontSize:'14px', color:th.texto, marginBottom:'12px', textAlign:'center' }}>{tx.confirmarEliminar}</div>
-                <div style={{ display:'flex', gap:'8px' }}>
-                  <button onClick={() => setConfirmEliminar(false)} style={{ flex:1, padding:'11px', background: esOscuro?'rgba(255,255,255,0.08)':'#f0f0f0', border:'none', borderRadius:'10px', color:th.textoSub, cursor:'pointer', fontSize:'14px' }}>{tx.cancelar}</button>
-                  <button onClick={eliminarTarea} style={{ flex:1, padding:'11px', background:'#E24B4A', border:'none', borderRadius:'10px', color:'white', cursor:'pointer', fontSize:'14px', fontWeight:'600' }}>{tx.si}</button>
-                </div>
-              </div>
-            )}
+      {/* PANTALLA: Lista del día */}
+      {diaSeleccionado && !modoEditar && !modoCapturar && (
+        <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:200, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
+          {/* Header fijo */}
+          <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 20px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
+            <button onClick={cerrarModal} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
+            <div style={{ color:'white', fontSize:'18px', fontWeight:'700', flex:1 }}>{diaSeleccionado} {meses[mes]} {anio}</div>
+            <button onClick={() => { setNuevaTarea(''); setModoCapturar(true) }} style={{ background:'rgba(255,255,255,0.25)', border:'1.5px solid rgba(255,255,255,0.5)', color:'white', borderRadius:'12px', padding:'8px 18px', fontSize:'14px', fontWeight:'700', cursor:'pointer' }}>{tx.agregar}</button>
           </div>
+          {/* Lista scrolleable */}
+          <div style={{ overflowY:'auto', flex:1, padding:'16px 20px 100px', touchAction:'pan-y' }}>
+            {cargandoTareas && <div style={{ textAlign:'center', color:th.textoSub, fontSize:'13px', padding:'20px 0' }}>...</div>}
+            {!cargandoTareas && pendientes.length === 0 && atendidas.length === 0 && (
+              <div style={{ textAlign:'center', color:th.textoSub, fontSize:'13px', padding:'40px 0' }}>{tx.sinPendientes}</div>
+            )}
+            {pendientes.length > 0 && (
+              <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'8px', marginTop:'4px' }}>{tx.pendientes}</div>
+            )}
+            {pendientes.map((tarea, idx) => (
+              <div key={`${tarea.id}-${tarea.grupoId}`} data-idx={idx} style={{ opacity: draggingIdx===idx ? 0.4 : 1 }}>
+                {dragOverIdx===idx && draggingIdx!==idx && <div style={{ height:'3px', background:th.acento, borderRadius:'2px', margin:'3px 0' }} />}
+                <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? (esOscuro?'rgba(83,74,183,0.2)':'#EEF2FF') : (esOscuro?'rgba(255,255,255,0.04)':'white'), border:`0.5px solid ${tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? th.acento : th.borde}`, userSelect:'none' }}>
+                  <span onTouchStart={e=>onTouchStart(e,idx)} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ fontSize:'18px', color: esOscuro?'rgba(255,255,255,0.2)':'#ccc', cursor:'grab', touchAction:'none', flexShrink:0 }}>⠿</span>
+                  <div onClick={() => {
+                    const key = `${tarea.id}-${tarea.grupoId}`
+                    const selKey = tareaSeleccionada ? `${tareaSeleccionada.id}-${tareaSeleccionada.grupoId}` : null
+                    if (key === selKey) setTareaSeleccionada(null)
+                    else setTareaSeleccionada(tarea)
+                  }} style={{ width:'22px', height:'22px', borderRadius:'6px', border: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? 'none' : `1.5px solid ${esOscuro?'rgba(255,255,255,0.3)':'#ccc'}`, background: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? th.acento : 'transparent', flexShrink:0, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px' }}>
+                    {tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? '✓' : ''}
+                  </div>
+                  <span onClick={() => toggleAtendida(tarea)} style={{ flex:1, fontSize:'14px', color:th.texto, cursor:'pointer', lineHeight:'1.4' }}>{tarea.texto}</span>
+                  <div style={{ display:'flex', alignItems:'center', gap:'4px', background: `${tarea.grupoColor}22`, borderRadius:'20px', padding:'3px 9px', flexShrink:0 }}>
+                    <div style={{ width:'6px', height:'6px', borderRadius:'50%', background: tarea.grupoColor }} />
+                    <span style={{ fontSize:'11px', color: tarea.grupoColor, fontWeight:'500' }}>{tarea.grupoNombre}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {atendidas.length > 0 && (
+              <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'8px', marginTop:'12px' }}>{tx.atendidas}</div>
+            )}
+            {atendidas.map((tarea) => (
+              <div key={`${tarea.id}-${tarea.grupoId}`} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: esOscuro?'rgba(255,255,255,0.02)':'#F5F5F7', border:`0.5px solid ${th.borde}` }}>
+                <span style={{ fontSize:'18px', color: esOscuro?'rgba(255,255,255,0.1)':'#ddd', flexShrink:0 }}>⠿</span>
+                <div style={{ width:'22px', height:'22px', borderRadius:'6px', background:'#3B6D11', flexShrink:0, display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px' }}>✓</div>
+                <span onClick={() => toggleAtendida(tarea)} style={{ flex:1, fontSize:'14px', color:th.textoMuted||th.textoSub, textDecoration:'line-through', cursor:'pointer', lineHeight:'1.4' }}>{tarea.texto}</span>
+                <div style={{ display:'flex', alignItems:'center', gap:'4px', background: esOscuro?'rgba(255,255,255,0.06)':'white', borderRadius:'20px', padding:'3px 9px', border:`0.5px solid ${th.borde}`, flexShrink:0 }}>
+                  <div style={{ width:'6px', height:'6px', borderRadius:'50%', background:'#888' }} />
+                  <span style={{ fontSize:'11px', color:'#888', fontWeight:'500' }}>{tarea.grupoNombre}</span>
+                </div>
+              </div>
+            ))}
+          </div>
+          {/* Botones editar/eliminar */}
+          {tareaSeleccionada && !confirmEliminar && (
+            <div style={{ position:'absolute', bottom:'90px', left:'50%', transform:'translateX(-50%)', display:'flex', gap:'10px', zIndex:10 }}>
+              <button onClick={() => {
+                setModoEditar({ id: tareaSeleccionada.id, grupoId: tareaSeleccionada.grupoId, dia: tareaSeleccionada.dia, mesT: tareaSeleccionada.mes, anioT: tareaSeleccionada.anio, grupoNombre: tareaSeleccionada.grupoNombre, grupoColor: tareaSeleccionada.grupoColor })
+                setTextoEditar(tareaSeleccionada.texto)
+                setEditModo(null)
+                setFechasEditRepetir([])
+                setMesCalEdit(tareaSeleccionada.mes)
+                setAnioCalEdit(tareaSeleccionada.anio)
+                setMesCalRep(tareaSeleccionada.mes)
+                setAnioCalRep(tareaSeleccionada.anio)
+              }} style={{ background:th.acento, color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:`0 4px 16px ${th.acento}55`, whiteSpace:'nowrap' }}>✏️ {tx.editarTarea}</button>
+              <button onClick={() => setConfirmEliminar(true)} style={{ background:'#E24B4A', color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:'0 4px 16px rgba(226,75,74,0.4)', whiteSpace:'nowrap' }}>🗑 {tx.eliminar}</button>
+            </div>
+          )}
+          {confirmEliminar && (
+            <div style={{ position:'absolute', bottom:'90px', left:'20px', right:'20px', background:th.bgCard, borderRadius:'16px', padding:'16px', boxShadow:'0 8px 32px rgba(0,0,0,0.3)', zIndex:10 }}>
+              <div style={{ fontSize:'14px', color:th.texto, marginBottom:'12px', textAlign:'center' }}>{tx.confirmarEliminar}</div>
+              <div style={{ display:'flex', gap:'8px' }}>
+                <button onClick={() => setConfirmEliminar(false)} style={{ flex:1, padding:'11px', background: esOscuro?'rgba(255,255,255,0.08)':'#f0f0f0', border:'none', borderRadius:'10px', color:th.textoSub, cursor:'pointer', fontSize:'14px' }}>{tx.cancelar}</button>
+                <button onClick={eliminarTarea} style={{ flex:1, padding:'11px', background:'#E24B4A', border:'none', borderRadius:'10px', color:'white', cursor:'pointer', fontSize:'14px', fontWeight:'600' }}>{tx.si}</button>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-
-      {/* PANTALLA CAPTURAR — pantalla limpia para nueva tarea */}
+      {/* PANTALLA: Capturar nueva tarea */}
       {modoCapturar && diaSeleccionado && (
-        <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
-          <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px' }}>
+        <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
+          {/* Header fijo */}
+          <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 20px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
             <button onClick={() => setModoCapturar(false)} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
             <div style={{ color:'white', fontSize:'18px', fontWeight:'700' }}>{diaSeleccionado} {meses[mes]} {anio}</div>
           </div>
-          <div style={{ padding:'24px 20px' }}>
+          {/* Contenido scrolleable */}
+          <div style={{ overflowY:'auto', flex:1, padding:'24px 20px 100px' }}>
             <input
               autoFocus
               value={nuevaTarea}
@@ -532,7 +527,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </div>
               <span style={{ color:th.textoSub, fontSize:'16px' }}>▾</span>
             </div>
-            <div style={{ display:'flex', gap:'8px', marginBottom:'16px' }}>
+            <div style={{ display:'flex', gap:'8px', marginBottom:'12px' }}>
               <button onClick={() => { setMostrarElegirFecha(!mostrarElegirFecha); setMostrarRepetir(false) }} style={{ flex:1, padding:'10px', borderRadius:'10px', background: mostrarElegirFecha ? th.acento : (esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: mostrarElegirFecha ? 'white' : th.acento, cursor:'pointer', fontWeight:'500' }}>📅 {tx.elegirFecha}{diaElegido ? ` — ${diaElegido} ${meses[mesElegir]}` : ''}</button>
               <button onClick={() => { setMostrarRepetir(!mostrarRepetir); setMostrarElegirFecha(false); if(!mostrarRepetir){setFechasRepetir([]);setMesRepetir(mes);setAnioRepetir(anio)} }} style={{ flex:1, padding:'10px', borderRadius:'10px', background: mostrarRepetir ? th.acento : (esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: mostrarRepetir ? 'white' : th.acento, cursor:'pointer', fontWeight:'500' }}>🔁 {tx.repetir}</button>
             </div>
@@ -547,18 +542,19 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               }} selFn={(d,a,m) => fechasRepetir.some(f=>f.dia===d&&f.mes===m&&f.anio===a)} hint={tx.copiarEn} />
               <div style={{ fontSize:'12px', color:th.acento, textAlign:'center', marginTop:'6px' }}>{fechasRepetir.length} {tx.fechasSeleccionadas}</div>
             </>}
-            <button onClick={guardarTarea} disabled={guardando||!nuevaTarea.trim()} style={{ width:'100%', padding:'16px', background: nuevaTarea.trim() ? th.acento : th.borde, color:'white', border:'none', borderRadius:'14px', fontSize:'16px', fontWeight:'700', cursor:'pointer', opacity: !nuevaTarea.trim()?0.5:1, marginTop:'8px' }}>{guardando ? '...' : tx.guardar}</button>
+            <button onClick={guardarTarea} disabled={guardando||!nuevaTarea.trim()} style={{ width:'100%', padding:'16px', background: nuevaTarea.trim() ? th.acento : th.borde, color:'white', border:'none', borderRadius:'14px', fontSize:'16px', fontWeight:'700', cursor:'pointer', opacity: !nuevaTarea.trim()?0.5:1, marginTop:'16px' }}>{guardando ? '...' : tx.guardar}</button>
           </div>
         </div>
       )}
 
+      {/* PANTALLA: Editar tarea */}
       {modoEditar && (
-        <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', overflowY:'auto', paddingBottom:'40px' }}>
-          <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px' }}>
+        <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
+          <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
             <button onClick={() => { setModoEditar(null); setEditModo(null); setTareaSeleccionada(null) }} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
             <div style={{ color:'white', fontSize:'18px', fontWeight:'700' }}>{tx.editarTarea}</div>
           </div>
-          <div style={{ padding:'20px' }}>
+          <div style={{ overflowY:'auto', flex:1, padding:'20px 20px 100px' }}>
             <div style={{ background:th.bgCard, borderRadius:'20px', padding:'20px', boxShadow:th.sombra }}>
               <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'16px' }}>
                 <div style={{ width:'8px', height:'8px', borderRadius:'50%', background: modoEditar.grupoColor }} />
@@ -583,6 +579,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
+      {/* Selector de grupo */}
       {mostrarSelectorGrupo && (
         <div onClick={() => setMostrarSelectorGrupo(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:400 }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'20px 20px 0 0', padding:'20px 20px 40px', width:'100%', maxWidth:'400px' }}>
@@ -600,6 +597,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
+      {/* NavBar */}
       <div style={{ position:'fixed', bottom:0, left:0, right:0, background: esOscuro?'rgba(6,6,15,0.85)':th.bgCard, borderTop: esOscuro?'1px solid rgba(255,255,255,0.1)':`1px solid ${th.borde}`, backdropFilter: esOscuro?'blur(20px)':'none', display:'flex', zIndex:50, paddingBottom:'env(safe-area-inset-bottom,0px)' }}>
         {[{key:'inicio',label:t.inicio,icon:'🏠'},{key:'miagenda',label:t.miAgenda,icon:'🗓'},{key:'pizarron',label:t.pizarron,icon:'📅'},{key:'listasuper',label:t.super2,icon:'🛒'},{key:'compartir',label:t.compartir,icon:'📤',accion:()=>{if(navigator.share){navigator.share({title:'Syng',text:'Te comparto Syng',url:'https://syng-psi.vercel.app'})}else{navigator.clipboard.writeText('https://syng-psi.vercel.app')}}},{key:'perfil',label:t.perfil,icon:'👤'}].map(item => (
           <button key={item.key} onClick={() => item.accion?item.accion():onNavegar(item.key)} style={{ flex:1, padding:'8px 0 6px', background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', color: item.key==='miagenda' ? th.acento : th.textoSub }}>
