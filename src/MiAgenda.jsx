@@ -59,49 +59,29 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const [grupos, setGrupos] = useState([])
   const [grupoSeleccionado, setGrupoSeleccionado] = useState({ id:'personal', nombre:'Personal', color: COLORES[0] })
   const [mostrarSelectorGrupo, setMostrarSelectorGrupo] = useState(false)
-
-  // tareas del día seleccionado — flat array con {id, texto, realizada, grupoId, grupoNombre, grupoColor, dia, mes, anio}
   const [tareas, setTareas] = useState([])
   const [cargandoTareas, setCargandoTareas] = useState(false)
-
-  // nueva tarea
   const [nuevaTarea, setNuevaTarea] = useState('')
   const [guardando, setGuardando] = useState(false)
-
-  // tarea seleccionada (checkbox tocado)
   const [tareaSeleccionada, setTareaSeleccionada] = useState(null)
-
-  // editar
-  const [modoEditar, setModoEditar] = useState(null) // {id, grupoId, texto}
+  const [modoEditar, setModoEditar] = useState(null)
   const [textoEditar, setTextoEditar] = useState('')
-  const [editModo, setEditModo] = useState(null) // null | 'fecha' | 'repetir'
-
-  // elegir fecha al agregar
+  const [editModo, setEditModo] = useState(null)
   const [mostrarElegirFecha, setMostrarElegirFecha] = useState(false)
   const [mesElegir, setMesElegir] = useState(hoy.getMonth())
   const [anioElegir, setAnioElegir] = useState(hoy.getFullYear())
   const [diaElegido, setDiaElegido] = useState(null)
-
-  // repetir al agregar
   const [mostrarRepetir, setMostrarRepetir] = useState(false)
   const [mesRepetir, setMesRepetir] = useState(hoy.getMonth())
   const [anioRepetir, setAnioRepetir] = useState(hoy.getFullYear())
   const [fechasRepetir, setFechasRepetir] = useState([])
-
-  // calendarios de edición
   const [mesCalEdit, setMesCalEdit] = useState(hoy.getMonth())
   const [anioCalEdit, setAnioCalEdit] = useState(hoy.getFullYear())
   const [mesCalRep, setMesCalRep] = useState(hoy.getMonth())
   const [anioCalRep, setAnioCalRep] = useState(hoy.getFullYear())
   const [fechasEditRepetir, setFechasEditRepetir] = useState([])
-
-  // nueva fecha seleccionada en edición
-  const [nuevaFechaEdit, setNuevaFechaEdit] = useState(null) // {dia, mes, anio}
-
-  // confirmar eliminar
+  const [nuevaFechaEdit, setNuevaFechaEdit] = useState(null)
   const [confirmEliminar, setConfirmEliminar] = useState(false)
-
-  // drag & drop
   const [dragOverIdx, setDragOverIdx] = useState(null)
   const [draggingIdx, setDraggingIdx] = useState(null)
   const dragItemRef = useRef(null)
@@ -110,28 +90,37 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const touchStartRef = useRef(null)
   const isDraggingRef = useRef(false)
 
-  // keyboard offset
-  const [keyboardOffset, setKeyboardOffset] = useState(0)
+  // ── ARREGLO TECLADO ANDROID: altura reactiva ──
+  const [alturaVP, setAlturaVP] = useState(window.innerHeight)
   useEffect(() => {
-    if (!window.visualViewport) return
-    const h = () => setKeyboardOffset(Math.max(0, window.innerHeight - window.visualViewport.height - window.visualViewport.offsetTop))
-    window.visualViewport.addEventListener('resize', h)
-    window.visualViewport.addEventListener('scroll', h)
-    return () => { window.visualViewport.removeEventListener('resize', h); window.visualViewport.removeEventListener('scroll', h) }
+    const actualizar = () => {
+      if (window.visualViewport) {
+        setAlturaVP(window.visualViewport.height)
+      }
+    }
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', actualizar)
+      window.visualViewport.addEventListener('scroll', actualizar)
+    }
+    return () => {
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', actualizar)
+        window.visualViewport.removeEventListener('scroll', actualizar)
+      }
+    }
   }, [])
+  // ─────────────────────────────────────────────
 
-  // cargar grupos
   useEffect(() => {
     if (!userId) return
     const cargar = async () => {
       const snap = await getDocs(collection(db, 'users', userId, 'misGrupos'))
-      const gs = snap.docs.map((d,i) => ({ id: d.id, nombre: d.data().nombre || 'Grupo', color: COLORES[(i+1) % COLORES.length] }))
+      const gs = snap.docs.filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' }).map((d,i) => ({ id: d.id, nombre: d.data().nombre || 'Grupo', color: COLORES[(i+1) % COLORES.length] }))
       setGrupos([{ id:'personal', nombre: tx.personal, color: COLORES[0] }, ...gs])
     }
     cargar()
   }, [userId, idioma])
 
-  // badges del calendario
   useEffect(() => {
     if (!userId) return
     let data = {}
@@ -154,7 +143,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     return () => unsubs.forEach(u => u())
   }, [userId, mes, anio])
 
-  // cargar tareas del día seleccionado
   const cargarTareas = async (dia, mesArg, anioArg) => {
     if (!userId) return
     setCargandoTareas(true)
@@ -198,7 +186,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setFechasRepetir([])
   }
 
-  // guardar tarea nueva
   const guardarTarea = async () => {
     if (!nuevaTarea.trim() || !diaSeleccionado || guardando) return
     setGuardando(true)
@@ -212,7 +199,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       : doc(db, 'grupos', grupoSeleccionado.id, 'pizarron', key)
     const snap = await getDoc(refBase)
     await setDoc(refBase, { items: [...(snap.data()?.items || []), nueva] })
-    // fechas de repetición
     for (const f of fechasRepetir) {
       const fkey = getKey(f.anio, f.mes, f.dia)
       if (fkey === key) continue
@@ -231,7 +217,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setGuardando(false)
   }
 
-  // toggle atendida
   const toggleAtendida = async (tarea) => {
     const key = getKey(tarea.anio, tarea.mes, tarea.dia)
     const ref = tarea.grupoId === 'personal'
@@ -244,7 +229,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setTareaSeleccionada(null)
   }
 
-  // eliminar tarea
   const eliminarTarea = async () => {
     if (!tareaSeleccionada) return
     const tarea = tareaSeleccionada
@@ -258,15 +242,10 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setTareas(nuevasTareas)
     setTareaSeleccionada(null)
     setConfirmEliminar(false)
-    // Actualizar badge del día
     const pendientesRestantes = nuevasTareas.filter(t => !t.realizada).length
-    setBadges(prev => ({
-      ...prev,
-      [`${diaSeleccionado}`]: pendientesRestantes > 0 ? pendientesRestantes : undefined
-    }))
+    setBadges(prev => ({ ...prev, [`${diaSeleccionado}`]: pendientesRestantes > 0 ? pendientesRestantes : undefined }))
   }
 
-  // guardar edición
   const guardarEdicion = async () => {
     if (!textoEditar.trim() || !modoEditar) return
     if (nuevaFechaEdit) await aplicarCambioFecha()
@@ -277,7 +256,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       : doc(db, 'grupos', grupoId, 'pizarron', key)
     const snap = await getDoc(ref)
     await setDoc(ref, { items: (snap.data()?.items || []).map(i => i.id === id ? { ...i, texto: textoEditar.trim() } : i) })
-    // repetir en más fechas
     for (const fkey of fechasEditRepetir) {
       const parts = fkey.split('-').map(Number)
       const fref = grupoId === 'personal'
@@ -294,12 +272,8 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setTareaSeleccionada(null)
   }
 
-  // cambiar fecha en edición — solo marca la fecha, no mueve todavía
-  const cambiarFechaEdicion = (diaNew) => {
-    setNuevaFechaEdit({ dia: diaNew, mes: mesCalEdit, anio: anioCalEdit })
-  }
+  const cambiarFechaEdicion = (diaNew) => { setNuevaFechaEdit({ dia: diaNew, mes: mesCalEdit, anio: anioCalEdit }) }
 
-  // aplicar cambio de fecha al guardar
   const aplicarCambioFecha = async () => {
     if (!modoEditar || !nuevaFechaEdit) return
     const { id, grupoId, dia, mesT, anioT } = modoEditar
@@ -315,17 +289,12 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         const refNew = grupoId === 'personal' ? doc(db, 'users', userId, 'pizarron', keyNew) : doc(db, 'grupos', grupoId, 'pizarron', keyNew)
         const snapNew = await getDoc(refNew)
         await setDoc(refNew, { items: [...(snapNew.data()?.items || []), { ...tarea, dia: nuevaFechaEdit.dia, mes: nuevaFechaEdit.mes, anio: nuevaFechaEdit.anio }] })
-        // Actualizar badge del día origen — quitar punto si ya no hay pendientes
         const pendientesOrigen = items.filter(i => i.id !== id && !i.realizada).length
-        setBadges(prev => ({
-          ...prev,
-          [`${dia}`]: pendientesOrigen > 0 ? pendientesOrigen : undefined
-        }))
+        setBadges(prev => ({ ...prev, [`${dia}`]: pendientesOrigen > 0 ? pendientesOrigen : undefined }))
       }
     }
   }
 
-  // reordenar drag & drop
   const reordenar = async (fromIdx, toIdx) => {
     const pendientes = tareas.filter(t => !t.realizada)
     const atendidas = tareas.filter(t => t.realizada)
@@ -334,7 +303,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     arr.splice(toIdx, 0, item)
     const nuevas = [...arr, ...atendidas]
     setTareas(nuevas)
-    // agrupar por grupoId y guardar
     const grupos_ids = [...new Set(nuevas.map(t => t.grupoId))]
     for (const gid of grupos_ids) {
       const key = getKey(anio, mes, diaSeleccionado)
@@ -346,7 +314,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     }
   }
 
-  // touch drag handlers
   const limpiarDrag = () => {
     if (ghostRef.current) { try { document.body.removeChild(ghostRef.current) } catch(e){} ghostRef.current = null }
     isDraggingRef.current = false
@@ -405,7 +372,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     dragItemRef.current = null
   }
 
-  // helpers calendario mini
   const MiniCal = ({ a, m, setA, setM, onDia, selFn, hint }) => (
     <div style={{ background: esOscuro ? 'rgba(255,255,255,0.05)' : '#f5f5f7', borderRadius:'12px', padding:'12px', marginTop:'8px' }}>
       {hint && <div style={{ fontSize:'11px', color:th.textoSub, marginBottom:'8px', textAlign:'center' }}>{hint}</div>}
@@ -431,13 +397,11 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
 
   return (
     <div style={{ minHeight:'100vh', background:th.bg, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', paddingBottom:'80px' }}>
-      {/* Header */}
       <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px' }}>
         <button onClick={onVolver} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
         <div style={{ color:'white', fontSize:'20px', fontWeight:'700' }}>{tx.titulo}</div>
       </div>
 
-      {/* Calendario */}
       <div style={{ padding:'16px' }}>
         <div style={{ background:th.bgCard, borderRadius:'20px', padding:'16px', boxShadow:th.sombra, marginBottom:'16px' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
@@ -467,26 +431,22 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       </div>
 
-      {/* MODAL del día */}
+      {/* MODAL del día — arreglo teclado Android: usa alturaVP reactiva */}
       {diaSeleccionado && !modoEditar && (
-        <div onClick={e => { if(e.target===e.currentTarget) cerrarModal() }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:200, paddingBottom:`${keyboardOffset}px` }}>
-          <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', width:'100%', maxWidth:'600px', maxHeight:'90vh', display:'flex', flexDirection:'column', overscrollBehavior:'contain' }}>
+        <div onClick={e => { if(e.target===e.currentTarget) cerrarModal() }} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:200 }}>
+          <div onClick={e => e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'24px 24px 0 0', width:'100%', maxWidth:'600px', maxHeight:`${alturaVP - 60}px`, display:'flex', flexDirection:'column', overscrollBehavior:'contain' }}>
 
-            {/* header fijo del modal */}
             <div style={{ padding:'20px 20px 0', flexShrink:0 }}>
-              {/* fecha + cerrar */}
               <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'14px' }}>
                 <div style={{ fontSize:'17px', fontWeight:'700', color:th.texto }}>{diaSeleccionado} {meses[mes]} {anio}</div>
                 <button onClick={cerrarModal} style={{ background: esOscuro ? 'rgba(255,255,255,0.08)' : '#f0f0f0', border:'none', borderRadius:'50%', width:'32px', height:'32px', fontSize:'16px', color:th.textoSub, cursor:'pointer' }}>✕</button>
               </div>
 
-              {/* input nueva tarea */}
               <div style={{ display:'flex', gap:'8px', marginBottom:'10px' }}>
                 <input value={nuevaTarea} onChange={e=>setNuevaTarea(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarTarea()} placeholder={tx.nuevaTarea} style={{ flex:1, padding:'10px 12px', borderRadius:'10px', border:`1.5px solid ${th.borde}`, fontSize:'14px', outline:'none', background: esOscuro ? 'rgba(255,255,255,0.06)' : 'white', color:th.texto }} />
                 <button onClick={guardarTarea} disabled={guardando||!nuevaTarea.trim()} style={{ padding:'10px 16px', background: nuevaTarea.trim() ? th.acento : th.borde, color:'white', border:'none', borderRadius:'10px', fontSize:'16px', fontWeight:'700', cursor:'pointer', opacity: !nuevaTarea.trim()?0.5:1 }}>+</button>
               </div>
 
-              {/* selector de grupo */}
               <div onClick={() => setMostrarSelectorGrupo(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'9px 12px', background: esOscuro ? 'rgba(255,255,255,0.06)' : '#F5F5F7', borderRadius:'10px', marginBottom:'10px', cursor:'pointer' }}>
                 <div>
                   <div style={{ fontSize:'10px', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.05em' }}>{tx.guardarEn}</div>
@@ -498,16 +458,13 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 <span style={{ color:th.textoSub, fontSize:'16px' }}>▾</span>
               </div>
 
-              {/* botones elegir fecha y repetir */}
               <div style={{ display:'flex', gap:'8px', marginBottom:'14px' }}>
                 <button onClick={() => { setMostrarElegirFecha(!mostrarElegirFecha); setMostrarRepetir(false) }} style={{ flex:1, padding:'8px', borderRadius:'10px', background: mostrarElegirFecha ? th.acento : (esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: mostrarElegirFecha ? 'white' : th.acento, cursor:'pointer', fontWeight:'500' }}>📅 {tx.elegirFecha}{diaElegido ? ` — ${diaElegido} ${meses[mesElegir]}` : ''}</button>
                 <button onClick={() => { setMostrarRepetir(!mostrarRepetir); setMostrarElegirFecha(false); if(!mostrarRepetir){setFechasRepetir([]);setMesRepetir(mes);setAnioRepetir(anio)} }} style={{ flex:1, padding:'8px', borderRadius:'10px', background: mostrarRepetir ? th.acento : (esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: mostrarRepetir ? 'white' : th.acento, cursor:'pointer', fontWeight:'500' }}>🔁 {tx.repetir}</button>
               </div>
 
-              {/* calendario elegir fecha */}
               {mostrarElegirFecha && <MiniCal a={anioElegir} m={mesElegir} setA={setAnioElegir} setM={setMesElegir} onDia={d => { setDiaElegido(d) }} selFn={(d,a,m) => d===diaElegido&&a===anioElegir&&m===mesElegir} hint={tx.moverA} />}
 
-              {/* calendario repetir */}
               {mostrarRepetir && <>
                 <MiniCal a={anioRepetir} m={mesRepetir} setA={setAnioRepetir} setM={setMesRepetir} onDia={d => {
                   const f = { dia:d, mes:mesRepetir, anio:anioRepetir }
@@ -520,25 +477,19 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </>}
             </div>
 
-            {/* lista scrolleable */}
             <div style={{ overflowY:'auto', flex:1, padding:'0 20px 100px', touchAction:'pan-y' }}>
               {cargandoTareas && <div style={{ textAlign:'center', color:th.textoSub, fontSize:'13px', padding:'20px 0' }}>...</div>}
-
               {!cargandoTareas && pendientes.length === 0 && atendidas.length === 0 && (
                 <div style={{ textAlign:'center', color:th.textoSub, fontSize:'13px', padding:'20px 0' }}>{tx.sinPendientes}</div>
               )}
-
               {pendientes.length > 0 && (
                 <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'8px', marginTop:'4px' }}>{tx.pendientes}</div>
               )}
-
               {pendientes.map((tarea, idx) => (
                 <div key={`${tarea.id}-${tarea.grupoId}`} data-idx={idx} style={{ opacity: draggingIdx===idx ? 0.4 : 1 }}>
                   {dragOverIdx===idx && draggingIdx!==idx && <div style={{ height:'3px', background:th.acento, borderRadius:'2px', margin:'3px 0' }} />}
                   <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? (esOscuro?'rgba(83,74,183,0.2)':'#EEF2FF') : (esOscuro?'rgba(255,255,255,0.04)':'white'), border:`0.5px solid ${tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? th.acento : th.borde}`, userSelect:'none' }}>
-                    {/* drag handle */}
                     <span onTouchStart={e=>onTouchStart(e,idx)} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ fontSize:'18px', color: esOscuro?'rgba(255,255,255,0.2)':'#ccc', cursor:'grab', touchAction:'none', flexShrink:0 }}>⠿</span>
-                    {/* checkbox */}
                     <div onClick={() => {
                       const key = `${tarea.id}-${tarea.grupoId}`
                       const selKey = tareaSeleccionada ? `${tareaSeleccionada.id}-${tareaSeleccionada.grupoId}` : null
@@ -547,9 +498,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                     }} style={{ width:'22px', height:'22px', borderRadius:'6px', border: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? 'none' : `1.5px solid ${esOscuro?'rgba(255,255,255,0.3)':'#ccc'}`, background: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? th.acento : 'transparent', flexShrink:0, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px' }}>
                       {tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? '✓' : ''}
                     </div>
-                    {/* texto — toca para marcar atendida */}
                     <span onClick={() => toggleAtendida(tarea)} style={{ flex:1, fontSize:'14px', color:th.texto, cursor:'pointer', lineHeight:'1.4' }}>{tarea.texto}</span>
-                    {/* pill grupo */}
                     <div style={{ display:'flex', alignItems:'center', gap:'4px', background: `${tarea.grupoColor}22`, borderRadius:'20px', padding:'3px 9px', flexShrink:0 }}>
                       <div style={{ width:'6px', height:'6px', borderRadius:'50%', background: tarea.grupoColor }} />
                       <span style={{ fontSize:'11px', color: tarea.grupoColor, fontWeight:'500' }}>{tarea.grupoNombre}</span>
@@ -557,11 +506,9 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                   </div>
                 </div>
               ))}
-
               {atendidas.length > 0 && (
                 <div style={{ fontSize:'11px', fontWeight:'700', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:'8px', marginTop:'12px' }}>{tx.atendidas}</div>
               )}
-
               {atendidas.map((tarea, idx) => (
                 <div key={`${tarea.id}-${tarea.grupoId}`} style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: esOscuro?'rgba(255,255,255,0.02)':'#F5F5F7', border:`0.5px solid ${th.borde}` }}>
                   <span style={{ fontSize:'18px', color: esOscuro?'rgba(255,255,255,0.1)':'#ddd', flexShrink:0 }}>⠿</span>
@@ -575,7 +522,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               ))}
             </div>
 
-            {/* botones flotantes Editar / Eliminar */}
             {tareaSeleccionada && !confirmEliminar && (
               <div style={{ position:'absolute', bottom:'20px', left:'50%', transform:'translateX(-50%)', display:'flex', gap:'10px', zIndex:10 }}>
                 <button onClick={() => {
@@ -592,7 +538,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </div>
             )}
 
-            {/* confirmar eliminar */}
             {confirmEliminar && (
               <div style={{ position:'absolute', bottom:'20px', left:'20px', right:'20px', background:th.bgCard, borderRadius:'16px', padding:'16px', boxShadow:'0 8px 32px rgba(0,0,0,0.3)', zIndex:10 }}>
                 <div style={{ fontSize:'14px', color:th.texto, marginBottom:'12px', textAlign:'center' }}>{tx.confirmarEliminar}</div>
@@ -606,7 +551,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
-      {/* PANTALLA EDITAR — pantalla limpia */}
       {modoEditar && (
         <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', overflowY:'auto', paddingBottom:'40px' }}>
           <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px' }}>
@@ -615,14 +559,11 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
           </div>
           <div style={{ padding:'20px' }}>
             <div style={{ background:th.bgCard, borderRadius:'20px', padding:'20px', boxShadow:th.sombra }}>
-              {/* grupo */}
               <div style={{ display:'flex', alignItems:'center', gap:'6px', marginBottom:'16px' }}>
                 <div style={{ width:'8px', height:'8px', borderRadius:'50%', background: modoEditar.grupoColor }} />
                 <span style={{ fontSize:'13px', color: modoEditar.grupoColor, fontWeight:'500' }}>{modoEditar.grupoNombre}</span>
               </div>
-              {/* input */}
               <input autoFocus value={textoEditar} onChange={e=>setTextoEditar(e.target.value)} onKeyDown={e=>e.key==='Enter'&&guardarEdicion()} style={{ width:'100%', padding:'12px 14px', borderRadius:'12px', border:`1.5px solid ${th.acento}`, fontSize:'15px', outline:'none', background: esOscuro ? 'rgba(255,255,255,0.06)' : 'white', color:th.texto, marginBottom:'14px', boxSizing:'border-box' }} />
-              {/* botones fecha y repetir */}
               <div style={{ display:'flex', gap:'8px', marginBottom:'14px' }}>
                 <button onClick={() => setEditModo(editModo==='fecha'?null:'fecha')} style={{ flex:1, padding:'9px', borderRadius:'10px', background: editModo==='fecha'?th.acento:(esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: editModo==='fecha'?'white':th.acento, cursor:'pointer', fontWeight:'500' }}>📅 {tx.cambiarFecha}</button>
                 <button onClick={() => { setEditModo(editModo==='repetir'?null:'repetir'); setFechasEditRepetir([]) }} style={{ flex:1, padding:'9px', borderRadius:'10px', background: editModo==='repetir'?th.acento:(esOscuro?'rgba(255,255,255,0.08)':'#EEF2FF'), border:'none', fontSize:'13px', color: editModo==='repetir'?'white':th.acento, cursor:'pointer', fontWeight:'500' }}>🔁 {tx.repetirFechas}</button>
@@ -632,7 +573,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 <MiniCal a={anioCalRep} m={mesCalRep} setA={setAnioCalRep} setM={setMesCalRep} onDia={d => { const k=getKey(anioCalRep,mesCalRep,d); setFechasEditRepetir(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]) }} selFn={(d,a,m)=>fechasEditRepetir.includes(getKey(a,m,d))} hint={tx.copiarEn} />
                 <div style={{ fontSize:'12px', color:th.acento, textAlign:'center', marginTop:'6px' }}>{fechasEditRepetir.length} {tx.fechasSeleccionadas}</div>
               </>}
-              {/* guardar / cancelar */}
               <div style={{ display:'flex', gap:'8px', marginTop:'16px' }}>
                 <button onClick={guardarEdicion} style={{ flex:1, padding:'13px', background:th.acento, color:'white', border:'none', borderRadius:'12px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>{tx.guardarCambios}</button>
                 <button onClick={() => { setModoEditar(null); setEditModo(null); setTareaSeleccionada(null) }} style={{ padding:'13px 16px', background: esOscuro?'rgba(255,255,255,0.08)':'#f0f0f0', color:th.textoSub, border:'none', borderRadius:'12px', fontSize:'14px', cursor:'pointer' }}>{tx.cancelar}</button>
@@ -642,7 +582,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
-      {/* selector de grupo */}
       {mostrarSelectorGrupo && (
         <div onClick={() => setMostrarSelectorGrupo(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:400 }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'20px 20px 0 0', padding:'20px 20px 40px', width:'100%', maxWidth:'400px' }}>
@@ -660,7 +599,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
-      {/* NavBar */}
       <div style={{ position:'fixed', bottom:0, left:0, right:0, background: esOscuro?'rgba(6,6,15,0.85)':th.bgCard, borderTop: esOscuro?'1px solid rgba(255,255,255,0.1)':`1px solid ${th.borde}`, backdropFilter: esOscuro?'blur(20px)':'none', display:'flex', zIndex:50, paddingBottom:'env(safe-area-inset-bottom,0px)' }}>
         {[{key:'inicio',label:t.inicio,icon:'🏠'},{key:'miagenda',label:t.miAgenda,icon:'🗓'},{key:'pizarron',label:t.pizarron,icon:'📅'},{key:'listasuper',label:t.super2,icon:'🛒'},{key:'compartir',label:t.compartir,icon:'📤',accion:()=>{if(navigator.share){navigator.share({title:'Syng',text:'Te comparto Syng',url:'https://syng-psi.vercel.app'})}else{navigator.clipboard.writeText('https://syng-psi.vercel.app')}}},{key:'perfil',label:t.perfil,icon:'👤'}].map(item => (
           <button key={item.key} onClick={() => item.accion?item.accion():onNavegar(item.key)} style={{ flex:1, padding:'8px 0 6px', background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', color: item.key==='miagenda' ? th.acento : th.textoSub }}>
