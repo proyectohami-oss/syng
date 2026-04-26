@@ -63,7 +63,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const [cargandoTareas, setCargandoTareas] = useState(false)
   const [nuevaTarea, setNuevaTarea] = useState('')
   const [guardando, setGuardando] = useState(false)
-  // CAMBIO #1: array en lugar de objeto único
   const [tareasSeleccionadas, setTareasSeleccionadas] = useState([])
   const [modoEditar, setModoEditar] = useState(null)
   const [modoCapturar, setModoCapturar] = useState(false)
@@ -92,16 +91,12 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const touchStartRef = useRef(null)
   const isDraggingRef = useRef(false)
 
-  // Helper: saber si una tarea está seleccionada
   const estaSeleccionada = (tarea) => tareasSeleccionadas.some(s => s.id === tarea.id && s.grupoId === tarea.grupoId)
-
-  // Helper: toggle selección de una tarea
   const toggleSeleccion = (tarea) => {
-    const sel = { id: tarea.id, grupoId: tarea.grupoId }
     if (estaSeleccionada(tarea)) {
       setTareasSeleccionadas(prev => prev.filter(s => !(s.id === tarea.id && s.grupoId === tarea.grupoId)))
     } else {
-      setTareasSeleccionadas(prev => [...prev, sel])
+      setTareasSeleccionadas(prev => [...prev, { id: tarea.id, grupoId: tarea.grupoId }])
     }
   }
 
@@ -226,11 +221,9 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setTareasSeleccionadas([])
   }
 
-  // CAMBIO #1: elimina TODAS las seleccionadas de un golpe
   const eliminarTareas = async () => {
     if (tareasSeleccionadas.length === 0) return
     const idsEliminar = new Set(tareasSeleccionadas.map(s => `${s.id}-${s.grupoId}`))
-    // Agrupar por (grupoId + key) para hacer un solo setDoc por documento
     const mapaDoc = {}
     for (const sel of tareasSeleccionadas) {
       const tarea = tareas.find(t => t.id === sel.id && t.grupoId === sel.grupoId)
@@ -464,7 +457,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 {dragOverIdx===idx && draggingIdx!==idx && <div style={{ height:'3px', background:th.acento, borderRadius:'2px', margin:'3px 0' }} />}
                 <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: estaSeleccionada(tarea) ? (esOscuro?'rgba(83,74,183,0.2)':'#EEF2FF') : (esOscuro?'rgba(255,255,255,0.04)':'white'), border:`0.5px solid ${estaSeleccionada(tarea) ? th.acento : th.borde}`, userSelect:'none' }}>
                   <span onTouchStart={e=>onTouchStart(e,idx)} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ fontSize:'18px', color: esOscuro?'rgba(255,255,255,0.2)':'#ccc', cursor:'grab', touchAction:'none', flexShrink:0 }}>⠿</span>
-                  {/* Checkbox: toca para seleccionar/deseleccionar */}
                   <div onClick={() => toggleSeleccion(tarea)} style={{ width:'22px', height:'22px', borderRadius:'6px', border: estaSeleccionada(tarea) ? 'none' : `1.5px solid ${esOscuro?'rgba(255,255,255,0.3)':'#ccc'}`, background: estaSeleccionada(tarea) ? th.acento : 'transparent', flexShrink:0, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px' }}>
                     {estaSeleccionada(tarea) ? '✓' : ''}
                   </div>
@@ -491,8 +483,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </div>
             ))}
           </div>
-
-          {/* Botones editar/eliminar — editar solo si hay 1 seleccionada, eliminar si hay 1 o más */}
           {tareasSeleccionadas.length > 0 && !confirmEliminar && (
             <div style={{ position:'absolute', bottom:'90px', left:'50%', transform:'translateX(-50%)', display:'flex', gap:'10px', zIndex:10 }}>
               {tareasSeleccionadas.length === 1 && (
@@ -541,12 +531,15 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 placeholder={tx.nuevaTarea}
                 style={{ flex:1, padding:'16px', borderRadius:'14px', border:`2px solid ${th.acento}`, fontSize:'17px', outline:'none', background: esOscuro ? 'rgba(255,255,255,0.06)' : 'white', color:th.texto, boxSizing:'border-box' }}
               />
+              {/* FIX #6: WebkitAppearance + overflow para círculo perfecto en iOS */}
               <button
                 onClick={guardarTarea}
                 disabled={guardando || !nuevaTarea.trim()}
                 style={{
                   width:'52px', height:'52px', padding:0, margin:0,
                   borderRadius:'50%',
+                  WebkitAppearance:'none',
+                  overflow:'hidden',
                   background: nuevaTarea.trim() ? th.acento : (esOscuro ? 'rgba(255,255,255,0.1)' : '#ddd'),
                   border:'none', color:'white', fontSize:'26px', lineHeight:'52px',
                   textAlign:'center',
