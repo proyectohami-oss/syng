@@ -420,13 +420,11 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       {/* PANTALLA: Lista del día */}
       {diaSeleccionado && !modoEditar && !modoCapturar && (
         <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:200, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
-          {/* Header fijo */}
           <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 20px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
             <button onClick={cerrarModal} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
             <div style={{ color:'white', fontSize:'18px', fontWeight:'700', flex:1 }}>{diaSeleccionado} {meses[mes]} {anio}</div>
             <button onClick={() => { setNuevaTarea(''); setModoCapturar(true) }} style={{ background:'rgba(255,255,255,0.25)', border:'1.5px solid rgba(255,255,255,0.5)', color:'white', borderRadius:'12px', padding:'8px 18px', fontSize:'14px', fontWeight:'700', cursor:'pointer' }}>{tx.agregar}</button>
           </div>
-          {/* Lista scrolleable */}
           <div style={{ overflowY:'auto', flex:1, padding:'16px 20px 100px', touchAction:'pan-y' }}>
             {cargandoTareas && <div style={{ textAlign:'center', color:th.textoSub, fontSize:'13px', padding:'20px 0' }}>...</div>}
             {!cargandoTareas && pendientes.length === 0 && atendidas.length === 0 && (
@@ -471,7 +469,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </div>
             ))}
           </div>
-          {/* Botones editar/eliminar */}
           {tareaSeleccionada && !confirmEliminar && (
             <div style={{ position:'absolute', bottom:'90px', left:'50%', transform:'translateX(-50%)', display:'flex', gap:'10px', zIndex:10 }}>
               <button onClick={() => {
@@ -502,15 +499,13 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       {/* PANTALLA: Capturar nueva tarea */}
       {modoCapturar && diaSeleccionado && (
         <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
-          {/* Header fijo */}
           <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 20px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
             <button onClick={() => setModoCapturar(false)} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
             <div style={{ color:'white', fontSize:'18px', fontWeight:'700' }}>{diaSeleccionado} {meses[mes]} {anio}</div>
           </div>
-          {/* Contenido scrolleable */}
           <div style={{ overflowY:'auto', flex:1, padding:'24px 20px 100px' }}>
 
-            {/* ── CAMBIO #6: input + botón + en la misma fila ── */}
+            {/* input + botón círculo perfecto (padding:0 es la clave) */}
             <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'16px' }}>
               <input
                 autoFocus
@@ -524,12 +519,14 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 onClick={guardarTarea}
                 disabled={guardando || !nuevaTarea.trim()}
                 style={{
-                  width:'52px', height:'52px', borderRadius:'50%',
+                  width:'52px', height:'52px', padding:0, margin:0,
+                  borderRadius:'50%',
                   background: nuevaTarea.trim() ? th.acento : (esOscuro ? 'rgba(255,255,255,0.1)' : '#ddd'),
-                  border:'none', color:'white', fontSize:'28px', fontWeight:'300',
+                  border:'none', color:'white', fontSize:'26px', lineHeight:'52px',
+                  textAlign:'center',
                   cursor: nuevaTarea.trim() ? 'pointer' : 'default',
-                  display:'flex', alignItems:'center', justifyContent:'center',
-                  flexShrink:0, boxShadow: nuevaTarea.trim() ? `0 4px 16px ${th.acento}55` : 'none',
+                  flexShrink:0,
+                  boxShadow: nuevaTarea.trim() ? `0 4px 16px ${th.acento}55` : 'none',
                   transition:'background 0.2s, box-shadow 0.2s'
                 }}
               >
