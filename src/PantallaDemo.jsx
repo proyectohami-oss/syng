@@ -26,6 +26,11 @@ const TEXTOS_DEMO = {
     demoProductos: ['Leche entera', 'Queso fresco', 'Aguacate', 'Jitomate', 'Arroz', 'Frijol negro'],
     demoAgenda: ['Alexa al médico · Familia', 'Pagar recibo · Personal', 'Reunión 3pm · Trabajo', 'Llamar a mamá · Familia'],
     demoNotif: '¡Mamá marcó "Leche entera" como comprada!',
+    instalarBtn: 'Instalar Syng en mi dispositivo',
+    instalarTitulo: 'Instalar Syng',
+    instalarIos: 'En Safari, toca el botón Compartir ↑ y luego "Agregar a pantalla de inicio"',
+    instalarAndroid: 'En Chrome, toca el menú ⋮ y luego "Agregar a pantalla de inicio"',
+    instalarOk: 'Entendido',
   },
   en: {
     historia: 'We bought a whiteboard for home. It worked, but you had to stand in front of it. One day with too many tasks was the last straw — we needed something better. Syng was born from that real need.',
@@ -52,6 +57,11 @@ const TEXTOS_DEMO = {
     demoProductos: ['Whole milk', 'Fresh cheese', 'Avocado', 'Tomato', 'Rice', 'Black beans'],
     demoAgenda: ['Alex to doctor · Family', 'Pay bill · Personal', 'Meeting 3pm · Work', 'Call mom · Family'],
     demoNotif: 'Mom marked "Whole milk" as bought!',
+    instalarBtn: 'Install Syng on my device',
+    instalarTitulo: 'Install Syng',
+    instalarIos: 'In Safari, tap the Share button ↑ and then "Add to Home Screen"',
+    instalarAndroid: 'In Chrome, tap the ⋮ menu and then "Add to Home Screen"',
+    instalarOk: 'Got it',
   },
   fr: {
     historia: 'Nous avons acheté un tableau blanc pour la maison. Un jour avec trop de tâches fut la goutte qui a fait déborder le vase. Syng est né de ce besoin réel.',
@@ -78,6 +88,11 @@ const TEXTOS_DEMO = {
     demoProductos: ['Lait entier', 'Fromage frais', 'Avocat', 'Tomate', 'Riz', 'Haricots'],
     demoAgenda: ['Alex médecin · Famille', 'Facture · Personnel', 'Réunion 15h · Travail', 'Maman · Famille'],
     demoNotif: 'Maman a marqué "Lait entier" comme acheté!',
+    instalarBtn: 'Installer Syng sur mon appareil',
+    instalarTitulo: 'Installer Syng',
+    instalarIos: 'Dans Safari, appuyez sur Partager ↑ puis "Sur l\'écran d\'accueil"',
+    instalarAndroid: 'Dans Chrome, appuyez sur ⋮ puis "Ajouter à l\'écran d\'accueil"',
+    instalarOk: 'Compris',
   },
   de: {
     historia: 'Wir kauften ein Whiteboard für zu Hause. Ein Tag mit zu vielen Aufgaben war der Tropfen, der das Fass zum Überlaufen brachte. Syng entstand aus diesem echten Bedarf.',
@@ -104,6 +119,11 @@ const TEXTOS_DEMO = {
     demoProductos: ['Vollmilch', 'Frischkäse', 'Avocado', 'Tomate', 'Reis', 'Bohnen'],
     demoAgenda: ['Alex Arzt · Familie', 'Rechnung · Persönlich', 'Meeting 15h · Arbeit', 'Mama · Familie'],
     demoNotif: 'Mama hat "Vollmilch" als gekauft markiert!',
+    instalarBtn: 'Syng auf meinem Gerät installieren',
+    instalarTitulo: 'Syng installieren',
+    instalarIos: 'In Safari, tippe auf Teilen ↑ und dann "Zum Home-Bildschirm"',
+    instalarAndroid: 'In Chrome, tippe auf ⋮ und dann "Zum Startbildschirm hinzufügen"',
+    instalarOk: 'Verstanden',
   },
   it: {
     historia: 'Abbiamo comprato una lavagna per casa. Un giorno con troppi impegni fu la goccia che fece traboccare il vaso. Syng è nato da questo bisogno reale.',
@@ -130,6 +150,11 @@ const TEXTOS_DEMO = {
     demoProductos: ['Latte intero', 'Formaggio fresco', 'Avocado', 'Pomodoro', 'Riso', 'Fagioli'],
     demoAgenda: ['Alex medico · Famiglia', 'Bolletta · Personale', 'Riunione 15h · Lavoro', 'Mamma · Famiglia'],
     demoNotif: 'La mamma ha segnato "Latte intero" come acquistato!',
+    instalarBtn: 'Installa Syng sul mio dispositivo',
+    instalarTitulo: 'Installa Syng',
+    instalarIos: 'In Safari, tocca Condividi ↑ e poi "Aggiungi alla schermata Home"',
+    instalarAndroid: 'In Chrome, tocca ⋮ e poi "Aggiungi alla schermata Home"',
+    instalarOk: 'Capito',
   },
   pt: {
     historia: 'Compramos um quadro branco para casa. Um dia com tarefas demais foi a gota d\'água — precisávamos de algo melhor. O Syng nasceu dessa necessidade real.',
@@ -156,6 +181,11 @@ const TEXTOS_DEMO = {
     demoProductos: ['Leite integral', 'Queijo fresco', 'Abacate', 'Tomate', 'Arroz', 'Feijão preto'],
     demoAgenda: ['Alex médico · Família', 'Conta · Pessoal', 'Reunião 15h · Trabalho', 'Mamãe · Família'],
     demoNotif: 'Mamãe marcou "Leite integral" como comprado!',
+    instalarBtn: 'Instalar Syng no meu dispositivo',
+    instalarTitulo: 'Instalar Syng',
+    instalarIos: 'No Safari, toque em Compartilhar ↑ e depois "Adicionar à Tela de Início"',
+    instalarAndroid: 'No Chrome, toque em ⋮ e depois "Adicionar à tela inicial"',
+    instalarOk: 'Entendido',
   },
   ja: {
     historia: '家にホワイトボードを買いました。やることが多すぎた一日が決定打になり、もっと良いものが必要でした。Syngはその本物のニーズから生まれました。',
@@ -182,6 +212,11 @@ const TEXTOS_DEMO = {
     demoProductos: ['全乳', 'フレッシュチーズ', 'アボカド', 'トマト', '米', '黒豆'],
     demoAgenda: ['Alex病院 · 家族', '電気代 · 個人', '会議15時 · 仕事', 'お母さん · 家族'],
     demoNotif: 'お母さんが「全乳」を購入済みにしました！',
+    instalarBtn: 'Syngをデバイスにインストール',
+    instalarTitulo: 'Syngをインストール',
+    instalarIos: 'Safariで共有ボタン↑をタップし「ホーム画面に追加」を選択',
+    instalarAndroid: 'Chromeで⋮をタップし「ホーム画面に追加」を選択',
+    instalarOk: 'わかった',
   },
   zh: {
     historia: '我们在家买了一块白板。有一天待办事项太多，那就成了压垮骆驼的最后一根稻草。Syng就是从这个真实需求中诞生的。',
@@ -208,6 +243,11 @@ const TEXTOS_DEMO = {
     demoProductos: ['全脂牛奶', '新鲜奶酪', '牛油果', '西红柿', '大米', '黑豆'],
     demoAgenda: ['Alex看医生 · 家庭', '缴费 · 个人', '会议15时 · 工作', '妈妈 · 家庭'],
     demoNotif: '妈妈把"全脂牛奶"标记为已购买！',
+    instalarBtn: '在我的设备上安装Syng',
+    instalarTitulo: '安装Syng',
+    instalarIos: '在Safari中，点击分享按钮↑，然后选择"添加到主屏幕"',
+    instalarAndroid: '在Chrome中，点击⋮菜单，然后选择"添加到主屏幕"',
+    instalarOk: '明白了',
   },
 }
 
@@ -243,6 +283,34 @@ export default function PantallaDemo({ onEntrar }) {
   const [notif, setNotif] = useState(false)
   const t1 = useRef(null)
   const t2 = useRef(null)
+
+  // PWA install
+  const [pwaPrompt, setPwaPrompt] = useState(null)
+  const [pwaIos, setPwaIos] = useState(false)
+  const [pwaInstalada, setPwaInstalada] = useState(false)
+  const [mostrarInstrucciones, setMostrarInstrucciones] = useState(false)
+
+  useEffect(() => {
+    const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
+    if (esStandalone) { setPwaInstalada(true); return }
+    const esIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    if (esIos) { setPwaIos(true); return }
+    const handler = (e) => { e.preventDefault(); setPwaPrompt(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', () => setPwaInstalada(true))
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const instalarPwa = async () => {
+    if (pwaPrompt) {
+      pwaPrompt.prompt()
+      const r = await pwaPrompt.userChoice
+      if (r.outcome === 'accepted') setPwaInstalada(true)
+      setPwaPrompt(null)
+    } else {
+      setMostrarInstrucciones(true)
+    }
+  }
 
   function animar(mod) {
     clearTimeout(t1.current)
@@ -451,7 +519,7 @@ export default function PantallaDemo({ onEntrar }) {
 
         <div style={{ textAlign:'center', fontSize:'12px', color:'#888', marginBottom:'16px', fontStyle:'italic' }}>Comienza gratis hoy, desbloquea más cuando lo necesites</div>
 
-        {/* CTA */}
+        {/* CTA — sin tocar */}
         <button onClick={onEntrar} style={{
           width: '100%', padding: '18px',
           background: 'linear-gradient(135deg,#534AB7,#185FA5)',
@@ -461,7 +529,57 @@ export default function PantallaDemo({ onEntrar }) {
           boxShadow: '0 6px 20px rgba(83,74,183,0.35)',
           letterSpacing: '-0.3px',
         }}>{tx.cta}</button>
-        <div style={{ textAlign: 'center', fontSize: '12px', color: '#AAA' }}>{tx.ctaSub}</div>
+        <div style={{ textAlign: 'center', fontSize: '12px', color: '#AAA', marginBottom: '16px' }}>{tx.ctaSub}</div>
+
+        {/* ── NUEVO: Botón instalar app ── */}
+        {!pwaInstalada && (
+          <>
+            <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'12px' }}>
+              <div style={{ flex:1, height:'1px', background:'#E5E5E5' }} />
+              <span style={{ color:'#AAA', fontSize:'13px' }}>o</span>
+              <div style={{ flex:1, height:'1px', background:'#E5E5E5' }} />
+            </div>
+            <button onClick={instalarPwa} style={{
+              width: '100%', padding: '16px',
+              background: 'linear-gradient(135deg,#2A3A8C,#0F1540)',
+              color: 'white', border: 'none', borderRadius: '16px',
+              fontSize: '15px', fontWeight: '600', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px',
+              boxShadow: '0 4px 16px rgba(42,58,140,0.35)',
+            }}>
+              <svg width="22" height="22" viewBox="0 0 100 100">
+                <rect width="100" height="100" rx="22" fill="rgba(255,255,255,0.15)"/>
+                <text x="52" y="58" textAnchor="middle" fontFamily="-apple-system,sans-serif" fontSize="52" fontWeight="300" fill="white">4</text>
+                <circle cx="52" cy="76" r="6" fill="#7B6EF6"/>
+              </svg>
+              {tx.instalarBtn}
+            </button>
+          </>
+        )}
+
+        {/* Modal instrucciones */}
+        {mostrarInstrucciones && (
+          <div onClick={() => setMostrarInstrucciones(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:500 }}>
+            <div onClick={e => e.stopPropagation()} style={{ background:'white', borderRadius:'24px 24px 0 0', padding:'32px 24px 48px', width:'100%', maxWidth:'400px' }}>
+              <div style={{ textAlign:'center', marginBottom:'24px' }}>
+                <svg width="64" height="64" viewBox="0 0 100 100" style={{ marginBottom:'12px' }}>
+                  <defs><linearGradient id="lgInst" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#2A3A8C"/><stop offset="100%" stopColor="#0F1540"/></linearGradient></defs>
+                  <rect width="100" height="100" rx="22" fill="url(#lgInst)"/>
+                  <text x="52" y="58" textAnchor="middle" fontFamily="-apple-system,sans-serif" fontSize="52" fontWeight="300" fill="white">4</text>
+                  <circle cx="52" cy="76" r="6" fill="#7B6EF6"/>
+                </svg>
+                <div style={{ fontSize:'18px', fontWeight:'700', color:'#1C1C2E', marginBottom:'10px' }}>{tx.instalarTitulo}</div>
+                <div style={{ fontSize:'14px', color:'#666', lineHeight:'1.6' }}>
+                  {pwaIos ? tx.instalarIos : tx.instalarAndroid}
+                </div>
+              </div>
+              <button onClick={() => setMostrarInstrucciones(false)} style={{ width:'100%', padding:'15px', background:'linear-gradient(135deg,#534AB7,#185FA5)', border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>
+                {tx.instalarOk}
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   )
