@@ -509,14 +509,34 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
           </div>
           {/* Contenido scrolleable */}
           <div style={{ overflowY:'auto', flex:1, padding:'24px 20px 100px' }}>
-            <input
-              autoFocus
-              value={nuevaTarea}
-              onChange={e => setNuevaTarea(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && guardarTarea()}
-              placeholder={tx.nuevaTarea}
-              style={{ width:'100%', padding:'16px', borderRadius:'14px', border:`2px solid ${th.acento}`, fontSize:'17px', outline:'none', background: esOscuro ? 'rgba(255,255,255,0.06)' : 'white', color:th.texto, boxSizing:'border-box', marginBottom:'16px' }}
-            />
+
+            {/* ── CAMBIO #6: input + botón + en la misma fila ── */}
+            <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'16px' }}>
+              <input
+                autoFocus
+                value={nuevaTarea}
+                onChange={e => setNuevaTarea(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && guardarTarea()}
+                placeholder={tx.nuevaTarea}
+                style={{ flex:1, padding:'16px', borderRadius:'14px', border:`2px solid ${th.acento}`, fontSize:'17px', outline:'none', background: esOscuro ? 'rgba(255,255,255,0.06)' : 'white', color:th.texto, boxSizing:'border-box' }}
+              />
+              <button
+                onClick={guardarTarea}
+                disabled={guardando || !nuevaTarea.trim()}
+                style={{
+                  width:'52px', height:'52px', borderRadius:'50%',
+                  background: nuevaTarea.trim() ? th.acento : (esOscuro ? 'rgba(255,255,255,0.1)' : '#ddd'),
+                  border:'none', color:'white', fontSize:'28px', fontWeight:'300',
+                  cursor: nuevaTarea.trim() ? 'pointer' : 'default',
+                  display:'flex', alignItems:'center', justifyContent:'center',
+                  flexShrink:0, boxShadow: nuevaTarea.trim() ? `0 4px 16px ${th.acento}55` : 'none',
+                  transition:'background 0.2s, box-shadow 0.2s'
+                }}
+              >
+                {guardando ? '…' : '+'}
+              </button>
+            </div>
+
             <div onClick={() => setMostrarSelectorGrupo(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', background: esOscuro ? 'rgba(255,255,255,0.06)' : '#F5F5F7', borderRadius:'12px', marginBottom:'12px', cursor:'pointer' }}>
               <div>
                 <div style={{ fontSize:'10px', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.05em' }}>{tx.guardarEn}</div>
@@ -542,7 +562,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               }} selFn={(d,a,m) => fechasRepetir.some(f=>f.dia===d&&f.mes===m&&f.anio===a)} hint={tx.copiarEn} />
               <div style={{ fontSize:'12px', color:th.acento, textAlign:'center', marginTop:'6px' }}>{fechasRepetir.length} {tx.fechasSeleccionadas}</div>
             </>}
-            <button onClick={guardarTarea} disabled={guardando||!nuevaTarea.trim()} style={{ width:'100%', padding:'16px', background: nuevaTarea.trim() ? th.acento : th.borde, color:'white', border:'none', borderRadius:'14px', fontSize:'16px', fontWeight:'700', cursor:'pointer', opacity: !nuevaTarea.trim()?0.5:1, marginTop:'16px' }}>{guardando ? '...' : tx.guardar}</button>
           </div>
         </div>
       )}
