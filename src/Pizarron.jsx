@@ -158,7 +158,6 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
     return arr
   }
 
-  // ── ARREGLO: leer grupos directo de misGrupos sin verificar documento en /grupos ──
   useEffect(() => {
     if (!userId) {
       const gId = localStorage.getItem('syng_grupo_activo_pizarron')
@@ -177,7 +176,6 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
     })
     return () => unsub()
   }, [userId])
-  // ─────────────────────────────────────────────────────────────────────────────
 
   useEffect(() => {
     moverPendientesRef.current = false
@@ -273,7 +271,8 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
     const grupoId = generarId()
     const nuevoGrupo = { nombre: nuevoNombreGrupo.trim(), adminId: userId, adminEmail: userEmail || '', adminNombre: userName, miembros: [{ uid: userId, email: userEmail || '', nombre: userName, rol: 'admin' }], modulo: 'pizarron', creadoEn: Date.now() }
     await setDoc(doc(db, 'grupos', grupoId), nuevoGrupo)
-    await setDoc(doc(db, 'users', userId, 'misGrupos', grupoId), { nombre: nuevoGrupo.nombre, modulo: 'pizarron' })
+    // FIX: agregar adminId en misGrupos para que el botón de invitar aparezca
+    await setDoc(doc(db, 'users', userId, 'misGrupos', grupoId), { nombre: nuevoGrupo.nombre, modulo: 'pizarron', adminId: userId })
     setGrupoActivo(grupoId); setNuevoNombreGrupo(''); setModalCrearGrupo(false); setModalGrupos(false)
   }
 
