@@ -23,14 +23,14 @@ const DIAS_TX = {
   zh:['一','二','三','四','五','六','日'],
 }
 const TX = {
-  es:{ titulo:'Mi Agenda', sinPendientes:'Sin pendientes este día', guardarEn:'Guardar en', enQuePizarron:'¿En qué pizarrón?', nuevaTarea:'¿Qué tienes pendiente?', agregar:'+ agregar', guardar:'Guardar', cancelar:'Cancelar', eliminar:'Eliminar', personal:'Personal', guardarCambios:'Guardar cambios', cambiarFecha:'Cambiar fecha', repetirFechas:'Repetir en más fechas', confirmarEliminar:'¿Eliminar esta tarea?', si:'Sí, eliminar', moverA:'Toca el día al que quieres mover esta tarea', copiarEn:'Toca los días donde quieres copiar esta tarea', fechasSeleccionadas:'fecha(s) seleccionada(s)', repetir:'Repetir', elegirFecha:'Elegir fecha', pendientes:'Pendientes', atendidas:'Atendidas', editarTarea:'Editando tarea' },
-  en:{ titulo:'My Agenda', sinPendientes:'No tasks this day', guardarEn:'Save to', enQuePizarron:'Which board?', nuevaTarea:'What is pending?', agregar:'+ add', guardar:'Save', cancelar:'Cancel', eliminar:'Delete', personal:'Personal', guardarCambios:'Save changes', cambiarFecha:'Change date', repetirFechas:'Repeat on more dates', confirmarEliminar:'Delete this task?', si:'Yes, delete', moverA:'Tap the day to move this task', copiarEn:'Tap days to copy this task', fechasSeleccionadas:'date(s) selected', repetir:'Repeat', elegirFecha:'Choose date', pendientes:'Pending', atendidas:'Done', editarTarea:'Editing task' },
-  fr:{ titulo:'Mon Agenda', sinPendientes:'Aucune tâche', guardarEn:'Enregistrer dans', enQuePizarron:'Quel tableau?', nuevaTarea:'Quoi de prévu?', agregar:'+ ajouter', guardar:'Enregistrer', cancelar:'Annuler', eliminar:'Supprimer', personal:'Personnel', guardarCambios:'Sauvegarder', cambiarFecha:'Changer date', repetirFechas:'Répéter', confirmarEliminar:'Supprimer cette tâche?', si:'Oui, supprimer', moverA:'Touchez le jour cible', copiarEn:'Touchez les jours à copier', fechasSeleccionadas:'date(s) sélectionnée(s)', repetir:'Répéter', elegirFecha:'Choisir date', pendientes:'En attente', atendidas:'Terminées', editarTarea:'Modifier' },
-  de:{ titulo:'Mein Kalender', sinPendientes:'Keine Aufgaben', guardarEn:'Speichern in', enQuePizarron:'Welches Board?', nuevaTarea:'Was steht an?', agregar:'+ hinzufügen', guardar:'Speichern', cancelar:'Abbrechen', eliminar:'Löschen', personal:'Persönlich', guardarCambios:'Speichern', cambiarFecha:'Datum ändern', repetirFechas:'Wiederholen', confirmarEliminar:'Aufgabe löschen?', si:'Ja, löschen', moverA:'Tag antippen', copiarEn:'Tage antippen', fechasSeleccionadas:'Datum ausgewählt', repetir:'Wiederholen', elegirFecha:'Datum wählen', pendientes:'Ausstehend', atendidas:'Erledigt', editarTarea:'Bearbeiten' },
-  it:{ titulo:'La Mia Agenda', sinPendientes:'Nessun compito', guardarEn:'Salva in', enQuePizarron:'Quale lavagna?', nuevaTarea:'Cosa hai in sospeso?', agregar:'+ aggiungi', guardar:'Salva', cancelar:'Annulla', eliminar:'Elimina', personal:'Personale', guardarCambios:'Salva', cambiarFecha:'Cambia data', repetirFechas:'Ripeti', confirmarEliminar:'Eliminare?', si:'Sì, elimina', moverA:'Tocca il giorno', copiarEn:'Tocca i giorni', fechasSeleccionadas:'date selezionate', repetir:'Ripeti', elegirFecha:'Scegli data', pendientes:'In sospeso', atendidas:'Completate', editarTarea:'Modifica' },
-  pt:{ titulo:'Minha Agenda', sinPendientes:'Sem tarefas', guardarEn:'Salvar em', enQuePizarron:'Qual quadro?', nuevaTarea:'O que está pendente?', agregar:'+ adicionar', guardar:'Salvar', cancelar:'Cancelar', eliminar:'Excluir', personal:'Pessoal', guardarCambios:'Salvar', cambiarFecha:'Alterar data', repetirFechas:'Repetir', confirmarEliminar:'Excluir tarefa?', si:'Sim, excluir', moverA:'Toque no dia', copiarEn:'Toque nos dias', fechasSeleccionadas:'data(s) selecionada(s)', repetir:'Repetir', elegirFecha:'Escolher data', pendientes:'Pendentes', atendidas:'Concluídas', editarTarea:'Editar' },
+  es:{ titulo:'Mi Agenda', sinPendientes:'Sin pendientes este día', guardarEn:'Guardar en', enQuePizarron:'¿En qué pizarrón?', nuevaTarea:'¿Qué tienes pendiente?', agregar:'+ agregar', guardar:'Guardar', cancelar:'Cancelar', eliminar:'Eliminar', personal:'Personal', guardarCambios:'Guardar cambios', cambiarFecha:'Cambiar fecha', repetirFechas:'Repetir en más fechas', confirmarEliminar:'¿Eliminar las tareas seleccionadas?', si:'Sí, eliminar', moverA:'Toca el día al que quieres mover esta tarea', copiarEn:'Toca los días donde quieres copiar esta tarea', fechasSeleccionadas:'fecha(s) seleccionada(s)', repetir:'Repetir', elegirFecha:'Elegir fecha', pendientes:'Pendientes', atendidas:'Atendidas', editarTarea:'Editando tarea' },
+  en:{ titulo:'My Agenda', sinPendientes:'No tasks this day', guardarEn:'Save to', enQuePizarron:'Which board?', nuevaTarea:'What is pending?', agregar:'+ add', guardar:'Save', cancelar:'Cancel', eliminar:'Delete', personal:'Personal', guardarCambios:'Save changes', cambiarFecha:'Change date', repetirFechas:'Repeat on more dates', confirmarEliminar:'Delete selected tasks?', si:'Yes, delete', moverA:'Tap the day to move this task', copiarEn:'Tap days to copy this task', fechasSeleccionadas:'date(s) selected', repetir:'Repeat', elegirFecha:'Choose date', pendientes:'Pending', atendidas:'Done', editarTarea:'Editing task' },
+  fr:{ titulo:'Mon Agenda', sinPendientes:'Aucune tâche', guardarEn:'Enregistrer dans', enQuePizarron:'Quel tableau?', nuevaTarea:'Quoi de prévu?', agregar:'+ ajouter', guardar:'Enregistrer', cancelar:'Annuler', eliminar:'Supprimer', personal:'Personnel', guardarCambios:'Sauvegarder', cambiarFecha:'Changer date', repetirFechas:'Répéter', confirmarEliminar:'Supprimer les tâches?', si:'Oui, supprimer', moverA:'Touchez le jour cible', copiarEn:'Touchez les jours à copier', fechasSeleccionadas:'date(s) sélectionnée(s)', repetir:'Répéter', elegirFecha:'Choisir date', pendientes:'En attente', atendidas:'Terminées', editarTarea:'Modifier' },
+  de:{ titulo:'Mein Kalender', sinPendientes:'Keine Aufgaben', guardarEn:'Speichern in', enQuePizarron:'Welches Board?', nuevaTarea:'Was steht an?', agregar:'+ hinzufügen', guardar:'Speichern', cancelar:'Abbrechen', eliminar:'Löschen', personal:'Persönlich', guardarCambios:'Speichern', cambiarFecha:'Datum ändern', repetirFechas:'Wiederholen', confirmarEliminar:'Aufgaben löschen?', si:'Ja, löschen', moverA:'Tag antippen', copiarEn:'Tage antippen', fechasSeleccionadas:'Datum ausgewählt', repetir:'Wiederholen', elegirFecha:'Datum wählen', pendientes:'Ausstehend', atendidas:'Erledigt', editarTarea:'Bearbeiten' },
+  it:{ titulo:'La Mia Agenda', sinPendientes:'Nessun compito', guardarEn:'Salva in', enQuePizarron:'Quale lavagna?', nuevaTarea:'Cosa hai in sospeso?', agregar:'+ aggiungi', guardar:'Salva', cancelar:'Annulla', eliminar:'Elimina', personal:'Personale', guardarCambios:'Salva', cambiarFecha:'Cambia data', repetirFechas:'Ripeti', confirmarEliminar:'Eliminare le attività?', si:'Sì, elimina', moverA:'Tocca il giorno', copiarEn:'Tocca i giorni', fechasSeleccionadas:'date selezionate', repetir:'Ripeti', elegirFecha:'Scegli data', pendientes:'In sospeso', atendidas:'Completate', editarTarea:'Modifica' },
+  pt:{ titulo:'Minha Agenda', sinPendientes:'Sem tarefas', guardarEn:'Salvar em', enQuePizarron:'Qual quadro?', nuevaTarea:'O que está pendente?', agregar:'+ adicionar', guardar:'Salvar', cancelar:'Cancelar', eliminar:'Excluir', personal:'Pessoal', guardarCambios:'Salvar', cambiarFecha:'Alterar data', repetirFechas:'Repetir', confirmarEliminar:'Excluir tarefas?', si:'Sim, excluir', moverA:'Toque no dia', copiarEn:'Toque nos dias', fechasSeleccionadas:'data(s) selecionada(s)', repetir:'Repetir', elegirFecha:'Escolher data', pendientes:'Pendentes', atendidas:'Concluídas', editarTarea:'Editar' },
   ja:{ titulo:'マイアジェンダ', sinPendientes:'タスクなし', guardarEn:'保存先', enQuePizarron:'どのボード?', nuevaTarea:'何が保留中?', agregar:'+ 追加', guardar:'保存', cancelar:'キャンセル', eliminar:'削除', personal:'個人', guardarCambios:'保存', cambiarFecha:'日付変更', repetirFechas:'繰り返す', confirmarEliminar:'削除しますか?', si:'はい', moverA:'移動先の日をタップ', copiarEn:'コピーする日をタップ', fechasSeleccionadas:'日付選択済み', repetir:'繰り返す', elegirFecha:'日付選択', pendientes:'保留中', atendidas:'完了', editarTarea:'編集' },
-  zh:{ titulo:'我的日程', sinPendientes:'今天没有待办', guardarEn:'保存到', enQuePizarron:'哪个白板?', nuevaTarea:'有什么待办?', agregar:'+ 添加', guardar:'保存', cancelar:'取消', eliminar:'删除', personal:'个人', guardarCambios:'保存', cambiarFecha:'更改日期', repetirFechas:'重复', confirmarEliminar:'删除此任务?', si:'是的', moverA:'点击目标日期', copiarEn:'点击要复制的日期', fechasSeleccionadas:'个日期已选择', repetir:'重复', elegirFecha:'选择日期', pendientes:'待办', atendidas:'已完成', editarTarea:'编辑' },
+  zh:{ titulo:'我的日程', sinPendientes:'今天没有待办', guardarEn:'保存到', enQuePizarron:'哪个白板?', nuevaTarea:'有什么待办?', agregar:'+ 添加', guardar:'保存', cancelar:'取消', eliminar:'删除', personal:'个人', guardarCambios:'保存', cambiarFecha:'更改日期', repetirFechas:'重复', confirmarEliminar:'删除所选任务?', si:'是的', moverA:'点击目标日期', copiarEn:'点击要复制的日期', fechasSeleccionadas:'个日期已选择', repetir:'重复', elegirFecha:'选择日期', pendientes:'待办', atendidas:'已完成', editarTarea:'编辑' },
 }
 const COLORES = ['#534AB7','#2ECC9A','#EF9F27','#D4537E','#378ADD','#E24B4A','#639922','#9B59B6']
 const TEMA = {
@@ -63,7 +63,8 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const [cargandoTareas, setCargandoTareas] = useState(false)
   const [nuevaTarea, setNuevaTarea] = useState('')
   const [guardando, setGuardando] = useState(false)
-  const [tareaSeleccionada, setTareaSeleccionada] = useState(null)
+  // CAMBIO #1: array en lugar de objeto único
+  const [tareasSeleccionadas, setTareasSeleccionadas] = useState([])
   const [modoEditar, setModoEditar] = useState(null)
   const [modoCapturar, setModoCapturar] = useState(false)
   const [textoEditar, setTextoEditar] = useState('')
@@ -90,6 +91,19 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   const longPressRef = useRef(null)
   const touchStartRef = useRef(null)
   const isDraggingRef = useRef(false)
+
+  // Helper: saber si una tarea está seleccionada
+  const estaSeleccionada = (tarea) => tareasSeleccionadas.some(s => s.id === tarea.id && s.grupoId === tarea.grupoId)
+
+  // Helper: toggle selección de una tarea
+  const toggleSeleccion = (tarea) => {
+    const sel = { id: tarea.id, grupoId: tarea.grupoId }
+    if (estaSeleccionada(tarea)) {
+      setTareasSeleccionadas(prev => prev.filter(s => !(s.id === tarea.id && s.grupoId === tarea.grupoId)))
+    } else {
+      setTareasSeleccionadas(prev => [...prev, sel])
+    }
+  }
 
   useEffect(() => {
     if (!userId) return
@@ -144,7 +158,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
 
   const tocarDia = (dia) => {
     setDiaSeleccionado(dia)
-    setTareaSeleccionada(null)
+    setTareasSeleccionadas([])
     setModoEditar(null)
     setConfirmEliminar(false)
     setNuevaTarea('')
@@ -158,7 +172,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
 
   const cerrarModal = () => {
     setDiaSeleccionado(null)
-    setTareaSeleccionada(null)
+    setTareasSeleccionadas([])
     setModoEditar(null)
     setConfirmEliminar(false)
     setNuevaTarea('')
@@ -209,21 +223,33 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     const items = (snap.data()?.items || []).map(i => i.id === tarea.id ? { ...i, realizada: !i.realizada } : i)
     await setDoc(ref, { items })
     setTareas(prev => prev.map(t => t.id === tarea.id && t.grupoId === tarea.grupoId ? { ...t, realizada: !t.realizada } : t))
-    setTareaSeleccionada(null)
+    setTareasSeleccionadas([])
   }
 
-  const eliminarTarea = async () => {
-    if (!tareaSeleccionada) return
-    const tarea = tareaSeleccionada
-    const key = getKey(tarea.anio, tarea.mes, tarea.dia)
-    const ref = tarea.grupoId === 'personal'
-      ? doc(db, 'users', userId, 'pizarron', key)
-      : doc(db, 'grupos', tarea.grupoId, 'pizarron', key)
-    const snap = await getDoc(ref)
-    await setDoc(ref, { items: (snap.data()?.items || []).filter(i => i.id !== tarea.id) })
-    const nuevasTareas = tareas.filter(t => !(t.id === tarea.id && t.grupoId === tarea.grupoId))
+  // CAMBIO #1: elimina TODAS las seleccionadas de un golpe
+  const eliminarTareas = async () => {
+    if (tareasSeleccionadas.length === 0) return
+    const idsEliminar = new Set(tareasSeleccionadas.map(s => `${s.id}-${s.grupoId}`))
+    // Agrupar por (grupoId + key) para hacer un solo setDoc por documento
+    const mapaDoc = {}
+    for (const sel of tareasSeleccionadas) {
+      const tarea = tareas.find(t => t.id === sel.id && t.grupoId === sel.grupoId)
+      if (!tarea) continue
+      const key = getKey(tarea.anio, tarea.mes, tarea.dia)
+      const mapKey = `${tarea.grupoId}||${key}`
+      if (!mapaDoc[mapKey]) mapaDoc[mapKey] = { grupoId: tarea.grupoId, key, ids: new Set() }
+      mapaDoc[mapKey].ids.add(tarea.id)
+    }
+    for (const { grupoId, key, ids } of Object.values(mapaDoc)) {
+      const ref = grupoId === 'personal'
+        ? doc(db, 'users', userId, 'pizarron', key)
+        : doc(db, 'grupos', grupoId, 'pizarron', key)
+      const snap = await getDoc(ref)
+      await setDoc(ref, { items: (snap.data()?.items || []).filter(i => !ids.has(i.id)) })
+    }
+    const nuevasTareas = tareas.filter(t => !idsEliminar.has(`${t.id}-${t.grupoId}`))
     setTareas(nuevasTareas)
-    setTareaSeleccionada(null)
+    setTareasSeleccionadas([])
     setConfirmEliminar(false)
     const pendientesRestantes = nuevasTareas.filter(t => !t.realizada).length
     setBadges(prev => ({ ...prev, [`${diaSeleccionado}`]: pendientesRestantes > 0 ? pendientesRestantes : undefined }))
@@ -252,7 +278,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setEditModo(null)
     setFechasEditRepetir([])
     setNuevaFechaEdit(null)
-    setTareaSeleccionada(null)
+    setTareasSeleccionadas([])
   }
 
   const cambiarFechaEdicion = (diaNew) => { setNuevaFechaEdit({ dia: diaNew, mes: mesCalEdit, anio: anioCalEdit }) }
@@ -436,15 +462,11 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
             {pendientes.map((tarea, idx) => (
               <div key={`${tarea.id}-${tarea.grupoId}`} data-idx={idx} style={{ opacity: draggingIdx===idx ? 0.4 : 1 }}>
                 {dragOverIdx===idx && draggingIdx!==idx && <div style={{ height:'3px', background:th.acento, borderRadius:'2px', margin:'3px 0' }} />}
-                <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? (esOscuro?'rgba(83,74,183,0.2)':'#EEF2FF') : (esOscuro?'rgba(255,255,255,0.04)':'white'), border:`0.5px solid ${tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? th.acento : th.borde}`, userSelect:'none' }}>
+                <div style={{ display:'flex', alignItems:'center', gap:'12px', padding:'12px 14px', borderRadius:'12px', marginBottom:'6px', background: estaSeleccionada(tarea) ? (esOscuro?'rgba(83,74,183,0.2)':'#EEF2FF') : (esOscuro?'rgba(255,255,255,0.04)':'white'), border:`0.5px solid ${estaSeleccionada(tarea) ? th.acento : th.borde}`, userSelect:'none' }}>
                   <span onTouchStart={e=>onTouchStart(e,idx)} onTouchMove={onTouchMove} onTouchEnd={onTouchEnd} style={{ fontSize:'18px', color: esOscuro?'rgba(255,255,255,0.2)':'#ccc', cursor:'grab', touchAction:'none', flexShrink:0 }}>⠿</span>
-                  <div onClick={() => {
-                    const key = `${tarea.id}-${tarea.grupoId}`
-                    const selKey = tareaSeleccionada ? `${tareaSeleccionada.id}-${tareaSeleccionada.grupoId}` : null
-                    if (key === selKey) setTareaSeleccionada(null)
-                    else setTareaSeleccionada(tarea)
-                  }} style={{ width:'22px', height:'22px', borderRadius:'6px', border: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? 'none' : `1.5px solid ${esOscuro?'rgba(255,255,255,0.3)':'#ccc'}`, background: tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? th.acento : 'transparent', flexShrink:0, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px' }}>
-                    {tareaSeleccionada?.id===tarea.id&&tareaSeleccionada?.grupoId===tarea.grupoId ? '✓' : ''}
+                  {/* Checkbox: toca para seleccionar/deseleccionar */}
+                  <div onClick={() => toggleSeleccion(tarea)} style={{ width:'22px', height:'22px', borderRadius:'6px', border: estaSeleccionada(tarea) ? 'none' : `1.5px solid ${esOscuro?'rgba(255,255,255,0.3)':'#ccc'}`, background: estaSeleccionada(tarea) ? th.acento : 'transparent', flexShrink:0, cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'12px' }}>
+                    {estaSeleccionada(tarea) ? '✓' : ''}
                   </div>
                   <span onClick={() => toggleAtendida(tarea)} style={{ flex:1, fontSize:'14px', color:th.texto, cursor:'pointer', lineHeight:'1.4' }}>{tarea.texto}</span>
                   <div style={{ display:'flex', alignItems:'center', gap:'4px', background: `${tarea.grupoColor}22`, borderRadius:'20px', padding:'3px 9px', flexShrink:0 }}>
@@ -469,19 +491,25 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </div>
             ))}
           </div>
-          {tareaSeleccionada && !confirmEliminar && (
+
+          {/* Botones editar/eliminar — editar solo si hay 1 seleccionada, eliminar si hay 1 o más */}
+          {tareasSeleccionadas.length > 0 && !confirmEliminar && (
             <div style={{ position:'absolute', bottom:'90px', left:'50%', transform:'translateX(-50%)', display:'flex', gap:'10px', zIndex:10 }}>
-              <button onClick={() => {
-                setModoEditar({ id: tareaSeleccionada.id, grupoId: tareaSeleccionada.grupoId, dia: tareaSeleccionada.dia, mesT: tareaSeleccionada.mes, anioT: tareaSeleccionada.anio, grupoNombre: tareaSeleccionada.grupoNombre, grupoColor: tareaSeleccionada.grupoColor })
-                setTextoEditar(tareaSeleccionada.texto)
-                setEditModo(null)
-                setFechasEditRepetir([])
-                setMesCalEdit(tareaSeleccionada.mes)
-                setAnioCalEdit(tareaSeleccionada.anio)
-                setMesCalRep(tareaSeleccionada.mes)
-                setAnioCalRep(tareaSeleccionada.anio)
-              }} style={{ background:th.acento, color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:`0 4px 16px ${th.acento}55`, whiteSpace:'nowrap' }}>✏️ {tx.editarTarea}</button>
-              <button onClick={() => setConfirmEliminar(true)} style={{ background:'#E24B4A', color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:'0 4px 16px rgba(226,75,74,0.4)', whiteSpace:'nowrap' }}>🗑 {tx.eliminar}</button>
+              {tareasSeleccionadas.length === 1 && (
+                <button onClick={() => {
+                  const t = tareas.find(t => t.id === tareasSeleccionadas[0].id && t.grupoId === tareasSeleccionadas[0].grupoId)
+                  if (!t) return
+                  setModoEditar({ id: t.id, grupoId: t.grupoId, dia: t.dia, mesT: t.mes, anioT: t.anio, grupoNombre: t.grupoNombre, grupoColor: t.grupoColor })
+                  setTextoEditar(t.texto)
+                  setEditModo(null)
+                  setFechasEditRepetir([])
+                  setMesCalEdit(t.mes)
+                  setAnioCalEdit(t.anio)
+                  setMesCalRep(t.mes)
+                  setAnioCalRep(t.anio)
+                }} style={{ background:th.acento, color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:`0 4px 16px ${th.acento}55`, whiteSpace:'nowrap' }}>✏️ {tx.editarTarea}</button>
+              )}
+              <button onClick={() => setConfirmEliminar(true)} style={{ background:'#E24B4A', color:'white', border:'none', borderRadius:'14px', padding:'13px 24px', fontSize:'15px', fontWeight:'700', cursor:'pointer', boxShadow:'0 4px 16px rgba(226,75,74,0.4)', whiteSpace:'nowrap' }}>🗑 {tx.eliminar} {tareasSeleccionadas.length > 1 ? `(${tareasSeleccionadas.length})` : ''}</button>
             </div>
           )}
           {confirmEliminar && (
@@ -489,7 +517,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               <div style={{ fontSize:'14px', color:th.texto, marginBottom:'12px', textAlign:'center' }}>{tx.confirmarEliminar}</div>
               <div style={{ display:'flex', gap:'8px' }}>
                 <button onClick={() => setConfirmEliminar(false)} style={{ flex:1, padding:'11px', background: esOscuro?'rgba(255,255,255,0.08)':'#f0f0f0', border:'none', borderRadius:'10px', color:th.textoSub, cursor:'pointer', fontSize:'14px' }}>{tx.cancelar}</button>
-                <button onClick={eliminarTarea} style={{ flex:1, padding:'11px', background:'#E24B4A', border:'none', borderRadius:'10px', color:'white', cursor:'pointer', fontSize:'14px', fontWeight:'600' }}>{tx.si}</button>
+                <button onClick={eliminarTareas} style={{ flex:1, padding:'11px', background:'#E24B4A', border:'none', borderRadius:'10px', color:'white', cursor:'pointer', fontSize:'14px', fontWeight:'600' }}>{tx.si}</button>
               </div>
             </div>
           )}
@@ -504,8 +532,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
             <div style={{ color:'white', fontSize:'18px', fontWeight:'700' }}>{diaSeleccionado} {meses[mes]} {anio}</div>
           </div>
           <div style={{ overflowY:'auto', flex:1, padding:'24px 20px 100px' }}>
-
-            {/* input + botón círculo perfecto (padding:0 es la clave) */}
             <div style={{ display:'flex', alignItems:'center', gap:'10px', marginBottom:'16px' }}>
               <input
                 autoFocus
@@ -533,7 +559,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 {guardando ? '…' : '+'}
               </button>
             </div>
-
             <div onClick={() => setMostrarSelectorGrupo(true)} style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 16px', background: esOscuro ? 'rgba(255,255,255,0.06)' : '#F5F5F7', borderRadius:'12px', marginBottom:'12px', cursor:'pointer' }}>
               <div>
                 <div style={{ fontSize:'10px', color:th.textoSub, textTransform:'uppercase', letterSpacing:'0.05em' }}>{tx.guardarEn}</div>
@@ -567,7 +592,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       {modoEditar && (
         <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
           <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
-            <button onClick={() => { setModoEditar(null); setEditModo(null); setTareaSeleccionada(null) }} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
+            <button onClick={() => { setModoEditar(null); setEditModo(null); setTareasSeleccionadas([]) }} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
             <div style={{ color:'white', fontSize:'18px', fontWeight:'700' }}>{tx.editarTarea}</div>
           </div>
           <div style={{ overflowY:'auto', flex:1, padding:'20px 20px 100px' }}>
@@ -588,7 +613,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
               </>}
               <div style={{ display:'flex', gap:'8px', marginTop:'16px' }}>
                 <button onClick={guardarEdicion} style={{ flex:1, padding:'13px', background:th.acento, color:'white', border:'none', borderRadius:'12px', fontSize:'14px', fontWeight:'600', cursor:'pointer' }}>{tx.guardarCambios}</button>
-                <button onClick={() => { setModoEditar(null); setEditModo(null); setTareaSeleccionada(null) }} style={{ padding:'13px 16px', background: esOscuro?'rgba(255,255,255,0.08)':'#f0f0f0', color:th.textoSub, border:'none', borderRadius:'12px', fontSize:'14px', cursor:'pointer' }}>{tx.cancelar}</button>
+                <button onClick={() => { setModoEditar(null); setEditModo(null); setTareasSeleccionadas([]) }} style={{ padding:'13px 16px', background: esOscuro?'rgba(255,255,255,0.08)':'#f0f0f0', color:th.textoSub, border:'none', borderRadius:'12px', fontSize:'14px', cursor:'pointer' }}>{tx.cancelar}</button>
               </div>
             </div>
           </div>
