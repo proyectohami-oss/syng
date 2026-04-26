@@ -257,7 +257,12 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
       <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : th.header, padding:'16px 20px 28px 20px', position:'relative', zIndex:1 }}>
         <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center' }}>
           <div style={{ display:'flex', alignItems:'center', gap:'10px' }}>
-            <div style={{ width:'36px', height:'36px', borderRadius:'10px', background:'rgba(255,255,255,0.15)', border:'1px solid rgba(255,255,255,0.25)', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'18px', color:'white', fontWeight:'800' }}>∞</div>
+            <svg width="32" height="32" viewBox="0 0 100 100">
+              <defs><linearGradient id="logoHBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#2A3A8C"/><stop offset="100%" stopColor="#0F1540"/></linearGradient></defs>
+              <rect width="100" height="100" rx="22" fill="url(#logoHBg)"/>
+              <text x="52" y="58" textAnchor="middle" fontFamily="-apple-system,sans-serif" fontSize="52" fontWeight="300" fill="white">4</text>
+              <circle cx="52" cy="76" r="6" fill="#7B6EF6"/>
+            </svg>
             <div style={{ color:'white', fontSize:'22px', fontWeight:'800', letterSpacing:'-0.5px' }}>Syng</div>
           </div>
           <button onClick={() => onIrPantalla('perfil')} style={{ width:'42px', height:'42px', borderRadius:'50%', background:'rgba(255,255,255,0.15)', border:'1.5px solid rgba(255,255,255,0.3)', display:'flex', alignItems:'center', justifyContent:'center', color:'white', fontSize:'15px', fontWeight:'700', cursor:'pointer' }}>
@@ -349,6 +354,35 @@ export default function App() {
   const [invCargando, setInvCargando] = useState(false)
   const [grupoDestino, setGrupoDestino] = useState(null)
   const [verDemo, setVerDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true')
+
+  // PWA install — pantalla de login
+  const [pwaPromptLogin, setPwaPromptLogin] = useState(null)
+  const [pwaIosLogin, setPwaIosLogin] = useState(false)
+  const [pwaInstaladaLogin, setPwaInstaladaLogin] = useState(false)
+  const [mostrarInstalarLogin, setMostrarInstalarLogin] = useState(false)
+
+  useEffect(() => {
+    const esStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone
+    if (esStandalone) { setPwaInstaladaLogin(true); return }
+    const esIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+    if (esIos) { setPwaIosLogin(true); return }
+    const handler = (e) => { e.preventDefault(); setPwaPromptLogin(e) }
+    window.addEventListener('beforeinstallprompt', handler)
+    window.addEventListener('appinstalled', () => setPwaInstaladaLogin(true))
+    return () => window.removeEventListener('beforeinstallprompt', handler)
+  }, [])
+
+  const instalarPwaLogin = async () => {
+    if (pwaPromptLogin) {
+      pwaPromptLogin.prompt()
+      const r = await pwaPromptLogin.userChoice
+      if (r.outcome === 'accepted') setPwaInstaladaLogin(true)
+      setPwaPromptLogin(null)
+    } else {
+      setMostrarInstalarLogin(true)
+    }
+  }
+
   const t = TEXTOS[idioma] || TEXTOS.es
   const th = TEMA[tema] || TEMA.oscuro
   const cambiarIdioma = (cod) => { setIdioma(cod); localStorage.setItem('syng_idioma', cod) }
@@ -408,9 +442,7 @@ export default function App() {
   }
 
   useEffect(() => {
-    const unsub = onAuthStateChanged(auth, (u) => {
-      setUser(u)
-    })
+    const unsub = onAuthStateChanged(auth, (u) => { setUser(u) })
     return unsub
   }, [])
 
@@ -480,8 +512,6 @@ export default function App() {
   if (user && pantalla === 'miagenda') return <div style={{paddingBottom:'80px'}}><MiAgenda userId={user.uid} tema={tema} idioma={idioma} t={t} onVolver={() => setPantalla('inicio')} onNavegar={navegar} /><NavBar pantalla='miagenda' onIrPantalla={navegar} th={th} t={t} /></div>
   if (user && pantalla === 'listatareas') return <div style={{paddingBottom:'80px'}}><ListaTareas onVolver={() => setPantalla('inicio')} /><NavBar pantalla='listatareas' onIrPantalla={navegar} th={th} t={t} /></div>
   if (pantalla === 'listasuper') return <div style={{paddingBottom:'80px'}}><ListaSuper onVolver={() => setPantalla('inicio')} tema={tema} idioma={idioma} userId={user?.uid || null} userName={user?.displayName || user?.email || ''} userEmail={user?.email || ''} grupoInicial={grupoDestino?.modulo === 'lista' ? grupoDestino.grupoId : null} /><NavBar pantalla='listasuper' onIrPantalla={navegar} th={th} t={t} /></div>
-
-  // ── ARREGLO: key={user?.uid} evita que el Pizarrón se destruya al cambiar de grupo ──
   if (pantalla === 'pizarron') return <div style={{paddingBottom:'80px'}}><Pizarron key={user?.uid} onVolver={() => setPantalla('inicio')} tema={tema} idioma={idioma} /><NavBar pantalla='pizarron' onIrPantalla={navegar} th={th} t={t} /></div>
 
   if (user && pantalla === 'perfil') return (
@@ -493,13 +523,25 @@ export default function App() {
 
   if (user) return <PantallaHome user={user} t={t} th={th} onIrPantalla={navegar} userId={user.uid} />
 
+  // ── PANTALLA DE INGRESO ──
   return (
     <div style={{ minHeight:'100vh', background:'linear-gradient(135deg,#534AB7 0%,#185FA5 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', padding:'20px', boxSizing:'border-box' }}>
       <div style={{ background:'white', borderRadius:'28px', padding:'32px 28px', width:'100%', maxWidth:'380px', boxShadow:'0 20px 60px rgba(0,0,0,0.3)', boxSizing:'border-box' }}>
+
+        {/* Logo oficial Syng */}
         <div style={{ textAlign:'center', marginBottom:'20px' }}>
-          <div style={{ fontSize:'38px', fontWeight:'800', color:'#534AB7', marginBottom:'4px', lineHeight:'1.2' }}>Syng</div>
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:'12px' }}>
+            <svg width="72" height="72" viewBox="0 0 100 100">
+              <defs><linearGradient id="logoBg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#2A3A8C"/><stop offset="100%" stopColor="#0F1540"/></linearGradient></defs>
+              <rect width="100" height="100" rx="22" fill="url(#logoBg)"/>
+              <text x="52" y="58" textAnchor="middle" fontFamily="-apple-system,BlinkMacSystemFont,sans-serif" fontSize="52" fontWeight="300" fill="white">4</text>
+              <circle cx="52" cy="76" r="6" fill="#7B6EF6"/>
+            </svg>
+          </div>
+          <div style={{ fontSize:'28px', fontWeight:'800', color:'#534AB7', marginBottom:'4px', letterSpacing:'-0.5px' }}>Syng</div>
           <div style={{ color:'#888', fontSize:'14px' }}>{t.slogan}</div>
         </div>
+
         <div style={{ fontSize:'12px', color:'#888', textAlign:'center', marginBottom:'10px' }}>{t.eligeIdioma}</div>
         <SelectorIdioma idioma={idioma} onChange={cambiarIdioma} />
         <div style={{ display:'flex', background:'#f5f5f7', borderRadius:'12px', padding:'4px', marginBottom:'20px' }}>
@@ -523,6 +565,55 @@ export default function App() {
           <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z"/></svg>
           {t.google}
         </button>
+
+        {/* ── INSTALAR APP ── */}
+        {!pwaInstaladaLogin && (
+          <div style={{ marginTop:'16px' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'12px' }}>
+              <div style={{ flex:1, height:'1px', background:'#e5e5e5' }} />
+              <span style={{ color:'#aaa', fontSize:'13px' }}>o</span>
+              <div style={{ flex:1, height:'1px', background:'#e5e5e5' }} />
+            </div>
+            <button onClick={instalarPwaLogin} style={{ width:'100%', padding:'13px', background:'linear-gradient(135deg,#2A3A8C,#0F1540)', border:'none', borderRadius:'14px', fontSize:'15px', fontWeight:'600', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', gap:'10px', color:'white', boxSizing:'border-box' }}>
+              <svg width="20" height="20" viewBox="0 0 100 100">
+                <rect width="100" height="100" rx="22" fill="rgba(255,255,255,0.15)"/>
+                <text x="52" y="58" textAnchor="middle" fontFamily="-apple-system,sans-serif" fontSize="52" fontWeight="300" fill="white">4</text>
+                <circle cx="52" cy="76" r="6" fill="#7B6EF6"/>
+              </svg>
+              Instalar Syng en mi dispositivo
+            </button>
+          </div>
+        )}
+
+        {/* Modal instrucciones instalación */}
+        {mostrarInstalarLogin && (
+          <div onClick={() => setMostrarInstalarLogin(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:500, padding:'0' }}>
+            <div onClick={e => e.stopPropagation()} style={{ background:'white', borderRadius:'24px 24px 0 0', padding:'32px 24px 40px', width:'100%', maxWidth:'400px' }}>
+              <div style={{ textAlign:'center', marginBottom:'24px' }}>
+                <svg width="64" height="64" viewBox="0 0 100 100" style={{ marginBottom:'12px' }}>
+                  <defs><linearGradient id="logoBg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#2A3A8C"/><stop offset="100%" stopColor="#0F1540"/></linearGradient></defs>
+                  <rect width="100" height="100" rx="22" fill="url(#logoBg2)"/>
+                  <text x="52" y="58" textAnchor="middle" fontFamily="-apple-system,sans-serif" fontSize="52" fontWeight="300" fill="white">4</text>
+                  <circle cx="52" cy="76" r="6" fill="#7B6EF6"/>
+                </svg>
+                <div style={{ fontSize:'18px', fontWeight:'700', color:'#1C1C2E', marginBottom:'8px' }}>Instalar Syng</div>
+                {pwaIosLogin ? (
+                  <div style={{ fontSize:'14px', color:'#666', lineHeight:'1.6' }}>
+                    En Safari, toca el botón <strong>Compartir</strong> ↑ y luego <strong>"Agregar a pantalla de inicio"</strong>
+                  </div>
+                ) : (
+                  <div style={{ fontSize:'14px', color:'#666', lineHeight:'1.6' }}>
+                    En Chrome, toca el menú <strong>⋮</strong> y luego <strong>"Agregar a pantalla de inicio"</strong>
+                  </div>
+                )}
+              </div>
+              <button onClick={() => setMostrarInstalarLogin(false)} style={{ width:'100%', padding:'15px', background:'linear-gradient(135deg,#534AB7,#185FA5)', border:'none', borderRadius:'14px', color:'white', fontSize:'15px', fontWeight:'600', cursor:'pointer' }}>
+                Entendido
+              </button>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   )
