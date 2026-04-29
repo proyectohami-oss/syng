@@ -1,6 +1,9 @@
 # Syng — Pendientes
 
-## Tag estable actual: v2.94-estable
+## Tag estable actual: v2.95-estable
+
+## Resuelto en v2.95
+- ✅ Invitación Lista Super lleva al grupo correcto
 
 ## Resuelto en v2.94
 - ✅ Botón invitar aparece en Pizarrón
@@ -20,7 +23,6 @@
 - App.jsx — login, navegación, tema, idioma
 
 ## Pendientes
-1. SEO — Crear metaetiquetas, sitemap y estructura para posicionar Syng en buscadores
-2. Mi Agenda — Muy lenta al cargar tareas del día y al agregar una nueva tarea
-3. Lista Super — Al aceptar invitación lleva al módulo pero NO al grupo correcto
-4. Botones de paga — Habilitar funcionalidad de pago (pendiente definir cuáles)
+1. SEO — metaetiquetas y sitemap para posicionar Syng en buscadores
+2. Mi Agenda — lenta al cargar tareas y al agregar nueva tarea
+3. Botones de paga — habilitar funcionalidad de pago
