@@ -1,6 +1,9 @@
 # Syng — Pendientes
 
-## Tag estable actual: v2.95-estable
+## Tag estable actual: v2.96-estable
+
+## Resuelto en v2.96
+- ✅ MiAgenda carga tareas más rápido (lectura en paralelo)
 
 ## Resuelto en v2.95
 - ✅ Invitación Lista Super lleva al grupo correcto
@@ -24,5 +27,4 @@
 
 ## Pendientes
 1. SEO — metaetiquetas y sitemap para posicionar Syng en buscadores
-2. Mi Agenda — lenta al cargar tareas y al agregar nueva tarea
-3. Botones de paga — habilitar funcionalidad de pago
+2. Botones de paga — habilitar funcionalidad de pago
