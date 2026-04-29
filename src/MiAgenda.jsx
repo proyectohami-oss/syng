@@ -132,21 +132,27 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     return () => unsubs.forEach(u => u())
   }, [userId, mes, anio])
 
+  // ✅ FIX velocidad: leer todos los grupos en paralelo con Promise.all
   const cargarTareas = async (dia, mesArg, anioArg) => {
     if (!userId) return
     setCargandoTareas(true)
     const key = getKey(anioArg ?? anio, mesArg ?? mes, dia)
-    let todas = []
-    const snap1 = await getDoc(doc(db, 'users', userId, 'pizarron', key))
-    const items1 = snap1.data()?.items || []
-    items1.forEach(i => todas.push({ ...i, grupoId:'personal', grupoNombre: tx.personal, grupoColor: COLORES[0] }))
+
     const gsSnap = await getDocs(collection(db, 'users', userId, 'misGrupos'))
-    for (let idx = 0; idx < gsSnap.docs.length; idx++) {
-      const g = gsSnap.docs[idx]
-      const snap = await getDoc(doc(db, 'grupos', g.id, 'pizarron', key))
-      const items = snap.data()?.items || []
-      items.forEach(i => todas.push({ ...i, grupoId: g.id, grupoNombre: g.data().nombre || 'Grupo', grupoColor: COLORES[(idx+1) % COLORES.length] }))
-    }
+    const gruposValidos = gsSnap.docs.filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' })
+
+    const [snap1, ...snapsGrupos] = await Promise.all([
+      getDoc(doc(db, 'users', userId, 'pizarron', key)),
+      ...gruposValidos.map(g => getDoc(doc(db, 'grupos', g.id, 'pizarron', key)))
+    ])
+
+    const todas = []
+    ;(snap1.data()?.items || []).forEach(i => todas.push({ ...i, grupoId:'personal', grupoNombre: tx.personal, grupoColor: COLORES[0] }))
+    snapsGrupos.forEach((snap, idx) => {
+      const g = gruposValidos[idx]
+      ;(snap.data()?.items || []).forEach(i => todas.push({ ...i, grupoId: g.id, grupoNombre: g.data().nombre || 'Grupo', grupoColor: COLORES[(idx+1) % COLORES.length] }))
+    })
+
     setTareas(todas)
     setCargandoTareas(false)
   }
@@ -177,6 +183,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setModoCapturar(false)
   }
 
+  // ✅ FIX velocidad: actualizar estado local sin releer Firebase al guardar
   const guardarTarea = async () => {
     if (!nuevaTarea.trim() || !diaSeleccionado || guardando) return
     setGuardando(true)
@@ -199,12 +206,21 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       const fsnap = await getDoc(fref)
       await setDoc(fref, { items: [...(fsnap.data()?.items || []), { ...nueva, id: generarId(), dia: f.dia, mes: f.mes, anio: f.anio }] })
     }
+
+    // ✅ Actualizar estado local directamente sin releer Firebase
+    const nuevaConGrupo = {
+      ...nueva,
+      grupoId: grupoSeleccionado.id,
+      grupoNombre: grupoSeleccionado.nombre,
+      grupoColor: grupoSeleccionado.color,
+    }
+    setTareas(prev => [...prev, nuevaConGrupo])
+
     setNuevaTarea('')
     setMostrarRepetir(false)
     setFechasRepetir([])
     setMostrarElegirFecha(false)
     setDiaElegido(null)
-    await cargarTareas(diaSeleccionado, mes, anio)
     setModoCapturar(false)
     setGuardando(false)
   }
@@ -400,13 +416,11 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   return (
     <div style={{ minHeight:'100vh', background:th.bg, fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', paddingBottom:'80px' }}>
 
-      {/* Header */}
       <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px' }}>
         <button onClick={onVolver} style={{ background:'rgba(255,255,255,0.15)', border:'none', borderRadius:'10px', padding:'8px 12px', color:'white', fontSize:'18px', cursor:'pointer' }}>‹</button>
         <div style={{ color:'white', fontSize:'20px', fontWeight:'700' }}>{tx.titulo}</div>
       </div>
 
-      {/* Calendario */}
       <div style={{ padding:'16px' }}>
         <div style={{ background:th.bgCard, borderRadius:'20px', padding:'16px', boxShadow:th.sombra, marginBottom:'16px' }}>
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'center', marginBottom:'16px' }}>
@@ -436,7 +450,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       </div>
 
-      {/* PANTALLA: Lista del día */}
       {diaSeleccionado && !modoEditar && !modoCapturar && (
         <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:200, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
           <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 20px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
@@ -514,7 +527,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
-      {/* PANTALLA: Capturar nueva tarea */}
       {modoCapturar && diaSeleccionado && (
         <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
           <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 20px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
@@ -531,7 +543,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
                 placeholder={tx.nuevaTarea}
                 style={{ flex:1, padding:'16px', borderRadius:'14px', border:`2px solid ${th.acento}`, fontSize:'17px', outline:'none', background: esOscuro ? 'rgba(255,255,255,0.06)' : 'white', color:th.texto, boxSizing:'border-box' }}
               />
-              {/* FIX #6: WebkitAppearance + overflow para círculo perfecto en iOS */}
               <button
                 onClick={guardarTarea}
                 disabled={guardando || !nuevaTarea.trim()}
@@ -581,7 +592,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
-      {/* PANTALLA: Editar tarea */}
       {modoEditar && (
         <div style={{ position:'fixed', inset:0, background:th.bg, zIndex:300, display:'flex', flexDirection:'column', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif' }}>
           <div style={{ background: esOscuro ? 'linear-gradient(135deg,rgba(83,74,183,0.9),rgba(45,43,107,0.85))' : 'linear-gradient(135deg,#534AB7,#185FA5)', padding:'48px 20px 24px', display:'flex', alignItems:'center', gap:'12px', flexShrink:0 }}>
@@ -613,7 +623,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
-      {/* Selector de grupo */}
       {mostrarSelectorGrupo && (
         <div onClick={() => setMostrarSelectorGrupo(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:400 }}>
           <div onClick={e=>e.stopPropagation()} style={{ background:th.bgCard, borderRadius:'20px 20px 0 0', padding:'20px 20px 40px', width:'100%', maxWidth:'400px' }}>
@@ -631,7 +640,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
         </div>
       )}
 
-      {/* NavBar */}
       <div style={{ position:'fixed', bottom:0, left:0, right:0, background: esOscuro?'rgba(6,6,15,0.85)':th.bgCard, borderTop: esOscuro?'1px solid rgba(255,255,255,0.1)':`1px solid ${th.borde}`, backdropFilter: esOscuro?'blur(20px)':'none', display:'flex', zIndex:50, paddingBottom:'env(safe-area-inset-bottom,0px)' }}>
         {[{key:'inicio',label:t.inicio,icon:'🏠'},{key:'miagenda',label:t.miAgenda,icon:'🗓'},{key:'pizarron',label:t.pizarron,icon:'📅'},{key:'listasuper',label:t.super2,icon:'🛒'},{key:'compartir',label:t.compartir,icon:'📤',accion:()=>{if(navigator.share){navigator.share({title:'Syng',text:'Te comparto Syng',url:'https://syng-psi.vercel.app'})}else{navigator.clipboard.writeText('https://syng-psi.vercel.app')}}},{key:'perfil',label:t.perfil,icon:'👤'}].map(item => (
           <button key={item.key} onClick={() => item.accion?item.accion():onNavegar(item.key)} style={{ flex:1, padding:'8px 0 6px', background:'none', border:'none', cursor:'pointer', display:'flex', flexDirection:'column', alignItems:'center', gap:'2px', color: item.key==='miagenda' ? th.acento : th.textoSub }}>
