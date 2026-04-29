@@ -271,7 +271,6 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
     const grupoId = generarId()
     const nuevoGrupo = { nombre: nuevoNombreGrupo.trim(), adminId: userId, adminEmail: userEmail || '', adminNombre: userName, miembros: [{ uid: userId, email: userEmail || '', nombre: userName, rol: 'admin' }], modulo: 'pizarron', creadoEn: Date.now() }
     await setDoc(doc(db, 'grupos', grupoId), nuevoGrupo)
-    // FIX: agregar adminId en misGrupos para que el botón de invitar aparezca
     await setDoc(doc(db, 'users', userId, 'misGrupos', grupoId), { nombre: nuevoGrupo.nombre, modulo: 'pizarron', adminId: userId })
     setGrupoActivo(grupoId); setNuevoNombreGrupo(''); setModalCrearGrupo(false); setModalGrupos(false)
   }
@@ -752,7 +751,23 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
                   <div style={{flex:1}}><div style={{fontSize:'16px',fontWeight:'600',color:'#2C2C2A'}}>{g.nombre}</div><div style={{fontSize:'12px',color:'#888'}}>{g.miembros?.length||1} {tx.miembro}{(g.miembros?.length||1)!==1?'s':''}</div></div>
                   {grupoActivo===g.id&&<span style={{color:'#534AB7',fontSize:'20px'}}>✓</span>}
                 </button>
-                <button onClick={()=>{setModalVerGrupo(g);setNombreGrupoEdit(g.nombre);setModalGrupos(false)}} style={{background:grupoActivo===g.id?'#EEF2FF':'#f8f8f8',border:grupoActivo===g.id?'2px solid #534AB7':'2px solid transparent',borderLeft:'none',borderRadius:'0 14px 14px 0',padding:'0 14px',fontSize:'16px',color:'#888',...T}}>⚙</button>
+                {/* ✅ FIX: onClick ahora lee el grupo completo desde Firebase */}
+                <button onClick={async()=>{
+                  try {
+                    const snap = await getDoc(doc(db,'grupos',g.id))
+                    if(snap.exists()){
+                      setModalVerGrupo({id:g.id,...snap.data()})
+                      setNombreGrupoEdit(snap.data().nombre||g.nombre)
+                    } else {
+                      setModalVerGrupo(g)
+                      setNombreGrupoEdit(g.nombre)
+                    }
+                  } catch(e) {
+                    setModalVerGrupo(g)
+                    setNombreGrupoEdit(g.nombre)
+                  }
+                  setModalGrupos(false)
+                }} style={{background:grupoActivo===g.id?'#EEF2FF':'#f8f8f8',border:grupoActivo===g.id?'2px solid #534AB7':'2px solid transparent',borderLeft:'none',borderRadius:'0 14px 14px 0',padding:'0 14px',fontSize:'16px',color:'#888',...T}}>⚙</button>
               </div>
             ))}
             <button onClick={()=>{setModalCrearGrupo(true);setModalGrupos(false)}} style={{display:'flex',alignItems:'center',gap:'14px',padding:'14px 16px',borderRadius:'14px',background:'#f8f8f8',border:'2px dashed #ddd',width:'100%',textAlign:'left',marginTop:'8px',...T}}>
