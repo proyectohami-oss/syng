@@ -3,7 +3,7 @@
 ## Tag estable actual: v2.98-estable
 
 ## Resuelto en v2.98
-- ✅ Google Analytics conectado (G-H39FTP20JR)
+- ✅ Google Analytics conectado (G-7JPTF06ND3) — propiedad Syng
 
 ## Resuelto en v2.97
 - ✅ SEO: metaetiquetas, Open Graph, Twitter Card, schema.org
@@ -23,6 +23,7 @@
 - Repo: https://github.com/proyectohami-oss/syng
 - Deploy: https://syng-psi.vercel.app
 - Firebase: syng-app
+- Analytics: G-7JPTF06ND3
 - Directorio: ~/syng/src/
 
 ## Módulos
@@ -33,5 +34,4 @@
 
 ## Pendientes
 1. Botones de pago — definir qué cobrar y cómo
-2. Panel admin — ver usuarios registrados y activos
-3. Formulario de perfil — capturar género, edad y ciudad
+2. Formulario de perfil — capturar género, edad y ciudad del usuario
