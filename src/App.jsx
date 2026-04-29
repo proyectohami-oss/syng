@@ -452,6 +452,8 @@ export default function App() {
         localStorage.setItem('syng_grupo_activo_pizarron', grupoDestino.grupoId)
         setPantalla('pizarron')
       } else {
+        // ✅ FIX: guardar grupo destino para Lista Super
+        localStorage.setItem('syng_grupo_activo_lista', grupoDestino.grupoId)
         setPantalla('listasuper')
       }
       setGrupoDestino(null)
@@ -496,6 +498,9 @@ export default function App() {
           setInvData(null)
           if (modulo === 'pizarron') {
             localStorage.setItem('syng_grupo_activo_pizarron', grupoId)
+          } else {
+            // ✅ FIX: guardar grupo destino para Lista Super también
+            localStorage.setItem('syng_grupo_activo_lista', grupoId)
           }
           setGrupoDestino({ grupoId, modulo })
           setPantalla(modulo === 'lista' ? 'listasuper' : 'pizarron')
@@ -528,7 +533,6 @@ export default function App() {
     <div style={{ minHeight:'100vh', background:'linear-gradient(135deg,#534AB7 0%,#185FA5 100%)', display:'flex', alignItems:'center', justifyContent:'center', fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif', padding:'20px', boxSizing:'border-box' }}>
       <div style={{ background:'white', borderRadius:'28px', padding:'32px 28px', width:'100%', maxWidth:'380px', boxShadow:'0 20px 60px rgba(0,0,0,0.3)', boxSizing:'border-box' }}>
 
-        {/* Logo oficial Syng */}
         <div style={{ textAlign:'center', marginBottom:'20px' }}>
           <div style={{ display:'flex', justifyContent:'center', marginBottom:'12px' }}>
             <svg width="72" height="72" viewBox="0 0 100 100">
@@ -566,7 +570,6 @@ export default function App() {
           {t.google}
         </button>
 
-        {/* ── INSTALAR APP ── */}
         {!pwaInstaladaLogin && (
           <div style={{ marginTop:'16px' }}>
             <div style={{ display:'flex', alignItems:'center', gap:'12px', marginBottom:'12px' }}>
@@ -585,7 +588,6 @@ export default function App() {
           </div>
         )}
 
-        {/* Modal instrucciones instalación */}
         {mostrarInstalarLogin && (
           <div onClick={() => setMostrarInstalarLogin(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:500, padding:'0' }}>
             <div onClick={e => e.stopPropagation()} style={{ background:'white', borderRadius:'24px 24px 0 0', padding:'32px 24px 40px', width:'100%', maxWidth:'400px' }}>

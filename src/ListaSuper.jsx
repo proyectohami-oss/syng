@@ -60,7 +60,12 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   const tx=TEXTOS[idioma]||TEXTOS.es
 
   const [grupos,setGrupos]=useState([])
-  const [grupoActivo,setGrupoActivo]=useState('personal')  // siempre inicia en personal
+  // ✅ FIX: leer grupo destino desde localStorage al abrir por invitación
+  const [grupoActivo,setGrupoActivo]=useState(()=>{
+    const saved=localStorage.getItem('syng_grupo_activo_lista')
+    if(saved){localStorage.removeItem('syng_grupo_activo_lista');return saved}
+    return grupoInicial||'personal'
+  })
   const [cargando,setCargando]=useState(true)
   const [seleccionados,setSeleccionados]=useState({})
   const [customProds,setCustomProds]=useState({})
@@ -290,15 +295,11 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   async function eliminarGrupo(){
     if(!modalVerGrupo||!userId) return
     const batch=writeBatch(db)
-    // Borrar referencias de todos los miembros
     for(const m of (modalVerGrupo.miembros||[])) batch.delete(doc(db,'users',m.uid,'misGrupos',modalVerGrupo.id))
-    // Borrar subcolección lista
     const listaSnap=await getDocs(collection(db,'grupos',modalVerGrupo.id,'lista'))
     listaSnap.docs.forEach(d=>batch.delete(d.ref))
-    // Borrar subcolección catalogoCustom
     const catSnap=await getDocs(collection(db,'grupos',modalVerGrupo.id,'catalogoCustom'))
     catSnap.docs.forEach(d=>batch.delete(d.ref))
-    // Borrar documento principal del grupo
     batch.delete(doc(db,'grupos',modalVerGrupo.id))
     await batch.commit()
     setModalVerGrupo(null);setConfirmEliminarGrupo(false);setGrupoActivo('personal')
