@@ -3,7 +3,7 @@
 ## Tag estable actual: v2.98-estable
 
 ## Resuelto en v2.98
-- ✅ Google Analytics conectado (G-7JPTF06ND3) — propiedad Syng
+- ✅ Google Analytics conectado (G-7JPTF06ND3)
 
 ## Resuelto en v2.97
 - ✅ SEO: metaetiquetas, Open Graph, Twitter Card, schema.org
@@ -32,6 +32,11 @@
 - Lista Super (ListaSuper.jsx)
 - App.jsx — login, navegación, tema, idioma
 
-## Pendientes
-1. Botones de pago — definir qué cobrar y cómo
-2. Formulario de perfil — capturar género, edad y ciudad del usuario
+## Pendientes (en pausa hasta tener 50 usuarios activos)
+1. Botones de pago — Openpay + RFC personal, $40 pesos/mes
+2. Formulario de perfil — género, edad y ciudad
+3. Panel admin — cuando haya usuarios de pago
+
+## Notas
+- RFC personal disponible para Openpay
+- Meta: 50 usuarios activos antes de implementar cobros
