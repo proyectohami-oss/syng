@@ -1,7 +1,8 @@
 # Syng — Pendientes
 
-## Tag estable actual: v2.98-estable
+## Tag estable actual: v2.99-estable
 
+## Resuelto en v2.99 - ✅ Pendientes del pasado se mueven al día actual
 ## Resuelto en v2.98
 - ✅ Google Analytics conectado (G-7JPTF06ND3)
 
