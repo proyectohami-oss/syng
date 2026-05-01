@@ -118,7 +118,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       snap.docs.forEach(d => {
         const parts = d.id.split('-').map(Number)
         if (parts[0] === anio && parts[1] === mes) {
-          const p = (d.data().items || []).filter(i => !i.realizada).length
+          const p = (d.data().items || []).length
           if (p > 0) { const k = `${parts[2]}`; data[k] = (data[k] || 0) + p }
         }
       })
