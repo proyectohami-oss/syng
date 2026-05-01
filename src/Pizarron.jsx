@@ -178,7 +178,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
   }, [userId])
 
   useEffect(() => {
-
+    moverPendientesRef.current = false
     const ref = getPizarronRef()
     if (!ref) return
     setCargando(true)
@@ -189,7 +189,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
       setCargando(false)
     })
     return () => unsub()
-  }, [userId, grupoActivo, anotaciones])
+  }, [userId, grupoActivo])
 
   const moverPendientesRef = useRef(false)
 
@@ -213,10 +213,8 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
   useEffect(() => {
     if (!userId || grupoActivo !== 'personal') return
     if (Object.keys(anotaciones).length === 0) return
-    const hoyStr = `${hoy.getFullYear()}-${hoy.getMonth()}-${hoy.getDate()}`
-    const lsKey = `syng_piz_migrado_${userId}_${hoyStr}`
-    if (localStorage.getItem(lsKey)) return
-    localStorage.setItem(lsKey, '1')
+    if (moverPendientesRef.current) return
+    moverPendientesRef.current = true
     const hoyKey = getKey(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
     const nuevas = { ...anotaciones }
     const promises = []
@@ -236,7 +234,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
       haycambios = true
     })
     if (haycambios) { setAnotaciones(nuevas); Promise.all(promises) }
-  }, [userId, grupoActivo, anotaciones])
+  }, [userId, grupoActivo])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
