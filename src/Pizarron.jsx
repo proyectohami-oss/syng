@@ -178,7 +178,6 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
   }, [userId])
 
   useEffect(() => {
-    moverPendientesRef.current = false
     const ref = getPizarronRef()
     if (!ref) return
     setCargando(true)
@@ -210,30 +209,44 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
     return () => window.removeEventListener('sinyi:agregar_tarea', handleAgregarTarea)
   }, [userId, grupoActivo, anotaciones])
 
+  // ✅ FIX v2.99: lee directo de Firebase con getDocs, sin depender de anotaciones.
+  // Así no hay loops en iOS y funciona bien en todos los dispositivos.
   useEffect(() => {
     if (!userId || grupoActivo !== 'personal') return
-    if (Object.keys(anotaciones).length === 0) return
-    if (moverPendientesRef.current) return
-    moverPendientesRef.current = true
+    const hoyStr = `${hoy.getFullYear()}-${hoy.getMonth()}-${hoy.getDate()}`
+    const lsKey = `syng_piz_migrado_${userId}_${hoyStr}`
+    if (localStorage.getItem(lsKey)) return
+    const ref = collection(db, 'users', userId, 'pizarron')
     const hoyKey = getKey(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
-    const nuevas = { ...anotaciones }
-    const promises = []
-    let haycambios = false
-    Object.keys(nuevas).forEach(key => {
-      if (key === hoyKey) return
-      const partes = key.split('-').map(Number)
-      const fechaKey = new Date(partes[0], partes[1], partes[2])
-      if (fechaKey >= new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())) return
-      const pendientes = (nuevas[key] || []).filter(a => !a.realizada)
-      if (pendientes.length === 0) return
-      nuevas[hoyKey] = [...(nuevas[hoyKey] || []), ...pendientes.map(a => ({...a, dia: hoy.getDate(), mes: hoy.getMonth(), anio: hoy.getFullYear()}))]
-      nuevas[key] = (nuevas[key] || []).filter(a => a.realizada)
-      promises.push(guardarKey(hoyKey, nuevas[hoyKey]))
-      if (nuevas[key].length === 0) promises.push(guardarKey(key, []))
-      else promises.push(guardarKey(key, nuevas[key]))
-      haycambios = true
+    const hoyDate = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate())
+    getDocs(ref).then(snap => {
+      const promises = []
+      let haycambios = false
+      const itemsParaHoy = []
+      const hoyDoc = snap.docs.find(d => d.id === hoyKey)
+      const hoyActual = hoyDoc ? (hoyDoc.data().items || []) : []
+      snap.docs.forEach(d => {
+        const key = d.id
+        if (key === hoyKey) return
+        const partes = key.split('-').map(Number)
+        const fechaKey = new Date(partes[0], partes[1], partes[2])
+        if (fechaKey >= hoyDate) return
+        const items = d.data().items || []
+        const pendientes = items.filter(a => !a.realizada)
+        if (pendientes.length === 0) return
+        itemsParaHoy.push(...pendientes.map(a => ({...a, dia: hoy.getDate(), mes: hoy.getMonth(), anio: hoy.getFullYear()})))
+        const atendidas = items.filter(a => a.realizada)
+        if (atendidas.length === 0) promises.push(deleteDoc(doc(ref, key)))
+        else promises.push(setDoc(doc(ref, key), { items: atendidas }))
+        haycambios = true
+      })
+      if (haycambios) {
+        const hoyFinal = [...hoyActual, ...itemsParaHoy]
+        promises.push(setDoc(doc(ref, hoyKey), { items: hoyFinal }))
+        Promise.all(promises)
+      }
+      localStorage.setItem(lsKey, '1')
     })
-    if (haycambios) { setAnotaciones(nuevas); Promise.all(promises) }
   }, [userId, grupoActivo])
 
   useEffect(() => {
