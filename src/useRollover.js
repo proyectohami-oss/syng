@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { db } from './firebase'
-import { collection, doc, getDocs, setDoc, deleteDoc } from 'firebase/firestore'
+import { collection, doc, getDocs, setDoc, deleteDoc, enableNetwork } from 'firebase/firestore'
 
 export function useRollover(userId) {
   useEffect(() => {
@@ -60,7 +60,7 @@ export function useRollover(userId) {
 
     correr()
 
-    const alRegresar = () => { if (document.visibilityState === 'visible') correr() }
+    const alRegresar = () => { if (document.visibilityState === 'visible') { enableNetwork(db); correr() } }
     document.addEventListener('visibilitychange', alRegresar)
     return () => document.removeEventListener('visibilitychange', alRegresar)
   }, [userId])
