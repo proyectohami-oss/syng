@@ -9,6 +9,7 @@ import ListaTareas from './ListaTareas'
 import ListaSuper from './ListaSuper'
 import MiAgenda from './MiAgenda'
 import PantallaDemo from './PantallaDemo'
+import { useRollover } from './useRollover'
 
 const TEMA = {
   oscuro: {
@@ -353,6 +354,7 @@ export default function App() {
   const [invData, setInvData] = useState(null)
   const [invCargando, setInvCargando] = useState(false)
   const [grupoDestino, setGrupoDestino] = useState(null)
+  useRollover(user?.uid || null)
   const [verDemo, setVerDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true')
 
   // PWA install — pantalla de login
