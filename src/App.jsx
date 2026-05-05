@@ -10,6 +10,7 @@ import ListaSuper from './ListaSuper'
 import MiAgenda from './MiAgenda'
 import PantallaDemo from './PantallaDemo'
 import { useRollover } from './useRollover'
+import SplashScreen from './SplashScreen'
 
 const TEMA = {
   oscuro: {
@@ -356,6 +357,7 @@ export default function App() {
   const [grupoDestino, setGrupoDestino] = useState(null)
   useRollover(user?.uid || null)
   const [verDemo, setVerDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true')
+  const [splashListo, setSplashListo] = useState(false)
 
   // PWA install — pantalla de login
   const [pwaPromptLogin, setPwaPromptLogin] = useState(null)
@@ -478,6 +480,8 @@ export default function App() {
 
   useEffect(() => { const h = () => setPantalla('inicio'); window.addEventListener('popstate', h); return () => window.removeEventListener('popstate', h) }, [])
   useEffect(() => { if (pantalla !== 'inicio') window.history.pushState({ pantalla }, '') }, [pantalla])
+
+  if (return <SplashScreen onListo={() => setSplashListo(true)} />
 
   if (verDemo) return <PantallaDemo onEntrar={()=>{ window.history.replaceState({},'',window.location.pathname); setVerDemo(false) }} />
 
