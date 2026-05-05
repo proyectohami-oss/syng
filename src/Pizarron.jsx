@@ -343,6 +343,7 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
   const primerDia = new Date(anio, mes, 1).getDay()
   const diasEnMes = new Date(anio, mes + 1, 0).getDate()
   const esHoy = (d) => d === hoy.getDate() && mes === hoy.getMonth() && anio === hoy.getFullYear()
+  const esResaltado = (d) => modalDia ? d === modalDia : esHoy(d)
   const esFinde = (idx) => { const s = idx % 7; return s === 0 || s === 6 }
   const celdas = []
   for (let i = 0; i < primerDia; i++) celdas.push(null)
@@ -726,9 +727,9 @@ export default function Pizarron({ onVolver, grupoInicialId, tema = 'oscuro', id
               const lista = anotaciones[key] || []
               const isDragOver = dragOverCelda === dia
               return (
-                <div key={idx} data-dia={dia||''} onDragOver={e=>{e.preventDefault();if(dia)setDragOverCelda(dia)}} onDragLeave={()=>setDragOverCelda(null)} onDrop={e=>onDropCelda(e,dia)} style={{height:'70px',overflow:'hidden',background:isDragOver?'#EEF2FF':dia?(esFinde(idx)?'#F8F8F8':'white'):'transparent',borderRadius:'10px',padding:'4px',border:isDragOver?'2px dashed #534AB7':esHoy(dia)?'2px solid #534AB7':'1px solid #ececec',boxSizing:'border-box'}}>
+                <div key={idx} data-dia={dia||''} onDragOver={e=>{e.preventDefault();if(dia)setDragOverCelda(dia)}} onDragLeave={()=>setDragOverCelda(null)} onDrop={e=>onDropCelda(e,dia)} style={{height:'70px',overflow:'hidden',background:isDragOver?'#EEF2FF':dia?(esFinde(idx)?'#F8F8F8':'white'):'transparent',borderRadius:'10px',padding:'4px',border:isDragOver?'2px dashed #534AB7':esResaltado(dia)?'2px solid #534AB7':'1px solid #ececec',boxSizing:'border-box'}}>
                   {dia && (<>
-                    <div onClick={()=>abrirModal(dia)} style={{fontSize:'12px',fontWeight:esHoy(dia)?'700':'400',color:esHoy(dia)?'#534AB7':'#2C2C2A',marginBottom:'2px',display:'inline-block',padding:'1px 3px',borderRadius:'4px',...T}}>{dia}</div>
+                    <div onClick={()=>abrirModal(dia)} style={{fontSize:'12px',fontWeight:esResaltado(dia)?'700':'400',color:esResaltado(dia)?'#534AB7':'#2C2C2A',marginBottom:'2px',display:'inline-block',padding:'1px 3px',borderRadius:'4px',...T}}>{dia}</div>
                     {lista.slice(0, 2).map((a, i) => (
                       <div key={i} draggable onDragStart={e=>onDragStartCalendario(e,key,i)} style={{display:'flex',alignItems:'flex-start',gap:'2px',marginBottom:'1px',userSelect:'none'}}>
                         <span onTouchStart={e=>{e.stopPropagation();limpiarDragCalendario();touchStartPos.current={x:e.touches[0].clientX,y:e.touches[0].clientY};isDraggingCalendario.current=true;dragItem.current={fromKey:key,idx:i};const g=document.createElement('div');g.style.cssText='position:fixed;padding:6px 12px;background:#534AB7;color:white;border-radius:10px;font-size:12px;pointer-events:none;z-index:9999;opacity:0.9;';g.innerText=tx.moviendo;document.body.appendChild(g);dragGhost.current=g;}} onTouchMove={onTouchMoveCalendario} onTouchEnd={onTouchEndCalendario} style={{fontSize:'13px',color:'#bbb',flexShrink:0,lineHeight:'1.3',padding:'0 2px',touchAction:'none',cursor:'grab'}}>⠿</span>
