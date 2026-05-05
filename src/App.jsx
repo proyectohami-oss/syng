@@ -481,7 +481,7 @@ export default function App() {
   useEffect(() => { const h = () => setPantalla('inicio'); window.addEventListener('popstate', h); return () => window.removeEventListener('popstate', h) }, [])
   useEffect(() => { if (pantalla !== 'inicio') window.history.pushState({ pantalla }, '') }, [pantalla])
 
-  if (return <SplashScreen onListo={() => setSplashListo(true)} />
+  if (!splashListo) return <SplashScreen onListo={() => setSplashListo(true)} />
 
   if (verDemo) return <PantallaDemo onEntrar={()=>{ window.history.replaceState({},'',window.location.pathname); setVerDemo(false) }} />
 
