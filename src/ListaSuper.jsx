@@ -330,7 +330,6 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
       const nuevoCustom = {...customProds, [dep]: [...(customProds[dep]||[]), prod]}
       setCustomProds(nuevoCustom)
       await guardarCustom(nuevoCustom, grupo)
-      setFiltroCat('')
       setTab('list')
     } catch(e) { console.error(e) }
     setCargandoIA(false)
