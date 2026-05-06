@@ -326,6 +326,10 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
           || dep
       }
       await setDoc(getListaRef(prod), {qty:1, done:false, dep})
+      const grupo = grupoActivo
+      const nuevoCustom = {...customProds, [dep]: [...(customProds[dep]||[]), prod]}
+      setCustomProds(nuevoCustom)
+      await guardarCustom(nuevoCustom, grupo)
       setFiltroCat('')
       setTab('list')
     } catch(e) { console.error(e) }
@@ -378,9 +382,12 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
         ))}
       </div>
       <div style={{padding:'7px 10px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
-        {tab==='cat'&&<div style={{position:'relative',display:'flex',alignItems:'center'}}>
-          <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={{...inp,paddingRight:'32px'}}/>
-          {filtroCat&&<button onClick={()=>setFiltroCat('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
+        {tab==='cat'&&<div style={{display:'flex',gap:'8px',alignItems:'center'}}>
+          <div style={{position:'relative',flex:1,display:'flex',alignItems:'center'}}>
+            <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={{...inp,paddingRight:'32px',width:'100%'}}/>
+            {filtroCat&&<button onClick={()=>setFiltroCat('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
+          </div>
+          {filtroCat&&<button onClick={()=>agregarConIA(filtroCat)} disabled={cargandoIA} title="Crear y agregar a lista" style={{flexShrink:0,width:'36px',height:'36px',borderRadius:'50%',background:cargandoIA?'#ccc':th.acento,border:'none',cursor:cargandoIA?'default':'pointer',color:'white',fontSize:'20px',display:'flex',alignItems:'center',justifyContent:'center',fontWeight:'300'}}>{cargandoIA?'…':'+'}</button>}
         </div>}
         {tab==='list'&&<div style={{position:'relative',display:'flex',alignItems:'center'}}>
           <input ref={listInputRef} value={filtroList} onChange={e=>setFiltroList(e.target.value)} placeholder={tx.buscarLista} style={{...inp,paddingRight:'32px'}}/>
