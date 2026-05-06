@@ -82,6 +82,8 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   const [confirmEliminarGrupo,setConfirmEliminarGrupo]=useState(false)
   const [cargandoInvitacion,setCargandoInvitacion]=useState(false)
   const [modalVisitante,setModalVisitante]=useState(false)
+  const [textoIA,setTextoIA]=useState('')
+  const [cargandoIA,setCargandoIA]=useState(false)
 
   // ── Migrar localStorage a Firebase personal (una sola vez) ──
   useEffect(()=>{
@@ -305,6 +307,33 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     setModalVerGrupo(null);setConfirmEliminarGrupo(false);setGrupoActivo('personal')
   }
 
+  const agregarConIA = async () => {
+    if (!textoIA.trim() || cargandoIA) return
+    if (!userId) { setModalVisitante(true); return }
+    const prod = textoIA.trim()
+    setCargandoIA(true)
+    try {
+      const apiKey = import.meta.env.VITE_CLAUDE_API_KEY || ''
+      let dep = depOrder[3] || depOrder[0]
+      if (apiKey) {
+        const res = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+          body: JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:30,messages:[{role:'user',content:`Departamento de supermercado para "${prod}". Opciones: ${depOrder.join(', ')}. Responde SOLO el nombre exacto del departamento.`}]})
+        })
+        const data = await res.json()
+        const raw = (data.content?.[0]?.text || '').trim()
+        dep = depOrder.find(d => d.toLowerCase()===raw.toLowerCase())
+          || depOrder.find(d => raw.toLowerCase().includes(d.toLowerCase()))
+          || dep
+      }
+      await setDoc(getListaRef(prod), {qty:1, done:false, dep})
+      setTextoIA('')
+      setTab('list')
+    } catch(e) { console.error(e) }
+    setCargandoIA(false)
+  }
+
   const nSel=Object.keys(seleccionados).length
   const todo=getTodo()
   const g=grupoActivo==='personal'?{id:'personal',nombre:'Personal',color:'#888'}:(grupos.find(gr=>gr.id===grupoActivo)||null)
@@ -350,16 +379,25 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
           </div>
         ))}
       </div>
+      <div style={{padding:'7px 10px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
+        {tab==='cat'&&<div style={{position:'relative',display:'flex',alignItems:'center'}}>
+          <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={{...inp,paddingRight:'32px'}}/>
+          {filtroCat&&<button onClick={()=>setFiltroCat('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
+        </div>}
+        {tab==='list'&&<div style={{position:'relative',display:'flex',alignItems:'center'}}>
+          <input ref={listInputRef} value={filtroList} onChange={e=>setFiltroList(e.target.value)} placeholder={tx.buscarLista} style={{...inp,paddingRight:'32px'}}/>
+          {filtroList&&<button onClick={()=>setFiltroList('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
+        </div>}
+      </div>
+      <div style={{padding:'6px 10px',background:th.bgCard,borderBottom:`1px solid ${th.borde}`,display:'flex',gap:'8px',alignItems:'center'}}>
+        <input value={textoIA} onChange={e=>setTextoIA(e.target.value)} onKeyDown={e=>e.key==='Enter'&&agregarConIA()} disabled={cargandoIA} placeholder={cargandoIA?'Syng clasificando...':'✨ Agregar producto (Syng clasifica solo)'} style={{...inp,flex:1,fontSize:'13px'}}/>
+        <button onClick={agregarConIA} disabled={cargandoIA||!textoIA.trim()} style={{flexShrink:0,width:'34px',height:'34px',borderRadius:'50%',background:textoIA.trim()&&!cargandoIA?th.acento:'#ccc',border:'none',cursor:'pointer',color:'white',fontSize:'20px',display:'flex',alignItems:'center',justifyContent:'center'}}>{cargandoIA?'…':'+'}</button>
+      </div>
       </div>
 
       {tab==='cat'&&(
         <div>
-          <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`,position:'sticky',top:0,zIndex:10}}>
-            <div style={{position:'relative',display:'flex',alignItems:'center'}}>
-              <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={{...inp,paddingRight:'32px'}}/>
-              {filtroCat&&<button onClick={()=>setFiltroCat('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
-            </div>
-          </div>
+
           {depOrder.map(dep=>{
             const prods=filtroCat?todo[dep].filter(p=>fuzzyMatch(filtroCat,p)):todo[dep]
             if(!prods.length) return null
@@ -404,12 +442,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
 
       {tab==='list'&&(
         <div>
-          <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`,position:'sticky',top:0,zIndex:10}}>
-            <div style={{position:'relative',display:'flex',alignItems:'center'}}>
-              <input ref={listInputRef} value={filtroList} onChange={e=>setFiltroList(e.target.value)} placeholder={tx.buscarLista} style={{...inp,paddingRight:'32px'}}/>
-              {filtroList&&<button onClick={()=>setFiltroList('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
-            </div>
-          </div>
+
           {listSelMode?(
             <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'7px 14px',background:th.selBg,borderBottom:`0.5px solid ${th.selBorde}`}}>
               <span style={{fontSize:'12px',color:th.selTexto}}>{listSelIds.length} {tx.seleccionados}</span>
