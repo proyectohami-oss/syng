@@ -17,7 +17,7 @@ export function useFCM(userId) {
         if (permission !== 'granted') return
 
         const messaging = getMessaging(app)
-        const swReg = await navigator.serviceWorker.ready
+        const swReg = await navigator.serviceWorker.register('/firebase-messaging-sw.js')
         const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg })
         if (!token) return
 
