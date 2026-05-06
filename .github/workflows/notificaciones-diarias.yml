@@ -1,0 +1,19 @@
+name: Notificaciones diarias Syng
+
+on:
+  schedule:
+    - cron: '0 14 * * *'  # 8am hora Cancún (UTC-6)
+  workflow_dispatch:       # permite correrlo manualmente para probar
+
+jobs:
+  notificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      - run: npm install firebase-admin
+      - run: node .github/scripts/enviar-notificaciones.js
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
