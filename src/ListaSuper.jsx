@@ -82,7 +82,6 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
   const [confirmEliminarGrupo,setConfirmEliminarGrupo]=useState(false)
   const [cargandoInvitacion,setCargandoInvitacion]=useState(false)
   const [modalVisitante,setModalVisitante]=useState(false)
-  const [textoIA,setTextoIA]=useState('')
   const [cargandoIA,setCargandoIA]=useState(false)
 
   // ── Migrar localStorage a Firebase personal (una sola vez) ──
@@ -307,10 +306,9 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
     setModalVerGrupo(null);setConfirmEliminarGrupo(false);setGrupoActivo('personal')
   }
 
-  const agregarConIA = async () => {
-    if (!textoIA.trim() || cargandoIA) return
+  const agregarConIA = async (prod) => {
+    if (!prod || cargandoIA) return
     if (!userId) { setModalVisitante(true); return }
-    const prod = textoIA.trim()
     setCargandoIA(true)
     try {
       const apiKey = import.meta.env.VITE_CLAUDE_API_KEY || ''
@@ -328,7 +326,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
           || dep
       }
       await setDoc(getListaRef(prod), {qty:1, done:false, dep})
-      setTextoIA('')
+      setFiltroCat('')
       setTab('list')
     } catch(e) { console.error(e) }
     setCargandoIA(false)
@@ -389,10 +387,6 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
           {filtroList&&<button onClick={()=>setFiltroList('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
         </div>}
       </div>
-      <div style={{padding:'6px 10px',background:th.bgCard,borderBottom:`1px solid ${th.borde}`,display:'flex',gap:'8px',alignItems:'center'}}>
-        <input value={textoIA} onChange={e=>setTextoIA(e.target.value)} onKeyDown={e=>e.key==='Enter'&&agregarConIA()} disabled={cargandoIA} placeholder={cargandoIA?'Syng clasificando...':'✨ Agregar producto (Syng clasifica solo)'} style={{...inp,flex:1,fontSize:'13px'}}/>
-        <button onClick={agregarConIA} disabled={cargandoIA||!textoIA.trim()} style={{flexShrink:0,width:'34px',height:'34px',borderRadius:'50%',background:textoIA.trim()&&!cargandoIA?th.acento:'#ccc',border:'none',cursor:'pointer',color:'white',fontSize:'20px',display:'flex',alignItems:'center',justifyContent:'center'}}>{cargandoIA?'…':'+'}</button>
-      </div>
       </div>
 
       {tab==='cat'&&(
@@ -435,7 +429,13 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
             )
           })}
           {filtroCat&&depOrder.every(dep=>!todo[dep].some(p=>fuzzyMatch(filtroCat,p)))&&(
-            <div style={{padding:'32px 16px',textAlign:'center',color:th.textoMuted,fontSize:'13px'}}>{tx.sinResultados} "{filtroCat}"</div>
+            <div style={{padding:'32px 16px',textAlign:'center'}}>
+              <div style={{color:th.textoMuted,fontSize:'13px',marginBottom:'14px'}}>{tx.sinResultados} "{filtroCat}"</div>
+              <button onClick={()=>agregarConIA(filtroCat)} disabled={cargandoIA} style={{background:cargandoIA?th.bgStripe:th.acento,color:cargandoIA?th.textoMuted:'white',border:'none',borderRadius:'12px',padding:'11px 22px',fontSize:'14px',fontWeight:'600',cursor:cargandoIA?'default':'pointer',fontFamily:'inherit'}}>
+                {cargandoIA?'Syng clasificando...':'+ Crear "'+filtroCat+'"'}
+              </button>
+              <div style={{fontSize:'11px',color:th.textoMuted,marginTop:'8px'}}>Syng lo clasifica y agrega a tu lista</div>
+            </div>
           )}
         </div>
       )}
