@@ -319,6 +319,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
 
   return(
     <div style={{minHeight:'100vh',background:th.bg,fontFamily:'-apple-system,BlinkMacSystemFont,sans-serif'}}>
+      <div style={{position:'sticky',top:0,zIndex:20}}>
       <div style={{background:th.header,padding:'12px 16px 0'}}>
         <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',paddingBottom:'12px'}}>
           <div>
@@ -349,10 +350,11 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
           </div>
         ))}
       </div>
+      </div>
 
       {tab==='cat'&&(
         <div>
-          <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
+          <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`,position:'sticky',top:0,zIndex:10}}>
             <div style={{position:'relative',display:'flex',alignItems:'center'}}>
               <input ref={catInputRef} value={filtroCat} onChange={e=>setFiltroCat(e.target.value)} placeholder={tx.buscarCatalogo} style={{...inp,paddingRight:'32px'}}/>
               {filtroCat&&<button onClick={()=>setFiltroCat('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
@@ -402,7 +404,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
 
       {tab==='list'&&(
         <div>
-          <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`}}>
+          <div style={{padding:'8px 12px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`,position:'sticky',top:0,zIndex:10}}>
             <div style={{position:'relative',display:'flex',alignItems:'center'}}>
               <input ref={listInputRef} value={filtroList} onChange={e=>setFiltroList(e.target.value)} placeholder={tx.buscarLista} style={{...inp,paddingRight:'32px'}}/>
               {filtroList&&<button onClick={()=>setFiltroList('')} style={{position:'absolute',right:'10px',background:'none',border:'none',cursor:'pointer',fontSize:'16px',color:th.textoMuted,lineHeight:1,padding:'0'}}>✕</button>}
