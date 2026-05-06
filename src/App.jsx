@@ -10,6 +10,7 @@ import ListaSuper from './ListaSuper'
 import MiAgenda from './MiAgenda'
 import PantallaDemo from './PantallaDemo'
 import { useRollover } from './useRollover'
+import { useFCM } from './useFCM'
 import SplashScreen from './SplashScreen'
 
 const TEMA = {
@@ -356,6 +357,7 @@ export default function App() {
   const [invCargando, setInvCargando] = useState(false)
   const [grupoDestino, setGrupoDestino] = useState(null)
   useRollover(user?.uid || null)
+  useFCM(user?.uid || null)
   const [verDemo, setVerDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true')
   const [splashListo, setSplashListo] = useState(false)
 
