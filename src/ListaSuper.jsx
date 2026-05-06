@@ -20,10 +20,11 @@ function fuzzyMatch(query,text) {
   if(t.includes(q)) return true
   if(q.length<3) return false
   return t.split(' ').some(w=>{
+    if(w[0]!==q[0]) return false
     if(Math.abs(w.length-q.length)>2) return false
     let errors=0; const len=Math.max(w.length,q.length)
     for(let i=0;i<len;i++){if(w[i]!==q[i])errors++}
-    return errors<=Math.floor(q.length/3)+1
+    return errors<=Math.floor(q.length/4)+1
   })
 }
 function generarId(){return Math.random().toString(36).substr(2,9)}
@@ -405,7 +406,7 @@ export default function ListaSuper({onVolver,tema='oscuro',idioma='es',userId=nu
               <div key={dep}>
                 <div style={{fontSize:'9px',fontWeight:'600',color:th.textoMuted,letterSpacing:'.08em',textTransform:'uppercase',padding:'7px 14px 3px',background:th.bgStripe,borderBottom:`0.5px solid ${th.borde}`,display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                   {dep}
-                  <button onClick={()=>{setMData({dep});setModal('add-prod')}} style={{fontSize:'10px',color:th.acento,background:'none',border:'none',cursor:'pointer',fontFamily:'inherit'}}>{tx.agregarProd}</button>
+                  
                 </div>
                 {prods.map(p=>{
                   const isSel=!!seleccionados[p]
