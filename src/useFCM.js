@@ -1,8 +1,7 @@
 import { useEffect } from 'react'
-import { initializeApp, getApps } from 'firebase/app'
 import { getMessaging, getToken, onMessage } from 'firebase/messaging'
 import { doc, setDoc } from 'firebase/firestore'
-import { db } from './firebase'
+import { db, app } from './firebase'
 
 const VAPID_KEY = 'BNF4yjw5yr-itnHTX7B8Qq5PnNxtnXz8l6lluP4BXoHWtg0Nihfx_yAFpa8czJDezqK1ivw1dFkqgbzrxrKGMck'
 
@@ -17,7 +16,7 @@ export function useFCM(userId) {
         const permission = await Notification.requestPermission()
         if (permission !== 'granted') return
 
-        const messaging = getMessaging()
+        const messaging = getMessaging(app)
         const token = await getToken(messaging, { vapidKey: VAPID_KEY })
         if (!token) return
 
