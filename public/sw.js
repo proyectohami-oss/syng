@@ -4,9 +4,16 @@ self.addEventListener('activate', e => e.waitUntil(clients.claim()))
 self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))))
 
 self.addEventListener('push', e => {
-  const data = e.data?.json() || {}
-  const title = data.notification?.title || 'Syng'
-  const body = data.notification?.body || 'Tienes pendientes para hoy'
+  let title = 'Syng 📅'
+  let body = 'Tienes pendientes para hoy'
+  try {
+    const data = e.data?.json()
+    if (data?.notification?.title) title = data.notification.title
+    if (data?.notification?.body) body = data.notification.body
+  } catch(err) {
+    const text = e.data?.text() || ''
+    if (text) body = text
+  }
   e.waitUntil(
     self.registration.showNotification(title, {
       body,
