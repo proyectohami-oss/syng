@@ -1,36 +1,49 @@
 import { useEffect } from 'react'
-import { getMessaging, getToken, onMessage } from 'firebase/messaging'
 import { doc, setDoc } from 'firebase/firestore'
-import { db, app } from './firebase'
+import { db } from './firebase'
 
-const VAPID_KEY = 'BNF4yjw5yr-itnHTX7B8Qq5PnNxtnXz8l6lluP4BXoHWtg0Nihfx_yAFpa8czJDezqK1ivw1dFkqgbzrxrKGMck'
+const VAPID_PUBLIC = 'BKx2pFxMDsfFy1MT6-r-BAtt52b-xJ9V_uOER1HMGKgBQR0SRgcTlUhxrjqMtnRncEmd5yLRVsecxPJMUuYHXqc'
+
+function urlBase64ToUint8Array(base64) {
+  const pad = '='.repeat((4 - base64.length % 4) % 4)
+  const b64 = (base64 + pad).replace(/-/g, '+').replace(/_/g, '/')
+  const raw = window.atob(b64)
+  return Uint8Array.from([...raw].map(c => c.charCodeAt(0)))
+}
 
 export function useFCM(userId) {
   useEffect(() => {
     if (!userId) return
     if (!('Notification' in window)) return
     if (!('serviceWorker' in navigator)) return
+    if (!('PushManager' in window)) return
 
     const init = async () => {
       try {
         const permission = await Notification.requestPermission()
         if (permission !== 'granted') return
 
-        const messaging = getMessaging(app)
-        const token = await getToken(messaging, { vapidKey: VAPID_KEY })
-        if (!token) return
+        const reg = await navigator.serviceWorker.ready
+        let sub = await reg.pushManager.getSubscription()
+        if (!sub) {
+          sub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+          })
+        }
 
-        await setDoc(
-          doc(db, 'users', userId, 'fcmTokens', token.slice(-20)),
-          { token, userId, updatedAt: Date.now() }
-        )
+        const p256dh = btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh'))))
+        const auth = btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth'))))
 
-        onMessage(messaging, payload => {
-          const { title, body } = payload.notification || {}
-          if (title) new Notification(title, { body, icon: '/icon-192.png' })
+        await setDoc(doc(db, 'users', userId, 'pushSubs', userId), {
+          endpoint: sub.endpoint,
+          keys: { p256dh, auth },
+          userId,
+          updatedAt: Date.now()
         })
+        console.log('✅ Push subscription guardada')
       } catch(e) {
-        console.log('FCM:', e.message)
+        console.log('Push error:', e.message)
       }
     }
 

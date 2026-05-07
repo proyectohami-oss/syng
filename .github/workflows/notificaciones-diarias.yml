@@ -2,8 +2,8 @@ name: Notificaciones diarias Syng
 
 on:
   schedule:
-    - cron: '0 14 * * *'  # 8am hora Cancún (UTC-6)
-  workflow_dispatch:       # permite correrlo manualmente para probar
+    - cron: '0 14 * * *'
+  workflow_dispatch:
 
 jobs:
   notificar:
@@ -13,7 +13,9 @@ jobs:
       - uses: actions/setup-node@v3
         with:
           node-version: '18'
-      - run: npm install firebase-admin
+      - run: npm install firebase-admin web-push
       - run: node .github/scripts/enviar-notificaciones.cjs
         env:
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PUBLIC: ${{ secrets.VAPID_PUBLIC }}
+          VAPID_PRIVATE: ${{ secrets.VAPID_PRIVATE }}
