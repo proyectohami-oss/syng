@@ -369,6 +369,7 @@ export default function App() {
           }
         })
       })
+      setInterval(() => reg.update(), 60000)
     })
   }, [])
   useFCM(user?.uid || null)
