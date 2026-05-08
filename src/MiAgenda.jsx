@@ -157,6 +157,20 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setCargandoTareas(false)
   }
 
+  useEffect(() => {
+    if (!userId || !diaSeleccionado) return
+    const key = getKey(anio, mes, diaSeleccionado)
+    const unsubs = []
+    const onChange = () => cargarTareas(diaSeleccionado, mes, anio)
+    unsubs.push(onSnapshot(doc(db, 'users', userId, 'pizarron', key), onChange))
+    getDocs(collection(db, 'users', userId, 'misGrupos')).then(gsSnap => {
+      gsSnap.docs
+        .filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' })
+        .forEach(g => unsubs.push(onSnapshot(doc(db, 'grupos', g.id, 'pizarron', key), onChange)))
+    })
+    return () => unsubs.forEach(u => u())
+  }, [userId, diaSeleccionado, mes, anio])
+
   const tocarDia = (dia) => {
     setDiaSeleccionado(dia)
     setTareasSeleccionadas([])
