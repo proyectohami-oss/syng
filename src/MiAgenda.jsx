@@ -157,36 +157,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setCargandoTareas(false)
   }
 
-  useEffect(() => {
-    if (!userId || !diaSeleccionado) return
-    const key = getKey(anio, mes, diaSeleccionado)
-    let unsubs = []
-    const merge = () => {
-      const personalRef = doc(db, 'users', userId, 'pizarron', key)
-      getDocs(collection(db, 'users', userId, 'misGrupos')).then(async gsSnap => {
-        const gruposValidos = gsSnap.docs.filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' })
-        const [snap1, ...snapsGrupos] = await Promise.all([
-          getDoc(personalRef),
-          ...gruposValidos.map(g => getDoc(doc(db, 'grupos', g.id, 'pizarron', key)))
-        ])
-        const todas = []
-        ;(snap1.data()?.items || []).forEach(i => todas.push({ ...i, grupoId:'personal', grupoNombre: tx.personal, grupoColor: COLORES[0] }))
-        snapsGrupos.forEach((snap, idx) => {
-          const g = gruposValidos[idx]
-          ;(snap.data()?.items || []).forEach(i => todas.push({ ...i, grupoId: g.id, grupoNombre: g.data().nombre || 'Grupo', grupoColor: COLORES[(idx+1) % COLORES.length] }))
-        })
-        setTareas(todas)
-      })
-    }
-    const personalRef = doc(db, 'users', userId, 'pizarron', key)
-    unsubs.push(onSnapshot(personalRef, merge))
-    getDocs(collection(db, 'users', userId, 'misGrupos')).then(gsSnap => {
-      gsSnap.docs.filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' })
-        .forEach(g => unsubs.push(onSnapshot(doc(db, 'grupos', g.id, 'pizarron', key), merge)))
-    })
-    return () => unsubs.forEach(u => u())
-  }, [userId, diaSeleccionado, mes, anio])
-
   const tocarDia = (dia) => {
     setDiaSeleccionado(dia)
     setTareasSeleccionadas([])
