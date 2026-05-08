@@ -357,21 +357,6 @@ export default function App() {
   const [invCargando, setInvCargando] = useState(false)
   const [grupoDestino, setGrupoDestino] = useState(null)
   useRollover(user?.uid || null)
-
-  useEffect(() => {
-    if (!('serviceWorker' in navigator)) return
-    navigator.serviceWorker.ready.then(reg => {
-      reg.addEventListener('updatefound', () => {
-        const sw = reg.installing
-        sw.addEventListener('statechange', () => {
-          if (sw.state === 'installed' && navigator.serviceWorker.controller) {
-            window.location.reload()
-          }
-        })
-      })
-      setInterval(() => reg.update(), 60000)
-    })
-  }, [])
   useFCM(user?.uid || null)
   const [verDemo, setVerDemo] = useState(() => new URLSearchParams(window.location.search).get('demo') === 'true')
   const [splashListo, setSplashListo] = useState(false)
