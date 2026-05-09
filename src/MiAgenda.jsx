@@ -157,34 +157,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setCargandoTareas(false)
   }
 
-  useEffect(() => {
-    if (!userId || !diaSeleccionado) return
-    const key = getKey(anio, mes, diaSeleccionado)
-    const unsubs = []
-    const actualizar = async () => {
-      const gsSnap = await getDocs(collection(db, 'users', userId, 'misGrupos'))
-      const gruposValidos = gsSnap.docs.filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' })
-      const [snap1, ...snapsGrupos] = await Promise.all([
-        getDoc(doc(db, 'users', userId, 'pizarron', key)),
-        ...gruposValidos.map(g => getDoc(doc(db, 'grupos', g.id, 'pizarron', key)))
-      ])
-      const todas = []
-      ;(snap1.data()?.items || []).forEach(i => todas.push({ ...i, grupoId:'personal', grupoNombre: tx.personal, grupoColor: COLORES[0] }))
-      snapsGrupos.forEach((snap, idx) => {
-        const g = gruposValidos[idx]
-        ;(snap.data()?.items || []).forEach(i => todas.push({ ...i, grupoId: g.id, grupoNombre: g.data().nombre || 'Grupo', grupoColor: COLORES[(idx+1) % COLORES.length] }))
-      })
-      setTareas(todas)
-    }
-    unsubs.push(onSnapshot(doc(db, 'users', userId, 'pizarron', key), actualizar))
-    getDocs(collection(db, 'users', userId, 'misGrupos')).then(gsSnap => {
-      gsSnap.docs
-        .filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' })
-        .forEach(g => unsubs.push(onSnapshot(doc(db, 'grupos', g.id, 'pizarron', key), actualizar)))
-    })
-    return () => unsubs.forEach(u => u())
-  }, [userId, diaSeleccionado, mes, anio])
-
   const tocarDia = (dia) => {
     setDiaSeleccionado(dia)
     setTareasSeleccionadas([])
@@ -263,7 +235,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     await setDoc(ref, { items })
     setTareas(prev => prev.map(t => t.id === tarea.id && t.grupoId === tarea.grupoId ? { ...t, realizada: !t.realizada } : t))
     setTareasSeleccionadas([])
-    await cargarTareas(tarea.dia, tarea.mes, tarea.anio)
   }
 
   const eliminarTareas = async () => {
