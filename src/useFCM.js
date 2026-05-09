@@ -2,7 +2,7 @@ import { useEffect } from 'react'
 import { doc, setDoc } from 'firebase/firestore'
 import { db } from './firebase'
 
-const VAPID_PUBLIC = 'BKx2pFxMDsfFy1MT6-r-BAtt52b-xJ9V_uOER1HMGKgBQR0SRgcTlUhxrjqMtnRncEmd5yLRVsecxPJMUuYHXqc'
+const VAPID_PUBLIC = 'BBCXfEUieJEA9wdUgmDjiqjpKeD2E4_IKrXQNgShgGKBeAt0Y0ty3krLN_aZ4MgDWoaPBWvaE5lY7IxPOyvNanA'
 
 function urlBase64ToUint8Array(base64) {
   const pad = '='.repeat((4 - base64.length % 4) % 4)
@@ -24,13 +24,14 @@ export function useFCM(userId) {
         if (permission !== 'granted') return
 
         const reg = await navigator.serviceWorker.ready
-        let sub = await reg.pushManager.getSubscription()
-        if (!sub) {
-          sub = await reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
-          })
-        }
+
+        const subAnterior = await reg.pushManager.getSubscription()
+        if (subAnterior) await subAnterior.unsubscribe()
+
+        const sub = await reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC)
+        })
 
         const p256dh = btoa(String.fromCharCode(...new Uint8Array(sub.getKey('p256dh'))))
         const auth = btoa(String.fromCharCode(...new Uint8Array(sub.getKey('auth'))))
