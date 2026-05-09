@@ -263,6 +263,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     await setDoc(ref, { items })
     setTareas(prev => prev.map(t => t.id === tarea.id && t.grupoId === tarea.grupoId ? { ...t, realizada: !t.realizada } : t))
     setTareasSeleccionadas([])
+    await cargarTareas(tarea.dia, tarea.mes, tarea.anio)
   }
 
   const eliminarTareas = async () => {
