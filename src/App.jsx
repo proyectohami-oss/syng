@@ -299,7 +299,7 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
         </div>
         <div style={{ fontSize:'11px', fontWeight:'700', color: esOscuro ? 'rgba(255,255,255,0.35)' : th.textoSub, textTransform:'uppercase', letterSpacing:'0.08em', paddingLeft:'4px', marginBottom:'-4px' }}>{t.misModulos}</div>
         <div onClick={() => onIrPantalla('pizarron')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(123,110,246,0.35)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px', backdropFilter: esOscuro ? 'blur(12px)' : 'none' }}>
-          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(123,110,246,0.2)' : `${th.acento}22`, border: esOscuro ? '1px solid rgba(123,110,246,0.3)' : 'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>▦</div>
+          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(123,110,246,0.2)' : `${th.acento}22`, border: esOscuro ? '1px solid rgba(123,110,246,0.3)' : 'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>🗂️</div>
           <div style={{ flex:1 }}>
             <div style={{ fontSize:'16px', fontWeight:'700', color: esOscuro ? '#A89EFF' : th.acento }}>{t.pizarron}</div>
             <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : th.textoSub, fontSize:'13px', marginTop:'2px' }}>{t.pizarronDesc}</div>
@@ -307,7 +307,7 @@ function PantallaHome({ user, t, th, onIrPantalla, userId }) {
           <div style={{ width:'8px', height:'8px', borderRadius:'50%', background: esOscuro ? '#7B6EF6' : th.acento, opacity:0.7 }} />
         </div>
         <div onClick={() => onIrPantalla('listasuper')} style={{ background: esOscuro ? 'rgba(255,255,255,0.04)' : th.bgCard, border: esOscuro ? '1px solid rgba(46,204,154,0.3)' : 'none', borderRadius:'18px', padding:'18px 16px', boxShadow: esOscuro ? 'none' : th.sombra, cursor:'pointer', display:'flex', alignItems:'center', gap:'14px', backdropFilter: esOscuro ? 'blur(12px)' : 'none' }}>
-          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(46,204,154,0.15)' : `${th.acentoVerde}22`, border: esOscuro ? '1px solid rgba(46,204,154,0.25)' : 'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>◫</div>
+          <div style={{ width:'48px', height:'48px', borderRadius:'14px', background: esOscuro ? 'rgba(46,204,154,0.15)' : `${th.acentoVerde}22`, border: esOscuro ? '1px solid rgba(46,204,154,0.25)' : 'none', display:'flex', alignItems:'center', justifyContent:'center', fontSize:'22px', flexShrink:0 }}>🛍️</div>
           <div style={{ flex:1 }}>
             <div style={{ fontSize:'16px', fontWeight:'700', color: esOscuro ? '#5EDFB8' : th.acentoVerde }}>{t.super}</div>
             <div style={{ color: esOscuro ? 'rgba(255,255,255,0.4)' : th.textoSub, fontSize:'13px', marginTop:'2px' }}>{t.superDesc}</div>
