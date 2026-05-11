@@ -118,7 +118,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       snap.docs.forEach(d => {
         const parts = d.id.split('-').map(Number)
         if (parts[0] === anio && parts[1] === mes) {
-          const p = (d.data().items || []).filter(i => !i.realizada).length
+          const p = (d.data().items || []).length
           if (p > 0) { const k = `${parts[2]}`; data[k] = (data[k] || 0) + p }
         }
       })
@@ -157,46 +157,6 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setCargandoTareas(false)
   }
 
-  // ✅ Tiempo real: escucha cambios del día seleccionado en todos los pizarrones
-  useEffect(() => {
-    if (!userId || !diaSeleccionado) { setTareas([]); return }
-    const key = getKey(anio, mes, diaSeleccionado)
-    const unsubs = []
-    let dataPorGrupo = {}
-
-    const reconstruir = () => {
-      const todas = []
-      Object.entries(dataPorGrupo).forEach(([grupoId, { items, nombre, color }]) => {
-        items.forEach(i => todas.push({ ...i, grupoId, grupoNombre: nombre, grupoColor: color }))
-      })
-      setTareas(todas)
-      setCargandoTareas(false)
-    }
-
-    setCargandoTareas(true)
-    dataPorGrupo['personal'] = { items: [], nombre: tx.personal, color: COLORES[0] }
-    unsubs.push(onSnapshot(doc(db, 'users', userId, 'pizarron', key), snap => {
-      dataPorGrupo['personal'] = { items: snap.data()?.items || [], nombre: tx.personal, color: COLORES[0] }
-      reconstruir()
-    }))
-
-    getDocs(collection(db, 'users', userId, 'misGrupos')).then(gsSnap => {
-      gsSnap.docs
-        .filter(d => { const mod = d.data().modulo; return !mod || mod === 'pizarron' })
-        .forEach((g, idx) => {
-          const nombre = g.data().nombre || 'Grupo'
-          const color = COLORES[(idx + 1) % COLORES.length]
-          dataPorGrupo[g.id] = { items: [], nombre, color }
-          unsubs.push(onSnapshot(doc(db, 'grupos', g.id, 'pizarron', key), snap => {
-            dataPorGrupo[g.id] = { items: snap.data()?.items || [], nombre, color }
-            reconstruir()
-          }))
-        })
-    })
-
-    return () => unsubs.forEach(u => u())
-  }, [userId, diaSeleccionado, mes, anio])
-
   const tocarDia = (dia) => {
     setDiaSeleccionado(dia)
     setTareasSeleccionadas([])
@@ -208,6 +168,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
     setFechasRepetir([])
     setDiaElegido(null)
     setModoCapturar(false)
+    cargarTareas(dia, mes, anio)
   }
 
   const cerrarModal = () => {
