@@ -118,7 +118,7 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
       snap.docs.forEach(d => {
         const parts = d.id.split('-').map(Number)
         if (parts[0] === anio && parts[1] === mes) {
-          const p = (d.data().items || []).length
+          const p = (d.data().items || []).filter(i => !i.realizada).length
           if (p > 0) { const k = `${parts[2]}`; data[k] = (data[k] || 0) + p }
         }
       })
@@ -226,16 +226,15 @@ export default function MiAgenda({ userId, tema, idioma, onVolver, onNavegar, t 
   }
 
   const toggleAtendida = async (tarea) => {
-    const nuevoValor = !tarea.realizada
-    setTareas(prev => prev.map(t => t.id === tarea.id && t.grupoId === tarea.grupoId ? { ...t, realizada: nuevoValor } : t))
-    setTareasSeleccionadas([])
     const key = getKey(tarea.anio, tarea.mes, tarea.dia)
     const ref = tarea.grupoId === 'personal'
       ? doc(db, 'users', userId, 'pizarron', key)
       : doc(db, 'grupos', tarea.grupoId, 'pizarron', key)
     const snap = await getDoc(ref)
-    const items = (snap.data()?.items || []).map(i => i.id === tarea.id ? { ...i, realizada: nuevoValor } : i)
+    const items = (snap.data()?.items || []).map(i => i.id === tarea.id ? { ...i, realizada: !i.realizada } : i)
     await setDoc(ref, { items })
+    setTareas(prev => prev.map(t => t.id === tarea.id && t.grupoId === tarea.grupoId ? { ...t, realizada: !t.realizada } : t))
+    setTareasSeleccionadas([])
   }
 
   const eliminarTareas = async () => {
