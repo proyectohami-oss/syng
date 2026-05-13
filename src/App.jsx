@@ -6,21 +6,16 @@ import { AppShell }          from './shared/AppShell'
 import { AgendaModule }      from './modules/agenda/AgendaModule'
 import { DayModule }         from './modules/agenda/DayModule'
 import { PizarronModule }    from './modules/pizarron/PizarronModule'
-import { useViewportFix }    from './pwa/useViewportFix'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  :root {
-    --app-height: 100vh; /* overwritten by useViewportFix on mobile */
-  }
 
   html, body {
     height: 100%;
     touch-action: manipulation;
     overscroll-behavior: none;
     -webkit-user-select: none;
-    user-select: none;
+    user-select: text;
     -webkit-font-smoothing: antialiased;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
     background: #fff;
@@ -32,9 +27,12 @@ const globalStyles = `
     user-select: text;
   }
 
-  /* Use --app-height set by JS — stays fixed regardless of iOS address bar */
   #root {
-    height: var(--app-height);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100svh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
@@ -52,11 +50,9 @@ const globalStyles = `
     border-radius: 4px;
   }
 
-  /* ── Desktop: show sidebar, hide mobile nav ─── */
   .desktop-sidebar  { display: flex !important; }
   .mobile-bottom-nav { display: none !important; }
 
-  /* ── Mobile ≤640px: hide sidebar, show mobile nav ─── */
   @media (max-width: 640px) {
     .desktop-sidebar   { display: none !important; }
     .mobile-bottom-nav { display: flex !important; }
@@ -75,9 +71,6 @@ function Placeholder({ icon, label }) {
 }
 
 function AppWithViewport() {
-  // Freeze the viewport height — prevents iOS address bar from moving our layout
-  useViewportFix()
-
   return (
     <BrowserRouter>
       <AuthGuard>
