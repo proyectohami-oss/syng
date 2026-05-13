@@ -216,11 +216,11 @@ export function DayModule() {
   )
 }
 
-const screen       = { display:'flex', flexDirection:'column', height:'100%', background:'#fff', overflow:'hidden', position:'relative' }
-const header       = { display:'flex', alignItems:'center', gap:8, padding:'14px 20px', borderBottom:'1px solid #f3f4f6', flexShrink:0, paddingTop:'max(14px, env(safe-area-inset-top))' }
+const screen       = { display:'flex', flexDirection:'column', height:'100%', background:'#fff', overflow:'hidden' }
+const header       = { display:'flex', alignItems:'center', gap:8, padding:'14px 20px', borderBottom:'1px solid #f3f4f6', flexShrink:0 }
 const btnVolver    = { background:'none', border:'none', fontSize:22, color:'#6b7280', cursor:'pointer', padding:'0 4px', minWidth:44, minHeight:44, display:'flex', alignItems:'center', justifyContent:'center' }
-const barraSeleccion = { position:'fixed', bottom:0, left:0, right:0, zIndex:150, padding:'12px 20px', paddingBottom:'calc(16px + env(safe-area-inset-bottom))', background:'#fff', borderTop:'1px solid #f3f4f6', display:'flex', alignItems:'center', justifyContent:'space-between' }
-const fab          = { position:'fixed', bottom:'calc(80px + env(safe-area-inset-bottom))', right:20, width:56, height:56, borderRadius:'50%', background:'#5B3DF6', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 20px rgba(91,61,246,0.4)', zIndex:100, WebkitTapHighlightColor:'transparent' }
+const barraSeleccion = { flexShrink:0, padding:'12px 20px', paddingBottom:'calc(14px + env(safe-area-inset-bottom))', background:'#fff', borderTop:'1px solid #f3f4f6', display:'flex', alignItems:'center', justifyContent:'space-between' }
+const fab          = { position:'fixed', bottom:'calc(76px + env(safe-area-inset-bottom))', right:20, width:56, height:56, borderRadius:'50%', background:'#5B3DF6', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 20px rgba(91,61,246,0.4)', zIndex:100, WebkitTapHighlightColor:'transparent' }
 const overlay      = { position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }
 const sheet        = { background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px 20px', paddingBottom:'calc(20px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480 }
 const inputStyle   = { width:'100%', boxSizing:'border-box', padding:'9px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:14, color:'#111', fontFamily:'inherit', outline:'none', marginBottom:4 }
