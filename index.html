@@ -1,71 +1,37 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+  <meta charset="UTF-8" />
 
-    <!-- ✅ SEO básico -->
-    <title>Syng — Agenda colaborativa inteligente</title>
-    <meta name="description" content="Syng es tu agenda colaborativa inteligente. Organiza tus tareas, comparte listas del súper y coordina con tu familia o equipo en tiempo real." />
-    <meta name="keywords" content="agenda colaborativa, lista de tareas compartida, organizador familiar, lista del súper compartida, agenda online, tareas en equipo" />
-    <meta name="author" content="Syng" />
-    <meta name="robots" content="index, follow" />
-    <link rel="canonical" href="https://syng-psi.vercel.app" />
+  <!-- Viewport: viewport-fit=cover para notch de iPhone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
-    <!-- ✅ Open Graph (Facebook, WhatsApp, LinkedIn) -->
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://syng-psi.vercel.app" />
-    <meta property="og:title" content="Syng — Agenda colaborativa inteligente" />
-    <meta property="og:description" content="Organiza tus tareas, comparte listas del súper y coordina con tu familia o equipo en tiempo real." />
-    <meta property="og:image" content="https://syng-psi.vercel.app/og-image.png" />
-    <meta property="og:locale" content="es_MX" />
-    <meta property="og:site_name" content="Syng" />
+  <!-- PWA -->
+  <meta name="theme-color" content="#5B3DF6" />
+  <meta name="mobile-web-app-capable" content="yes" />
 
-    <!-- ✅ Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://syng-psi.vercel.app" />
-    <meta name="twitter:title" content="Syng — Agenda colaborativa inteligente" />
-    <meta name="twitter:description" content="Organiza tus tareas, comparte listas del súper y coordina con tu familia o equipo en tiempo real." />
-    <meta name="twitter:image" content="https://syng-psi.vercel.app/og-image.png" />
+  <!-- iOS específico -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Syng" />
 
-    <!-- ✅ Schema.org (Google) -->
-    <script type="application/ld+json">
-    {
-      "@context": "https://schema.org",
-      "@type": "WebApplication",
-      "name": "Syng",
-      "url": "https://syng-psi.vercel.app",
-      "description": "Agenda colaborativa inteligente para organizar tareas, listas del súper y coordinar con familia o equipo en tiempo real.",
-      "applicationCategory": "ProductivityApplication",
-      "operatingSystem": "Web, iOS, Android",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "MXN"
-      }
-    }
-    </script>
+  <!-- Iconos iOS (requiere archivos en /public) -->
+  <link rel="apple-touch-icon" href="/icon-192.png" />
 
-    <!-- ✅ Google Analytics -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-7JPTF06ND3"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-      gtag('config', 'G-7JPTF06ND3');
-    </script>
+  <!-- Splash screens iOS (opcional pero mejora experiencia de instalación) -->
+  <!-- Se generan con herramientas como pwa-asset-generator -->
 
-    <!-- ✅ PWA -->
-    <link rel="manifest" href="/manifest.json" />
-    <meta name="theme-color" content="#534AB7" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="Syng" />
-  </head>
-  <body>
-    <div id="root"></div>
-    <script>if("serviceWorker" in navigator) navigator.serviceWorker.register("/sw.js")</script>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+  <!-- Manifest -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+
+  <!-- Preconnect Firebase para reducir latencia inicial -->
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
+
+  <title>Syng</title>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.jsx"></script>
+</body>
 </html>
