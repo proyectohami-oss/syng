@@ -1,15 +1,9 @@
-/**
- * AgendaModule — Mi Agenda como calendario visual.
- * Tocar un día navega DIRECTAMENTE a la vista del día.
- * Sin paso intermedio.
- */
 import { useNavigate }   from 'react-router-dom'
 import { useAgendaView } from './hooks/useAgendaView'
 import { CalendarGrid }  from './components/CalendarGrid'
 import { SyncBadge }     from '../../shared/SyncBadge'
 
-const MONTHS_ES = ['enero','febrero','marzo','abril','mayo','junio',
-                   'julio','agosto','septiembre','octubre','noviembre','diciembre']
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
 function toDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
@@ -17,35 +11,25 @@ function toDateKey(date) {
 
 export function AgendaModule() {
   const navigate = useNavigate()
-  const {
-    selectedDate, setSelectedDate,
-    viewMonth, prevMonth, nextMonth,
-    daysWithActivity,
-    pendingCount, completedCount,
-    loading,
-  } = useAgendaView()
+  const { selectedDate, setSelectedDate, viewMonth, prevMonth, nextMonth, daysWithActivity, pendingCount, completedCount } = useAgendaView()
 
-  // Un solo toque en el día → va directo a la vista del día
+  // Single tap on day → go directly to day view
   function handleDaySelect(date) {
     setSelectedDate(date)
     navigate(`/agenda/${toDateKey(date)}`)
   }
 
-  // Formato del día seleccionado para el resumen
-  const d   = selectedDate
-  const label = `${d.getDate()} de ${MONTHS_ES[d.getMonth()]}`
+  const d     = selectedDate
+  const label = `${d.getDate()} de ${MESES[d.getMonth()]}`
 
   return (
     <div style={screen}>
-      {/* Header */}
       <div style={header}>
-        <span style={{ fontSize:22, cursor:'pointer' }}>☰</span>
-        <span style={{ fontSize:17, fontWeight:600, color:'#111' }}>Mi Agenda</span>
+        <span style={{ fontSize:17, fontWeight:600, color:'#111', flex:1 }}>Mi Agenda</span>
         <SyncBadge />
       </div>
 
-      <div style={{ flex:1, overflowY:'auto' }}>
-        {/* Calendario — tocar un día navega directamente */}
+      <div style={{ flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch' }}>
         <CalendarGrid
           viewMonth={viewMonth}
           selectedDate={selectedDate}
@@ -55,7 +39,6 @@ export function AgendaModule() {
           onNextMonth={nextMonth}
         />
 
-        {/* Leyenda */}
         <div style={{ display:'flex', gap:16, padding:'0 20px 20px', alignItems:'center' }}>
           <div style={{ display:'flex', alignItems:'center', gap:5 }}>
             <div style={{ width:7, height:7, borderRadius:'50%', background:'#5B3DF6' }} />
@@ -67,8 +50,8 @@ export function AgendaModule() {
           </div>
         </div>
 
-        {/* Resumen pasivo del día seleccionado */}
-        <div style={daySummary}>
+        {/* Day summary — passive, tap on calendar to enter */}
+        <div style={daySummary} onClick={() => navigate(`/agenda/${toDateKey(selectedDate)}`)}>
           <div style={{ display:'flex', alignItems:'center', gap:10 }}>
             <span style={{ fontSize:22 }}>📅</span>
             <div>
@@ -80,43 +63,14 @@ export function AgendaModule() {
               </p>
             </div>
           </div>
-          <span style={{ fontSize:13, color:'#9ca3af' }}>Toca el día ↑</span>
+          <span style={{ fontSize:16, color:'#9ca3af' }}>›</span>
         </div>
       </div>
-
-      {/* Botón flotante + — también va al día de hoy */}
-      <button
-        onClick={() => navigate(`/agenda/${toDateKey(new Date())}`)}
-        style={fab}
-        aria-label="Agregar tarea hoy"
-      >
-        <span style={{ fontSize:28, color:'#fff', lineHeight:1 }}>+</span>
-      </button>
+      {/* NO + button here — tap on day in calendar goes to day view */}
     </div>
   )
 }
 
-const screen = {
-  display:'flex', flexDirection:'column',
-  height:'100%', background:'#fff',
-  overflow:'hidden', position:'relative',
-}
-const header = {
-  display:'flex', alignItems:'center', justifyContent:'space-between',
-  padding:'14px 20px 10px',
-  borderBottom:'1px solid #f3f4f6', flexShrink:0,
-}
-const daySummary = {
-  margin:'0 16px 24px',
-  padding:'12px 16px',
-  background:'#fafafa',
-  borderRadius:12, border:'1px solid #f3f4f6',
-  display:'flex', alignItems:'center', justifyContent:'space-between',
-}
-const fab = {
-  position:'fixed', bottom:'calc(72px + env(safe-area-inset-bottom))', right:20,
-  width:52, height:52, borderRadius:'50%',
-  background:'#5B3DF6', border:'none', cursor:'pointer',
-  display:'flex', alignItems:'center', justifyContent:'center',
-  boxShadow:'0 4px 16px rgba(91,61,246,0.35)',
-}
+const screen    = { display:'flex', flexDirection:'column', height:'100%', background:'#fff', overflow:'hidden' }
+const header    = { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px 10px', paddingTop:'max(14px, env(safe-area-inset-top))', borderBottom:'1px solid #f3f4f6', flexShrink:0 }
+const daySummary= { margin:'0 16px 24px', padding:'12px 16px', background:'#fafafa', borderRadius:12, border:'1px solid #f3f4f6', display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer', WebkitTapHighlightColor:'transparent' }

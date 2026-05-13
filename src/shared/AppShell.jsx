@@ -12,11 +12,12 @@ const NAV_ITEMS = [
   { emoji:'👤', label:'Perfil',     path:'/perfil' },
 ]
 
-// Mobile — 4 tabs (sin Inicio ni Compartir)
+// Mobile — 5 tabs including Compartir
 const MOBILE_ITEMS = [
   { emoji:'📅', label:'Agenda',     path:'/agenda' },
   { emoji:'📌', label:'Pizarrones', path:'/pizarrones' },
   { emoji:'🛒', label:'Súper',      path:'/super' },
+  { emoji:'🎁', label:'Compartir',  path:'/compartir' },
   { emoji:'👤', label:'Perfil',     path:'/perfil' },
 ]
 
