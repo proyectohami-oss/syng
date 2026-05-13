@@ -6,26 +6,25 @@ import { AppShell }          from './shared/AppShell'
 import { AgendaModule }      from './modules/agenda/AgendaModule'
 import { DayModule }         from './modules/agenda/DayModule'
 import { PizarronModule }    from './modules/pizarron/PizarronModule'
+import { useViewportFix }    from './pwa/useViewportFix'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  html {
-    touch-action: manipulation;
-    /* Use dynamic viewport height — prevents iOS address bar issues */
-    height: 100%;
+  :root {
+    --app-height: 100vh; /* overwritten by useViewportFix on mobile */
   }
 
-  body {
+  html, body {
+    height: 100%;
+    touch-action: manipulation;
+    overscroll-behavior: none;
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-font-smoothing: antialiased;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
     background: #fff;
     color: #111827;
-    -webkit-font-smoothing: antialiased;
-    -webkit-user-select: none;
-    user-select: none;
-    touch-action: manipulation;
-    overscroll-behavior: none;
-    height: 100%;
   }
 
   input, textarea, [contenteditable] {
@@ -33,10 +32,12 @@ const globalStyles = `
     user-select: text;
   }
 
+  /* Use --app-height set by JS — stays fixed regardless of iOS address bar */
   #root {
-    height: 100%;
-    /* dvh = dynamic viewport height, accounts for iOS address bar */
-    height: 100dvh;
+    height: var(--app-height);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
 
   button, input, textarea, select { font-family: inherit; }
@@ -51,15 +52,14 @@ const globalStyles = `
     border-radius: 4px;
   }
 
-  /* ── Desktop: show sidebar, hide mobile nav ─────────────────── */
-  .desktop-sidebar { display: flex; }
-  .mobile-bottom-nav { display: none; }
+  /* ── Desktop: show sidebar, hide mobile nav ─── */
+  .desktop-sidebar  { display: flex !important; }
+  .mobile-bottom-nav { display: none !important; }
 
-  /* ── Mobile (≤640px): hide sidebar, show mobile nav ────────── */
+  /* ── Mobile ≤640px: hide sidebar, show mobile nav ─── */
   @media (max-width: 640px) {
-    .desktop-sidebar { display: none !important; }
+    .desktop-sidebar   { display: none !important; }
     .mobile-bottom-nav { display: flex !important; }
-
     body { font-size: 16px; }
   }
 `
@@ -74,29 +74,38 @@ function Placeholder({ icon, label }) {
   )
 }
 
+function AppWithViewport() {
+  // Freeze the viewport height — prevents iOS address bar from moving our layout
+  useViewportFix()
+
+  return (
+    <BrowserRouter>
+      <AuthGuard>
+        <InvitationChecker>
+          <AppShell>
+            <Routes>
+              <Route path="/"             element={<Navigate to="/agenda" replace />} />
+              <Route path="/agenda"       element={<AgendaModule />} />
+              <Route path="/agenda/:date" element={<DayModule />} />
+              <Route path="/pizarron/:id" element={<PizarronModule />} />
+              <Route path="/pizarrones"   element={<Placeholder icon="📌" label="Pizarrones" />} />
+              <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
+              <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />
+              <Route path="/perfil"       element={<Placeholder icon="👤" label="Perfil" />} />
+            </Routes>
+          </AppShell>
+        </InvitationChecker>
+      </AuthGuard>
+    </BrowserRouter>
+  )
+}
+
 export function App() {
   return (
     <>
       <style>{globalStyles}</style>
       <CoreDataProvider>
-        <BrowserRouter>
-          <AuthGuard>
-            <InvitationChecker>
-              <AppShell>
-                <Routes>
-                  <Route path="/"             element={<Navigate to="/agenda" replace />} />
-                  <Route path="/agenda"       element={<AgendaModule />} />
-                  <Route path="/agenda/:date" element={<DayModule />} />
-                  <Route path="/pizarron/:id" element={<PizarronModule />} />
-                  <Route path="/pizarrones"   element={<Placeholder icon="📌" label="Pizarrones" />} />
-                  <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
-                  <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />
-                  <Route path="/perfil"       element={<Placeholder icon="👤" label="Perfil" />} />
-                </Routes>
-              </AppShell>
-            </InvitationChecker>
-          </AuthGuard>
-        </BrowserRouter>
+        <AppWithViewport />
       </CoreDataProvider>
     </>
   )
