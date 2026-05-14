@@ -36,6 +36,7 @@
  *                  createdAt:  Timestamp
  *                  updatedAt:  Timestamp
  *                }>
+ *   phoneNumber: string | null      ← formato E.164: +521234567890
  *   createdAt:   Timestamp
  *   updatedAt:   Timestamp
  */
@@ -45,6 +46,11 @@ import {
   updateDoc,
   serverTimestamp,
   deleteField,
+  query,
+  collection,
+  where,
+  getDocs,
+  limit,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
 
@@ -59,6 +65,7 @@ export async function upsertUser({ uid, displayName, email }) {
       uid,
       displayName: displayName ?? '',
       email:       email ?? '',
+      phoneNumber: null,
       groupIds:    [],
       fcmTokens:   {},
       createdAt:   serverTimestamp(),
@@ -114,4 +121,68 @@ export async function updateDisplayName(uid, displayName) {
     displayName: displayName.trim(),
     updatedAt:   serverTimestamp(),
   })
+}
+
+/**
+ * Normaliza un número de teléfono a formato E.164.
+ * Asume México (+52) si no tiene código de país.
+ * Ejemplos:
+ *   9611234567      → +529611234567
+ *   529611234567    → +529611234567
+ *   +529611234567   → +529611234567
+ */
+export function normalizePhone(raw) {
+  const digits = raw.replace(/\D/g, '')
+  if (digits.startsWith('52') && digits.length === 12) return `+${digits}`
+  if (digits.length === 10) return `+52${digits}`
+  if (digits.startsWith('1') && digits.length === 11) return `+${digits}`
+  return `+${digits}`
+}
+
+/**
+ * Verifica si un número ya está registrado por otro usuario.
+ * Retorna true si está ocupado, false si está disponible.
+ */
+export async function isPhoneTaken(phoneNumber, currentUid) {
+  const q = query(
+    collection(db, 'users'),
+    where('phoneNumber', '==', phoneNumber),
+    limit(1)
+  )
+  const snap = await getDocs(q)
+  if (snap.empty) return false
+  // Si el único resultado es el mismo usuario, no está ocupado
+  return snap.docs[0].id !== currentUid
+}
+
+/**
+ * Guarda el número de teléfono normalizado en el perfil del usuario.
+ * Lanza error si el número ya está en uso por otro usuario.
+ */
+export async function updatePhoneNumber(uid, rawPhone) {
+  const phoneNumber = normalizePhone(rawPhone)
+  const taken = await isPhoneTaken(phoneNumber, uid)
+  if (taken) throw new Error('Este número ya está registrado en otra cuenta.')
+  await updateDoc(doc(db, 'users', uid), {
+    phoneNumber,
+    updatedAt: serverTimestamp(),
+  })
+  return phoneNumber
+}
+
+/**
+ * Busca un usuario por número de teléfono normalizado.
+ * Retorna { uid, displayName, phoneNumber } o null si no existe.
+ */
+export async function findUserByPhone(rawPhone) {
+  const phoneNumber = normalizePhone(rawPhone)
+  const q = query(
+    collection(db, 'users'),
+    where('phoneNumber', '==', phoneNumber),
+    limit(1)
+  )
+  const snap = await getDocs(q)
+  if (snap.empty) return null
+  const d = snap.docs[0]
+  return { uid: d.id, displayName: d.data().displayName, phoneNumber: d.data().phoneNumber }
 }
