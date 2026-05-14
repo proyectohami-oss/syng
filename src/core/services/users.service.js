@@ -65,7 +65,6 @@ export async function upsertUser({ uid, displayName, email }) {
       uid,
       displayName: displayName ?? '',
       email:       email ?? '',
-      phoneNumber: null,
       groupIds:    [],
       fcmTokens:   {},
       createdAt:   serverTimestamp(),
