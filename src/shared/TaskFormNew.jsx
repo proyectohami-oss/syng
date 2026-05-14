@@ -246,7 +246,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
 }
 
 const overlay  = { position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }
-const sheet    = { background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px 20px 36px', width:'100%', maxWidth:480 }
+const sheet    = { background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px 20px 36px', paddingBottom:'calc(36px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480, maxHeight:'90svh', overflowY:'auto', WebkitOverflowScrolling:'touch' }
 const btnVolver= { background:'none', border:'none', fontSize:22, color:'#6b7280', cursor:'pointer', padding:'0 4px' }
 const lbl      = { display:'block', fontSize:12, color:'#9ca3af', fontWeight:500, marginBottom:6 }
 const textArea = { width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:15, color:'#111', fontFamily:'inherit', resize:'vertical', outline:'none', marginBottom:14 }
