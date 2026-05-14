@@ -3,7 +3,7 @@
  * Estructura: header fijo + contenido scrollable + footer fijo
  * El footer con botón "Crear tarea" nunca queda tapado por el teclado.
  */
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useKeyboardOffset } from '../pwa/useKeyboardOffset'
 import { Timestamp }         from 'firebase/firestore'
 import { useTasks }          from '../core/hooks/useTasks'
@@ -88,6 +88,15 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
   }
 
   const puedeGuardar = !!title.trim()
+
+  // Bloquea el layout de fondo mientras el modal está abierto
+  useEffect(() => {
+    const prev = document.body.style.cssText
+    document.body.style.position = 'fixed'
+    document.body.style.width = '100%'
+    document.body.style.overflow = 'hidden'
+    return () => { document.body.style.cssText = prev }
+  }, [])
   const keyboardOffset = useKeyboardOffset()
 
   return (
