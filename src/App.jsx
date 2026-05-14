@@ -7,6 +7,7 @@ import { AgendaModule }      from './modules/agenda/AgendaModule'
 import { NewTaskScreen }    from './modules/agenda/NewTaskScreen'
 import { DayModule }         from './modules/agenda/DayModule'
 import { PizarronModule }    from './modules/pizarron/PizarronModule'
+import { PerfilModule }      from './modules/perfil/PerfilModule'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -86,7 +87,7 @@ function AppWithViewport() {
               <Route path="/pizarrones"   element={<Placeholder icon="📌" label="Pizarrones" />} />
               <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
               <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />
-              <Route path="/perfil"       element={<Placeholder icon="👤" label="Perfil" />} />
+              <Route path="/perfil"       element={<PerfilModule />} />
             </Routes>
           </AppShell>
         </InvitationChecker>
