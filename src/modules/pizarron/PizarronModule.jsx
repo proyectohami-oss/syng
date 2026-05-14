@@ -41,6 +41,7 @@ export function PizarronModule() {
   //   | 'createTask' | { type: 'editTask', task } | { type: 'deleteTask', task }
   //   | 'editGroup'  | 'deleteGroup' | 'leaveGroup' | 'invite'
 
+  console.log('[Pizarron] groupId:', groupId, '| group:', group, '| loading:', loading, '| groups en state:', state?.groups?.list?.size)
   if ((loading || !group) && !group) {
     return (
       <div style={centered}>
