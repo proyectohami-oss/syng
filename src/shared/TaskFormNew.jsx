@@ -89,6 +89,14 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
 
   const puedeGuardar = !!title.trim()
 
+  // Focus manual con delay — evita que iOS salte el layout al abrir
+  useEffect(() => {
+    const t = setTimeout(() => {
+      document.getElementById('syng-task-input')?.focus()
+    }, 120)
+    return () => clearTimeout(t)
+  }, [])
+
   // Bloquea el layout de fondo mientras el modal está abierto
   useEffect(() => {
     const prev = document.body.style.cssText
@@ -118,9 +126,9 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
             <textarea
               value={title}
               onChange={e => setTitle(e.target.value)}
-              placeholder="Escribe tu tarea aquí..."
-              autoFocus
-              rows={3}
+              id="syng-task-input"
+            placeholder="Escribe tu tarea aquí..."
+                rows={3}
               style={textArea}
             />
 
