@@ -70,9 +70,8 @@ export function DayModule() {
   const [selectedIds,  setSelectedIds]  = useState(new Set())
   const [hiddenIds,    setHiddenIds]    = useState(new Set())
   const [modal,        setModal]        = useState(null)
-  const [pendingOrder, setPendingOrder] = useState(null)
 
-  const orderedPending  = (pendingOrder ?? pending).filter(t => !hiddenIds.has(t.id))
+  const orderedPending  = pending.filter(t => !hiddenIds.has(t.id))
   const completedVisible = completed.filter(t => !hiddenIds.has(t.id))
   const haySeleccion    = selectedIds.size > 0
 
@@ -86,15 +85,6 @@ export function DayModule() {
 
   function limpiarSeleccion() { setSelectedIds(new Set()) }
 
-  // Move up/down for mobile reorder
-  function moveTask(taskId, dir) {
-    const arr = [...orderedPending]
-    const idx = arr.findIndex(t => t.id === taskId)
-    const newIdx = idx + dir
-    if (newIdx < 0 || newIdx >= arr.length) return
-    const tmp = arr[idx]; arr[idx] = arr[newIdx]; arr[newIdx] = tmp
-    setPendingOrder(arr)
-  }
 
   function hideLocally(id) { setHiddenIds(prev => new Set([...prev, id])) }
 
@@ -138,7 +128,7 @@ export function DayModule() {
           Pendientes ({orderedPending.length})
         </p>
         {orderedPending.length === 0 && <p style={{ fontSize:13, color:'#9ca3af', marginBottom:16 }}>Sin tareas pendientes.</p>}
-        {orderedPending.map((task, idx) => (
+        {orderedPending.map((task) => (
           <DayTaskItem
             key={task.id} task={task}
             groupName={getGroupName(task.groupId)}
@@ -148,11 +138,19 @@ export function DayModule() {
             selected={selectedIds.has(task.id)}
             onCircleTap={toggleSeleccion}
             hasSelection={haySeleccion}
-            draggable={!haySeleccion}
-            onMoveUp={idx > 0 ? () => moveTask(task.id, -1) : null}
-            onMoveDown={idx < orderedPending.length-1 ? () => moveTask(task.id, 1) : null}
+
           />
         ))}
+
+        {!haySeleccion && (
+          <button
+            onClick={() => setModal({ tipo:'nueva' })}
+            style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 4px', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:14, fontWeight:500, WebkitTapHighlightColor:'transparent', marginBottom:8 }}
+          >
+            <span style={{ fontSize:20, lineHeight:1 }}>+</span>
+            <span>Nueva tarea</span>
+          </button>
+        )}
 
         <p style={{ fontSize:13, fontWeight:600, color:'#22C55E', margin:'20px 0 6px' }}>
           Completadas ({completedVisible.length})
@@ -168,10 +166,9 @@ export function DayModule() {
             selected={selectedIds.has(task.id)}
             onCircleTap={toggleSeleccion}
             hasSelection={haySeleccion}
-            draggable={false}
           />
         ))}
-        <div style={{ height:140 }} />
+        <div style={{ height:24 }} />
       </div>
 
       {/* Selection bar — fixed at bottom, appears automatically */}
@@ -191,11 +188,6 @@ export function DayModule() {
         </div>
       )}
 
-      {!haySeleccion && (
-        <button onClick={() => setModal({ tipo:'nueva' })} style={fab} aria-label="Nueva tarea">
-          <span style={{ fontSize:28, color:'#fff', lineHeight:1 }}>+</span>
-        </button>
-      )}
 
       {modal?.tipo === 'nueva'       && <TaskFormNew defaultDate={date} onClose={() => setModal(null)} />}
       {modal?.tipo === 'editar'      && <TaskFormNew task={modal.task} defaultDate={date} onClose={() => setModal(null)} />}
@@ -220,7 +212,6 @@ const screen       = { display:'flex', flexDirection:'column', flex:1, minHeight
 const header       = { display:'flex', alignItems:'center', gap:8, padding:'14px 20px', borderBottom:'1px solid #f3f4f6', flexShrink:0 }
 const btnVolver    = { background:'none', border:'none', fontSize:22, color:'#6b7280', cursor:'pointer', padding:'0 4px', minWidth:44, minHeight:44, display:'flex', alignItems:'center', justifyContent:'center' }
 const barraSeleccion = { flexShrink:0, padding:'12px 20px', paddingBottom:'calc(14px + env(safe-area-inset-bottom))', background:'#fff', borderTop:'1px solid #f3f4f6', display:'flex', alignItems:'center', justifyContent:'space-between' }
-const fab          = { position:'fixed', bottom:'calc(76px + env(safe-area-inset-bottom))', right:20, width:56, height:56, borderRadius:'50%', background:'#5B3DF6', border:'none', cursor:'pointer', display:'flex', alignItems:'center', justifyContent:'center', boxShadow:'0 4px 20px rgba(91,61,246,0.4)', zIndex:100, WebkitTapHighlightColor:'transparent' }
 const overlay      = { position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }
 const sheet        = { background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px 20px', paddingBottom:'calc(20px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480 }
 const inputStyle   = { width:'100%', boxSizing:'border-box', padding:'9px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:14, color:'#111', fontFamily:'inherit', outline:'none', marginBottom:4 }
