@@ -114,23 +114,26 @@ export function DayModule() {
   return (
     <div style={screen}>
       <div style={header}>
-        <button onClick={() => navigate('/agenda')} style={btnVolver} aria-label="Volver">‹</button>
-        <span style={{ fontSize:15, fontWeight:600, color:'#111', flex:1 }}>{labelDia(date)}</span>
-        {haySeleccion && (
-          <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:'#5B3DF6', fontSize:14, fontWeight:500, cursor:'pointer', padding:'8px' }}>
-            Cancelar
+        <div style={{ display:'flex', alignItems:'center', gap:8, padding:'14px 20px' }}>
+          <button onClick={() => navigate('/agenda')} style={btnVolver} aria-label="Volver">‹</button>
+          <span style={{ fontSize:15, fontWeight:600, color:'#111', flex:1 }}>{labelDia(date)}</span>
+          {haySeleccion && (
+            <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:'#5B3DF6', fontSize:14, fontWeight:500, cursor:'pointer', padding:'8px' }}>
+              Cancelar
+            </button>
+          )}
+        </div>
+        {!haySeleccion && (
+          <button
+            onClick={() => navigate(`/agenda/${date}/nueva`)}
+            style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 20px', background:'none', border:'none', borderTop:'1px solid #f3f4f6', cursor:'pointer', color:'#5B3DF6', fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent' }}
+          >
+            <span style={{ fontSize:20, lineHeight:1 }}>+</span>
+            <span>Nueva tarea</span>
           </button>
         )}
       </div>
-      {!haySeleccion && (
-        <button
-          onClick={() => navigate(`/agenda/${date}/nueva`)}
-          style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'11px 20px', background:'none', border:'none', borderBottom:'1px solid #f3f4f6', cursor:'pointer', color:'#5B3DF6', fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent', flexShrink:0 }}
-        >
-          <span style={{ fontSize:20, lineHeight:1 }}>+</span>
-          <span>Nueva tarea</span>
-        </button>
-      )}
+
 
       <div style={{ flex:1, overflowY:'auto', padding:'0 20px', WebkitOverflowScrolling:'touch' }}>
         <p style={{ fontSize:13, fontWeight:600, color:'#5B3DF6', margin:'16px 0 6px' }}>
@@ -208,7 +211,7 @@ export function DayModule() {
 }
 
 const screen       = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#fff', overflow:'hidden' }
-const header       = { display:'flex', alignItems:'center', gap:8, padding:'14px 20px', borderBottom:'1px solid #f3f4f6', flexShrink:0 }
+const header       = { display:'flex', flexDirection:'column', padding:'0', borderBottom:'1px solid #f3f4f6', flexShrink:0 }
 const btnVolver    = { background:'none', border:'none', fontSize:22, color:'#6b7280', cursor:'pointer', padding:'0 4px', minWidth:44, minHeight:44, display:'flex', alignItems:'center', justifyContent:'center' }
 const barraSeleccion = { flexShrink:0, padding:'12px 20px', paddingBottom:'calc(14px + env(safe-area-inset-bottom))', background:'#fff', borderTop:'1px solid #f3f4f6', display:'flex', alignItems:'center', justifyContent:'space-between' }
 const overlay      = { position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }
