@@ -8,6 +8,7 @@ import { NewTaskScreen }    from './modules/agenda/NewTaskScreen'
 import { DayModule }         from './modules/agenda/DayModule'
 import { PizarronModule }    from './modules/pizarron/PizarronModule'
 import { PerfilModule }      from './modules/perfil/PerfilModule'
+import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -84,7 +85,7 @@ function AppWithViewport() {
               <Route path="/agenda/:date" element={<DayModule />} />
               <Route path="/agenda/:date/nueva" element={<NewTaskScreen />} />
               <Route path="/pizarron/:id" element={<PizarronModule />} />
-              <Route path="/pizarrones"   element={<Placeholder icon="📌" label="Pizarrones" />} />
+              <Route path="/pizarrones"   element={<PizarronesModule />} />
               <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
               <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />
               <Route path="/perfil"       element={<PerfilModule />} />
