@@ -41,7 +41,13 @@ export function PizarronModule() {
   //   | 'createTask' | { type: 'editTask', task } | { type: 'deleteTask', task }
   //   | 'editGroup'  | 'deleteGroup' | 'leaveGroup' | 'invite'
 
-  if (loading) {
+  const [waited, setWaited] = React.useState(false)
+  React.useEffect(() => {
+    const t = setTimeout(() => setWaited(true), 2000)
+    return () => clearTimeout(t)
+  }, [groupId])
+
+  if (loading || !waited) {
     return (
       <div style={centered}>
         <span style={{ fontSize: 14, color: '#9ca3af' }}>Cargando pizarrón...</span>
@@ -49,7 +55,7 @@ export function PizarronModule() {
     )
   }
 
-  if (!group) {
+  if (!group && waited) {
     return (
       <EmptyState
         title="Grupo no encontrado"
