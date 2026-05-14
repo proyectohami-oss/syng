@@ -41,11 +41,13 @@ export async function createGroup({ name, adminId, adminDisplayName, adminEmail 
     invitedBy:   adminId,
   })
 
-  batch.update(doc(db, 'users', adminId), {
+  await batch.commit()
+
+  // Actualizar groupIds del usuario por separado (fuera del batch)
+  await updateDoc(doc(db, 'users', adminId), {
     groupIds: arrayUnion(id),
   })
 
-  await batch.commit()
   return { id }
 }
 
