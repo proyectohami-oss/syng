@@ -42,6 +42,7 @@ export function useGroupsListener(uid, dispatch) {
     groupsUnsubRef.current = onSnapshot(
       q,
       (snapshot) => {
+        console.log('[GroupsListener] snapshot recibido, docs:', snapshot.size, snapshot.docs.map(d => d.id))
         dispatch({
           type:    CORE_ACTIONS.APPLY_GROUP_CHANGES,
           changes: snapshot.docChanges(),
@@ -70,7 +71,7 @@ export function useGroupsListener(uid, dispatch) {
         })
       },
       (error) => {
-        console.error('[GroupsListener] error:', error)
+        console.error('[GroupsListener] ERROR COMPLETO:', error.code, error.message)
         dispatch({ type: CORE_ACTIONS.SET_GROUPS_ERROR, error: error.message })
       }
     )
