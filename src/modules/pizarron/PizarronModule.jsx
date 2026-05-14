@@ -194,7 +194,7 @@ export function PizarronModule() {
 }
 
 const layout   = { display: 'flex', flexDirection: 'column', height: '100%', overflow: 'hidden' }
-const content  = { display: 'flex', flex: 1, overflow: 'hidden', minHeight: 0 }
+const content  = { display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', minHeight: 0 }
 const centered = { display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }
 const countBar = { display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 20px', borderBottom: '1px solid #f3f4f6', flexShrink: 0 }
 const newBtn   = { display: 'flex', alignItems: 'center', gap: 6, padding: '6px 12px', borderRadius: 8, border: 'none', background: '#3b82f6', color: '#fff', cursor: 'pointer', fontSize: 13, fontWeight: 500 }
