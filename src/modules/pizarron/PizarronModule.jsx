@@ -29,7 +29,7 @@ import { useGroups }              from '../../core/hooks/useGroups'
 import { usePermissions }         from '../../core/hooks/usePermissions'
 
 export function PizarronModule() {
-  const { groupId }  = useParams()
+  const { id: groupId }  = useParams()
   const navigate     = useNavigate()
   const { tasks, group, members, role, pendingCount, completedCount, loading, uid } = usePizarronView(groupId)
   const { deleteTask }                = useTasks()
