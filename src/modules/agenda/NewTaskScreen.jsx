@@ -3,6 +3,7 @@ import { useParams, useNavigate }               from 'react-router-dom'
 import { Timestamp }                            from 'firebase/firestore'
 import { useTasks }                             from '../../core/hooks/useTasks'
 import { useCoreState }                         from '../../core/hooks/useCoreData'
+import { RepeatDayPicker }                      from '../../shared/RepeatDayPicker'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
                'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -27,6 +28,8 @@ export function NewTaskScreen() {
   const [dateStr,   setDateStr]   = useState(date ?? '')
   const [showGroup, setShowGroup] = useState(false)
   const [showDate,  setShowDate]  = useState(false)
+  const [showRepeat, setShowRepeat] = useState(false)
+  const [repeatDays, setRepeatDays] = useState(new Set())
 
   const grupoLabel = groups.find(g => g.id === groupId)?.name ?? 'Personal'
   const puedeGuardar = !!title.trim()
@@ -45,7 +48,13 @@ export function NewTaskScreen() {
       ? Timestamp.fromDate(new Date(dateStr + 'T23:59:59'))
       : null
     navigate(-1)
-    createTask({ title: title.trim(), type, groupId: gId, dueDate }).catch(console.error)
+    if (repeatDays.size > 0) {
+      Array.from(repeatDays).sort().forEach(day => {
+        createTask({ title: title.trim(), type, groupId: gId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
+      })
+    } else {
+      createTask({ title: title.trim(), type, groupId: gId, dueDate }).catch(console.error)
+    }
   }
 
   return (
@@ -105,7 +114,26 @@ export function NewTaskScreen() {
             style={{ width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:14, marginBottom:8, fontFamily:'inherit' }}
           />
         )}
+
+        {/* Repetir */}
+        <div style={row} onClick={() => setShowRepeat(true)}>
+          <span>🔁</span>
+          <span style={rLbl}>Repetir</span>
+          <span style={{ ...rVal, color: repeatDays.size > 0 ? '#5B3DF6' : '#6b7280' }}>
+            {repeatDays.size === 0 ? 'No repetir' : `${repeatDays.size} día${repeatDays.size !== 1 ? 's' : ''} seleccionado${repeatDays.size !== 1 ? 's' : ''}`}
+          </span>
+          <span style={arr}>›</span>
+        </div>
+
       </div>
+
+      {showRepeat && (
+        <RepeatDayPicker
+          selectedDays={repeatDays}
+          onChange={days => setRepeatDays(days)}
+          onClose={() => setShowRepeat(false)}
+        />
+      )}
 
       {/* Footer con botón principal */}
       <div style={footer}>
@@ -120,7 +148,7 @@ export function NewTaskScreen() {
             cursor:     puedeGuardar ? 'pointer' : 'default',
           }}
         >
-          Crear tarea
+          {repeatDays.size > 0 ? `Crear ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''}` : 'Crear tarea'}
         </button>
       </div>
 
