@@ -69,7 +69,7 @@ export function NewTaskScreen() {
           disabled={!puedeGuardar}
           style={{ background:'none', border:'none', fontSize:16, fontWeight:600, cursor: puedeGuardar ? 'pointer' : 'default', color: puedeGuardar ? '#5B3DF6' : '#c4b5fd', padding:'0 4px' }}
         >
-          Listo
+          {repeatDays.size > 0 ? `Crear ${repeatDays.size} tarea${repeatDays.size !== 1 ? "s" : ""}` : "Crear tarea"}
         </button>
       </div>
 
@@ -135,22 +135,6 @@ export function NewTaskScreen() {
         />
       )}
 
-      {/* Footer con botón principal */}
-      <div style={footer}>
-        <button
-          onClick={handleSave}
-          disabled={!puedeGuardar}
-          style={{
-            width:'100%', padding:'14px', borderRadius:14, border:'none',
-            fontSize:16, fontWeight:600,
-            background: puedeGuardar ? '#5B3DF6' : '#e5e7eb',
-            color:      puedeGuardar ? '#fff'    : '#9ca3af',
-            cursor:     puedeGuardar ? 'pointer' : 'default',
-          }}
-        >
-          {repeatDays.size > 0 ? `Crear ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''}` : 'Crear tarea'}
-        </button>
-      </div>
 
     </div>
   )
@@ -160,7 +144,6 @@ const screen = { display:'flex', flexDirection:'column', flex:1, minHeight:0, ba
 const header = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid #f3f4f6' }
 const btnBack = { background:'none', border:'none', fontSize:16, color:'#6b7280', cursor:'pointer', padding:'0 4px' }
 const body   = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px 20px' }
-const footer = { flexShrink:0, padding:'12px 20px', paddingBottom:'calc(12px + env(safe-area-inset-bottom))', borderTop:'1px solid #f3f4f6', background:'#fff' }
 const textArea = { width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, color:'#111', fontFamily:'inherit', resize:'none', outline:'none', marginBottom:14 }
 const row    = { display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }
 const rLbl   = { fontSize:14, color:'#111', flex:1 }
