@@ -6,6 +6,8 @@ import { selectGroupById, selectMembersByGroup, selectUserRole } from '../../../
 export function usePizarronView(groupId) {
   const state = useCoreState()
   const groups = useCoreGroups()
+  console.log('[usePizarronView] groupId buscado:', groupId)
+  console.log('[usePizarronView] keys en Map:', Array.from(groups.list.keys()))
 
   const tasks   = useMemo(() => selectTasksByGroup(state, groupId), [state.tasks.byGroup, groupId])
   const group   = useMemo(() => groups.list.get(groupId) ?? null,    [groups.list, groupId])
