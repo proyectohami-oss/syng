@@ -144,7 +144,7 @@ export function DayModule() {
 
         {!haySeleccion && (
           <button
-            onClick={() => setModal({ tipo:'nueva' })}
+            onClick={() => navigate(`/agenda/${date}/nueva`)}
             style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 4px', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:14, fontWeight:500, WebkitTapHighlightColor:'transparent', marginBottom:8 }}
           >
             <span style={{ fontSize:20, lineHeight:1 }}>+</span>

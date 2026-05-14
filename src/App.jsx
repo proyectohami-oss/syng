@@ -4,6 +4,7 @@ import { AuthGuard }         from './auth/AuthGuard'
 import { InvitationChecker } from './auth/InvitationChecker'
 import { AppShell }          from './shared/AppShell'
 import { AgendaModule }      from './modules/agenda/AgendaModule'
+import { NewTaskScreen }    from './modules/agenda/NewTaskScreen'
 import { DayModule }         from './modules/agenda/DayModule'
 import { PizarronModule }    from './modules/pizarron/PizarronModule'
 
@@ -80,6 +81,7 @@ function AppWithViewport() {
               <Route path="/"             element={<Navigate to="/agenda" replace />} />
               <Route path="/agenda"       element={<AgendaModule />} />
               <Route path="/agenda/:date" element={<DayModule />} />
+              <Route path="/agenda/:date/nueva" element={<NewTaskScreen />} />
               <Route path="/pizarron/:id" element={<PizarronModule />} />
               <Route path="/pizarrones"   element={<Placeholder icon="📌" label="Pizarrones" />} />
               <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
