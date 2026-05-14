@@ -14,8 +14,8 @@
  */
 import { useState }               from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { usePizarronView }
-import { useCoreState }               from '../../core/hooks/useCoreData'        from './hooks/usePizarronView'
+import { usePizarronView }            from './hooks/usePizarronView'
+import { useCoreState }               from '../../core/hooks/useCoreData'
 import { PizarronHeader }         from './components/PizarronHeader'
 import { PizarronTaskList }       from './components/PizarronTaskList'
 import { PizarronMemberPanel }    from './components/PizarronMemberPanel'
