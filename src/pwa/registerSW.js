@@ -37,10 +37,8 @@ export function registerSW() {
           }, 60 * 60 * 1000)
         },
         onNeedRefresh() {
-          // App has a new version available.
-          // Could dispatch to a context to show a "Update available" banner.
-          // For now: silent. Never force-reload — it could interrupt a write.
-          console.info('[SW] New version available — reload when ready')
+          // Nueva versión disponible — recarga automática
+          window.location.reload()
         },
         onOfflineReady() {
           console.info('[SW] App ready for offline use')
