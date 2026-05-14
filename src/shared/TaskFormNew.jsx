@@ -4,6 +4,7 @@
  * El footer con botón "Crear tarea" nunca queda tapado por el teclado.
  */
 import { useState, useMemo } from 'react'
+import { useKeyboardOffset } from '../pwa/useKeyboardOffset'
 import { Timestamp }         from 'firebase/firestore'
 import { useTasks }          from '../core/hooks/useTasks'
 import { useCoreState }      from '../core/hooks/useCoreData'
@@ -87,6 +88,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
   }
 
   const puedeGuardar = !!title.trim()
+  const keyboardOffset = useKeyboardOffset()
 
   return (
     <>
@@ -181,7 +183,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
           </div>
 
           {/* ── Footer fijo — siempre visible aunque aparezca el teclado ── */}
-          <div style={sheetFooter}>
+          <div style={{ ...sheetFooter, paddingBottom: `calc(12px + ${keyboardOffset}px + env(safe-area-inset-bottom))`, transition:'padding-bottom 0.2s ease' }}>
             <button
               onClick={handleSave}
               disabled={!puedeGuardar}
