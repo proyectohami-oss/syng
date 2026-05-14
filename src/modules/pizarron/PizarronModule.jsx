@@ -14,8 +14,7 @@
  */
 import { useState }               from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
-import { usePizarronView }            from './hooks/usePizarronView'
-import { useCoreState }               from '../../core/hooks/useCoreData'
+import { usePizarronView }        from './hooks/usePizarronView'
 import { PizarronHeader }         from './components/PizarronHeader'
 import { PizarronTaskList }       from './components/PizarronTaskList'
 import { PizarronMemberPanel }    from './components/PizarronMemberPanel'
@@ -31,7 +30,6 @@ import { usePermissions }         from '../../core/hooks/usePermissions'
 
 export function PizarronModule() {
   const { groupId }  = useParams()
-  const state     = useCoreState()
   const navigate     = useNavigate()
   const { tasks, group, members, role, pendingCount, completedCount, loading, uid } = usePizarronView(groupId)
   const { deleteTask }                = useTasks()
@@ -43,9 +41,7 @@ export function PizarronModule() {
   //   | 'createTask' | { type: 'editTask', task } | { type: 'deleteTask', task }
   //   | 'editGroup'  | 'deleteGroup' | 'leaveGroup' | 'invite'
 
-  const groupsLoaded = state.groups.list.size > 0
-
-  if (!group && (!groupsLoaded || loading)) {
+  if (loading && !group) {
     return (
       <div style={centered}>
         <span style={{ fontSize: 14, color: '#9ca3af' }}>Cargando pizarrón...</span>
