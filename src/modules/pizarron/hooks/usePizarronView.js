@@ -1,13 +1,14 @@
 import { useMemo } from 'react'
-import { useCoreState }          from '../../../core/hooks/useCoreData'
+import { useCoreState, useCoreGroups } from '../../../core/hooks/useCoreData'
 import { selectTasksByGroup }    from '../../../core/selectors/taskSelectors'
 import { selectGroupById, selectMembersByGroup, selectUserRole } from '../../../core/selectors/groupSelectors'
 
 export function usePizarronView(groupId) {
   const state = useCoreState()
+  const groups = useCoreGroups()
 
   const tasks   = useMemo(() => selectTasksByGroup(state, groupId), [state.tasks.byGroup, groupId])
-  const group   = useMemo(() => selectGroupById(state, groupId),    [state.groups.list, groupId])
+  const group   = useMemo(() => groups.list.get(groupId) ?? null,    [groups.list, groupId])
   const members = useMemo(() => selectMembersByGroup(state, groupId), [state.groups.members, groupId])
   const role    = useMemo(() => selectUserRole(state, groupId),     [state.groups.members, state.auth.user, groupId])
 
