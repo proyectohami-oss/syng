@@ -26,16 +26,9 @@ function isMobile() {
 export function useAuthActions() {
 
   const signInWithGoogle = useCallback(async () => {
-    if (isMobile()) {
-      // En móvil: redirect — la página se recarga y Firebase
-      // recupera el resultado automáticamente via getRedirectResult
-      await signInWithRedirect(auth, googleProvider)
-      // Esta línea no se ejecuta — el navegador hace redirect
-    } else {
-      // En desktop: popup — más conveniente
-      const result = await signInWithPopup(auth, googleProvider)
-      return result.user
-    }
+    // Siempre popup — signInWithRedirect falla en iOS 26 / Safari moderno
+    const result = await signInWithPopup(auth, googleProvider)
+    return result.user
   }, [])
 
   const signInWithEmail = useCallback(async (email, password) => {
