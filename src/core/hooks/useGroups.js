@@ -13,8 +13,11 @@
 import { useCallback } from 'react'
 import { useCoreData } from './useCoreData'
 import { CORE_ACTIONS } from '../store/coreActions'
-import * as groupsService  from '../services/groups.service'
-import * as membersService from '../services/members.service'
+import * as groupsService     from '../services/groups.service'
+import * as membersService    from '../services/members.service'
+import { findUserByPhone }    from '../services/users.service'
+import { createInvitation }   from '../services/invitations.service'
+import { addMember }          from '../services/groups.service'
 
 export function useGroups() {
   const { state, dispatch } = useCoreData()
@@ -119,6 +122,44 @@ export function useGroups() {
     await membersService.transferAdmin({ groupId, currentAdminUid: uid, newAdminUid })
   }, [state.auth.user])
 
+  /**
+   * Busca un usuario por teléfono y lo agrega al grupo.
+   * Si ya usa Syng → entra directo.
+   * Si no → crea invitación pendiente.
+   * Retorna: { status: 'added' | 'invited', displayName }
+   */
+  const addMemberByPhone = useCallback(async ({ groupId, phone }) => {
+    const uid      = state.auth.user?.uid
+    const userData = state.auth.userData
+    const group    = state.groups.list.get(groupId)
+    if (!uid || !userData || !group) throw new Error('Invalid state')
+
+    const found = await findUserByPhone(phone)
+
+    if (found) {
+      // Usuario existe en Syng — agregar directo
+      await addMember(groupId, {
+        uid:         found.uid,
+        displayName: found.displayName,
+        email:       found.email ?? '',
+        phoneNumber: found.phoneNumber,
+      }, uid)
+      return { status: 'added', displayName: found.displayName || found.phoneNumber }
+    } else {
+      // No existe — crear invitación pendiente
+      const { normalizePhone } = await import('../services/users.service')
+      const phoneNumber = normalizePhone(phone)
+      await createInvitation({
+        groupId,
+        groupName:   group.name,
+        inviterUid:  uid,
+        inviterName: userData.displayName ?? '',
+        phoneNumber,
+      })
+      return { status: 'invited', displayName: phoneNumber }
+    }
+  }, [state.auth.user, state.auth.userData, state.groups.list])
+
   return {
     createGroup,
     updateGroupName,
@@ -128,5 +169,6 @@ export function useGroups() {
     removeMember,
     leaveGroup,
     transferAdmin,
+    addMemberByPhone,
   }
 }
