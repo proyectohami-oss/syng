@@ -124,6 +124,15 @@ export function DayModule() {
       </div>
 
       <div style={{ flex:1, overflowY:'auto', padding:'0 20px', WebkitOverflowScrolling:'touch' }}>
+        {!haySeleccion && (
+          <button
+            onClick={() => navigate(`/agenda/${date}/nueva`)}
+            style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'14px 4px', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent', borderBottom:'1px solid #f3f4f6', marginBottom:4 }}
+          >
+            <span style={{ fontSize:22, lineHeight:1 }}>+</span>
+            <span>Nueva tarea</span>
+          </button>
+        )}
         <p style={{ fontSize:13, fontWeight:600, color:'#5B3DF6', margin:'16px 0 6px' }}>
           Pendientes ({orderedPending.length})
         </p>
@@ -141,16 +150,6 @@ export function DayModule() {
 
           />
         ))}
-
-        {!haySeleccion && (
-          <button
-            onClick={() => navigate(`/agenda/${date}/nueva`)}
-            style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 4px', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:14, fontWeight:500, WebkitTapHighlightColor:'transparent', marginBottom:8 }}
-          >
-            <span style={{ fontSize:20, lineHeight:1 }}>+</span>
-            <span>Nueva tarea</span>
-          </button>
-        )}
 
         <p style={{ fontSize:13, fontWeight:600, color:'#22C55E', margin:'20px 0 6px' }}>
           Completadas ({completedVisible.length})
