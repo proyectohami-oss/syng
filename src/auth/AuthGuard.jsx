@@ -1,6 +1,7 @@
 import { useContext } from 'react'
 import { CoreAuthContext } from '../core/CoreDataProvider'
 import { AuthScreen } from './AuthScreen'
+import { PhoneSetupScreen } from './PhoneSetupScreen'
 
 export function AuthGuard({ children }) {
   const auth = useContext(CoreAuthContext)
@@ -12,6 +13,16 @@ export function AuthGuard({ children }) {
 
   if (!auth.user) {
     return <AuthScreen />
+  }
+
+  // Usuario logueado pero sin teléfono — onboarding obligatorio
+  if (auth.userData && !auth.userData.phoneNumber) {
+    return <PhoneSetupScreen />
+  }
+
+  // userData aún cargando — esperar antes de mostrar onboarding
+  if (!auth.userData) {
+    return <LoadingScreen />
   }
 
   return children
