@@ -6,6 +6,7 @@
 import { useState } from 'react'
 import { useCoreAuth } from '../core/hooks/useCoreData'
 import { updatePhoneNumber } from '../core/services/users.service'
+import { checkPendingInvitations } from '../core/services/invitations.service'
 
 export function PhoneSetupScreen() {
   const auth = useCoreAuth()
@@ -24,7 +25,15 @@ export function PhoneSetupScreen() {
     setLoading(true)
     setError(null)
     try {
-      await updatePhoneNumber(uid, phone)
+      const phoneNumber = await updatePhoneNumber(uid, phone)
+      // Buscar invitaciones pendientes para este número
+      const userData = auth.userData
+      await checkPendingInvitations({
+        uid,
+        displayName: userData?.displayName ?? '',
+        email:       userData?.email ?? '',
+        phoneNumber,
+      })
       // El listener de Firestore actualizará userData automáticamente
       // y AuthGuard dejará pasar al usuario
     } catch (err) {
