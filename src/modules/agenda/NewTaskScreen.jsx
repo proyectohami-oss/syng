@@ -111,7 +111,7 @@ export function NewTaskScreen() {
           <input
             type="date" value={dateStr}
             onChange={e => { setDateStr(e.target.value); setShowDate(false) }}
-            style={{ width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:14, marginBottom:8, fontFamily:'inherit' }}
+            style={{ width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, marginBottom:8, fontFamily:'inherit' }}
           />
         )}
 
@@ -161,7 +161,7 @@ const header = { flexShrink:0, display:'flex', alignItems:'center', justifyConte
 const btnBack = { background:'none', border:'none', fontSize:16, color:'#6b7280', cursor:'pointer', padding:'0 4px' }
 const body   = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px 20px' }
 const footer = { flexShrink:0, padding:'12px 20px', paddingBottom:'calc(12px + env(safe-area-inset-bottom))', borderTop:'1px solid #f3f4f6', background:'#fff' }
-const textArea = { width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:15, color:'#111', fontFamily:'inherit', resize:'none', outline:'none', marginBottom:14 }
+const textArea = { width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, color:'#111', fontFamily:'inherit', resize:'none', outline:'none', marginBottom:14 }
 const row    = { display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }
 const rLbl   = { fontSize:14, color:'#111', flex:1 }
 const rVal   = { fontSize:14, color:'#6b7280' }
