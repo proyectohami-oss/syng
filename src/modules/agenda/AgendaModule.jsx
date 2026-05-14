@@ -71,6 +71,6 @@ export function AgendaModule() {
   )
 }
 
-const screen    = { display:'flex', flexDirection:'column', height:'100%', background:'#fff', overflow:'hidden' }
+const screen    = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#fff', overflow:'hidden' }
 const header    = { display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px 10px', paddingTop:'max(14px, env(safe-area-inset-top))', borderBottom:'1px solid #f3f4f6', flexShrink:0 }
 const daySummary= { margin:'0 16px 24px', padding:'12px 16px', background:'#fafafa', borderRadius:12, border:'1px solid #f3f4f6', display:'flex', alignItems:'center', justifyContent:'space-between', cursor:'pointer', WebkitTapHighlightColor:'transparent' }

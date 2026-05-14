@@ -216,7 +216,7 @@ export function DayModule() {
   )
 }
 
-const screen       = { display:'flex', flexDirection:'column', height:'100%', background:'#fff', overflow:'hidden' }
+const screen       = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#fff', overflow:'hidden' }
 const header       = { display:'flex', alignItems:'center', gap:8, padding:'14px 20px', borderBottom:'1px solid #f3f4f6', flexShrink:0 }
 const btnVolver    = { background:'none', border:'none', fontSize:22, color:'#6b7280', cursor:'pointer', padding:'0 4px', minWidth:44, minHeight:44, display:'flex', alignItems:'center', justifyContent:'center' }
 const barraSeleccion = { flexShrink:0, padding:'12px 20px', paddingBottom:'calc(14px + env(safe-area-inset-bottom))', background:'#fff', borderTop:'1px solid #f3f4f6', display:'flex', alignItems:'center', justifyContent:'space-between' }
