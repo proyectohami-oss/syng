@@ -41,8 +41,7 @@ export function PizarronModule() {
   //   | 'createTask' | { type: 'editTask', task } | { type: 'deleteTask', task }
   //   | 'editGroup'  | 'deleteGroup' | 'leaveGroup' | 'invite'
 
-  console.log('[Pizarron] groupId:', groupId, '| group:', group, '| loading:', loading, '| groups en state:', state?.groups?.list?.size)
-  if ((loading || !group) && !group) {
+  if (loading) {
     return (
       <div style={centered}>
         <span style={{ fontSize: 14, color: '#9ca3af' }}>Cargando pizarrón...</span>
@@ -50,7 +49,7 @@ export function PizarronModule() {
     )
   }
 
-  if (!group && !loading) {
+  if (!group) {
     return (
       <EmptyState
         title="Grupo no encontrado"
