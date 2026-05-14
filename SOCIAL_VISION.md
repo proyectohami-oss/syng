@@ -69,3 +69,27 @@ Si alguien instala Syng porque fue invitado a un grupo:
 - Auth por SMS/teléfono (migración futura)
 - Notificaciones push de invitación
 - Viralización automática
+
+## DECISIONES FINALES DE GRUPOS (Mayo 2026)
+
+### Creación
+- Cualquier usuario puede crear grupos
+- Plan Gratis: máximo 1 grupo, hasta 5 miembros
+
+### Admins
+- Múltiples admins por grupo permitido (como WhatsApp)
+- El creador es admin por defecto
+- Cualquier admin puede promover a otro miembro a admin
+
+### Permisos
+- Miembro: crear/editar/completar tareas + salirse del grupo
+- Admin: todo lo anterior + agregar/quitar miembros + promover admins + eliminar grupo
+
+### Invitaciones
+- Contacto con Syng → entra directo al grupo
+- Contacto sin Syng → invitación pendiente hasta que instale y registre número
+- Al registrar teléfono → Syng conecta automáticamente invitaciones pendientes
+
+### Búsqueda de miembros
+- Manual por número de teléfono
+- Desde contactos del teléfono (con permiso)
