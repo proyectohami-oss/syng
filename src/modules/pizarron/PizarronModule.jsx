@@ -158,29 +158,44 @@ export function PizarronModule() {
           </p>
         )}
 
-        {pending.map(task => (
-          <div key={task.id} style={taskRow}>
-            <button
-              onClick={() => toggleStatus(task)}
-              style={{ width:22, height:22, borderRadius:'50%', border:'2px solid #d1d5db', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }}
-            />
-            <span style={{ flex:1, fontSize:14, color:'#111' }}>{task.title}</span>
-            <button onClick={() => setModal({ tipo:'borrar', task })} style={btnTask}>🗑️</button>
-          </div>
-        ))}
+        {pending.map(task => {
+          const member = members.find(m => m.uid === task.ownerId)
+          const hora = task.dueDate ? (() => {
+            const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
+            return d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
+          })() : null
+          return (
+            <div key={task.id} style={taskCard}>
+              <button
+                onClick={() => toggleStatus(task)}
+                style={checkBtn}
+              />
+              <div style={{ flex:1, minWidth:0 }}>
+                <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#111', lineHeight:1.3 }}>{task.title}</p>
+                {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:'#9ca3af' }}>{hora}</p>}
+              </div>
+              {member && (
+                <div style={memberMini} title={member.displayName}>
+                  {(member.displayName?.[0] ?? '?').toUpperCase()}
+                </div>
+              )}
+              <button onClick={() => setModal({ tipo:'borrar', task })} style={btnTask}>✕</button>
+            </div>
+          )
+        })}
 
         {completed.length > 0 && (
           <>
-            <p style={{ margin:'16px 0 8px', fontSize:12, color:'#9ca3af', fontWeight:500 }}>
-              Completadas ({completed.length})
+            <p style={{ margin:'20px 0 8px', fontSize:12, color:'#9ca3af', fontWeight:600, letterSpacing:'0.04em' }}>
+              COMPLETADAS ({completed.length})
             </p>
             {completed.map(task => (
-              <div key={task.id} style={{ ...taskRow, opacity:0.5 }}>
+              <div key={task.id} style={{ ...taskCard, opacity:0.55 }}>
                 <button
                   onClick={() => toggleStatus(task)}
-                  style={{ width:22, height:22, borderRadius:'50%', border:'2px solid #22C55E', background:'#22C55E', cursor:'pointer', flexShrink:0 }}
+                  style={{ ...checkBtn, border:'2px solid #22C55E', background:'#22C55E' }}
                 />
-                <span style={{ flex:1, fontSize:14, color:'#6b7280', textDecoration:'line-through' }}>{task.title}</span>
+                <p style={{ flex:1, margin:0, fontSize:14, color:'#6b7280', textDecoration:'line-through' }}>{task.title}</p>
               </div>
             ))}
           </>
@@ -224,7 +239,9 @@ const counters      = { flexShrink:0, display:'flex', alignItems:'center', paddi
 const counter       = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
 const counterDivider = { width:1, height:32, background:'#f3f4f6' }
 const taskList      = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px' }
-const taskRow       = { display:'flex', alignItems:'center', gap:12, padding:'10px 0', borderBottom:'1px solid #f9fafb' }
+const taskCard      = { display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid #f3f4f6' }
+const checkBtn      = { width:22, height:22, borderRadius:'50%', border:'2px solid #d1d5db', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
+const memberMini    = { width:24, height:24, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
 const btnTask       = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'#9ca3af' }
 const addTaskBtn    = { display:'flex', alignItems:'center', gap:8, width:'100%', padding:'12px 0', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:14, fontWeight:500, marginTop:8, WebkitTapHighlightColor:'transparent' }
 const backBtn       = { padding:'10px 20px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
