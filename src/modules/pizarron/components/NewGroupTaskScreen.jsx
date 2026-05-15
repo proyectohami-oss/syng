@@ -15,7 +15,7 @@ function labelFecha(ds) {
 }
 
 export function NewGroupTaskScreen() {
-  const { id: groupId } = useParams()
+  const { id: groupId, date } = useParams()
   const navigate        = useNavigate()
   const { createTask }  = useTasks()
   const { group }       = usePizarronView(groupId)
@@ -25,7 +25,7 @@ export function NewGroupTaskScreen() {
   const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
 
   const [title,      setTitle]      = useState('')
-  const [dateStr,    setDateStr]    = useState(todayStr)
+  const [dateStr,    setDateStr]    = useState(date ?? todayStr)
   const [showDate,   setShowDate]   = useState(false)
   const [showRepeat, setShowRepeat] = useState(false)
   const [repeatDays, setRepeatDays] = useState(new Set())

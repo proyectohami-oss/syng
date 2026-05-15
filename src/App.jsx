@@ -88,7 +88,7 @@ function AppWithViewport() {
               <Route path="/agenda/:date/nueva" element={<NewTaskScreen />} />
               <Route path="/pizarron/:id" element={<PizarronModule />} />
               <Route path="/pizarron/:id/info" element={<GroupInfoScreen />} />
-              <Route path="/pizarron/:id/nueva" element={<NewGroupTaskScreen />} />
+              <Route path="/pizarron/:id/nueva/:date" element={<NewGroupTaskScreen />} />
               <Route path="/pizarrones"   element={<PizarronesModule />} />
               <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
               <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />

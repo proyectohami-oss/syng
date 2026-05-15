@@ -189,7 +189,7 @@ export function PizarronModule() {
         {/* Añadir tarea inline */}
         {perms.canCreateGroupTask && (
           <button
-            onClick={() => navigate(`/pizarron/${groupId}/nueva`)}
+            onClick={() => navigate(`/pizarron/${groupId}/nueva/${selectedKey}`)}
             style={addTaskBtn}
           >
             <span style={{ fontSize:18 }}>+</span>
