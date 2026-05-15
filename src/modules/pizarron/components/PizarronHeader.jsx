@@ -3,6 +3,7 @@
  * Shows group name, member count, admin actions.
  */
 import { useState } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 
 export function PizarronHeader({
   group, role, memberCount,
@@ -10,11 +11,14 @@ export function PizarronHeader({
 }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const isAdmin = role === 'admin'
+  const navigate = useNavigate()
+  const { id } = useParams()
 
   return (
     <header style={header}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-        {/* Group icon */}
+        {/* Group icon — toca para ver Info del grupo */}
+        <div style={{ display:'flex', alignItems:'center', gap:12, cursor:'pointer' }} onClick={() => navigate(`/pizarron/${id}/info`)}>
         <div style={groupIcon}>
           {group.name[0].toUpperCase()}
         </div>
@@ -26,6 +30,7 @@ export function PizarronHeader({
             {memberCount} miembro{memberCount !== 1 ? 's' : ''}
             {isAdmin ? ' · Admin' : ''}
           </p>
+        </div>
         </div>
       </div>
 

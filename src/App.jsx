@@ -7,6 +7,7 @@ import { AgendaModule }      from './modules/agenda/AgendaModule'
 import { NewTaskScreen }    from './modules/agenda/NewTaskScreen'
 import { DayModule }         from './modules/agenda/DayModule'
 import { PizarronModule }    from './modules/pizarron/PizarronModule'
+import { GroupInfoScreen }   from './modules/pizarron/components/GroupInfoScreen'
 import { PerfilModule }      from './modules/perfil/PerfilModule'
 import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
 
