@@ -179,6 +179,7 @@ export function PizarronModule() {
                   {(member.displayName?.[0] ?? '?').toUpperCase()}
                 </div>
               )}
+              <button onClick={() => navigate(`/pizarron/${groupId}/editar/${task.id}`)} style={btnTask}>✏️</button>
               <button onClick={() => setModal({ tipo:'borrar', task })} style={btnTask}>🗑️</button>
             </div>
           )

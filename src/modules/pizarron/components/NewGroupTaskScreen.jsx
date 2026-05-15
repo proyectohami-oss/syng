@@ -14,12 +14,21 @@ function labelFecha(ds) {
   return `${d} de ${MESES[m-1]} de ${y}`
 }
 
+function toDateStr(dueDate) {
+  if (!dueDate) return ''
+  const d = dueDate.toDate ? dueDate.toDate() : new Date(dueDate)
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
 export function NewGroupTaskScreen() {
-  const { id: groupId, date } = useParams()
-  const navigate        = useNavigate()
-  const { createTask }  = useTasks()
-  const { group }       = usePizarronView(groupId)
-  const inputRef        = useRef(null)
+  const { id: groupId, date, taskId } = useParams()
+  const navigate       = useNavigate()
+  const { createTask, updateTask } = useTasks()
+  const { group, tasks }           = usePizarronView(groupId)
+  const inputRef = useRef(null)
+
+  const isEdit = !!taskId
+  const task   = isEdit ? tasks.find(t => t.id === taskId) : null
 
   const today = new Date()
   const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`
@@ -29,13 +38,24 @@ export function NewGroupTaskScreen() {
   const [showDate,   setShowDate]   = useState(false)
   const [showRepeat, setShowRepeat] = useState(false)
   const [repeatDays, setRepeatDays] = useState(new Set())
+  const [ready,      setReady]      = useState(!isEdit)
 
-  const puedeGuardar = !!title.trim()
+  // Precargar datos en modo edición
+  useEffect(() => {
+    if (isEdit && task) {
+      setTitle(task.title ?? '')
+      setDateStr(toDateStr(task.dueDate) || todayStr)
+      setReady(true)
+    }
+  }, [task?.id])
 
   useEffect(() => {
+    if (!ready) return
     const t = setTimeout(() => inputRef.current?.focus(), 80)
     return () => clearTimeout(t)
-  }, [])
+  }, [ready])
+
+  const puedeGuardar = !!title.trim()
 
   function handleSave() {
     if (!title.trim()) return
@@ -43,7 +63,10 @@ export function NewGroupTaskScreen() {
       ? Timestamp.fromDate(new Date(dateStr + 'T23:59:59'))
       : null
     navigate(-1)
-    if (repeatDays.size > 0) {
+
+    if (isEdit && task) {
+      updateTask(task, { title: title.trim(), dueDate }).catch(console.error)
+    } else if (repeatDays.size > 0) {
       Array.from(repeatDays).sort().forEach(day => {
         createTask({ title: title.trim(), type:'group', groupId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
       })
@@ -52,14 +75,22 @@ export function NewGroupTaskScreen() {
     }
   }
 
+  if (isEdit && !ready) {
+    return (
+      <div style={{ display:'flex', flex:1, alignItems:'center', justifyContent:'center' }}>
+        <div style={{ width:24, height:24, borderRadius:'50%', border:'3px solid #e5e7eb', borderTopColor:'#5B3DF6', animation:'spin 0.7s linear infinite' }} />
+      </div>
+    )
+  }
+
   return (
     <div style={screen}>
-
-      {/* Header */}
       <div style={header}>
         <button onClick={() => navigate(-1)} style={btnBack}>Cancelar</button>
         <div style={{ display:'flex', flexDirection:'column', alignItems:'center' }}>
-          <span style={{ fontSize:15, fontWeight:600, color:'#111' }}>Nueva tarea</span>
+          <span style={{ fontSize:15, fontWeight:600, color:'#111' }}>
+            {isEdit ? 'Editar tarea' : 'Nueva tarea'}
+          </span>
           {group && <span style={{ fontSize:11, color:'#9ca3af', marginTop:1 }}>{group.name}</span>}
         </div>
         <button
@@ -67,11 +98,10 @@ export function NewGroupTaskScreen() {
           disabled={!puedeGuardar}
           style={{ background:'none', border:'none', fontSize:16, fontWeight:600, cursor: puedeGuardar ? 'pointer' : 'default', color: puedeGuardar ? '#5B3DF6' : '#c4b5fd', padding:'0 4px' }}
         >
-          {repeatDays.size > 0 ? `Crear ${repeatDays.size}` : 'Crear'}
+          {isEdit ? 'Guardar' : repeatDays.size > 0 ? `Crear ${repeatDays.size}` : 'Crear'}
         </button>
       </div>
 
-      {/* Contenido */}
       <div style={body}>
         <textarea
           ref={inputRef}
@@ -82,7 +112,6 @@ export function NewGroupTaskScreen() {
           style={textArea}
         />
 
-        {/* Fecha */}
         <div style={row} onClick={() => setShowDate(v=>!v)}>
           <span>📅</span>
           <span style={rLbl}>Fecha</span>
@@ -97,15 +126,16 @@ export function NewGroupTaskScreen() {
           />
         )}
 
-        {/* Repetir */}
-        <div style={row} onClick={() => setShowRepeat(true)}>
-          <span>🔁</span>
-          <span style={rLbl}>Repetir</span>
-          <span style={{ ...rVal, color: repeatDays.size > 0 ? '#5B3DF6' : '#6b7280' }}>
-            {repeatDays.size === 0 ? 'No repetir' : `${repeatDays.size} día${repeatDays.size !== 1 ? 's' : ''} seleccionado${repeatDays.size !== 1 ? 's' : ''}`}
-          </span>
-          <span style={arr}>›</span>
-        </div>
+        {!isEdit && (
+          <div style={row} onClick={() => setShowRepeat(true)}>
+            <span>🔁</span>
+            <span style={rLbl}>Repetir</span>
+            <span style={{ ...rVal, color: repeatDays.size > 0 ? '#5B3DF6' : '#6b7280' }}>
+              {repeatDays.size === 0 ? 'No repetir' : `${repeatDays.size} día${repeatDays.size !== 1 ? 's' : ''} seleccionado${repeatDays.size !== 1 ? 's' : ''}`}
+            </span>
+            <span style={arr}>›</span>
+          </div>
+        )}
       </div>
 
       {showRepeat && (
