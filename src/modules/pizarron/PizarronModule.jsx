@@ -193,9 +193,9 @@ export function PizarronModule() {
               <div key={task.id} style={{ ...taskCard, opacity:0.55 }}>
                 <button
                   onClick={() => toggleStatus(task)}
-                  style={{ ...checkBtn, border:'2px solid #22C55E', background:'#22C55E' }}
+                  style={{ ...checkBtn, border:'2px solid #22C55E', background:'#22C55E', WebkitTapHighlightColor:'transparent' }}
                 />
-                <p style={{ flex:1, margin:0, fontSize:14, color:'#6b7280', textDecoration:'line-through' }}>{task.title}</p>
+                <p style={{ flex:1, margin:0, fontSize:14, color:'#6b7280', textDecoration:'line-through', cursor:'pointer' }} onClick={() => toggleStatus(task)}>{task.title}</p>
               </div>
             ))}
           </>
