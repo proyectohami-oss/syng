@@ -170,7 +170,7 @@ export function PizarronModule() {
                 onClick={() => toggleStatus(task)}
                 style={checkBtn}
               />
-              <div style={{ flex:1, minWidth:0 }}>
+              <div style={{ flex:1, minWidth:0, cursor:'pointer' }} onClick={() => toggleStatus(task)}>
                 <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#111', lineHeight:1.3 }}>{task.title}</p>
                 {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:'#9ca3af' }}>{hora}</p>}
               </div>
@@ -179,7 +179,7 @@ export function PizarronModule() {
                   {(member.displayName?.[0] ?? '?').toUpperCase()}
                 </div>
               )}
-              <button onClick={() => setModal({ tipo:'borrar', task })} style={btnTask}>✕</button>
+              <button onClick={() => setModal({ tipo:'borrar', task })} style={btnTask}>🗑️</button>
             </div>
           )
         })}
