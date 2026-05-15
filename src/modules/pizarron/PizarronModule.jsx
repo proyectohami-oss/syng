@@ -1,4 +1,4 @@
-import { useState }                    from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate }      from 'react-router-dom'
 import { usePizarronView }             from './hooks/usePizarronView'
 import { usePizarronDayView }          from './hooks/usePizarronDayView'
@@ -34,6 +34,14 @@ export function PizarronModule() {
   } = usePizarronDayView(tasks)
 
   const [modal, setModal] = useState(null)
+  const daySelectorRef = useRef(null)
+
+  // Centrar en "Hoy" solo al montar
+  useEffect(() => {
+    if (!daySelectorRef.current) return
+    const hoy = daySelectorRef.current.querySelector('[data-today="true"]')
+    if (hoy) hoy.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' })
+  }, [])
 
   const groupsLoaded = state.groups.list.size > 0
 
@@ -93,13 +101,14 @@ export function PizarronModule() {
 
       {/* ── Selector de días ── */}
       <div style={daySelector}>
-        <div style={{ display:'flex', gap:6, overflowX:'auto', paddingBottom:4, WebkitOverflowScrolling:'touch', scrollbarWidth:'none' }}>
+        <div ref={daySelectorRef} style={{ display:'flex', gap:6, overflowX:'auto', paddingBottom:4, WebkitOverflowScrolling:'touch', scrollbarWidth:'none' }}>
           {days.map(d => {
             const isSelected = d.key === selectedKey
             const hasActivity = daysWithActivity[d.key]
             return (
               <button
                 key={d.key}
+                data-today={d.isToday ? 'true' : 'false'}
                 onClick={() => setSelectedKey(d.key)}
                 style={{
                   flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center',
