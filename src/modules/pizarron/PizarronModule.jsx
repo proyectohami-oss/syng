@@ -220,9 +220,14 @@ export function PizarronModule() {
 
       {/* ── Lista de tareas ── */}
       <div style={taskList}>
-        <p style={{ margin:'0 0 8px', fontSize:13, fontWeight:600, color:'#374151' }}>
+        <p style={{ margin:'0 2px', fontSize:15, fontWeight:700, color:'#111' }}>
           {selectedDateLabel}
         </p>
+        {pending.length > 0 && (
+          <p style={{ margin:'0 0 12px', fontSize:13, fontWeight:600, color:'#5B3DF6' }}>
+            Pendientes ({pending.length})
+          </p>
+        )}
 
         {pending.length === 0 && completed.length === 0 && (
           <p style={{ fontSize:13, color:'#9ca3af', textAlign:'center', padding:'24px 0' }}>
@@ -298,17 +303,14 @@ export function PizarronModule() {
         </div>
       )}
 
-      {/* ── Añadir tarea fijo ── */}
-      {perms.canCreateGroupTask && (
-        <div style={addTaskZone}>
-          <button
-            onClick={() => navigate(`/pizarron/${groupId}/nueva/${selectedKey}`)}
-            style={addTaskBtn}
-          >
-            <span style={{ fontSize:20, lineHeight:1 }}>+</span>
-            <span>Añadir tarea</span>
-          </button>
-        </div>
+      {perms.canCreateGroupTask && !haySeleccion && (
+        <button
+          onClick={() => navigate(`/pizarron/${groupId}/nueva/${selectedKey}`)}
+          style={fabBtn}
+        >
+          <span style={{ fontSize:26, lineHeight:1, fontWeight:300 }}>+</span>
+          <span style={{ fontSize:12, fontWeight:600 }}>Añadir</span>
+        </button>
       )}
 
       {/* ── Modals ── */}
@@ -384,6 +386,5 @@ const memberMini    = { width:24, height:24, borderRadius:'50%', background:'#ED
 const btnTask       = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'#9ca3af' }
 const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:'#fff', borderTop:'1px solid #f3f4f6' }
 const btnBarra      = { padding:'8px 14px', borderRadius:8, border:'none', background:'#EDE9FE', color:'#5B3DF6', fontSize:13, fontWeight:600, cursor:'pointer' }
-const addTaskZone   = { flexShrink:0, borderTop:'1px solid #f3f4f6', padding:'4px 16px', background:'#fff' }
-const addTaskBtn    = { display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 0', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent' }
+const fabBtn = { position:'fixed', bottom:'calc(80px + env(safe-area-inset-bottom))', right:20, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2, width:64, height:64, borderRadius:20, background:'#5B3DF6', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 4px 20px rgba(91,61,246,0.4)', zIndex:50, WebkitTapHighlightColor:'transparent' }
 const backBtn       = { padding:'10px 20px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
