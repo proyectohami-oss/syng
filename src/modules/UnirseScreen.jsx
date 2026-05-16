@@ -9,19 +9,19 @@ export function UnirseScreen() {
   const auth      = useCoreAuth()
   const token     = params.get('inv')
 
-  const [info,    setInfo]    = useState(null)
-  const [status,  setStatus]  = useState('loading')
-  const [err,     setErr]     = useState(null)
+  const [info,   setInfo]   = useState(null)
+  const [status, setStatus] = useState('loading')
+  const [err,    setErr]    = useState(null)
 
   useEffect(() => {
     if (!token) { setStatus('notoken'); return }
     getInvitationByToken(token)
       .then(inv => {
-        if (!inv) { setStatus('error'); setErr('Invitacion no encontrada o ya usada.'); return }
+        if (!inv) { setStatus('error'); setErr('Invitacion no encontrada.'); return }
         setInfo(inv)
         setStatus('preview')
       })
-      .catch(() => { setStatus('error'); setErr('No se pudo cargar la invitacion.') })
+      .catch(e => { setStatus('error'); setErr(e.message || 'Error al cargar.') })
   }, [token])
 
   async function handleUnirse() {
@@ -30,16 +30,12 @@ export function UnirseScreen() {
     try {
       const user = {
         uid:         auth.user.uid,
-        displayName: auth.userData ? (auth.userData.displayName || '') : (auth.user.displayName || ''),
+        displayName: (auth.userData && auth.userData.displayName) || auth.user.displayName || '',
         email:       auth.user.email || '',
-        phoneNumber: auth.userData ? (auth.userData.phoneNumber || '') : '',
+        phoneNumber: (auth.userData && auth.userData.phoneNumber) || '',
       }
       const result = await acceptInvitationLink({ token, user })
-      if (result.status === 'already_member') {
-        setStatus('already')
-        setInfo(prev => ({ ...prev, ...result }))
-        return
-      }
+      if (result.status === 'already_member') { setStatus('already'); return }
       setStatus('joined')
       setInfo(prev => ({ ...prev, ...result }))
     } catch (e) {
@@ -48,60 +44,55 @@ export function UnirseScreen() {
     }
   }
 
-  if (status === 'loading') return (
-    <Pantalla emoji="⏳" titulo="Cargando..." />
-  )
-
-  if (status === 'notoken') return (
-    <Pantalla emoji="❌" titulo="Link invalido" desc="Este link no tiene una invitacion valida." />
-  )
-
-  if (status === 'error') return (
-    <Pantalla emoji="❌" titulo="Error" desc={err} />
-  )
-
-  if (status === 'joining') return (
-    <Pantalla emoji="⏳" titulo="Uniendome al grupo..." />
-  )
-
-  if (status === 'already') return (
-    <Pantalla emoji="✅" titulo={"Ya eres miembro de " + (info && info.groupName ? info.groupName : "el grupo")} desc="Ya perteneces a este grupo.">
-      <button onClick={() => navigate('/pizarrones')} style={btn}>Ver mis grupos</button>
-    </Pantalla>
-  )
-
-  if (status === 'joined') return (
-    <Pantalla emoji="🎉" titulo={"Te uniste a " + (info && info.groupName ? info.groupName : "el grupo")} desc="Ya puedes ver y colaborar en el grupo.">
-      <button onClick={() => navigate('/pizarrones')} style={btn}>Ir al grupo</button>
-    </Pantalla>
-  )
-
   return (
-    <Pantalla
-      emoji="👥"
-      titulo={info && info.groupName ? info.groupName : "Grupo"}
-      desc={(info && info.inviterName ? info.inviterName : "Alguien") + " te invito a unirte a este grupo en Syng."}
-    >
-      <button onClick={handleUnirse} style={btn}>Unirme al grupo</button>
-      <button onClick={() => navigate('/')} style={btnSecondary}>Ahora no</button>
-    </Pantalla>
-  )
-}
-
-function Pantalla({ emoji, titulo, desc, children }) {
-  return (
-    <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#f9fafb', padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 20, padding: '32px 24px', width: '100%', maxWidth: 380, textAlign: 'center', boxShadow: '0 4px 24px rgba(0,0,0,0.06)' }}>
-        <div style={{ fontSize: 52, marginBottom: 16 }}>{emoji}</div>
-        <h2 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 700, color: '#111' }}>{titulo}</h2>
-        {desc && <p style={{ margin: '0 0 24px', fontSize: 14, color: '#6b7280', lineHeight: 1.5 }}>{desc}</p>}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {children}
-        </div>
+    <div style={{ flex:1, minHeight:0, display:'flex', alignItems:'center', justifyContent:'center', background:'#f9fafb', padding:20, overflowY:'auto' }}>
+      <div style={{ background:'#fff', borderRadius:20, padding:'32px 24px', width:'100%', maxWidth:380, textAlign:'center', boxShadow:'0 4px 24px rgba(0,0,0,0.06)' }}>
+        {status === 'loading' && <>
+          <div style={{ fontSize:48, marginBottom:16 }}>⏳</div>
+          <h2 style={{ margin:'0 0 8px', fontSize:20, fontWeight:700, color:'#111' }}>Cargando...</h2>
+        </>}
+        {status === 'notoken' && <>
+          <div style={{ fontSize:48, marginBottom:16 }}>❌</div>
+          <h2 style={{ margin:'0 0 8px', fontSize:20, fontWeight:700, color:'#111' }}>Link invalido</h2>
+          <p style={{ margin:'0 0 24px', fontSize:14, color:'#6b7280' }}>Este link no tiene una invitacion valida.</p>
+        </>}
+        {status === 'error' && <>
+          <div style={{ fontSize:48, marginBottom:16 }}>❌</div>
+          <h2 style={{ margin:'0 0 8px', fontSize:20, fontWeight:700, color:'#111' }}>Error</h2>
+          <p style={{ margin:'0 0 24px', fontSize:14, color:'#6b7280' }}>{err}</p>
+          <button onClick={() => navigate('/')} style={btn}>Ir a Syng</button>
+        </>}
+        {status === 'joining' && <>
+          <div style={{ fontSize:48, marginBottom:16 }}>⏳</div>
+          <h2 style={{ margin:'0 0 8px', fontSize:20, fontWeight:700, color:'#111' }}>Uniendome...</h2>
+        </>}
+        {status === 'already' && <>
+          <div style={{ fontSize:48, marginBottom:16 }}>✅</div>
+          <h2 style={{ margin:'0 0 8px', fontSize:20, fontWeight:700, color:'#111' }}>Ya eres miembro</h2>
+          <p style={{ margin:'0 0 24px', fontSize:14, color:'#6b7280' }}>Ya perteneces a este grupo.</p>
+          <button onClick={() => navigate('/pizarrones')} style={btn}>Ver mis grupos</button>
+        </>}
+        {status === 'joined' && <>
+          <div style={{ fontSize:48, marginBottom:16 }}>🎉</div>
+          <h2 style={{ margin:'0 0 8px', fontSize:20, fontWeight:700, color:'#111' }}>{'Te uniste a ' + ((info && info.groupName) || 'el grupo')}</h2>
+          <p style={{ margin:'0 0 24px', fontSize:14, color:'#6b7280' }}>Ya puedes ver y colaborar en el grupo.</p>
+          <button onClick={() => navigate('/pizarrones')} style={btn}>Ir al grupo</button>
+        </>}
+        {status === 'preview' && <>
+          <div style={{ fontSize:48, marginBottom:16 }}>👥</div>
+          <h2 style={{ margin:'0 0 8px', fontSize:20, fontWeight:700, color:'#111' }}>{(info && info.groupName) || 'Grupo'}</h2>
+          <p style={{ margin:'0 0 24px', fontSize:14, color:'#6b7280', lineHeight:1.5 }}>
+            {((info && info.inviterName) || 'Alguien') + ' te invito a unirte a este grupo en Syng.'}
+          </p>
+          <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
+            <button onClick={handleUnirse} style={btn}>Unirme al grupo</button>
+            <button onClick={() => navigate('/')} style={btnSecondary}>Ahora no</button>
+          </div>
+        </>}
       </div>
     </div>
   )
 }
 
-const btn          = { width: '100%', padding: '14px', borderRadius: 12, border: 'none', background: '#5B3DF6', color: '#fff', fontSize: 16, fontWeight: 600, cursor: 'pointer' }
-const btnSecondary = { width: '100%', padding: '14px', borderRadius: 12, border: '1.5px solid #e5e7eb', background: '#fff', color: '#374151', fontSize: 16, cursor: 'pointer' }
+const btn          = { width:'100%', padding:'14px', borderRadius:12, border:'none', background:'#5B3DF6', color:'#fff', fontSize:16, fontWeight:600, cursor:'pointer' }
+const btnSecondary = { width:'100%', padding:'14px', borderRadius:12, border:'1.5px solid #e5e7eb', background:'#fff', color:'#374151', fontSize:16, cursor:'pointer' }
