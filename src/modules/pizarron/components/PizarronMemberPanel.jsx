@@ -33,7 +33,7 @@ export function PizarronMemberPanel({ groupId, group, members, role, currentUid 
       </div>
 
       {showInvite && (
-        <InviteFlow groupId={groupId} onClose={() => setShowInvite(false)} />
+        <InviteFlow groupId={groupId} groupName={group?.name} inviterName={members.find(m => m.uid === currentUid)?.displayName} onClose={() => setShowInvite(false)} />
       )}
     </>
   )
