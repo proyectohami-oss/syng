@@ -11,7 +11,8 @@ import { TaskFormNew }                 from '../../shared/TaskFormNew'
 import { EmptyState }                  from '../../shared/EmptyState'
 import { SyncBadge }                   from '../../shared/SyncBadge'
 
-const DIAS = ['Do','Lu','Ma','Mi','Ju','Vi','Sá']
+const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
+const DIAS_CORTO = ['Do','Lu','Ma','Mi','Ju','Vi','Sá']
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
 function toDateKey(date) {
@@ -191,7 +192,7 @@ export function PizarronModule() {
                 }}
               >
                 <span style={{ fontSize:10, fontWeight:500, color: isSelected ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
-                  {d.isToday ? 'Hoy' : d.dayName}
+                  {d.isToday ? 'Hoy' : DIAS_CORTO[d.date.getDay()]}
                 </span>
                 <span style={{ fontSize:16, fontWeight:700, color: isSelected ? '#fff' : '#111', lineHeight:1.2 }}>
                   {d.dayNum}
@@ -309,7 +310,7 @@ export function PizarronModule() {
           style={fabBtn}
         >
           <span style={{ fontSize:26, lineHeight:1, fontWeight:300 }}>+</span>
-          <span style={{ fontSize:12, fontWeight:600 }}>Añadir</span>
+          <span style={{ fontSize:11, fontWeight:600 }}>+ Añadir tarea</span>
         </button>
       )}
 
