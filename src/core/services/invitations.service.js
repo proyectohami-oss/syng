@@ -122,4 +122,3 @@ export async function acceptInvitationLink({ token, user }) {
   })
   return { status: 'joined', groupId: inv.groupId, groupName: inv.groupName }
 }
-}
