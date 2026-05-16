@@ -6,7 +6,7 @@ import { useState } from 'react'
 import { useGroups } from '../core/hooks/useGroups'
 import { findUserByPhone, normalizePhone } from '../core/services/users.service'
 
-export function InviteFlow({ groupId, onClose }) {
+export function InviteFlow({ groupId, groupName, inviterName, onClose }) {
   const { addMemberByPhone } = useGroups()
 
   const [phone,          setPhone]          = useState('')
@@ -60,15 +60,24 @@ export function InviteFlow({ groupId, onClose }) {
     }
   }
 
-  function handleInviteWhatsApp() {
-    const msg = encodeURIComponent('Te invito a unirte a Syng, una app para organizar tareas en grupo. Descárgala en: https://syng-psi.vercel.app')
-    const num = contactResult.normalized.replace('+', '')
-    window.open(`https://wa.me/${num}?text=${msg}`, '_blank')
-  }
-
-  function handleInviteSMS() {
-    const msg = encodeURIComponent('Te invito a Syng: https://syng-psi.vercel.app')
-    window.open(`sms:${contactResult.normalized}?body=${msg}`, '_blank')
+  async function handleShare(groupName, inviterName) {
+    const msg = `${inviterName} te invitó a unirte al grupo "${groupName}" en Syng.`
+    const url = 'https://syng-psi.vercel.app'
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Invitación a Syng', text: msg, url })
+      } catch (err) {
+        if (err.name !== 'AbortError') setError('No se pudo compartir.')
+      }
+    } else {
+      // Fallback: copiar al portapapeles
+      try {
+        await navigator.clipboard.writeText(`${msg} ${url}`)
+        setError('Enlace copiado. Pégalo en WhatsApp o Mensajes.')
+      } catch {
+        setError('Comparte manualmente: ' + url)
+      }
+    }
   }
 
   async function handleSubmit() {
@@ -136,12 +145,9 @@ export function InviteFlow({ groupId, onClose }) {
               </>
             ) : (
               <>
-                <p style={{ margin:'0 0 12px', fontSize:13, color:'#6b7280' }}>Aún no usa Syng. Puedes invitarlo por:</p>
-                <button onClick={handleInviteWhatsApp} style={{ ...btnPrimary, width:'100%', marginBottom:8, background:'#25D366' }}>
-                  💬 Invitar por WhatsApp
-                </button>
-                <button onClick={handleInviteSMS} style={{ ...btnSecondary, width:'100%', marginBottom:8 }}>
-                  📱 Invitar por SMS
+                <p style={{ margin:'0 0 12px', fontSize:13, color:'#6b7280' }}>Aún no usa Syng. Invítalo:</p>
+                <button onClick={() => handleShare(groupName || 'el grupo', inviterName || 'Alguien')} style={{ ...btnPrimary, width:'100%', marginBottom:8 }}>
+                  📤 Invitar a Syng
                 </button>
               </>
             )}

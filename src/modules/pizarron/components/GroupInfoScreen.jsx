@@ -161,7 +161,12 @@ export function GroupInfoScreen() {
       )}
 
       {showInvite && (
-        <InviteFlow groupId={groupId} onClose={() => setShowInvite(false)} />
+        <InviteFlow
+          groupId={groupId}
+          groupName={group.name}
+          inviterName={members.find(m => m.uid === uid)?.displayName ?? 'Alguien'}
+          onClose={() => setShowInvite(false)}
+        />
       )}
     </div>
   )
