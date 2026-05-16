@@ -5,7 +5,6 @@ import {
   updateDoc,
   deleteDoc,
   getDoc,
-  deleteDoc,
   query,
   where,
   getDocs,
@@ -77,8 +76,9 @@ export async function getPendingInvitations(groupId) {
   )
   const snap = await getDocs(q)
   return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+}
 
-  // ── Invitaciones por link ─────────────────────────────────────────────────
+// ── Invitaciones por link ─────────────────────────────────────────────────
 
 export async function createInvitationLink({ groupId, groupName, inviterUid, inviterName }) {
   const ref = await addDoc(collection(db, 'invitations'), {
