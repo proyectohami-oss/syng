@@ -38,7 +38,7 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
         </p>
         <p style={{ margin:'0 0 20px', fontSize:13, color:'#9ca3af' }}>Solo se aplican los campos que cambies.</p>
 
-        <div onClick={() => setShowDate(v=>!v)} style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }}>
+        <div onClick={() => setShowDate(true)} style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }}>
           <span>📅</span>
           <span style={{ flex:1, fontSize:14, color:'#111' }}>Nueva fecha</span>
           <span style={{ fontSize:14, color: fecha ? '#5B3DF6' : '#9ca3af' }}>
