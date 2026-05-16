@@ -310,7 +310,8 @@ export function PizarronModule() {
           style={fabBtn}
         >
           <span style={{ fontSize:26, lineHeight:1, fontWeight:300 }}>+</span>
-          <span style={{ fontSize:11, fontWeight:600 }}>+ Añadir tarea</span>
+          <span style={{ fontSize:20, fontWeight:300, lineHeight:1 }}>+</span>
+          <span style={{ fontSize:15, fontWeight:600 }}>Añadir tarea</span>
         </button>
       )}
 
@@ -387,5 +388,5 @@ const memberMini    = { width:24, height:24, borderRadius:'50%', background:'#ED
 const btnTask       = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'#9ca3af' }
 const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:'#fff', borderTop:'1px solid #f3f4f6' }
 const btnBarra      = { padding:'8px 14px', borderRadius:8, border:'none', background:'#EDE9FE', color:'#5B3DF6', fontSize:13, fontWeight:600, cursor:'pointer' }
-const fabBtn = { position:'fixed', bottom:'calc(80px + env(safe-area-inset-bottom))', right:20, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', gap:2, width:64, height:64, borderRadius:20, background:'#5B3DF6', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 4px 20px rgba(91,61,246,0.4)', zIndex:50, WebkitTapHighlightColor:'transparent' }
+const fabBtn = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:8, height:50, padding:'0 24px', borderRadius:25, background:'#5B3DF6', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 4px 20px rgba(91,61,246,0.4)', zIndex:50, WebkitTapHighlightColor:'transparent' }
 const backBtn       = { padding:'10px 20px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
