@@ -8,10 +8,12 @@ export function GroupInfoScreen() {
   const { id: groupId } = useParams()
   const navigate = useNavigate()
   const { group, members, role, uid } = usePizarronView(groupId)
-  const { leaveGroup, deleteGroup, promoteToAdmin, removeMember } = useGroups()
+  const { leaveGroup, deleteGroup, promoteToAdmin, removeMember, updateGroupName } = useGroups()
   const isAdmin = role === 'admin'
 
   const [showInvite,    setShowInvite]    = useState(false)
+  const [editingName,  setEditingName]  = useState(false)
+  const [newName,      setNewName]      = useState('')
   const [confirmLeave,  setConfirmLeave]  = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
 
@@ -40,7 +42,13 @@ export function GroupInfoScreen() {
           <div style={{ width:72, height:72, borderRadius:20, background:'#EDE9FE', color:'#5B3DF6', fontSize:30, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:12 }}>
             {group.name[0].toUpperCase()}
           </div>
-          <p style={{ margin:0, fontSize:20, fontWeight:700, color:'#111' }}>{group.name}</p>
+          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+            <p style={{ margin:0, fontSize:20, fontWeight:700, color:'#111' }}>{group.name}</p>
+            {isAdmin && (
+              <button onClick={() => { setNewName(group.name); setEditingName(true) }}
+                style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'#9ca3af', padding:4 }}>✏️</button>
+            )}
+          </div>
           <p style={{ margin:'4px 0 0', fontSize:13, color:'#9ca3af' }}>
             {members.length} miembro{members.length !== 1 ? 's' : ''}
           </p>
@@ -97,6 +105,33 @@ export function GroupInfoScreen() {
           )}
         </div>
       </div>
+
+      {editingName && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}>
+          <div style={{ background:'#fff', borderRadius:16, padding:'24px 20px', width:'100%', maxWidth:320 }}>
+            <p style={{ margin:'0 0 16px', fontWeight:600, fontSize:16 }}>Editar nombre</p>
+            <input
+              value={newName}
+              onChange={e => setNewName(e.target.value)}
+              style={{ width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', outline:'none', marginBottom:16 }}
+              autoFocus
+            />
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={() => setEditingName(false)}
+                style={{ flex:1, padding:'11px', borderRadius:10, border:'1px solid #e5e7eb', background:'#fff', fontSize:14, cursor:'pointer', color:'#374151' }}>
+                Cancelar
+              </button>
+              <button onClick={async () => {
+                if (!newName.trim()) return
+                await updateGroupName(groupId, newName.trim())
+                setEditingName(false)
+              }} style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }}>
+                Guardar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {confirmLeave && (
         <div style={overlay}>
