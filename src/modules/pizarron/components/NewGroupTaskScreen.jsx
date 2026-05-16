@@ -66,6 +66,12 @@ export function NewGroupTaskScreen() {
 
     if (isEdit && task) {
       updateTask(task, { title: title.trim(), dueDate }).catch(console.error)
+      // Si el usuario seleccionó días de repetición en edición → crear tareas adicionales independientes
+      if (repeatDays.size > 0) {
+        Array.from(repeatDays).sort().forEach(day => {
+          createTask({ title: title.trim(), type:'group', groupId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
+        })
+      }
     } else if (repeatDays.size > 0) {
       Array.from(repeatDays).sort().forEach(day => {
         createTask({ title: title.trim(), type:'group', groupId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
