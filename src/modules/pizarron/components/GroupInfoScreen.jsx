@@ -42,13 +42,14 @@ export function GroupInfoScreen() {
           <div style={{ width:72, height:72, borderRadius:20, background:'#EDE9FE', color:'#5B3DF6', fontSize:30, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:12 }}>
             {group.name[0].toUpperCase()}
           </div>
-          <div style={{ display:'flex', alignItems:'center', gap:8 }}>
+          {isAdmin ? (
+            <p onClick={() => { setNewName(group.name); setEditingName(true) }}
+              style={{ margin:0, fontSize:20, fontWeight:700, color:'#111', cursor:'pointer', borderBottom:'1.5px dashed #e5e7eb', paddingBottom:2 }}>
+              {group.name}
+            </p>
+          ) : (
             <p style={{ margin:0, fontSize:20, fontWeight:700, color:'#111' }}>{group.name}</p>
-            {isAdmin && (
-              <button onClick={() => { setNewName(group.name); setEditingName(true) }}
-                style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, color:'#9ca3af', padding:4 }}>✏️</button>
-            )}
-          </div>
+          )}
           <p style={{ margin:'4px 0 0', fontSize:13, color:'#9ca3af' }}>
             {members.length} miembro{members.length !== 1 ? 's' : ''}
           </p>
