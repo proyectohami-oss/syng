@@ -1,214 +1,239 @@
 /**
- * InviteFlow — agregar miembro a grupo por número de teléfono.
- * Soporta: contactos nativos (si disponible) + ingreso manual.
+ * InviteFlow — invitar múltiples miembros a un grupo.
+ * Soporta: contactos nativos + ingreso manual + envío en lote.
  */
 import { useState } from 'react'
 import { useGroups } from '../core/hooks/useGroups'
-import { findUserByPhone, normalizePhone } from '../core/services/users.service'
+import { normalizePhone } from '../core/services/users.service'
 
 export function InviteFlow({ groupId, groupName, inviterName, onClose }) {
   const { addMemberByPhone } = useGroups()
 
-  const [phone,          setPhone]          = useState('')
-  const [loading,        setLoading]        = useState(false)
-  const [error,          setError]          = useState(null)
-  const [result,         setResult]         = useState(null)
-  const [contactResult,  setContactResult]  = useState(null) // contacto seleccionado antes de agregar
+  const [phone,    setPhone]    = useState('')
+  const [lista,    setLista]    = useState([])   // { phone, label }
+  const [loading,  setLoading]  = useState(false)
+  const [error,    setError]    = useState(null)
+  const [enviados, setEnviados] = useState(null) // resultados finales
 
-  const digits  = phone.replace(/\D/g, '')
-  const canSend = digits.length >= 10
+  const digits   = phone.replace(/\D/g, '')
+  const canAdd   = digits.length >= 10
+  const canSend  = lista.length > 0 && !loading
 
-  // Detecta si el dispositivo soporta la API de contactos
   const supportsContacts = typeof navigator !== 'undefined' &&
     'contacts' in navigator &&
     'select' in navigator.contacts
 
+  function agregarNumero() {
+    if (!canAdd) return
+    const norm = normalizePhone(phone)
+    // Evitar duplicados
+    if (lista.find(x => x.norm === norm)) {
+      setError('Ese número ya está en la lista.')
+      return
+    }
+    setLista(prev => [...prev, { phone, norm, label: phone }])
+    setPhone('')
+    setError(null)
+  }
+
+  function quitarNumero(norm) {
+    setLista(prev => prev.filter(x => x.norm !== norm))
+  }
+
   async function handlePickContact() {
     try {
-      const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: false })
+      const contacts = await navigator.contacts.select(['name', 'tel'], { multiple: true })
       if (!contacts || contacts.length === 0) return
-      const contact = contacts[0]
-      const tel = contact.tel?.[0] ?? ''
-      const name = contact.name?.[0] ?? ''
-      if (!tel) { setError('El contacto no tiene número de teléfono.'); return }
-
-      // Buscar si ya usa Syng
-      setLoading(true); setError(null)
-      const normalized = normalizePhone(tel)
-      const syngUser = await findUserByPhone(tel)
-      setContactResult({ name, tel, normalized, syngUser })
-    } catch (err) {
-      if (err.name !== 'AbortError') {
-        setError('No se pudo acceder a los contactos.')
+      const nuevos = []
+      for (const c of contacts) {
+        const tel = c.tel?.[0] ?? ''
+        if (!tel) continue
+        const norm = normalizePhone(tel)
+        if (lista.find(x => x.norm === norm)) continue
+        if (nuevos.find(x => x.norm === norm)) continue
+        const name = c.name?.[0] ?? tel
+        nuevos.push({ phone: tel, norm, label: name })
       }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  async function handleAddContact() {
-    if (!contactResult) return
-    setLoading(true); setError(null)
-    try {
-      const res = await addMemberByPhone({ groupId, phone: contactResult.tel })
-      setResult(res)
-      setContactResult(null)
+      setLista(prev => [...prev, ...nuevos])
+      setError(null)
     } catch (err) {
-      setError(err.message ?? 'No se pudo agregar al miembro')
-    } finally {
-      setLoading(false)
+      if (err.name !== 'AbortError') setError('No se pudo acceder a los contactos.')
     }
   }
 
-  async function handleShare(groupName, inviterName) {
-    const msg = `${inviterName} te invitó a unirte al grupo "${groupName}" en Syng.`
+  async function handleEnviar() {
+    if (!canSend) return
+    setLoading(true)
+    setError(null)
+    const resultados = []
+    for (const item of lista) {
+      try {
+        const res = await addMemberByPhone({ groupId, phone: item.phone })
+        resultados.push({ ...item, ok: true, status: res.status, name: res.displayName })
+      } catch (err) {
+        resultados.push({ ...item, ok: false, msg: err.message ?? 'Error' })
+      }
+    }
+    setEnviados(resultados)
+    setLoading(false)
+  }
+
+  async function handleShare() {
+    const msg = `${inviterName || 'Alguien'} te invitó al grupo "${groupName || 'el grupo'}" en Syng.`
     const url = 'https://syng-psi.vercel.app'
     if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Invitación a Syng', text: msg, url })
-      } catch (err) {
-        if (err.name !== 'AbortError') setError('No se pudo compartir.')
-      }
+      try { await navigator.share({ title: 'Invitación a Syng', text: msg, url }) }
+      catch (err) { if (err.name !== 'AbortError') setError('No se pudo compartir.') }
     } else {
-      // Fallback: copiar al portapapeles
       try {
         await navigator.clipboard.writeText(`${msg} ${url}`)
         setError('Enlace copiado. Pégalo en WhatsApp o Mensajes.')
-      } catch {
-        setError('Comparte manualmente: ' + url)
-      }
-    }
-  }
-
-  async function handleSubmit() {
-    if (!canSend) return
-    setLoading(true); setError(null)
-    try {
-      const res = await addMemberByPhone({ groupId, phone })
-      setResult(res)
-    } catch (err) {
-      setError(err.message ?? 'No se pudo agregar al miembro')
-    } finally {
-      setLoading(false)
+      } catch { setError('Comparte: ' + url) }
     }
   }
 
   return (
     <div style={overlay} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={sheet}>
+
+        {/* Header */}
         <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:20 }}>
-          <h2 style={{ margin:0, fontSize:17, fontWeight:600 }}>Agregar miembro</h2>
+          <h2 style={{ margin:0, fontSize:17, fontWeight:600 }}>Invitar miembros</h2>
           <button onClick={onClose} style={closeBtn}>✕</button>
         </div>
 
-        {/* Resultado final */}
-        {result && (
-          <div style={{ textAlign:'center', padding:'16px 0' }}>
-            <div style={{ fontSize:40, marginBottom:12 }}>
-              {result.status === 'added' ? '✅' : '📨'}
+        {/* PANTALLA RESULTADO */}
+        {enviados && (
+          <div>
+            <div style={{ textAlign:'center', marginBottom:20 }}>
+              <div style={{ fontSize:40, marginBottom:8 }}>
+                {enviados.every(r => r.ok) ? '✅' : '⚠️'}
+              </div>
+              <p style={{ margin:0, fontWeight:600, fontSize:16, color:'#111' }}>
+                {enviados.filter(r => r.ok).length} de {enviados.length} enviadas
+              </p>
             </div>
-            <p style={{ margin:'0 0 8px', fontWeight:600, color:'#111', fontSize:16 }}>
-              {result.status === 'added' ? 'Miembro agregado' : 'Invitación enviada'}
-            </p>
-            <p style={{ margin:'0 0 20px', fontSize:13, color:'#6b7280', lineHeight:1.5 }}>
-              {result.status === 'added'
-                ? `${result.displayName} ya puede ver y colaborar en el grupo.`
-                : `Cuando instale Syng con el número ${result.displayName}, entrará automáticamente.`
-              }
-            </p>
-            <div style={{ display:'flex', gap:8, justifyContent:'center' }}>
-              <button onClick={() => { setPhone(''); setResult(null) }} style={btnSecondary}>Agregar otro</button>
-              <button onClick={onClose} style={btnPrimary}>Listo</button>
+
+            {enviados.map(r => (
+              <div key={r.norm} style={{ display:'flex', alignItems:'center', gap:10, padding:'10px 0', borderBottom:'1px solid #f3f4f6' }}>
+                <span style={{ fontSize:18 }}>{r.ok ? (r.status === 'added' ? '✅' : '📨') : '❌'}</span>
+                <div style={{ flex:1 }}>
+                  <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#111' }}>{r.label}</p>
+                  <p style={{ margin:0, fontSize:12, color:'#9ca3af' }}>
+                    {r.ok
+                      ? r.status === 'added' ? 'Agregado al grupo' : 'Invitación enviada'
+                      : r.msg}
+                  </p>
+                </div>
+              </div>
+            ))}
+
+            <div style={{ display:'flex', gap:8, marginTop:20 }}>
+              <button onClick={() => { setLista([]); setEnviados(null) }} style={btnSecondary}>
+                Invitar más
+              </button>
+              <button onClick={onClose} style={{ ...btnPrimary, flex:1 }}>Listo</button>
             </div>
           </div>
         )}
 
-        {/* Contacto seleccionado — mostrar opciones */}
-        {!result && contactResult && (
-          <div style={{ padding:'4px 0' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid #f3f4f6', marginBottom:16 }}>
-              <div style={{ width:44, height:44, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:18, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center' }}>
-                {(contactResult.name?.[0] ?? '?').toUpperCase()}
-              </div>
-              <div>
-                <p style={{ margin:0, fontSize:15, fontWeight:600, color:'#111' }}>{contactResult.name || 'Sin nombre'}</p>
-                <p style={{ margin:0, fontSize:13, color:'#9ca3af' }}>{contactResult.normalized}</p>
-              </div>
-            </div>
-
-            {contactResult.syngUser ? (
-              <>
-                <p style={{ margin:'0 0 12px', fontSize:13, color:'#22C55E', fontWeight:500 }}>✅ Ya usa Syng</p>
-                <button onClick={handleAddContact} disabled={loading} style={{ ...btnPrimary, width:'100%', marginBottom:8 }}>
-                  {loading ? 'Agregando...' : 'Agregar al grupo'}
-                </button>
-              </>
-            ) : (
-              <>
-                <p style={{ margin:'0 0 12px', fontSize:13, color:'#6b7280' }}>Aún no usa Syng. Invítalo:</p>
-                <button onClick={() => handleShare(groupName || 'el grupo', inviterName || 'Alguien')} style={{ ...btnPrimary, width:'100%', marginBottom:8 }}>
-                  📤 Invitar a Syng
-                </button>
-              </>
-            )}
-
-            {error && <p style={{ fontSize:13, color:'#dc2626', padding:'8px 12px', background:'#fef2f2', borderRadius:8, margin:'8px 0' }}>{error}</p>}
-
-            <button onClick={() => { setContactResult(null); setError(null) }} style={{ ...btnSecondary, width:'100%' }}>
-              Cancelar
-            </button>
-          </div>
-        )}
-
-        {/* Formulario principal */}
-        {!result && !contactResult && (
+        {/* PANTALLA PRINCIPAL */}
+        {!enviados && (
           <>
-            <button
-                onClick={supportsContacts ? handlePickContact : () => setError('Por ahora, ingresa el número manualmente. Esta función no está disponible en este dispositivo.')}
-                disabled={loading}
-                style={btnContacts}
-              >
+            {/* Botón contactos */}
+            {supportsContacts && (
+              <button onClick={handlePickContact} disabled={loading} style={btnContacts}>
                 👥 Elegir desde contactos
               </button>
+            )}
 
-            <p style={{ margin:'12px 0 8px', fontSize:12, color:'#9ca3af', fontWeight:500, textAlign:'center' }}>
-              o ingresa el número manualmente
+            {/* Input manual */}
+            <p style={{ margin:'12px 0 6px', fontSize:12, color:'#9ca3af', fontWeight:500, textAlign:'center' }}>
+              {supportsContacts ? 'o ingresa el número manualmente' : 'Ingresa el número de teléfono'}
             </p>
 
-            <label style={lbl}>Número de teléfono</label>
-            <div style={{ position:'relative', marginBottom:8 }}>
-              <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', fontSize:15, color:'#6b7280' }}>+52</span>
-              <input
-                type="tel"
-                inputMode="numeric"
-                value={phone}
-                onChange={e => { setPhone(e.target.value); setError(null) }}
-                placeholder="9611234567"
-                style={{ ...inputStyle, paddingLeft:44 }}
-                maxLength={15}
-              />
+            <div style={{ display:'flex', gap:8, marginBottom:4 }}>
+              <div style={{ position:'relative', flex:1 }}>
+                <span style={{ position:'absolute', left:12, top:'50%', transform:'translateY(-50%)', fontSize:15, color:'#6b7280' }}>+52</span>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  value={phone}
+                  onChange={e => { setPhone(e.target.value); setError(null) }}
+                  onKeyDown={e => e.key === 'Enter' && agregarNumero()}
+                  placeholder="9611234567"
+                  style={{ ...inputStyle, paddingLeft:44 }}
+                  maxLength={15}
+                />
+              </div>
+              <button
+                onClick={agregarNumero}
+                disabled={!canAdd}
+                style={{ ...btnPrimary, opacity: canAdd ? 1 : 0.4, paddingLeft:16, paddingRight:16, flexShrink:0 }}
+              >
+                + Añadir
+              </button>
             </div>
 
-            {error && <p style={{ fontSize:13, color:'#dc2626', padding:'8px 12px', background:'#fef2f2', borderRadius:8, margin:'0 0 12px' }}>{error}</p>}
+            {error && (
+              <p style={{ fontSize:13, color:'#dc2626', padding:'8px 12px', background:'#fef2f2', borderRadius:8, margin:'8px 0 0' }}>
+                {error}
+              </p>
+            )}
 
-            <div style={{ display:'flex', gap:8, justifyContent:'flex-end', paddingTop:8 }}>
-              <button onClick={onClose} style={btnSecondary}>Cancelar</button>
-              <button onClick={handleSubmit} disabled={!canSend || loading} style={{ ...btnPrimary, opacity: canSend ? 1 : 0.5 }}>
-                {loading ? 'Buscando...' : 'Agregar'}
+            {/* Lista de números a enviar */}
+            {lista.length > 0 && (
+              <div style={{ marginTop:16, borderTop:'1px solid #f3f4f6', paddingTop:12 }}>
+                <p style={{ margin:'0 0 8px', fontSize:12, fontWeight:600, color:'#9ca3af', letterSpacing:'0.05em' }}>
+                  POR INVITAR ({lista.length})
+                </p>
+                {lista.map(item => (
+                  <div key={item.norm} style={{ display:'flex', alignItems:'center', gap:10, padding:'9px 0', borderBottom:'1px solid #f9fafb' }}>
+                    <div style={avatarSmall}>
+                      {item.label[0].toUpperCase()}
+                    </div>
+                    <div style={{ flex:1, minWidth:0 }}>
+                      <p style={{ margin:0, fontSize:14, color:'#111', fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+                        {item.label}
+                      </p>
+                    </div>
+                    <button onClick={() => quitarNumero(item.norm)} style={btnRemove}>✕</button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Botones de acción */}
+            <div style={{ display:'flex', gap:8, marginTop:20 }}>
+              <button onClick={handleShare} style={btnSecondary}>
+                📤 Compartir link
+              </button>
+              <button
+                onClick={handleEnviar}
+                disabled={!canSend}
+                style={{ ...btnPrimary, flex:1, opacity: canSend ? 1 : 0.4 }}
+              >
+                {loading
+                  ? 'Enviando...'
+                  : lista.length === 1
+                    ? 'Enviar invitación'
+                    : `Enviar ${lista.length} invitaciones`}
               </button>
             </div>
           </>
         )}
+
       </div>
     </div>
   )
 }
 
-const overlay    = { position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }
-const sheet      = { background:'#fff', borderRadius:'16px 16px 0 0', padding:'24px 20px 36px', width:'100%', maxWidth:480, maxHeight:'85svh', overflowY:'auto' }
-const lbl        = { display:'block', fontSize:12, color:'#6b7280', fontWeight:500, marginBottom:6 }
-const inputStyle = { width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, color:'#111', fontFamily:'inherit', outline:'none' }
-const closeBtn   = { background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:18, padding:4 }
-const btnContacts  = { width:'100%', padding:'13px', borderRadius:12, border:'none', background:'#EDE9FE', color:'#5B3DF6', fontSize:15, fontWeight:600, cursor:'pointer', marginBottom:4 }
-const btnSecondary = { padding:'10px 18px', borderRadius:10, border:'1.5px solid #e5e7eb', background:'#fff', cursor:'pointer', fontSize:14, color:'#374151' }
-const btnPrimary   = { padding:'10px 18px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', cursor:'pointer', fontSize:14, fontWeight:600 }
+const overlay     = { position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }
+const sheet       = { background:'#fff', borderRadius:'16px 16px 0 0', padding:'24px 20px 36px', width:'100%', maxWidth:480, maxHeight:'85svh', overflowY:'auto' }
+const closeBtn    = { background:'none', border:'none', cursor:'pointer', color:'#9ca3af', fontSize:18, padding:4 }
+const inputStyle  = { width:'100%', boxSizing:'border-box', padding:'11px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, color:'#111', fontFamily:'inherit', outline:'none' }
+const btnContacts = { width:'100%', padding:'13px', borderRadius:12, border:'none', background:'#EDE9FE', color:'#5B3DF6', fontSize:15, fontWeight:600, cursor:'pointer', marginBottom:4 }
+const btnPrimary  = { padding:'11px 18px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', cursor:'pointer', fontSize:14, fontWeight:600 }
+const btnSecondary= { padding:'11px 16px', borderRadius:10, border:'1.5px solid #e5e7eb', background:'#fff', cursor:'pointer', fontSize:14, color:'#374151' }
+const btnRemove   = { background:'none', border:'none', color:'#d1d5db', fontSize:16, cursor:'pointer', padding:'4px 6px', flexShrink:0 }
+const avatarSmall = { width:32, height:32, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:13, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
