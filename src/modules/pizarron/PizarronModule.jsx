@@ -23,7 +23,7 @@ export function PizarronModule() {
   const navigate        = useNavigate()
   const state           = useCoreState()
   const { tasks, group, members, role, loading, uid } = usePizarronView(groupId)
-  const { toggleStatus, deleteTask }  = useTasks()
+  const { toggleStatus, deleteTask, updateTask }  = useTasks()
   const { leaveGroup, deleteGroup }   = useGroups()
   const perms = usePermissions(groupId)
 
@@ -231,14 +231,9 @@ export function PizarronModule() {
               const seleccionadas = todas.filter(t => selectedIds.has(t.id))
               await Promise.all(seleccionadas.map(t => toggleStatus(t)))
               limpiarSeleccion()
-            }} style={btnBarra}>✅</button>
-            <button onClick={async () => {
-              const todas = [...pending, ...completed]
-              const seleccionadas = todas.filter(t => selectedIds.has(t.id))
-              await Promise.all(seleccionadas.map(t => deleteTask(t)))
-              limpiarSeleccion()
-            }} style={{ ...btnBarra, background:'#fee2e2', color:'#ef4444' }}>🗑️</button>
-            <button onClick={limpiarSeleccion} style={{ ...btnBarra, background:'#f3f4f6', color:'#6b7280' }}>✕</button>
+            }} style={btnBarra}>✅ Completar</button>
+            <button onClick={() => setModal({ tipo:'editarVarias' })} style={btnBarra}>✏️ Editar</button>
+            <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ ...btnBarra, background:'#fee2e2', color:'#ef4444' }}>🗑️ Eliminar</button>
           </div>
         </div>
       )}
@@ -266,6 +261,51 @@ export function PizarronModule() {
           onConfirm={async () => { await deleteTask(modal.task); setModal(null) }}
           onCancel={() => setModal(null)}
         />
+      )}
+
+      {modal?.tipo === 'borrarVarias' && (
+        <ConfirmDialog
+          title="Eliminar tareas"
+          message={`¿Eliminar ${selectedIds.size} tarea${selectedIds.size !== 1 ? 's' : ''}?`}
+          confirmLabel={`Eliminar ${selectedIds.size}`}
+          danger
+          onConfirm={async () => {
+            const todas = [...pending, ...completed]
+            const seleccionadas = todas.filter(t => selectedIds.has(t.id))
+            await Promise.all(seleccionadas.map(t => deleteTask(t)))
+            limpiarSeleccion()
+            setModal(null)
+          }}
+          onCancel={() => setModal(null)}
+        />
+      )}
+
+      {modal?.tipo === 'editarVarias' && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
+          <div style={{ background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px', width:'100%', maxWidth:480, paddingBottom:'calc(20px + env(safe-area-inset-bottom))' }}>
+            <p style={{ margin:'0 0 16px', fontSize:16, fontWeight:600, color:'#111' }}>
+              Editar {selectedIds.size} tarea{selectedIds.size !== 1 ? 's' : ''}
+            </p>
+            <p style={{ margin:'0 0 16px', fontSize:13, color:'#9ca3af' }}>Nueva fecha para todas:</p>
+            <input
+              type="date"
+              onChange={async e => {
+                if (!e.target.value) return
+                const { Timestamp } = await import('firebase/firestore')
+                const dueDate = Timestamp.fromDate(new Date(e.target.value + 'T23:59:59'))
+                const todas = [...pending, ...completed]
+                const seleccionadas = todas.filter(t => selectedIds.has(t.id))
+                await Promise.all(seleccionadas.map(t => updateTask(t, { dueDate })))
+                limpiarSeleccion()
+                setModal(null)
+              }}
+              style={{ width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', marginBottom:16 }}
+            />
+            <button onClick={() => { setModal(null) }} style={{ width:'100%', padding:'12px', borderRadius:12, border:'none', background:'#f3f4f6', color:'#6b7280', fontSize:15, cursor:'pointer' }}>
+              Cancelar
+            </button>
+          </div>
+        </div>
       )}
     </div>
   )
