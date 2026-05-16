@@ -12,16 +12,21 @@ export function UnirseScreen() {
   const [info,   setInfo]   = useState(null)
   const [status, setStatus] = useState('loading')
   const [err,    setErr]    = useState(null)
+  const [log,    setLog]    = useState(['init'])
+  const addLog = (msg) => setLog(prev => [...prev, msg])
 
   useEffect(() => {
-    if (!token) { setStatus('notoken'); return }
+    addLog('token:' + token)
+    if (!token) { setStatus('notoken'); addLog('notoken'); return }
+    addLog('fetching...')
     getInvitationByToken(token)
       .then(inv => {
+        addLog('inv:' + JSON.stringify(inv ? {id:inv.id, groupName:inv.groupName} : null))
         if (!inv) { setStatus('error'); setErr('Invitacion no encontrada.'); return }
         setInfo(inv)
         setStatus('preview')
       })
-      .catch(e => { setStatus('error'); setErr(e.message || 'Error al cargar.') })
+      .catch(e => { addLog('err:' + e.message); setStatus('error'); setErr(e.message || 'Error al cargar.') })
   }, [token])
 
   async function handleUnirse() {
@@ -45,7 +50,10 @@ export function UnirseScreen() {
   }
 
   return (
-    <div style={{ flex:1, minHeight:0, display:'flex', alignItems:'center', justifyContent:'center', background:'#f9fafb', padding:20, overflowY:'auto' }}>
+    <div style={{ flex:1, minHeight:0, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', background:'#f9fafb', padding:20, overflowY:'auto' }}>
+      <div style={{ position:'fixed', top:0, left:0, right:0, background:'rgba(0,0,0,0.8)', color:'#0f0', fontSize:11, padding:'4px 8px', zIndex:9999, fontFamily:'monospace' }}>
+        status:{status} | {log.slice(-3).join(' | ')}
+      </div>
       <div style={{ background:'#fff', borderRadius:20, padding:'32px 24px', width:'100%', maxWidth:380, textAlign:'center', boxShadow:'0 4px 24px rgba(0,0,0,0.06)' }}>
         {status === 'loading' && <>
           <div style={{ fontSize:48, marginBottom:16 }}>⏳</div>
