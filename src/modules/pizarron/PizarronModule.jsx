@@ -19,9 +19,10 @@ function toDateKey(date) {
 }
 
 function EditVariasModal({ count, groups, onSave, onClose }) {
-  const [fecha,       setFecha]       = useState('')
+  const [fecha,        setFecha]        = useState('')
   const [nuevoGroupId, setNuevoGroupId] = useState('__sin_cambio__')
-  const [loading,     setLoading]     = useState(false)
+  const [showDate,     setShowDate]     = useState(false)
+  const [loading,      setLoading]      = useState(false)
   const hayCambio = fecha !== '' || nuevoGroupId !== '__sin_cambio__'
 
   async function guardar() {
@@ -37,15 +38,20 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
         </p>
         <p style={{ margin:'0 0 20px', fontSize:13, color:'#9ca3af' }}>Solo se aplican los campos que cambies.</p>
 
-        <div onClick={() => document.getElementById('edit-varias-date').showPicker?.()} style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', marginBottom:16, cursor:'pointer' }}>
+        <div onClick={() => setShowDate(v=>!v)} style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }}>
           <span>📅</span>
           <span style={{ flex:1, fontSize:14, color:'#111' }}>Nueva fecha</span>
-          <span style={{ fontSize:14, color: fecha ? '#111' : '#9ca3af' }}>
-            {fecha ? (() => { const [y,m,d] = fecha.split('-').map(Number); return `${d} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][m-1]}` })() : 'Sin cambio'}
+          <span style={{ fontSize:14, color: fecha ? '#5B3DF6' : '#9ca3af' }}>
+            {fecha ? (() => { const [y,m,d] = fecha.split('-').map(Number); return `${d} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][m-1]}` })() : 'Sin cambio ›'}
           </span>
-          <input id="edit-varias-date" type="date" value={fecha} onChange={e => setFecha(e.target.value)}
-            style={{ position:'absolute', opacity:0, width:1, height:1 }} />
         </div>
+        {showDate && (
+          <input type="date" value={fecha}
+            onChange={e => { setFecha(e.target.value); setShowDate(false) }}
+            style={{ width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', marginBottom:8 }}
+            autoFocus
+          />
+        )}
 
         <p style={{ margin:'0 0 6px', fontSize:12, color:'#6b7280', fontWeight:500 }}>👥 Cambiar grupo</p>
         <div style={{ background:'#f9fafb', borderRadius:10, overflow:'hidden', border:'1px solid #f3f4f6', marginBottom:20 }}>
