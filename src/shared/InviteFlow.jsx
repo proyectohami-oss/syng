@@ -13,9 +13,7 @@ export function InviteFlow({ groupId, groupName, inviterName, onClose }) {
     try {
       const token = await createInvitationLink({ groupId, groupName, inviterName })
       const url   = `https://syng-psi.vercel.app/unirse?inv=${token}`
-      const msg   = `${inviterName || 'Alguien'} te invito al grupo "${groupName}" en Syng.
-
-${url}`
+      const msg   = `${inviterName || 'Alguien'} te invito al grupo "${groupName}" en Syng.`
       if (navigator.share) {
         await navigator.share({ title: 'Invitacion a Syng', text: msg, url })
       } else {
