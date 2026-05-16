@@ -126,16 +126,14 @@ export function NewGroupTaskScreen() {
           />
         )}
 
-        {!isEdit && (
-          <div style={row} onClick={() => setShowRepeat(true)}>
+        <div style={row} onClick={() => setShowRepeat(true)}>
             <span>🔁</span>
             <span style={rLbl}>Repetir</span>
             <span style={{ ...rVal, color: repeatDays.size > 0 ? '#5B3DF6' : '#6b7280' }}>
               {repeatDays.size === 0 ? 'No repetir' : `${repeatDays.size} día${repeatDays.size !== 1 ? 's' : ''} seleccionado${repeatDays.size !== 1 ? 's' : ''}`}
             </span>
             <span style={arr}>›</span>
-          </div>
-        )}
+        </div>
       </div>
 
       {showRepeat && (
