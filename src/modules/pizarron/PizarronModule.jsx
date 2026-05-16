@@ -45,14 +45,11 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
             {fecha ? (() => { const [y,m,d] = fecha.split('-').map(Number); return `${d} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][m-1]}` })() : 'Sin cambio ›'}
           </span>
         </div>
-        {showDate && (
-          <input type="date" value={fecha}
-            onClick={e => e.stopPropagation()}
-            onChange={e => { setFecha(e.target.value); setShowDate(false) }}
-            style={{ width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', marginBottom:8 }}
-            autoFocus
-          />
-        )}
+        <input type="date" value={fecha}
+          onClick={e => e.stopPropagation()}
+          onChange={e => { setFecha(e.target.value); setShowDate(false) }}
+          style={{ width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', marginBottom:8, display: showDate ? 'block' : 'none' }}
+        />
 
         <p style={{ margin:'0 0 6px', fontSize:12, color:'#6b7280', fontWeight:500 }}>👥 Cambiar grupo</p>
         <div style={{ background:'#f9fafb', borderRadius:10, overflow:'hidden', border:'1px solid #f3f4f6', marginBottom:20 }}>
