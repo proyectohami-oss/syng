@@ -9,19 +9,21 @@ export function GroupInfoScreen() {
   const { id: groupId } = useParams()
   const navigate = useNavigate()
   const { group, members, role, uid } = usePizarronView(groupId)
-  const { leaveGroup, deleteGroup, promoteToAdmin, removeMember, updateGroupName } = useGroups()
+  const { leaveGroup, deleteGroup, promoteToAdmin, removeMember, updateGroupName, cancelInvitation } = useGroups()
   const isAdmin = role === 'admin'
 
-  const [showInvite,    setShowInvite]    = useState(false)
+  const [showInvite,     setShowInvite]     = useState(false)
   const [pendingInvites, setPendingInvites] = useState([])
+  const [editingName,    setEditingName]    = useState(false)
+  const [newName,        setNewName]        = useState('')
+  const [confirmLeave,   setConfirmLeave]   = useState(false)
+  const [confirmDelete,  setConfirmDelete]  = useState(false)
 
-  useEffect(() => {
+  async function loadPending() {
     getPendingInvitations(groupId).then(setPendingInvites).catch(() => {})
-  }, [groupId, showInvite])
-  const [editingName,  setEditingName]  = useState(false)
-  const [newName,      setNewName]      = useState('')
-  const [confirmLeave,  setConfirmLeave]  = useState(false)
-  const [confirmDelete, setConfirmDelete] = useState(false)
+  }
+
+  useEffect(() => { loadPending() }, [groupId, showInvite])
 
   if (!group) return null
 
@@ -33,6 +35,11 @@ export function GroupInfoScreen() {
   async function handleDelete() {
     await deleteGroup(groupId)
     navigate('/pizarrones')
+  }
+
+  async function handleCancelInvitation(invId) {
+    await cancelInvitation(invId)
+    loadPending()
   }
 
   return (
@@ -69,13 +76,11 @@ export function GroupInfoScreen() {
             )}
           </div>
           {members.map(m => {
-            const isMe    = m.uid === uid
+            const isMe     = m.uid === uid
             const isMAdmin = group.adminIds?.includes(m.uid)
             return (
               <div key={m.uid} style={memberRow}>
-                <div style={memberAvatar}>
-                  {(m.displayName?.[0] ?? '?').toUpperCase()}
-                </div>
+                <div style={memberAvatar}>{(m.displayName?.[0] ?? '?').toUpperCase()}</div>
                 <div style={{ flex:1, minWidth:0 }}>
                   <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#111' }}>
                     {m.displayName || m.email}{isMe ? ' (tú)' : ''}
@@ -91,7 +96,8 @@ export function GroupInfoScreen() {
                         Hacer admin
                       </button>
                     )}
-                    <button onClick={() => removeMember({ groupId, targetUid: m.uid })} style={{ ...btnAction, color:'#ef4444', borderColor:'#fecaca' }}>
+                    <button onClick={() => removeMember({ groupId, targetUid: m.uid })}
+                      style={{ ...btnAction, color:'#ef4444', borderColor:'#fecaca' }}>
                       Eliminar
                     </button>
                   </div>
@@ -103,16 +109,27 @@ export function GroupInfoScreen() {
 
         {pendingInvites.length > 0 && (
           <div style={{ borderTop:'1px solid #f3f4f6', paddingTop:8 }}>
-            <p style={{ margin:'10px 20px 4px', fontSize:11, fontWeight:600, color:'#9ca3af', letterSpacing:'0.06em' }}>INVITADOS PENDIENTES</p>
+            <p style={{ margin:'10px 20px 4px', fontSize:11, fontWeight:600, color:'#9ca3af', letterSpacing:'0.06em' }}>
+              INVITADOS PENDIENTES
+            </p>
             {pendingInvites.map(inv => (
               <div key={inv.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 20px' }}>
                 <div style={{ width:36, height:36, borderRadius:'50%', background:'#fef9c3', color:'#ca8a04', fontSize:16, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
-                  {'⏳'}
+                  ⏳
                 </div>
                 <div style={{ flex:1 }}>
                   <p style={{ margin:0, fontSize:14, color:'#6b7280' }}>{inv.phoneNumber}</p>
-                  <p style={{ margin:0, fontSize:11, color:'#9ca3af' }}>Invitacion pendiente</p>
+                  <p style={{ margin:0, fontSize:11, color:'#9ca3af' }}>Invitación pendiente</p>
                 </div>
+                {isAdmin && (
+                  <button
+                    onClick={() => handleCancelInvitation(inv.id)}
+                    style={{ background:'none', border:'none', color:'#d1d5db', fontSize:18, cursor:'pointer', padding:'4px 8px' }}
+                    title="Cancelar invitación"
+                  >
+                    ✕
+                  </button>
+                )}
               </div>
             ))}
           </div>
@@ -158,7 +175,7 @@ export function GroupInfoScreen() {
       )}
 
       {confirmLeave && (
-        <div style={overlay}>
+        <div style={overlayModal}>
           <div style={dialog}>
             <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16 }}>¿Salir del grupo?</p>
             <p style={{ margin:'0 0 20px', fontSize:14, color:'#6b7280' }}>Perderás acceso a las tareas del grupo.</p>
@@ -171,7 +188,7 @@ export function GroupInfoScreen() {
       )}
 
       {confirmDelete && (
-        <div style={overlay}>
+        <div style={overlayModal}>
           <div style={dialog}>
             <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16 }}>¿Eliminar grupo?</p>
             <p style={{ margin:'0 0 20px', fontSize:14, color:'#6b7280' }}>Esta acción no se puede deshacer.</p>
@@ -206,7 +223,7 @@ const memberAvatar = { width:36, height:36, borderRadius:'50%', background:'#EDE
 const btnInvite    = { background:'none', border:'none', color:'#5B3DF6', fontSize:13, fontWeight:600, cursor:'pointer' }
 const btnAction    = { padding:'5px 10px', borderRadius:8, border:'1px solid #e5e7eb', background:'#fff', fontSize:12, color:'#374151', cursor:'pointer' }
 const btnDanger    = { width:'100%', padding:'13px', borderRadius:12, border:'1.5px solid #fee2e2', background:'#fff', color:'#dc2626', fontSize:15, fontWeight:600, cursor:'pointer' }
-const overlay      = { position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }
+const overlayModal = { position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }
 const dialog       = { background:'#fff', borderRadius:16, padding:'24px 20px', width:'100%', maxWidth:320 }
 const btnCancel    = { flex:1, padding:'11px', borderRadius:10, border:'1px solid #e5e7eb', background:'#fff', fontSize:14, cursor:'pointer', color:'#374151' }
 const btnConfirm   = { flex:1, padding:'11px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
