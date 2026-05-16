@@ -202,17 +202,20 @@ export function PizarronModule() {
           </>
         )}
 
-        {/* Añadir tarea inline */}
-        {perms.canCreateGroupTask && (
+      </div>
+
+      {/* ── Añadir tarea fijo ── */}
+      {perms.canCreateGroupTask && (
+        <div style={addTaskZone}>
           <button
             onClick={() => navigate(`/pizarron/${groupId}/nueva/${selectedKey}`)}
             style={addTaskBtn}
           >
-            <span style={{ fontSize:18 }}>+</span>
+            <span style={{ fontSize:20, lineHeight:1 }}>+</span>
             <span>Añadir tarea</span>
           </button>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── Modals ── */}
       {modal?.tipo === 'borrar' && (
@@ -244,5 +247,6 @@ const taskCard      = { display:'flex', alignItems:'center', gap:12, padding:'12
 const checkBtn      = { width:22, height:22, borderRadius:'50%', border:'2px solid #d1d5db', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
 const memberMini    = { width:24, height:24, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
 const btnTask       = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'#9ca3af' }
-const addTaskBtn    = { display:'flex', alignItems:'center', gap:8, width:'100%', padding:'12px 0', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:14, fontWeight:500, marginTop:8, WebkitTapHighlightColor:'transparent' }
+const addTaskZone   = { flexShrink:0, borderTop:'1px solid #f3f4f6', padding:'4px 16px', background:'#fff' }
+const addTaskBtn    = { display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 0', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent' }
 const backBtn       = { padding:'10px 20px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
