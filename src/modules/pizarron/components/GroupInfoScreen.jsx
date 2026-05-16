@@ -12,14 +12,15 @@ export function GroupInfoScreen() {
   const { leaveGroup, deleteGroup, promoteToAdmin, removeMember, updateGroupName, cancelInvitation } = useGroups()
   const isAdmin = role === 'admin'
 
-  const [showInvite,     setShowInvite]     = useState(false)
-  const [pendingInvites, setPendingInvites] = useState([])
-  const [editingName,    setEditingName]    = useState(false)
-  const [newName,        setNewName]        = useState('')
-  const [confirmLeave,   setConfirmLeave]   = useState(false)
-  const [confirmDelete,  setConfirmDelete]  = useState(false)
+  const [showInvite,      setShowInvite]      = useState(false)
+  const [pendingInvites,  setPendingInvites]  = useState([])
+  const [editingName,     setEditingName]     = useState(false)
+  const [newName,         setNewName]         = useState('')
+  const [confirmLeave,    setConfirmLeave]    = useState(false)
+  const [confirmDelete,   setConfirmDelete]   = useState(false)
+  const [confirmCancelId, setConfirmCancelId] = useState(null)
 
-  async function loadPending() {
+  function loadPending() {
     getPendingInvitations(groupId).then(setPendingInvites).catch(() => {})
   }
 
@@ -38,8 +39,13 @@ export function GroupInfoScreen() {
   }
 
   async function handleCancelInvitation(invId) {
-    await cancelInvitation(invId)
-    loadPending()
+    try {
+      await cancelInvitation(invId)
+      setPendingInvites(prev => prev.filter(x => x.id !== invId))
+    } catch (err) {
+      alert('No se pudo cancelar: ' + err.message)
+    }
+    setConfirmCancelId(null)
   }
 
   return (
@@ -123,9 +129,8 @@ export function GroupInfoScreen() {
                 </div>
                 {isAdmin && (
                   <button
-                    onClick={() => handleCancelInvitation(inv.id)}
+                    onClick={() => setConfirmCancelId(inv.id)}
                     style={{ background:'none', border:'none', color:'#d1d5db', fontSize:18, cursor:'pointer', padding:'4px 8px' }}
-                    title="Cancelar invitación"
                   >
                     ✕
                   </button>
@@ -169,6 +174,19 @@ export function GroupInfoScreen() {
               }} style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }}>
                 Guardar
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {confirmCancelId && (
+        <div style={overlayModal}>
+          <div style={dialog}>
+            <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16 }}>¿Cancelar invitación?</p>
+            <p style={{ margin:'0 0 20px', fontSize:14, color:'#6b7280' }}>La persona ya no podrá unirse con esta invitación.</p>
+            <div style={{ display:'flex', gap:8 }}>
+              <button onClick={() => setConfirmCancelId(null)} style={btnCancel}>No, mantener</button>
+              <button onClick={() => handleCancelInvitation(confirmCancelId)} style={{ ...btnConfirm, background:'#dc2626' }}>Sí, cancelar</button>
             </div>
           </div>
         </div>
