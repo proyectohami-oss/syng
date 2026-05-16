@@ -10,6 +10,7 @@ import { PizarronModule }    from './modules/pizarron/PizarronModule'
 import { GroupInfoScreen }      from './modules/pizarron/components/GroupInfoScreen'
 import { NewGroupTaskScreen }  from './modules/pizarron/components/NewGroupTaskScreen'
 import { PerfilModule }      from './modules/perfil/PerfilModule'
+import { UnirseScreen }      from './modules/UnirseScreen'
 import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
 
 const globalStyles = `

@@ -4,6 +4,8 @@ import {
   addDoc,
   updateDoc,
   deleteDoc,
+  getDoc,
+  deleteDoc,
   query,
   where,
   getDocs,
@@ -75,4 +77,49 @@ export async function getPendingInvitations(groupId) {
   )
   const snap = await getDocs(q)
   return snap.docs.map(d => ({ id: d.id, ...d.data() }))
+
+  // ── Invitaciones por link ─────────────────────────────────────────────────
+
+export async function createInvitationLink({ groupId, groupName, inviterUid, inviterName }) {
+  const ref = await addDoc(collection(db, 'invitations'), {
+    type:       'link',
+    groupId,
+    groupName,
+    inviterUid,
+    inviterName,
+    status:     'pending',
+    createdAt:  serverTimestamp(),
+    expiresAt:  null,
+    acceptedAt: null,
+  })
+  await updateDoc(ref, { token: ref.id })
+  return ref.id
+}
+
+export async function getInvitationByToken(token) {
+  const q = query(
+    collection(db, 'invitations'),
+    where('token', '==', token),
+    limit(1)
+  )
+  const snap = await getDocs(q)
+  if (snap.empty) return null
+  return { id: snap.docs[0].id, ...snap.docs[0].data() }
+}
+
+export async function acceptInvitationLink({ token, user }) {
+  const inv = await getInvitationByToken(token)
+  if (!inv) return { status: 'not_found' }
+  const memberSnap = await getDoc(doc(db, 'groups', inv.groupId, 'members', user.uid))
+  if (memberSnap.exists()) {
+    return { status: 'already_member', groupId: inv.groupId, groupName: inv.groupName }
+  }
+  await addMember(inv.groupId, user, inv.inviterUid)
+  await updateDoc(doc(db, 'invitations', inv.id), {
+    status:     'accepted',
+    acceptedAt: serverTimestamp(),
+    acceptedBy: user.uid,
+  })
+  return { status: 'joined', groupId: inv.groupId, groupName: inv.groupName }
+}
 }

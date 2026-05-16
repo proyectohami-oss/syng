@@ -8,6 +8,7 @@ import {
   createInvitation,
   hasPendingInvitation,
   cancelInvitation as cancelInvitationService,
+  createInvitationLink as createInvitationLinkService,
 } from '../services/invitations.service'
 import { addMember } from '../services/groups.service'
 
@@ -149,5 +150,6 @@ export function useGroups() {
     transferAdmin,
     addMemberByPhone,
     cancelInvitation,
+    createInvitationLink,
   }
 }
