@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { usePizarronView } from '../hooks/usePizarronView'
 import { useGroups } from '../../../core/hooks/useGroups'
 import { InviteFlow } from '../../../shared/InviteFlow'
+import { getPendingInvitations } from '../../../core/services/invitations.service'
 
 export function GroupInfoScreen() {
   const { id: groupId } = useParams()
@@ -12,6 +13,11 @@ export function GroupInfoScreen() {
   const isAdmin = role === 'admin'
 
   const [showInvite,    setShowInvite]    = useState(false)
+  const [pendingInvites, setPendingInvites] = useState([])
+
+  useEffect(() => {
+    getPendingInvitations(groupId).then(setPendingInvites).catch(() => {})
+  }, [groupId, showInvite])
   const [editingName,  setEditingName]  = useState(false)
   const [newName,      setNewName]      = useState('')
   const [confirmLeave,  setConfirmLeave]  = useState(false)
@@ -94,6 +100,23 @@ export function GroupInfoScreen() {
             )
           })}
         </div>
+
+        {pendingInvites.length > 0 && (
+          <div style={{ borderTop:'1px solid #f3f4f6', paddingTop:8 }}>
+            <p style={{ margin:'10px 20px 4px', fontSize:11, fontWeight:600, color:'#9ca3af', letterSpacing:'0.06em' }}>INVITADOS PENDIENTES</p>
+            {pendingInvites.map(inv => (
+              <div key={inv.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 20px' }}>
+                <div style={{ width:36, height:36, borderRadius:'50%', background:'#fef9c3', color:'#ca8a04', fontSize:16, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  {'⏳'}
+                </div>
+                <div style={{ flex:1 }}>
+                  <p style={{ margin:0, fontSize:14, color:'#6b7280' }}>{inv.phoneNumber}</p>
+                  <p style={{ margin:0, fontSize:11, color:'#9ca3af' }}>Invitacion pendiente</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
 
         <div style={{ padding:'20px' }}>
           <button onClick={() => setConfirmLeave(true)} style={{ ...btnDanger, marginBottom:10 }}>
