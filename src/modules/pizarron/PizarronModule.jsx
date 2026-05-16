@@ -18,6 +18,60 @@ function toDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
 }
 
+function EditVariasModal({ count, groups, onSave, onClose }) {
+  const [fecha,       setFecha]       = useState('')
+  const [nuevoGroupId, setNuevoGroupId] = useState('__sin_cambio__')
+  const [loading,     setLoading]     = useState(false)
+  const hayCambio = fecha !== '' || nuevoGroupId !== '__sin_cambio__'
+
+  async function guardar() {
+    setLoading(true)
+    try { await onSave({ fecha, nuevoGroupId }) } finally { setLoading(false) }
+  }
+
+  return (
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
+      <div style={{ background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px', width:'100%', maxWidth:480, paddingBottom:'calc(20px + env(safe-area-inset-bottom))' }}>
+        <p style={{ margin:'0 0 4px', fontSize:16, fontWeight:600, color:'#111' }}>
+          Editar {count} tarea{count !== 1 ? 's' : ''}
+        </p>
+        <p style={{ margin:'0 0 20px', fontSize:13, color:'#9ca3af' }}>Solo se aplican los campos que cambies.</p>
+
+        <p style={{ margin:'0 0 6px', fontSize:12, color:'#6b7280', fontWeight:500 }}>📅 Nueva fecha</p>
+        <input
+          type="date" value={fecha}
+          onChange={e => setFecha(e.target.value)}
+          style={{ width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', marginBottom:16 }}
+        />
+
+        <p style={{ margin:'0 0 6px', fontSize:12, color:'#6b7280', fontWeight:500 }}>👥 Cambiar grupo</p>
+        <div style={{ background:'#f9fafb', borderRadius:10, overflow:'hidden', border:'1px solid #f3f4f6', marginBottom:20 }}>
+          {[{ id:'__sin_cambio__', name:'Sin cambio' }, { id:'', name:'Personal' }, ...groups].map(g => (
+            <div key={g.id} onClick={() => setNuevoGroupId(g.id)}
+              style={{ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid #f3f4f6',
+                background: nuevoGroupId === g.id ? '#EDE9FE' : 'transparent',
+                color: nuevoGroupId === g.id ? '#5B3DF6' : '#374151',
+                fontWeight: nuevoGroupId === g.id ? 600 : 400 }}>
+              {g.name}
+            </div>
+          ))}
+        </div>
+
+        <div style={{ display:'flex', gap:8 }}>
+          <button onClick={onClose} style={{ flex:1, padding:'12px', borderRadius:12, border:'1px solid #e5e7eb', background:'#fff', color:'#6b7280', fontSize:15, cursor:'pointer' }}>
+            Cancelar
+          </button>
+          <button onClick={guardar} disabled={!hayCambio || loading}
+            style={{ flex:1, padding:'12px', borderRadius:12, border:'none', fontSize:15, fontWeight:600, cursor: hayCambio ? 'pointer' : 'default',
+              background: hayCambio ? '#5B3DF6' : '#e5e7eb', color: hayCambio ? '#fff' : '#9ca3af' }}>
+            {loading ? 'Aplicando...' : 'Aplicar cambios'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export function PizarronModule() {
   const { id: groupId } = useParams()
   const navigate        = useNavigate()
@@ -281,31 +335,27 @@ export function PizarronModule() {
       )}
 
       {modal?.tipo === 'editarVarias' && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
-          <div style={{ background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px', width:'100%', maxWidth:480, paddingBottom:'calc(20px + env(safe-area-inset-bottom))' }}>
-            <p style={{ margin:'0 0 16px', fontSize:16, fontWeight:600, color:'#111' }}>
-              Editar {selectedIds.size} tarea{selectedIds.size !== 1 ? 's' : ''}
-            </p>
-            <p style={{ margin:'0 0 16px', fontSize:13, color:'#9ca3af' }}>Nueva fecha para todas:</p>
-            <input
-              type="date"
-              onChange={async e => {
-                if (!e.target.value) return
-                const { Timestamp } = await import('firebase/firestore')
-                const dueDate = Timestamp.fromDate(new Date(e.target.value + 'T23:59:59'))
-                const todas = [...pending, ...completed]
-                const seleccionadas = todas.filter(t => selectedIds.has(t.id))
-                await Promise.all(seleccionadas.map(t => updateTask(t, { dueDate })))
-                limpiarSeleccion()
-                setModal(null)
-              }}
-              style={{ width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', marginBottom:16 }}
-            />
-            <button onClick={() => { setModal(null) }} style={{ width:'100%', padding:'12px', borderRadius:12, border:'none', background:'#f3f4f6', color:'#6b7280', fontSize:15, cursor:'pointer' }}>
-              Cancelar
-            </button>
-          </div>
-        </div>
+        <EditVariasModal
+          count={selectedIds.size}
+          groups={Array.from(state.groups.list.values())}
+          onClose={() => setModal(null)}
+          onSave={async ({ fecha, nuevoGroupId }) => {
+            const { Timestamp } = await import('firebase/firestore')
+            const todas = [...pending, ...completed]
+            const seleccionadas = todas.filter(t => selectedIds.has(t.id))
+            const updates = {}
+            if (fecha) updates.dueDate = Timestamp.fromDate(new Date(fecha + 'T23:59:59'))
+            if (nuevoGroupId !== '__sin_cambio__') {
+              updates.groupId = nuevoGroupId || null
+              updates.type = nuevoGroupId ? 'group' : 'personal'
+            }
+            if (Object.keys(updates).length > 0) {
+              await Promise.all(seleccionadas.map(t => updateTask(t, updates)))
+            }
+            limpiarSeleccion()
+            setModal(null)
+          }}
+        />
       )}
     </div>
   )
