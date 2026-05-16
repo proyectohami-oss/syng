@@ -310,8 +310,7 @@ export function PizarronModule() {
           style={fabBtn}
         >
           <span style={{ fontSize:26, lineHeight:1, fontWeight:300 }}>+</span>
-          <span style={{ fontSize:20, fontWeight:300, lineHeight:1 }}>+</span>
-          <span style={{ fontSize:15, fontWeight:600 }}>Añadir tarea</span>
+          <span style={{ fontSize:15, fontWeight:600 }}>＋ Añadir tarea</span>
         </button>
       )}
 
