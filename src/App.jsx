@@ -95,6 +95,7 @@ function AppWithViewport() {
               <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
               <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />
               <Route path="/perfil"       element={<PerfilModule />} />
+              <Route path="/unirse"       element={<UnirseScreen />} />
             </Routes>
           </AppShell>
         </InvitationChecker>
