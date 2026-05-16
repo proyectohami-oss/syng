@@ -139,6 +139,20 @@ export function useGroups() {
     await cancelInvitationService(invitationId)
   }, [])
 
+
+  const createInvitationLink = useCallback(async ({ groupId, groupName, inviterName }) => {
+    const uid      = state.auth.user?.uid
+    const userData = state.auth.userData
+    const group    = state.groups.list.get(groupId)
+    if (!uid || !userData || !group) throw new Error('Invalid state')
+    return createInvitationLinkService({
+      groupId,
+      groupName:   groupName || group.name,
+      inviterUid:  uid,
+      inviterName: inviterName || userData.displayName || '',
+    })
+  }, [state.auth.user, state.auth.userData, state.groups.list])
+
   return {
     createGroup,
     updateGroupName,
