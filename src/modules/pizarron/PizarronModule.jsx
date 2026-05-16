@@ -309,8 +309,7 @@ export function PizarronModule() {
           onClick={() => navigate(`/pizarron/${groupId}/nueva/${selectedKey}`)}
           style={fabBtn}
         >
-          <span style={{ fontSize:26, lineHeight:1, fontWeight:300 }}>+</span>
-          <span style={{ fontSize:15, fontWeight:600 }}>＋ Añadir tarea</span>
+          <span style={{ fontSize:15, fontWeight:600 }}>+ Añadir tarea</span>
         </button>
       )}
 
