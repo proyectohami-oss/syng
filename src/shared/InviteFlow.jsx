@@ -157,14 +157,16 @@ export function InviteFlow({ groupId, onClose }) {
         {/* Formulario principal */}
         {!result && !contactResult && (
           <>
-            {supportsContacts && (
-              <button onClick={handlePickContact} disabled={loading} style={btnContacts}>
+            <button
+                onClick={supportsContacts ? handlePickContact : () => setError('Por ahora, ingresa el número manualmente. Esta función no está disponible en este dispositivo.')}
+                disabled={loading}
+                style={btnContacts}
+              >
                 👥 Elegir desde contactos
               </button>
-            )}
 
-            <p style={{ margin: supportsContacts ? '16px 0 8px' : '0 0 8px', fontSize:12, color:'#9ca3af', fontWeight:500, textAlign:'center' }}>
-              {supportsContacts ? 'o ingresa el número manualmente' : 'Ingresa el número de teléfono'}
+            <p style={{ margin:'12px 0 8px', fontSize:12, color:'#9ca3af', fontWeight:500, textAlign:'center' }}>
+              o ingresa el número manualmente
             </p>
 
             <label style={lbl}>Número de teléfono</label>
