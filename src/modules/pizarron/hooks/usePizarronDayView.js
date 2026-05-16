@@ -44,8 +44,8 @@ export function usePizarronDayView(tasks) {
     })
   }, [tasks, selectedKey])
 
-  const pending   = useMemo(() => dayTasks.filter(t => t.status === 'pending'),   [dayTasks])
-  const completed = useMemo(() => dayTasks.filter(t => t.status === 'completed'), [dayTasks])
+  const pending   = useMemo(() => dayTasks.filter(t => t.status === 'pending').sort((a,b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0)),   [dayTasks])
+  const completed = useMemo(() => dayTasks.filter(t => t.status === 'completed').sort((a,b) => (a.createdAt?.toMillis?.() ?? 0) - (b.createdAt?.toMillis?.() ?? 0)), [dayTasks])
 
   // Días con actividad
   const daysWithActivity = useMemo(() => {
