@@ -38,7 +38,7 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
         </p>
         <p style={{ margin:'0 0 20px', fontSize:13, color:'#9ca3af' }}>Solo se aplican los campos que cambies.</p>
 
-        <div onClick={() => setShowDate(true)} style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }}>
+        <div onClick={e => { e.stopPropagation(); setShowDate(true) }} style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }}>
           <span>📅</span>
           <span style={{ flex:1, fontSize:14, color:'#111' }}>Nueva fecha</span>
           <span style={{ fontSize:14, color: fecha ? '#5B3DF6' : '#9ca3af' }}>
@@ -47,6 +47,7 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
         </div>
         {showDate && (
           <input type="date" value={fecha}
+            onClick={e => e.stopPropagation()}
             onChange={e => { setFecha(e.target.value); setShowDate(false) }}
             style={{ width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', marginBottom:8 }}
             autoFocus
