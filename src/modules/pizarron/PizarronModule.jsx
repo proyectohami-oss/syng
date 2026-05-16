@@ -33,7 +33,19 @@ export function PizarronModule() {
     daysWithActivity, todayKey,
   } = usePizarronDayView(tasks)
 
-  const [modal, setModal] = useState(null)
+  const [modal,       setModal]       = useState(null)
+  const [selectedIds, setSelectedIds] = useState(new Set())
+
+  const haySeleccion = selectedIds.size > 0
+
+  function toggleSeleccion(taskId) {
+    setSelectedIds(prev => {
+      const next = new Set(prev)
+      next.has(taskId) ? next.delete(taskId) : next.add(taskId)
+      return next
+    })
+  }
+  function limpiarSeleccion() { setSelectedIds(new Set()) }
   const daySelectorRef = useRef(null)
 
   // Centrar en "Hoy" solo al montar
@@ -165,12 +177,15 @@ export function PizarronModule() {
             return d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
           })() : null
           return (
-            <div key={task.id} style={taskCard}>
+            <div key={task.id} style={{ ...taskCard, background: selectedIds.has(task.id) ? '#f5f3ff' : 'transparent' }}>
               <button
-                onClick={() => toggleStatus(task)}
-                style={checkBtn}
+                onClick={() => toggleSeleccion(task.id)}
+                style={{ ...checkBtn,
+                  border: selectedIds.has(task.id) ? '2px solid #5B3DF6' : '2px solid #d1d5db',
+                  background: selectedIds.has(task.id) ? '#5B3DF6' : 'none'
+                }}
               />
-              <div style={{ flex:1, minWidth:0, cursor:'pointer' }} onClick={() => toggleStatus(task)}>
+              <div style={{ flex:1, minWidth:0, cursor:'pointer' }} onClick={() => !haySeleccion && toggleStatus(task)}>
                 <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#111', lineHeight:1.3 }}>{task.title}</p>
                 {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:'#9ca3af' }}>{hora}</p>}
               </div>
@@ -203,6 +218,30 @@ export function PizarronModule() {
         )}
 
       </div>
+
+      {/* ── Barra contextual de selección ── */}
+      {haySeleccion && (
+        <div style={barraSeleccion}>
+          <span style={{ fontSize:13, color:'#374151', fontWeight:500 }}>
+            {selectedIds.size} seleccionada{selectedIds.size !== 1 ? 's' : ''}
+          </span>
+          <div style={{ display:'flex', gap:8 }}>
+            <button onClick={async () => {
+              const todas = [...pending, ...completed]
+              const seleccionadas = todas.filter(t => selectedIds.has(t.id))
+              await Promise.all(seleccionadas.map(t => toggleStatus(t)))
+              limpiarSeleccion()
+            }} style={btnBarra}>✅</button>
+            <button onClick={async () => {
+              const todas = [...pending, ...completed]
+              const seleccionadas = todas.filter(t => selectedIds.has(t.id))
+              await Promise.all(seleccionadas.map(t => deleteTask(t)))
+              limpiarSeleccion()
+            }} style={{ ...btnBarra, background:'#fee2e2', color:'#ef4444' }}>🗑️</button>
+            <button onClick={limpiarSeleccion} style={{ ...btnBarra, background:'#f3f4f6', color:'#6b7280' }}>✕</button>
+          </div>
+        </div>
+      )}
 
       {/* ── Añadir tarea fijo ── */}
       {perms.canCreateGroupTask && (
@@ -247,6 +286,8 @@ const taskCard      = { display:'flex', alignItems:'center', gap:12, padding:'12
 const checkBtn      = { width:22, height:22, borderRadius:'50%', border:'2px solid #d1d5db', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
 const memberMini    = { width:24, height:24, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
 const btnTask       = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'#9ca3af' }
+const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:'#fff', borderTop:'1px solid #f3f4f6' }
+const btnBarra      = { padding:'8px 14px', borderRadius:8, border:'none', background:'#EDE9FE', color:'#5B3DF6', fontSize:13, fontWeight:600, cursor:'pointer' }
 const addTaskZone   = { flexShrink:0, borderTop:'1px solid #f3f4f6', padding:'4px 16px', background:'#fff' }
 const addTaskBtn    = { display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 0', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent' }
 const backBtn       = { padding:'10px 20px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
