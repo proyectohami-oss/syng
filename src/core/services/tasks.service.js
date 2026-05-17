@@ -11,7 +11,7 @@ export function generateTaskId() {
   return doc(collection(db, 'tasks')).id
 }
 
-export async function createTask({ id, title, description, type, ownerId, groupId, dueDate, actorName = '' }) {
+export async function createTask({ id, title, description, type, ownerId, groupId, dueDate, actorName = '', reminder = null }) {
   await setDoc(doc(db, 'tasks', id), {
     id,
     title:       title.trim(),
@@ -24,6 +24,7 @@ export async function createTask({ id, title, description, type, ownerId, groupI
     dueDate:     dueDate ?? null,
     completedAt: null,
     completedBy: null,
+    reminder:    reminder,
     isDeleted:   false,
     createdAt:   serverTimestamp(),
     updatedAt:   serverTimestamp(),

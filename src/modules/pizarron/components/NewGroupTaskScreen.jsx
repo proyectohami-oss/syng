@@ -39,12 +39,15 @@ export function NewGroupTaskScreen() {
   const [showRepeat, setShowRepeat] = useState(false)
   const [repeatDays, setRepeatDays] = useState(new Set())
   const [ready,      setReady]      = useState(!isEdit)
+  const [reminder,   setReminder]   = useState(null)   // null | { label, offsetMin }
+  const [showReminder, setShowReminder] = useState(false)
 
   // Precargar datos en modo edición
   useEffect(() => {
     if (isEdit && task) {
       setTitle(task.title ?? '')
       setDateStr(toDateStr(task.dueDate) || todayStr)
+      if (task.reminder) setReminder(task.reminder)
       setReady(true)
     }
   }, [task?.id])
@@ -65,7 +68,7 @@ export function NewGroupTaskScreen() {
     navigate(-1)
 
     if (isEdit && task) {
-      updateTask(task, { title: title.trim(), dueDate }).catch(console.error)
+      updateTask(task, { title: title.trim(), dueDate, reminder: reminder ?? null }).catch(console.error)
       // Si el usuario seleccionó días de repetición en edición → crear tareas adicionales independientes
       if (repeatDays.size > 0) {
         Array.from(repeatDays).sort().forEach(day => {
@@ -77,7 +80,7 @@ export function NewGroupTaskScreen() {
         createTask({ title: title.trim(), type:'group', groupId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
       })
     } else {
-      createTask({ title: title.trim(), type:'group', groupId, dueDate }).catch(console.error)
+      createTask({ title: title.trim(), type:'group', groupId, dueDate, reminder: reminder ?? null }).catch(console.error)
     }
   }
 
@@ -132,6 +135,15 @@ export function NewGroupTaskScreen() {
           />
         )}
 
+        <div style={row} onClick={() => setShowReminder(true)}>
+          <span>🔔</span>
+          <span style={rLbl}>Recordatorio</span>
+          <span style={{ ...rVal, color: reminder ? '#5B3DF6' : '#6b7280' }}>
+            {reminder ? reminder.label : 'Sin recordatorio'}
+          </span>
+          <span style={arr}>›</span>
+        </div>
+
         <div style={row} onClick={() => setShowRepeat(true)}>
             <span>🔁</span>
             <span style={rLbl}>Repetir</span>
@@ -141,6 +153,38 @@ export function NewGroupTaskScreen() {
             <span style={arr}>›</span>
         </div>
       </div>
+
+      {showReminder && (
+        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}
+          onClick={() => setShowReminder(false)}>
+          <div style={{ background:'#fff', borderRadius:'16px 16px 0 0', padding:'24px 20px 40px', width:'100%', maxWidth:480 }}
+            onClick={e => e.stopPropagation()}>
+            <p style={{ margin:'0 0 16px', fontSize:15, fontWeight:600, color:'#111', textAlign:'center' }}>Recordatorio</p>
+            {[
+              { label:'15 min antes',    offsetMin: 15 },
+              { label:'1 hora antes',    offsetMin: 60 },
+              { label:'3 horas antes',   offsetMin: 180 },
+              { label:'Manana 8:00 AM',  offsetMin: null, special:'tomorrow8' },
+            ].map(opt => (
+              <button key={opt.label}
+                onClick={() => { setReminder(opt); setShowReminder(false) }}
+                style={{
+                  width:'100%', padding:'14px', borderRadius:12, border:'none', marginBottom:8,
+                  background: reminder?.label === opt.label ? '#5B3DF6' : '#f3f4f6',
+                  color:      reminder?.label === opt.label ? '#fff'    : '#111',
+                  fontSize:15, fontWeight:500, cursor:'pointer', textAlign:'left',
+                }}>
+                {opt.label}
+              </button>
+            ))}
+            <button
+              onClick={() => { setReminder(null); setShowReminder(false) }}
+              style={{ width:'100%', padding:'14px', borderRadius:12, border:'1.5px solid #e5e7eb', background:'#fff', color:'#6b7280', fontSize:15, cursor:'pointer', marginTop:4 }}>
+              Sin recordatorio
+            </button>
+          </div>
+        </div>
+      )}
 
       {showRepeat && (
         <RepeatDayPicker
