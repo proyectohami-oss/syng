@@ -80,17 +80,21 @@ export async function getPendingInvitations(groupId) {
 
 // ── Invitaciones por link ─────────────────────────────────────────────────
 
-export async function createInvitationLink({ groupId, groupName, inviterUid, inviterName }) {
+export async function createInvitationLink({ groupId, groupName, inviterUid, inviterName, maxUses = 5, hoursValid = 18 }) {
+  const expiresAt = new Date(Date.now() + hoursValid * 60 * 60 * 1000)
   const ref = await addDoc(collection(db, 'invitations'), {
-    type:       'link',
+    type:        'link',
     groupId,
     groupName,
     inviterUid,
     inviterName,
-    status:     'pending',
-    createdAt:  serverTimestamp(),
-    expiresAt:  null,
-    acceptedAt: null,
+    status:      'active',
+    maxUses,
+    usedCount:   0,
+    acceptedBy:  [],
+    createdAt:   serverTimestamp(),
+    expiresAt,
+    acceptedAt:  null,
   })
   await updateDoc(ref, { token: ref.id })
   return ref.id
@@ -110,15 +114,44 @@ export async function getInvitationByToken(token) {
 export async function acceptInvitationLink({ token, user }) {
   const inv = await getInvitationByToken(token)
   if (!inv) return { status: 'not_found' }
+
+  // Verificar si ya es miembro
   const memberSnap = await getDoc(doc(db, 'groups', inv.groupId, 'members', user.uid))
   if (memberSnap.exists()) {
     return { status: 'already_member', groupId: inv.groupId, groupName: inv.groupName }
   }
+
+  // Verificar si ya uso este link
+  const acceptedBy = inv.acceptedBy || []
+  if (acceptedBy.includes(user.uid)) {
+    return { status: 'already_used', groupId: inv.groupId, groupName: inv.groupName }
+  }
+
+  // Verificar expiracion
+  if (inv.expiresAt) {
+    const expiresMs = inv.expiresAt.toMillis ? inv.expiresAt.toMillis() : new Date(inv.expiresAt).getTime()
+    if (Date.now() > expiresMs) {
+      return { status: 'expired', inviterName: inv.inviterName, groupName: inv.groupName }
+    }
+  }
+
+  // Verificar limite de usos
+  const usedCount = inv.usedCount || 0
+  const maxUses   = inv.maxUses   || 5
+  if (usedCount >= maxUses) {
+    return { status: 'full', inviterName: inv.inviterName, groupName: inv.groupName }
+  }
+
+  // Verificar revocado
+  if (inv.status === 'revoked') {
+    return { status: 'revoked', inviterName: inv.inviterName, groupName: inv.groupName }
+  }
+
   await addMember(inv.groupId, user, inv.inviterUid)
   await updateDoc(doc(db, 'invitations', inv.id), {
-    status:     'accepted',
+    usedCount:  usedCount + 1,
+    acceptedBy: [...acceptedBy, user.uid],
     acceptedAt: serverTimestamp(),
-    acceptedBy: user.uid,
   })
   return { status: 'joined', groupId: inv.groupId, groupName: inv.groupName }
 }
