@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { usePizarronView } from '../hooks/usePizarronView'
 import { useGroups } from '../../../core/hooks/useGroups'
 import { InviteFlow } from '../../../shared/InviteFlow'
+import { ActivityFeed } from '../../../shared/ActivityFeed'
 import { getPendingInvitations } from '../../../core/services/invitations.service'
 
 export function GroupInfoScreen() {

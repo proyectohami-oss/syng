@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { addMember } from './groups.service'
+import { logActivity } from './activity.service'
 
 export async function createInvitation({ groupId, groupName, inviterUid, inviterName, phoneNumber }) {
   await addDoc(collection(db, 'invitations'), {
@@ -152,6 +153,13 @@ export async function acceptInvitationLink({ token, user }) {
     usedCount:  usedCount + 1,
     acceptedBy: [...acceptedBy, user.uid],
     acceptedAt: serverTimestamp(),
+  })
+  await logActivity({
+    groupId:    inv.groupId,
+    type:       'member_joined',
+    actorUid:   user.uid,
+    actorName:  user.displayName || 'Alguien',
+    targetName: '',
   })
   return { status: 'joined', groupId: inv.groupId, groupName: inv.groupName }
 }
