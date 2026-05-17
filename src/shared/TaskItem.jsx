@@ -85,6 +85,9 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, showGroup, groupNam
             {isPending && (
               <span style={{ fontSize: 11, color: '#9ca3af' }}>guardando...</span>
             )}
+            {task.reminder && (
+              <span style={{ fontSize: 11, color: '#a78bfa', flexShrink: 0 }}>🔔</span>
+            )}
           </div>
         )}
       </div>
