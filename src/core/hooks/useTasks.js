@@ -41,6 +41,7 @@ export function useTasks() {
       dueDate:     data.dueDate ?? null,
       completedAt: null,
       completedBy: null,
+      reminder:    data.reminder ?? null,
       isDeleted:   false,
       createdAt:   now,
       updatedAt:   now,
@@ -83,7 +84,7 @@ export function useTasks() {
     dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task: patched })
 
     try {
-      await svcUpdate(task.id, { ...updates, updatedAt: now })
+      await svcUpdate(task.id, { ...updates, reminder: updates.reminder ?? null, updatedAt: now })
     } catch (error) {
       console.error('[useTasks] updateTask error:', error)
       // Rollback: restaura la tarea original
