@@ -51,9 +51,19 @@ export function InviteFlow({ groupId, groupName, inviterName, onClose }) {
           <div style={{ textAlign:'center', padding:'8px 0' }}>
             <div style={{ fontSize:48, marginBottom:16 }}>👥</div>
             <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16, color:'#111' }}>{groupName}</p>
-            <p style={{ margin:'0 0 24px', fontSize:14, color:'#6b7280', lineHeight:1.5 }}>
+            <p style={{ margin:'0 0 16px', fontSize:14, color:'#6b7280', lineHeight:1.5 }}>
               Syng genera un link unico. Tu eliges como compartirlo.
             </p>
+            <div style={{ background:'#f9fafb', borderRadius:12, padding:'12px 16px', marginBottom:20, textAlign:'left' }}>
+              <div style={{ display:'flex', justifyContent:'space-between', marginBottom:6 }}>
+                <span style={{ fontSize:13, color:'#6b7280' }}>👤 Participantes maximos</span>
+                <span style={{ fontSize:13, fontWeight:600, color:'#111' }}>5</span>
+              </div>
+              <div style={{ display:'flex', justifyContent:'space-between' }}>
+                <span style={{ fontSize:13, color:'#6b7280' }}>⏳ Expira en</span>
+                <span style={{ fontSize:13, fontWeight:600, color:'#111' }}>18 horas</span>
+              </div>
+            </div>
             {error && (
               <p style={{ fontSize:13, color:'#dc2626', padding:'8px 12px', background:'#fef2f2', borderRadius:8, margin:'0 0 16px' }}>{error}</p>
             )}
