@@ -50,7 +50,8 @@ export function useTasks() {
     dispatch({ type: CORE_ACTIONS.TASK_ADDED_OPTIMISTIC, task: optimistic })
 
     try {
-      await svcCreate({ id, ...data, ownerId: uid })
+      const actorName = state.auth.userData?.displayName || ''
+      await svcCreate({ id, ...data, ownerId: uid, actorName })
     } catch (error) {
       console.error('[useTasks] createTask error:', error)
       dispatch({ type: CORE_ACTIONS.TASK_DELETED_OPTIMISTIC, taskId: id })
@@ -111,7 +112,8 @@ export function useTasks() {
     dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task: optimistic })
 
     try {
-      await svcToggle(task.id, task.status, uid)
+      const actorName = state.auth.userData?.displayName || ''
+      await svcToggle(task.id, task.status, uid, task.groupId || null, actorName, task.title || '')
     } catch (error) {
       console.error('[useTasks] toggleStatus error:', error)
       dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task })

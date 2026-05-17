@@ -5,12 +5,13 @@ import {
   doc, collection, setDoc, updateDoc, serverTimestamp,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { logActivity } from './activity.service'
 
 export function generateTaskId() {
   return doc(collection(db, 'tasks')).id
 }
 
-export async function createTask({ id, title, description, type, ownerId, groupId, dueDate }) {
+export async function createTask({ id, title, description, type, ownerId, groupId, dueDate, actorName = '' }) {
   await setDoc(doc(db, 'tasks', id), {
     id,
     title:       title.trim(),
@@ -27,6 +28,9 @@ export async function createTask({ id, title, description, type, ownerId, groupI
     createdAt:   serverTimestamp(),
     updatedAt:   serverTimestamp(),
   })
+  if (groupId) {
+    await logActivity({ groupId, type: 'task_created', actorUid: ownerId, actorName, targetName: title.trim() })
+  }
 }
 
 /**
@@ -43,7 +47,7 @@ export async function updateTask(taskId, updates) {
   })
 }
 
-export async function toggleTaskStatus(taskId, currentStatus, uid) {
+export async function toggleTaskStatus(taskId, currentStatus, uid, groupId = null, actorName = '', taskTitle = '') {
   const ref          = doc(db, 'tasks', taskId)
   const isCompleting = currentStatus === 'pending'
   await updateDoc(ref, {
@@ -52,6 +56,9 @@ export async function toggleTaskStatus(taskId, currentStatus, uid) {
     completedBy: isCompleting ? uid : null,
     updatedAt:   serverTimestamp(),
   })
+  if (groupId && isCompleting) {
+    await logActivity({ groupId, type: 'task_completed', actorUid: uid, actorName, targetName: taskTitle })
+  }
 }
 
 export async function deleteTask(taskId) {
