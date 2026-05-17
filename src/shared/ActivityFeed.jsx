@@ -10,13 +10,14 @@ export function ActivityFeed({ groupId }) {
     return () => unsub()
   }, [groupId])
 
-  if (events.length === 0) return null
-
   return (
     <div style={{ borderTop:'1px solid #f3f4f6', paddingTop:8, marginTop:4 }}>
       <p style={{ margin:'10px 20px 4px', fontSize:11, fontWeight:600, color:'#9ca3af', letterSpacing:'0.06em' }}>
         ACTIVIDAD RECIENTE
       </p>
+      {events.length === 0 && (
+        <p style={{ margin:'4px 20px 8px', fontSize:13, color:'#c4c4c4' }}>Aun no hay actividad reciente.</p>
+      )}
       {events.map(ev => (
         <div key={ev.id} style={{ display:'flex', alignItems:'center', gap:10, padding:'8px 20px' }}>
           <div style={dot} />

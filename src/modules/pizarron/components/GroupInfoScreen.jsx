@@ -219,6 +219,8 @@ export function GroupInfoScreen() {
         </div>
       )}
 
+      <ActivityFeed groupId={groupId} />
+
       {showInvite && (
         <InviteFlow
           groupId={groupId}
