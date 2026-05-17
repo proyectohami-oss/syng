@@ -57,7 +57,7 @@ function EventRow({ ev, index }) {
           {' '}{lbl.verb}
           {lbl.target ? <span style={{ color:'#5B3DF6' }}> "{lbl.target}"</span> : ''}
         </p>
-        <p style={{ margin:'2px 0 0', fontSize:11, color:'#c4c4c4', letterSpacing:'0.01em' }}>{time}</p>
+        <p style={{ margin:'2px 0 0', fontSize:11, color:'#9ca3af' }}>{time}</p>
       </div>
     </div>
   )
@@ -79,12 +79,12 @@ export function ActivityFeed({ groupId }) {
 
   return (
     <div style={{ borderTop:'1px solid #f9fafb', paddingTop:8, marginTop:4 }}>
-      <p style={{ margin:'8px 20px 4px', fontSize:11, fontWeight:600, color:'#c4c4c4', letterSpacing:'0.08em' }}>
-        ACTIVIDAD
+      <p style={{ margin:'8px 20px 4px', fontSize:11, fontWeight:600, color:'#9ca3af', letterSpacing:'0.06em' }}>
+        ACTIVIDAD RECIENTE
       </p>
 
       {loaded && events.length === 0 && (
-        <p style={{ margin:'8px 20px 16px', fontSize:13, color:'#e5e7eb', fontStyle:'italic' }}>
+        <p style={{ margin:'8px 20px 16px', fontSize:13, color:'#9ca3af' }}>
           Aun no hay actividad en este grupo.
         </p>
       )}
