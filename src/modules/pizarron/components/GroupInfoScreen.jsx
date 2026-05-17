@@ -141,6 +141,8 @@ export function GroupInfoScreen() {
           </div>
         )}
 
+        <ActivityFeed groupId={groupId} />
+
         <div style={{ padding:'20px' }}>
           <button onClick={() => setConfirmLeave(true)} style={{ ...btnDanger, marginBottom:10 }}>
             Salir del grupo
@@ -218,8 +220,6 @@ export function GroupInfoScreen() {
           </div>
         </div>
       )}
-
-      <ActivityFeed groupId={groupId} />
 
       {showInvite && (
         <InviteFlow
