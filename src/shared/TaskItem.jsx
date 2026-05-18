@@ -60,7 +60,7 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, showGroup, groupNam
           textDecoration: isDone ? 'line-through' : 'none',
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
         }}>
-{task.reminder ? <span style={{fontSize:11,marginRight:4}}>🔔</span> : null}{task.title}
+          {task.reminder ? <span style={{fontSize:11,marginRight:4}}>🔔</span> : null}{task.title}
         </p>
         {(task.description || hasDueDate || showGroup) && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 2 }}>
