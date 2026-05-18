@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+
+  <!-- Viewport: viewport-fit=cover para notch de iPhone -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#5B3DF6" />
+  <meta name="mobile-web-app-capable" content="yes" />
+
+  <!-- iOS específico -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Syng" />
+
+  <!-- Iconos iOS (requiere archivos en /public) -->
+  <link rel="apple-touch-icon" href="/icon-192.png" />
+
+  <!-- Splash screens iOS (opcional pero mejora experiencia de instalación) -->
+  <!-- Se generan con herramientas como pwa-asset-generator -->
+
+  <!-- Manifest -->
+  <link rel="manifest" href="/manifest.webmanifest" />
+
+  <!-- Preconnect Firebase para reducir latencia inicial -->
+  <link rel="preconnect" href="https://firestore.googleapis.com" crossorigin />
+  <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
+
+  <title>Syng</title>
+  <script type="module" crossorigin src="/assets/index-SoWXPmkK.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/vendor-react-CGaFXDi2.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-firebase-CG_pOZBi.js">
+<link rel="manifest" href="/manifest.webmanifest"></head>
+<body>
+  <div id="root"></div>
+</body>
+</html>
