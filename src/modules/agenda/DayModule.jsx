@@ -109,7 +109,7 @@ export function DayModule() {
   const dia = labelDia(date)
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'linear-gradient(135deg, #F5F1E8 0%, #FFE5D9 50%, #D6E6F2 100%)', backgroundAttachment:'fixed', overflow:'hidden' }}>
+    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:'100vh', background:'linear-gradient(135deg, #F5F1E8 0%, #FFE5D9 50%, #D6E6F2 100%)', backgroundAttachment:'fixed', overflow:'hidden' }}>
 
       {/* Header */}
       <div style={{ flexShrink:0, background:'#FFFFFF', padding:'16px 20px 8px' }}>
@@ -121,11 +121,7 @@ export function DayModule() {
             <p style={{ margin:'4px 0 0', fontSize:20, fontWeight:600, color:'#21201E' }}>Pendientes</p>
             <p style={{ margin:'2px 0 0', fontSize:13, color:'#7E7C77', fontWeight:400 }}>{orderedPending.length} task{orderedPending.length!==1?'s':''} remaining</p>
           </div>
-          {haySeleccion && (
-            <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:'#2B76FA', fontSize:15, fontWeight:600, cursor:'pointer', paddingTop:6 }}>
-              Cancelar
-            </button>
-          )}
+
         </div>
         {!haySeleccion && (
           <button onClick={() => navigate(`/agenda/${date}/nueva`)}

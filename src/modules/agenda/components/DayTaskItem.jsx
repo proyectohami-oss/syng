@@ -34,10 +34,10 @@ export function DayTaskItem({
     <div style={{
       display:'flex', alignItems:'center', gap:14,
       padding:'18px',
-      background: localDone ? 'rgba(232,232,230,0.7)' : 'rgba(253,253,252,0.85)',
+      background: localDone ? 'rgba(232,232,230,0.7)' : 'rgba(255,255,255,0.75)',
       borderRadius:20,
-      marginBottom:14,
-      backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
+      marginBottom:12,
+      backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
       border:'1px solid rgba(255,255,255,0.3)',
       boxShadow:'0 8px 32px rgba(31,38,135,0.1)',
       opacity: localDone ? 0.35 : 1,
@@ -50,7 +50,7 @@ export function DayTaskItem({
         background: selected ? '#4A90E2' : localDone ? '#C7C7C7' : 'transparent',
         display:'flex', alignItems:'center', justifyContent:'center',
         cursor:'pointer', padding:0,
-        boxShadow: selected ? '0 0 0 1px rgba(74,144,226,0.15), 0 0 14px 4px rgba(74,144,226,0.3)' : 'none',
+        boxShadow:'none',
         transition:'all 0.15s ease',
         WebkitTapHighlightColor:'transparent',
       }}>
@@ -63,7 +63,7 @@ export function DayTaskItem({
 
       <div onClick={handleTextTap} style={{ flex:1, cursor: hasSelection ? 'default' : 'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}>
         <p style={{
-          margin:0, fontSize:16, fontWeight:500, lineHeight:1.4,
+          margin:0, fontSize:16, fontWeight:400, lineHeight:1.4,
           color: localDone ? '#9B9B9B' : '#21201E',
           textDecoration: localDone ? 'line-through' : 'none',
           textDecorationColor: 'rgba(163,161,156,0.5)',
@@ -75,7 +75,7 @@ export function DayTaskItem({
           <span style={{
             fontSize:12, fontWeight:600, padding:'3px 10px',
             borderRadius:9999,
-            background: isGroup ? 'rgba(34,197,94,0.12)' : 'rgba(91,61,246,0.10)',
+            background: isGroup ? 'rgba(34,197,94,0.15)' : 'rgba(91,61,246,0.12)',
             color: isGroup ? '#16A34A' : '#5B3DF6',
           }}>
             {tag}
