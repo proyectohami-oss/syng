@@ -34,7 +34,7 @@ export function DayTaskItem({
     <div style={{
       display:'flex', alignItems:'center', gap:14,
       padding:'18px',
-      background:'#FAFAF7',
+      background:'#FAF9F6',
       borderRadius:20,
       marginBottom:14,
       boxShadow:'0 12px 36px -4px rgba(35,30,20,0.04), 0 4px 14px -2px rgba(35,30,20,0.02)',
@@ -44,11 +44,11 @@ export function DayTaskItem({
 
       <button onClick={handleCircleTap} style={{
         flexShrink:0, width:24, height:24, borderRadius:'50%',
-        border: (selected || localDone) ? 'none' : '2px solid #D1CFC9',
+        border: selected ? '2px solid #FFFFFF' : localDone ? 'none' : '2px solid #D1CFC9',
         background: selected ? '#2B76FA' : localDone ? '#34C759' : 'transparent',
         display:'flex', alignItems:'center', justifyContent:'center',
         cursor:'pointer', padding:0,
-        boxShadow: selected ? '0 0 12px rgba(43,118,250,0.4)' : 'none',
+        boxShadow: selected ? '0 0 0 1px rgba(43,118,250,0.15), 0 0 14px 4px rgba(43,118,250,0.35)' : 'none',
         transition:'all 0.15s ease',
         WebkitTapHighlightColor:'transparent',
       }}>
