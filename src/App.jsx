@@ -25,7 +25,7 @@ const globalStyles = `
     user-select: text;
     -webkit-font-smoothing: antialiased;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-    background: #fff;
+    background: transparent;
     color: #111827;
   }
 
