@@ -31,24 +31,24 @@ function EditMultiModal({ count, groups, onSave, onClose }) {
   }
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }} onClick={e => e.target===e.currentTarget && onClose()}>
-      <div style={{ background:'#FAFAF7', borderRadius:'20px 20px 0 0', padding:'24px 20px', paddingBottom:'calc(24px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480 }}>
-        <p style={{ margin:'0 0 4px', fontSize:17, fontWeight:700, color:'#21201E' }}>Editar {count} tarea{count!==1?'s':''}</p>
-        <p style={{ margin:'0 0 20px', fontSize:13, color:'#7E7C77' }}>Solo se aplican los campos que cambies.</p>
-        <p style={{ fontSize:12, color:'#7E7C77', fontWeight:600, margin:'0 0 6px' }}>Nueva fecha</p>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.3)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }} onClick={e => e.target===e.currentTarget && onClose()}>
+      <div style={{ background:'rgba(248,248,247,0.95)', backdropFilter:'blur(24px)', WebkitBackdropFilter:'blur(24px)', borderRadius:'28px 28px 0 0', padding:'24px 20px', paddingBottom:'calc(24px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480, border:'1px solid rgba(255,255,255,0.5)' }}>
+        <p style={{ margin:'0 0 4px', fontSize:17, fontWeight:600, color:'#1A1A1A' }}>Editar {count} tarea{count!==1?'s':''}</p>
+        <p style={{ margin:'0 0 20px', fontSize:13, color:'#9B9B9B', fontWeight:400 }}>Solo se aplican los campos que cambies.</p>
+        <p style={{ fontSize:12, color:'#6B6B6B', fontWeight:500, margin:'0 0 6px' }}>Nueva fecha</p>
         <input type="date" value={fecha} onChange={e => setFecha(e.target.value)}
-          style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', borderRadius:12, border:'1.5px solid #E8E6E1', fontSize:15, fontFamily:'inherit', outline:'none', marginBottom:16, background:'#FFFFFF' }} />
-        <p style={{ fontSize:12, color:'#7E7C77', fontWeight:600, margin:'0 0 6px' }}>Mover a grupo</p>
-        <div style={{ background:'#FFFFFF', borderRadius:12, overflow:'hidden', border:'1px solid #E8E6E1', marginBottom:20 }}>
+          style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', borderRadius:14, border:'1px solid rgba(0,0,0,0.08)', fontSize:15, fontFamily:'inherit', outline:'none', marginBottom:16, background:'rgba(255,255,255,0.8)' }} />
+        <p style={{ fontSize:12, color:'#6B6B6B', fontWeight:500, margin:'0 0 6px' }}>Mover a grupo</p>
+        <div style={{ background:'rgba(255,255,255,0.6)', borderRadius:14, overflow:'hidden', border:'1px solid rgba(0,0,0,0.06)', marginBottom:20 }}>
           {[{ id:'__sin_cambio__', label:'Sin cambio' },{ id:'', label:'Personal' },...groups.map(g=>({id:g.id,label:g.name}))].map(op => (
-            <div key={op.id} onClick={() => setGroupId(op.id)} style={{ padding:'12px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid #E8E6E1', background: groupId===op.id?'#EDE9FE':'transparent', color: groupId===op.id?'#5B3DF6':'#21201E', fontWeight: groupId===op.id?600:400 }}>
+            <div key={op.id} onClick={() => setGroupId(op.id)} style={{ padding:'12px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid rgba(0,0,0,0.04)', background: groupId===op.id?'rgba(74,144,226,0.1)':'transparent', color: groupId===op.id?'#2B6CB0':'#1A1A1A', fontWeight: groupId===op.id?600:400 }}>
               {op.label}
             </div>
           ))}
         </div>
         <div style={{ display:'flex', gap:10 }}>
-          <button onClick={onClose} style={{ flex:1, padding:'13px', borderRadius:12, border:'1.5px solid #E8E6E1', background:'#FFFFFF', color:'#7E7C77', fontSize:15, cursor:'pointer' }}>Cancelar</button>
-          <button onClick={guardar} disabled={!hayCambio||loading} style={{ flex:1, padding:'13px', borderRadius:12, border:'none', fontSize:15, fontWeight:600, cursor:hayCambio?'pointer':'default', background:hayCambio?'#5B3DF6':'#E8E6E1', color:hayCambio?'#fff':'#A3A19C' }}>
+          <button onClick={onClose} style={{ flex:1, padding:'13px', borderRadius:14, border:'1px solid rgba(0,0,0,0.08)', background:'rgba(255,255,255,0.8)', color:'#6B6B6B', fontSize:15, cursor:'pointer' }}>Cancelar</button>
+          <button onClick={guardar} disabled={!hayCambio||loading} style={{ flex:1, padding:'13px', borderRadius:14, border:'none', fontSize:15, fontWeight:600, cursor:hayCambio?'pointer':'default', background:hayCambio?'#4A90E2':'rgba(0,0,0,0.08)', color:hayCambio?'#fff':'#9B9B9B' }}>
             {loading?'Aplicando...':'Aplicar'}
           </button>
         </div>
@@ -109,23 +109,25 @@ export function DayModule() {
   const dia = labelDia(date)
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:'100vh', background:'linear-gradient(135deg, #F5F1E8 0%, #FFE5D9 50%, #D6E6F2 100%)', backgroundAttachment:'fixed', overflow:'hidden' }}>
+    <div style={{
+      display:'flex', flexDirection:'column', flex:1, minHeight:'100vh', overflow:'hidden',
+      background:'radial-gradient(circle at top left, rgba(255,230,210,0.55), transparent 35%), radial-gradient(circle at bottom center, rgba(214,230,242,0.75), transparent 40%), linear-gradient(180deg, #f8f8f7 0%, #eef3f8 100%)',
+    }}>
 
       {/* Header */}
-      <div style={{ flexShrink:0, background:'#FFFFFF', padding:'16px 20px 8px' }}>
+      <div style={{ flexShrink:0, padding:'20px 22px 12px', background:'transparent' }}>
         <div style={{ display:'flex', alignItems:'flex-start' }}>
-          <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:'#A3A19C', cursor:'pointer', padding:'0 10px 0 0', lineHeight:1.3, marginTop:4 }}>‹</button>
+          <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:26, color:'#AAAAAA', cursor:'pointer', padding:'0 10px 0 0', lineHeight:1.3, marginTop:6 }}>‹</button>
           <div style={{ flex:1 }}>
             <p style={{ margin:'0 0 2px', fontSize:14, color:'#6B6B6B', fontWeight:400 }}>{dia}</p>
-            <p style={{ margin:0, fontSize:32, fontWeight:700, color:'#21201E', letterSpacing:'-0.02em', lineHeight:1.1 }}>Syng</p>
-            <p style={{ margin:'4px 0 0', fontSize:20, fontWeight:600, color:'#21201E' }}>Pendientes</p>
-            <p style={{ margin:'2px 0 0', fontSize:13, color:'#7E7C77', fontWeight:400 }}>{orderedPending.length} task{orderedPending.length!==1?'s':''} remaining</p>
+            <p style={{ margin:'0 0 4px', fontSize:32, fontWeight:700, color:'#1A1A1A', letterSpacing:'-0.02em', lineHeight:1.1 }}>Syng</p>
+            <p style={{ margin:'0 0 2px', fontSize:20, fontWeight:600, color:'#1A1A1A', letterSpacing:'-0.01em' }}>Pendientes</p>
+            <p style={{ margin:0, fontSize:14, color:'#9B9B9B', fontWeight:400 }}>{orderedPending.length} task{orderedPending.length!==1?'s':''} remaining</p>
           </div>
-
         </div>
         {!haySeleccion && (
           <button onClick={() => navigate(`/agenda/${date}/nueva`)}
-            style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 0 0', background:'none', border:'none', cursor:'pointer', color:'#5B3DF6', fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent', marginTop:8, borderTop:'1px solid rgba(33,32,30,0.08)' }}>
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'10px 0 0', background:'none', border:'none', cursor:'pointer', color:'#4A90E2', fontSize:15, fontWeight:500, WebkitTapHighlightColor:'transparent', marginTop:12, borderTop:'1px solid rgba(0,0,0,0.06)' }}>
             <span style={{ fontSize:18, lineHeight:1 }}>+</span>
             <span>Nueva tarea</span>
           </button>
@@ -133,12 +135,10 @@ export function DayModule() {
       </div>
 
       {/* Lista */}
-      <div style={{ flex:1, overflowY:'auto', padding:'4px 16px 160px', WebkitOverflowScrolling:'touch' }}>
-
-        {/* Pendientes */}
+      <div style={{ flex:1, overflowY:'auto', padding:'8px 16px 160px', WebkitOverflowScrolling:'touch' }}>
         {orderedPending.length === 0 && (
-          <div style={{ padding:'20px 18px', background:'#FAFAF7', borderRadius:20, textAlign:'center', marginBottom:14, boxShadow:'0 12px 36px -4px rgba(35,30,20,0.04)' }}>
-            <p style={{ fontSize:13, color:'#A3A19C', margin:0 }}>Sin tareas pendientes</p>
+          <div style={{ padding:'20px 18px', background:'rgba(255,255,255,0.5)', backdropFilter:'blur(18px)', WebkitBackdropFilter:'blur(18px)', borderRadius:28, textAlign:'center', marginBottom:12, border:'1px solid rgba(255,255,255,0.45)' }}>
+            <p style={{ fontSize:14, color:'#9B9B9B', margin:0, fontWeight:400 }}>Sin tareas pendientes</p>
           </div>
         )}
         {orderedPending.map(task => (
@@ -153,15 +153,10 @@ export function DayModule() {
           />
         ))}
 
-        {/* Completadas */}
         {completedVisible.length > 0 && (
           <>
-            <p style={{ margin:'24px 2px 2px', fontSize:20, fontWeight:600, color:'#21201E' }}>
-              Completadas
-            </p>
-            <p style={{ margin:'2px 2px 14px', fontSize:13, color:'#7E7C77', fontWeight:400 }}>
-              {completedVisible.length} task{completedVisible.length !== 1 ? 's' : ''} finished
-            </p>
+            <p style={{ margin:'24px 4px 4px', fontSize:20, fontWeight:600, color:'#1A1A1A', letterSpacing:'-0.01em' }}>Completadas</p>
+            <p style={{ margin:'0 4px 14px', fontSize:14, color:'#9B9B9B', fontWeight:400 }}>{completedVisible.length} task{completedVisible.length!==1?'s':''} finished</p>
             {completedVisible.map(task => (
               <DayTaskItem key={task.id} task={task}
                 groupName={getGroupName(task.groupId)}
@@ -177,86 +172,73 @@ export function DayModule() {
         )}
       </div>
 
-      {/* Barra flotante glassmorphism */}
+      {/* Toolbar glassmorphism */}
       {haySeleccion && (
         <div style={{
           position:'fixed',
           bottom:'calc(28px + env(safe-area-inset-bottom))',
-          left:18, right:18,
-          zIndex:200,
+          left:18, right:18, zIndex:200,
         }}>
-          {/* Pestaña superior campana */}
-          <div style={{
-            display:'flex', justifyContent:'center', marginBottom:-1,
-          }}>
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:-1 }}>
             <div style={{
-              background:'rgba(253,252,248,0.6)',
-              backdropFilter:'blur(24px) saturate(190%)',
-              WebkitBackdropFilter:'blur(24px) saturate(190%)',
+              background:'rgba(255,255,255,0.58)',
+              backdropFilter:'blur(28px)', WebkitBackdropFilter:'blur(28px)',
               borderRadius:'14px 14px 0 0',
-              padding:'5px 20px',
-              border:'1px solid rgba(255,255,255,0.6)',
+              padding:'5px 24px',
+              border:'1px solid rgba(255,255,255,0.35)',
               borderBottom:'none',
             }}>
-              <span style={{ fontSize:11, fontWeight:600, color:'#7E7C77', letterSpacing:'0.02em' }}>Edit Toolbar</span>
+              <span style={{ fontSize:11, fontWeight:600, color:'#9B9B9B', letterSpacing:'0.02em' }}>Edit Toolbar</span>
             </div>
           </div>
-          {/* Cuerpo principal */}
           <div style={{
             height:80,
-            background:'rgba(255,255,255,0.75)',
-            backdropFilter:'blur(24px) saturate(190%)',
-            WebkitBackdropFilter:'blur(24px) saturate(190%)',
-            borderRadius:24,
-            border:'1px solid rgba(255,255,255,0.6)',
-            boxShadow:'0 8px 40px rgba(35,30,20,0.12)',
+            background:'rgba(255,255,255,0.58)',
+            backdropFilter:'blur(28px)', WebkitBackdropFilter:'blur(28px)',
+            borderRadius:32,
+            border:'1px solid rgba(255,255,255,0.35)',
+            boxShadow:'0 20px 60px rgba(15,23,42,0.12)',
             display:'flex', alignItems:'center', justifyContent:'space-around',
-            padding:'0 20px',
+            padding:'0 24px',
           }}>
-            <span style={{ fontSize:14, fontWeight:600, color:'#7E7C77' }}>
+            <span style={{ fontSize:14, fontWeight:500, color:'#9B9B9B' }}>
               {selectedIds.size} sel.
             </span>
-
-            {/* Editar */}
             <button onClick={() => {
               const todas = [...pending, ...completed]
               const t = todas.find(t => selectedIds.has(t.id))
               if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
-            }} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', padding:'8px 16px' }}>
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+            }} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', padding:'8px 20px' }}>
+              <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
                 <defs>
-                  <linearGradient id="pencilGrad" x1="0" y1="0" x2="1" y2="1">
-                    <stop offset="0%" stopColor="#5B9EFF"/>
-                    <stop offset="100%" stopColor="#2B76FA"/>
+                  <linearGradient id="pg" x1="0" y1="0" x2="1" y2="1">
+                    <stop offset="0%" stopColor="#5B9FED"/>
+                    <stop offset="100%" stopColor="#4A90E2"/>
                   </linearGradient>
                 </defs>
-                <rect x="6" y="18" width="16" height="3" rx="1.5" fill="#2B76FA" opacity="0.3"/>
-                <rect x="9" y="7" width="10" height="13" rx="2" fill="url(#pencilGrad)" transform="rotate(-45 14 14)" />
-                <path d="M18 6l4 4-2 2-4-4z" fill="#5B9EFF"/>
-                <path d="M7 19l1.5-1.5 2 2L9 21z" fill="#2B76FA" opacity="0.7"/>
-                <line x1="12" y1="10" x2="18" y2="16" stroke="rgba(255,255,255,0.5)" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="5" y="17" width="14" height="2.5" rx="1.25" fill="#4A90E2" opacity="0.25"/>
+                <path d="M15 4L20 9L10 19L5 20L6 15L15 4Z" fill="url(#pg)"/>
+                <path d="M15 4L20 9" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
-              <span style={{ fontSize:12, fontWeight:600, color:'#2B76FA' }}>Editar</span>
+              <span style={{ fontSize:12, fontWeight:600, color:'#4A90E2' }}>Editar</span>
             </button>
-
-            {/* Eliminar */}
             <button onClick={() => setModal({ tipo:'borrarVarias' })}
-              style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', padding:'8px 16px' }}>
-              <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+              style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', padding:'8px 20px' }}>
+              <svg width="26" height="26" viewBox="0 0 26 26" fill="none">
                 <defs>
-                  <linearGradient id="trashGrad" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0%" stopColor="#FF8A8A"/>
-                    <stop offset="100%" stopColor="#EF4444"/>
+                  <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#E85C5C"/>
+                    <stop offset="100%" stopColor="#D64545"/>
                   </linearGradient>
                 </defs>
-                <rect x="8" y="11" width="12" height="13" rx="2" fill="url(#trashGrad)" opacity="0.85"/>
-                <rect x="6" y="8" width="16" height="3" rx="1.5" fill="#EF4444"/>
-                <rect x="11" y="5" width="6" height="4" rx="1" fill="#EF4444" opacity="0.7"/>
-                <line x1="11" y1="14" x2="11" y2="21" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="14" y1="14" x2="14" y2="21" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
-                <line x1="17" y1="14" x2="17" y2="21" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
+                <rect x="7" y="10" width="12" height="12" rx="2" fill="url(#tg)" opacity="0.9"/>
+                <rect x="5" y="7" width="16" height="3" rx="1.5" fill="#E85C5C"/>
+                <rect x="10" y="4" width="6" height="4" rx="1" fill="#E85C5C" opacity="0.6"/>
+                <line x1="10" y1="13" x2="10" y2="19" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="13" y1="13" x2="13" y2="19" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
+                <line x1="16" y1="13" x2="16" y2="19" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
-              <span style={{ fontSize:12, fontWeight:600, color:'#EF4444' }}>Eliminar</span>
+              <span style={{ fontSize:12, fontWeight:600, color:'#D64545' }}>Eliminar</span>
             </button>
           </div>
         </div>

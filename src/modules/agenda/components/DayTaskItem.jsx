@@ -33,21 +33,22 @@ export function DayTaskItem({
   return (
     <div style={{
       display:'flex', alignItems:'center', gap:14,
-      padding:'18px',
-      background: localDone ? 'rgba(232,232,230,0.7)' : 'rgba(255,255,255,0.75)',
-      borderRadius:20,
+      padding:'16px 18px',
+      background: localDone ? 'rgba(240,240,238,0.5)' : 'rgba(255,255,255,0.62)',
+      backdropFilter:'blur(18px)',
+      WebkitBackdropFilter:'blur(18px)',
+      border:'1px solid rgba(255,255,255,0.45)',
+      borderRadius:28,
       marginBottom:12,
-      backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)',
-      border:'1px solid rgba(255,255,255,0.3)',
-      boxShadow:'0 8px 32px rgba(31,38,135,0.1)',
-      opacity: localDone ? 0.35 : 1,
-      transition:'opacity 0.2s ease',
+      boxShadow:'0 10px 40px rgba(15,23,42,0.06), 0 2px 12px rgba(255,255,255,0.35) inset',
+      opacity: localDone ? 0.6 : 1,
+      transition:'all 0.2s ease',
     }}>
 
       <button onClick={handleCircleTap} style={{
         flexShrink:0, width:24, height:24, borderRadius:'50%',
-        border: selected ? '2px solid #E0E0E0' : localDone ? 'none' : '2px solid #D1CFC9',
-        background: selected ? '#4A90E2' : localDone ? '#C7C7C7' : 'transparent',
+        border: selected ? 'none' : localDone ? 'none' : '1.5px solid #C8C8C8',
+        background: selected ? '#4A90E2' : localDone ? '#B8B8B8' : 'rgba(255,255,255,0.8)',
         display:'flex', alignItems:'center', justifyContent:'center',
         cursor:'pointer', padding:0,
         boxShadow:'none',
@@ -55,7 +56,7 @@ export function DayTaskItem({
         WebkitTapHighlightColor:'transparent',
       }}>
         {(selected || localDone) && (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <svg width="11" height="11" viewBox="0 0 12 12" fill="none">
             <polyline points="1.5,6 4.5,9 10.5,3" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         )}
@@ -63,25 +64,25 @@ export function DayTaskItem({
 
       <div onClick={handleTextTap} style={{ flex:1, cursor: hasSelection ? 'default' : 'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}>
         <p style={{
-          margin:0, fontSize:16, fontWeight:400, lineHeight:1.4,
-          color: localDone ? '#9B9B9B' : '#21201E',
+          margin:0, fontSize:16, fontWeight:500, lineHeight:1.45,
+          color: localDone ? '#A0A0A0' : '#1A1A1A',
           textDecoration: localDone ? 'line-through' : 'none',
-          textDecorationColor: 'rgba(163,161,156,0.5)',
+          textDecorationColor:'rgba(160,160,160,0.5)',
           wordBreak:'break-word',
         }}>
           {task.title}
         </p>
         <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:6, flexWrap:'wrap' }}>
           <span style={{
-            fontSize:12, fontWeight:600, padding:'3px 10px',
+            fontSize:11, fontWeight:500, padding:'3px 10px',
             borderRadius:9999,
-            background: isGroup ? 'rgba(34,197,94,0.15)' : 'rgba(91,61,246,0.12)',
-            color: isGroup ? '#16A34A' : '#5B3DF6',
+            background: isGroup ? 'rgba(52,199,89,0.12)' : 'rgba(74,144,226,0.12)',
+            color: isGroup ? '#1A7A3A' : '#2B6CB0',
           }}>
             {tag}
           </span>
-          {dueLabel && <span style={{ fontSize:12, color:'#7E7C77' }}>{dueLabel}</span>}
-          {task.reminder && <span style={{ fontSize:12 }}>🔔</span>}
+          {dueLabel && <span style={{ fontSize:11, color:'#A0A0A0', fontWeight:400 }}>{dueLabel}</span>}
+          {task.reminder && <span style={{ fontSize:11, opacity:0.7 }}>🔔</span>}
         </div>
       </div>
     </div>
