@@ -9,6 +9,7 @@ import { Timestamp }         from 'firebase/firestore'
 import { useTasks }          from '../core/hooks/useTasks'
 import { useCoreState }      from '../core/hooks/useCoreData'
 import { RepeatDayPicker }   from './RepeatDayPicker'
+import { ReminderPicker }    from './ReminderPicker'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
                'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -47,7 +48,9 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
   const [error,      setError]      = useState(null)
   const [showGroup,  setShowGroup]  = useState(false)
   const [showDate,   setShowDate]   = useState(false)
-  const [showRepeat, setShowRepeat] = useState(false)
+  const [showRepeat,   setShowRepeat]   = useState(false)
+  const [reminder,     setReminder]     = useState(task?.reminder ?? null)
+  const [showReminder, setShowReminder] = useState(false)
 
   const grupoSeleccionado = groups.find(g => g.id === groupId)
   const grupoLabel        = grupoSeleccionado ? grupoSeleccionado.name : 'Personal'
@@ -61,7 +64,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
       : null
     onClose()
     if (isEdit) {
-      updateTask(task, { title: title.trim(), groupId: gId, type, dueDate: dueDateTs })
+      updateTask(task, { title: title.trim(), groupId: gId, type, dueDate: dueDateTs, reminder: reminder ?? null })
         .catch(err => console.error('[TaskFormNew] updateTask error:', err))
       if (repeatDays.size > 0) {
         Array.from(repeatDays).sort().filter(d => d !== dateStr).forEach(day => {
@@ -73,7 +76,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
         createTask({ title: title.trim(), type, groupId: gId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
       })
     } else {
-      createTask({ title: title.trim(), type, groupId: gId, dueDate: dueDateTs })
+      createTask({ title: title.trim(), type, groupId: gId, dueDate: dueDateTs, reminder: reminder ?? null })
         .catch(err => console.error('[TaskFormNew] createTask error:', err))
     }
   }
@@ -167,6 +170,20 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
               </>
             )}
 
+            {/* Recordatorio */}
+            <div style={row} onClick={() => setShowReminder(true)}>
+              <span>🔔</span>
+              <span style={rLbl}>Recordatorio</span>
+              <span style={{ ...rVal, color: reminder ? '#5B3DF6' : '#6b7280' }}>
+                {reminder
+                  ? (reminder.dueTime
+                      ? (() => { const [h,m]=reminder.dueTime.split(':').map(Number); const ap=h>=12?'PM':'AM'; const h12=h%12||12; return `${h12}:${String(m).padStart(2,'0')} ${ap} • ${reminder.label}` })()
+                      : reminder.label)
+                  : 'Sin recordatorio'}
+              </span>
+              <span style={arr}>›</span>
+            </div>
+
             {/* Repetir */}
             <div style={row} onClick={() => setShowRepeat(true)}>
               <span>🔁</span>
@@ -222,6 +239,15 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
 
         </div>
       </div>
+
+      {showReminder && (
+        <ReminderPicker
+          dateStr={dateStr}
+          reminder={reminder}
+          onChange={r => setReminder(r)}
+          onClose={() => setShowReminder(false)}
+        />
+      )}
 
       {showRepeat && (
         <RepeatDayPicker
