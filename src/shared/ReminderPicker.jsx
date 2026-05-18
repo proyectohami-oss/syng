@@ -92,38 +92,47 @@ export function ReminderPicker({ dateStr, reminder, onChange, onClose }) {
 
         {step === 'hora' && (
           <>
-            <p style={title}>Hora de la tarea</p>
-            <p style={{ fontSize:13, color:'#c4c4c4', textAlign:'center', margin:'0 0 28px' }}>
-              {dueTime ? '' : 'Selecciona una hora'}
-            </p>
-            <input
-              type="time"
-              value={dueTime || ''}
-              onChange={e => setDueTime(e.target.value)}
-              style={{
-                width:'100%', boxSizing:'border-box', padding:'18px 16px',
-                borderRadius:16, border:'1.5px solid #e5e7eb',
-                fontSize:22, fontFamily:'inherit', textAlign:'center',
-                marginBottom:24, color: dueTime ? '#111' : '#9ca3af',
-                background:'#fafafa', outline:'none',
-              }}
-            />
+            <div style={{ textAlign:'center', marginBottom:28 }}>
+              <div style={{ fontSize:32, marginBottom:8 }}>🕐</div>
+              <p style={{ margin:0, fontSize:17, fontWeight:600, color:'#111' }}>Hora de la tarea</p>
+              <p style={{ margin:'6px 0 0', fontSize:13, color:'#9ca3af' }}>
+                {dueTime ? 'Hora seleccionada' : 'Elige a que hora realizaras esta tarea'}
+              </p>
+            </div>
+
+            <div style={{ display:'flex', justifyContent:'center', marginBottom:28 }}>
+              <input
+                type="time"
+                value={dueTime || ''}
+                onChange={e => setDueTime(e.target.value)}
+                style={{
+                  padding:'12px 24px', borderRadius:14,
+                  border:'1.5px solid ' + (dueTime ? '#5B3DF6' : '#e5e7eb'),
+                  fontSize:28, fontWeight:600, fontFamily:'inherit',
+                  color: dueTime ? '#5B3DF6' : '#9ca3af',
+                  background:'#fafafa', outline:'none', textAlign:'center',
+                  letterSpacing:'0.05em',
+                }}
+              />
+            </div>
+
             <button
               onClick={() => dueTime && handleHora(dueTime)}
               disabled={!dueTime}
               style={{
-                ...optBtn,
+                width:'100%', padding:'13px', borderRadius:12, border:'none',
                 background: dueTime ? '#5B3DF6' : '#f3f4f6',
                 color:      dueTime ? '#fff'    : '#c4c4c4',
-                textAlign:'center', fontWeight:600, fontSize:16,
-                padding:'15px', marginBottom:0,
+                fontSize:15, fontWeight:600, cursor: dueTime ? 'pointer' : 'default',
+                marginBottom: needHora ? 0 : 8,
               }}>
-              Confirmar
+              Confirmar hora
             </button>
+
             {!needHora && (
               <button onClick={() => setStep('offset')}
-                style={{ ...optBtn, background:'#fff', color:'#9ca3af', border:'1.5px solid #e5e7eb', textAlign:'center' }}>
-                Atras
+                style={{ width:'100%', padding:'11px', borderRadius:12, border:'none', background:'none', color:'#9ca3af', fontSize:14, cursor:'pointer', marginTop:4 }}>
+                ‹ Atras
               </button>
             )}
           </>
