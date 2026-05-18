@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { T } from '../../../theme'
 
 export function DayTaskItem({
   task, groupName,
@@ -25,25 +24,37 @@ export function DayTaskItem({
     onCircleTap(task.id)
   }
 
+  const dueLabel = task.dueDate ? (() => {
+    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
+    const mes = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]
+    return `${d.getDate()} ${mes}`
+  })() : null
+
   return (
     <div style={{
       display:'flex', alignItems:'center', gap:14,
       padding:'14px 16px',
-      background: selected ? '#FFF5F5' : T.surface,
-      borderRadius: T.radiusLG,
-      marginBottom: 10,
-      boxShadow: selected ? '0 0 0 2px #EF4444' : T.shadowSM,
-      transition:'box-shadow 0.15s, background 0.15s',
+      background:'#FFFFFF',
+      borderRadius:16,
+      marginBottom:10,
+      boxShadow:'0 2px 8px rgba(0,0,0,0.06)',
       opacity: localDone ? 0.45 : 1,
+      transition:'opacity 0.2s ease',
     }}>
 
-      {/* Circulo selector */}
+      {/* Circulo selector — azul iOS */}
       <button onClick={handleCircleTap} style={{
         flexShrink:0, width:26, height:26, borderRadius:'50%',
-        border: `2px solid ${selected ? '#3B82F6' : localDone ? T.success : T.borderStrong}`,
-        background: selected ? '#3B82F6' : localDone ? T.success : 'transparent',
+        border: selected ? 'none' : localDone ? '2px solid #34C759' : '2px solid #D1D5DB',
+        background: selected
+          ? 'rgba(59,130,246,0.85)'
+          : localDone ? '#34C759' : 'transparent',
+        backdropFilter: selected ? 'blur(4px)' : 'none',
+        WebkitBackdropFilter: selected ? 'blur(4px)' : 'none',
         display:'flex', alignItems:'center', justifyContent:'center',
-        cursor:'pointer', padding:0, transition:'all 0.15s',
+        cursor:'pointer', padding:0,
+        boxShadow: selected ? '0 2px 8px rgba(59,130,246,0.4)' : 'none',
+        transition:'all 0.15s ease',
         WebkitTapHighlightColor:'transparent',
       }}>
         {(selected || localDone) && (
@@ -57,27 +68,22 @@ export function DayTaskItem({
       <div onClick={handleTextTap} style={{ flex:1, cursor: hasSelection ? 'default' : 'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}>
         <p style={{
           margin:0, fontSize:16, fontWeight:500, lineHeight:1.4,
-          color: localDone ? T.textTertiary : T.textPrimary,
-          textDecoration:'none',
+          color: localDone ? '#9CA3AF' : '#0F0F0F',
           wordBreak:'break-word',
         }}>
           {task.title}
         </p>
-        <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:4 }}>
+        <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:5, flexWrap:'wrap' }}>
           <span style={{
-            fontSize:11, fontWeight:600, padding:'2px 10px',
-            borderRadius: T.radiusFull,
-            background: isGroup ? 'rgba(34,197,94,0.1)' : 'rgba(91,61,246,0.1)',
-            color: isGroup ? '#166634' : T.primary,
+            fontSize:12, fontWeight:600, padding:'3px 10px',
+            borderRadius:9999,
+            background: isGroup ? 'rgba(34,197,94,0.12)' : 'rgba(91,61,246,0.10)',
+            color: isGroup ? '#16A34A' : '#5B3DF6',
           }}>
             {tag}
           </span>
-          {task.dueDate && (() => {
-            const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
-            const mes = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]
-            return <span style={{ fontSize:11, color: T.textTertiary }}>{d.getDate()} {mes}</span>
-          })()}
-          {task.reminder && <span style={{ fontSize:11, color: T.primary }}>🔔</span>}
+          {dueLabel && <span style={{ fontSize:12, color:'#9CA3AF' }}>{dueLabel}</span>}
+          {task.reminder && <span style={{ fontSize:12 }}>🔔</span>}
         </div>
       </div>
     </div>
