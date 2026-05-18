@@ -110,7 +110,7 @@ export function DayModule() {
   const { dia, fecha } = labelDia(date)
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, background:T.bg, overflow:'hidden' }}>
+    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#FFFFFF', overflow:'hidden' }}>
 
       {/* Header */}
       <div style={{ flexShrink:0, background:T.surface, borderBottom:`1px solid ${T.border}` }}>

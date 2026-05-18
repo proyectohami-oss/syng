@@ -40,8 +40,8 @@ export function DayTaskItem({
       {/* Circulo selector */}
       <button onClick={handleCircleTap} style={{
         flexShrink:0, width:26, height:26, borderRadius:'50%',
-        border: `2px solid ${selected ? T.danger : localDone ? T.success : T.borderStrong}`,
-        background: selected ? T.danger : localDone ? T.success : 'transparent',
+        border: `2px solid ${selected ? '#3B82F6' : localDone ? T.success : T.borderStrong}`,
+        background: selected ? '#3B82F6' : localDone ? T.success : 'transparent',
         display:'flex', alignItems:'center', justifyContent:'center',
         cursor:'pointer', padding:0, transition:'all 0.15s',
         WebkitTapHighlightColor:'transparent',
@@ -56,7 +56,7 @@ export function DayTaskItem({
       {/* Contenido */}
       <div onClick={handleTextTap} style={{ flex:1, cursor: hasSelection ? 'default' : 'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}>
         <p style={{
-          margin:0, fontSize:T.fontMD, fontWeight:500, lineHeight:1.4,
+          margin:0, fontSize:16, fontWeight:500, lineHeight:1.4,
           color: localDone ? T.textTertiary : T.textPrimary,
           textDecoration:'none',
           wordBreak:'break-word',
