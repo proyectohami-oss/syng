@@ -118,6 +118,8 @@ export function DayModule() {
           <div style={{ flex:1 }}>
             <p style={{ margin:'0 0 2px', fontSize:13, color:'#7E7C77', fontWeight:400 }}>{dia}</p>
             <p style={{ margin:0, fontSize:34, fontWeight:800, color:'#21201E', letterSpacing:'-0.03em', lineHeight:1.1 }}>Syng</p>
+            <p style={{ margin:'4px 0 0', fontSize:22, fontWeight:800, color:'#21201E', letterSpacing:'-0.02em' }}>Pendientes</p>
+            <p style={{ margin:'2px 0 0', fontSize:13, color:'#7E7C77', fontWeight:400 }}>{orderedPending.length} tarea{orderedPending.length!==1?'s':''} pendiente{orderedPending.length!==1?'s':''}</p>
           </div>
           {haySeleccion && (
             <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:'#2B76FA', fontSize:15, fontWeight:600, cursor:'pointer', paddingTop:6 }}>
@@ -135,16 +137,9 @@ export function DayModule() {
       </div>
 
       {/* Lista */}
-      <div style={{ flex:1, overflowY:'auto', padding:'12px 16px 160px', WebkitOverflowScrolling:'touch' }}>
+      <div style={{ flex:1, overflowY:'auto', padding:'4px 16px 160px', WebkitOverflowScrolling:'touch' }}>
 
         {/* Pendientes */}
-        <p style={{ margin:'4px 2px 2px', fontSize:22, fontWeight:800, color:'#21201E', letterSpacing:'-0.02em' }}>
-          Pendientes
-        </p>
-        <p style={{ margin:'0 2px 14px', fontSize:13, color:'#7E7C77', fontWeight:400 }}>
-          {orderedPending.length} tarea{orderedPending.length !== 1 ? 's' : ''} pendiente{orderedPending.length !== 1 ? 's' : ''}
-        </p>
-
         {orderedPending.length === 0 && (
           <div style={{ padding:'20px 18px', background:'#FAFAF7', borderRadius:20, textAlign:'center', marginBottom:14, boxShadow:'0 12px 36px -4px rgba(35,30,20,0.04)' }}>
             <p style={{ fontSize:13, color:'#A3A19C', margin:0 }}>Sin tareas pendientes</p>
@@ -165,10 +160,10 @@ export function DayModule() {
         {/* Completadas */}
         {completedVisible.length > 0 && (
           <>
-            <p style={{ margin:'20px 2px 2px', fontSize:22, fontWeight:800, color:'#21201E', letterSpacing:'-0.02em' }}>
+            <p style={{ margin:'24px 2px 2px', fontSize:22, fontWeight:800, color:'#21201E', letterSpacing:'-0.02em' }}>
               Completadas
             </p>
-            <p style={{ margin:'0 2px 14px', fontSize:13, color:'#7E7C77', fontWeight:400 }}>
+            <p style={{ margin:'2px 2px 14px', fontSize:13, color:'#7E7C77', fontWeight:400 }}>
               {completedVisible.length} tarea{completedVisible.length !== 1 ? 's' : ''} terminada{completedVisible.length !== 1 ? 's' : ''}
             </p>
             {completedVisible.map(task => (

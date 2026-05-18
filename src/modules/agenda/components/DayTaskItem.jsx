@@ -63,6 +63,8 @@ export function DayTaskItem({
         <p style={{
           margin:0, fontSize:16, fontWeight:500, lineHeight:1.4,
           color: localDone ? '#A3A19C' : '#21201E',
+          textDecoration: localDone ? 'line-through' : 'none',
+          textDecorationColor: 'rgba(163,161,156,0.5)',
           wordBreak:'break-word',
         }}>
           {task.title}
