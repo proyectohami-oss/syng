@@ -34,7 +34,7 @@ export function DayTaskItem({
     <div style={{
       display:'flex', alignItems:'center', gap:14,
       padding:'18px',
-      background:'#FAF9F6',
+      background:'#EDEDE9',
       borderRadius:20,
       marginBottom:14,
       boxShadow:'0 12px 36px -4px rgba(35,30,20,0.04), 0 4px 14px -2px rgba(35,30,20,0.02)',

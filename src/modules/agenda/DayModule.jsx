@@ -39,7 +39,7 @@ function EditMultiModal({ count, groups, onSave, onClose }) {
         <input type="date" value={fecha} onChange={e => setFecha(e.target.value)}
           style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', borderRadius:12, border:'1.5px solid #E8E6E1', fontSize:15, fontFamily:'inherit', outline:'none', marginBottom:16, background:'#FFFFFF' }} />
         <p style={{ fontSize:12, color:'#7E7C77', fontWeight:600, margin:'0 0 6px' }}>Mover a grupo</p>
-        <div style={{ background:'#F3F2EE', borderRadius:12, overflow:'hidden', border:'1px solid #E8E6E1', marginBottom:20 }}>
+        <div style={{ background:'#FFFFFF', borderRadius:12, overflow:'hidden', border:'1px solid #E8E6E1', marginBottom:20 }}>
           {[{ id:'__sin_cambio__', label:'Sin cambio' },{ id:'', label:'Personal' },...groups.map(g=>({id:g.id,label:g.name}))].map(op => (
             <div key={op.id} onClick={() => setGroupId(op.id)} style={{ padding:'12px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid #E8E6E1', background: groupId===op.id?'#EDE9FE':'transparent', color: groupId===op.id?'#5B3DF6':'#21201E', fontWeight: groupId===op.id?600:400 }}>
               {op.label}
@@ -109,10 +109,10 @@ export function DayModule() {
   const dia = labelDia(date)
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#F3F2EE', overflow:'hidden' }}>
+    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#FFFFFF', overflow:'hidden' }}>
 
       {/* Header */}
-      <div style={{ flexShrink:0, background:'#F3F2EE', padding:'16px 20px 8px' }}>
+      <div style={{ flexShrink:0, background:'#FFFFFF', padding:'16px 20px 8px' }}>
         <div style={{ display:'flex', alignItems:'flex-start' }}>
           <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:'#A3A19C', cursor:'pointer', padding:'0 10px 0 0', lineHeight:1.3, marginTop:4 }}>‹</button>
           <div style={{ flex:1 }}>
