@@ -2,62 +2,62 @@ import { useState, useEffect } from 'react'
 import { listenActivity, timeAgo } from '../core/services/activity.service'
 
 const CONFIG = {
-  task_created:   { icon:'＋', bg:'#f5f5f7', color:'#8b8b8b' },
-  task_completed: { icon:'✓',  bg:'#f0fdf4', color:'#86efac' },
-  member_joined:  { icon:'·',  bg:'#f5f3ff', color:'#a78bfa' },
-  member_left:    { icon:'·',  bg:'#f5f5f7', color:'#d1d5db' },
+  task_created:   { icon:'＋', bg:'#EDE9FE', color:'#7C3AED' },
+  task_completed: { icon:'✓',  bg:'#DCFCE7', color:'#16A34A' },
+  member_joined:  { icon:'👋', bg:'#FEF3C7', color:'#D97706' },
+  member_left:    { icon:'·',  bg:'#F3F4F6', color:'#9CA3AF' },
 }
 
 function label(ev) {
   const name   = ev.actorName || 'Alguien'
   const target = ev.targetName || ''
   switch (ev.type) {
-    case 'task_created':   return { name, verb: 'creo',               target }
-    case 'task_completed': return { name, verb: 'completo',           target }
-    case 'member_joined':  return { name, verb: 'se unio al grupo',   target: '' }
-    case 'member_left':    return { name, verb: 'salio del grupo',    target: '' }
-    default:               return { name, verb: 'hizo algo',          target: '' }
+    case 'task_created':   return { name, verb: 'creo',             target }
+    case 'task_completed': return { name, verb: 'completo',         target }
+    case 'member_joined':  return { name, verb: 'se unio al grupo', target: '' }
+    case 'member_left':    return { name, verb: 'salio del grupo',  target: '' }
+    default:               return { name, verb: 'hizo algo',        target: '' }
   }
 }
 
 function EventRow({ ev, index }) {
   const [show, setShow] = useState(false)
   useEffect(() => {
-    const t = setTimeout(() => setShow(true), index * 30)
+    const t = setTimeout(() => setShow(true), index * 25)
     return () => clearTimeout(t)
   }, [])
 
-  const cfg  = CONFIG[ev.type] || CONFIG.task_created
-  const lbl  = label(ev)
+  const cfg = CONFIG[ev.type] || CONFIG.task_created
+  const lbl = label(ev)
   const time = timeAgo(ev.createdAt)
 
   return (
     <div style={{
-      display:'flex', alignItems:'flex-start', gap:0,
+      display:'flex', alignItems:'flex-start', gap:12,
+      padding:'10px 20px',
       opacity: show ? 1 : 0,
-      transform: show ? 'none' : 'translateY(4px)',
-      transition: 'opacity 0.2s ease, transform 0.2s ease',
+      transform: show ? 'none' : 'translateY(6px)',
+      transition: 'opacity 0.25s ease, transform 0.25s ease',
     }}>
-      <div style={{ display:'flex', flexDirection:'column', alignItems:'center', width:40, flexShrink:0 }}>
-        <div style={{ width:1, height:8, background:'#f0f0f0' }} />
-        <div style={{
-          width:22, height:22, borderRadius:'50%',
-          background: cfg.bg, color: cfg.color,
-          fontSize:11, fontWeight:700,
-          display:'flex', alignItems:'center', justifyContent:'center',
-          flexShrink:0,
-        }}>
-          {cfg.icon}
-        </div>
-        <div style={{ width:1, flex:1, background:'#f0f0f0', minHeight:8 }} />
+      <div style={{
+        width:30, height:30, borderRadius:'50%', flexShrink:0,
+        background: cfg.bg, color: cfg.color,
+        fontSize: ev.type === 'member_joined' ? 13 : 12,
+        fontWeight: 700,
+        display:'flex', alignItems:'center', justifyContent:'center',
+        marginTop:1,
+      }}>
+        {cfg.icon}
       </div>
-      <div style={{ flex:1, minWidth:0, padding:'6px 16px 6px 0' }}>
-        <p style={{ margin:0, fontSize:13, color:'#374151', lineHeight:1.4 }}>
-          <span style={{ fontWeight:600, color:'#111' }}>{lbl.name}</span>
-          {' '}{lbl.verb}
-          {lbl.target ? <span style={{ color:'#5B3DF6' }}> "{lbl.target}"</span> : ''}
+      <div style={{ flex:1, minWidth:0 }}>
+        <p style={{ margin:0, fontSize:13.5, color:'#1F2937', lineHeight:1.45 }}>
+          <span style={{ fontWeight:700, color:'#111' }}>{lbl.name}</span>
+          <span style={{ color:'#6B7280' }}> {lbl.verb}</span>
+          {lbl.target
+            ? <span style={{ fontWeight:500, color:'#5B3DF6' }}> &ldquo;{lbl.target}&rdquo;</span>
+            : null}
         </p>
-        <p style={{ margin:'2px 0 0', fontSize:11, color:'#9ca3af' }}>{time}</p>
+        <p style={{ margin:'3px 0 0', fontSize:11, color:'#C4C4C4', letterSpacing:'0.01em' }}>{time}</p>
       </div>
     </div>
   )
@@ -78,18 +78,23 @@ export function ActivityFeed({ groupId }) {
   }, [groupId])
 
   return (
-    <div style={{ borderTop:'1px solid #f9fafb', paddingTop:8, marginTop:4 }}>
-      <p style={{ margin:'8px 20px 4px', fontSize:11, fontWeight:600, color:'#9ca3af', letterSpacing:'0.06em' }}>
-        ACTIVIDAD RECIENTE
+    <div style={{ borderTop:'1px solid #F3F4F6', paddingTop:4, marginTop:8 }}>
+      <p style={{ margin:'12px 20px 4px', fontSize:11, fontWeight:700, color:'#C4C4C4', letterSpacing:'0.08em' }}>
+        ACTIVIDAD
       </p>
 
       {loaded && events.length === 0 && (
-        <p style={{ margin:'8px 20px 16px', fontSize:13, color:'#9ca3af' }}>
-          Aun no hay actividad en este grupo.
-        </p>
+        <div style={{ padding:'20px 20px 16px', display:'flex', alignItems:'center', gap:10 }}>
+          <div style={{ width:30, height:30, borderRadius:'50%', background:'#F9FAFB', display:'flex', alignItems:'center', justifyContent:'center', fontSize:14 }}>
+            ✨
+          </div>
+          <p style={{ margin:0, fontSize:13, color:'#C4C4C4', fontStyle:'italic' }}>
+            Aun no hay actividad. Crea la primera tarea.
+          </p>
+        </div>
       )}
 
-      <div style={{ paddingLeft:20 }}>
+      <div>
         {events.map((ev, i) => (
           <EventRow key={ev.id} ev={ev} index={i} />
         ))}
