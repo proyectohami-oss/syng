@@ -6,6 +6,7 @@
  * los mapas antes de ubicarla en el lugar correcto, evitando duplicados.
  */
 import { useCallback }    from 'react'
+import { showToast }      from '../../shared/Toast'
 import { Timestamp }      from 'firebase/firestore'
 import { useCoreData }    from './useCoreData'
 import { CORE_ACTIONS }   from '../store/coreActions'
@@ -53,6 +54,7 @@ export function useTasks() {
     try {
       const actorName = state.auth.userData?.displayName || ''
       await svcCreate({ id, ...data, ownerId: uid, actorName })
+      if (data.groupId) showToast('Tarea creada', '＋')
     } catch (error) {
       console.error('[useTasks] createTask error:', error)
       dispatch({ type: CORE_ACTIONS.TASK_DELETED_OPTIMISTIC, taskId: id })
@@ -114,7 +116,9 @@ export function useTasks() {
 
     try {
       const actorName = state.auth.userData?.displayName || ''
+      const completing = task.status === 'pending'
       await svcToggle(task.id, task.status, uid, task.groupId || null, actorName, task.title || '')
+      if (task.groupId && completing) showToast('Tarea completada', '✓')
     } catch (error) {
       console.error('[useTasks] toggleStatus error:', error)
       dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task })

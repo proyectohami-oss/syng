@@ -11,6 +11,7 @@ import { GroupInfoScreen }      from './modules/pizarron/components/GroupInfoScr
 import { NewGroupTaskScreen }  from './modules/pizarron/components/NewGroupTaskScreen'
 import { PerfilModule }      from './modules/perfil/PerfilModule'
 import { UnirseScreen }      from './modules/UnirseScreen'
+import { Toast }             from './shared/Toast'
 import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
 
 const globalStyles = `
@@ -109,6 +110,7 @@ export function App() {
     <>
       <style>{globalStyles}</style>
       <CoreDataProvider>
+        <Toast />
         <AppWithViewport />
       </CoreDataProvider>
     </>
