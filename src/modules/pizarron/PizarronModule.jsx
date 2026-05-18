@@ -373,11 +373,11 @@ export function PizarronModule() {
 const screen        = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#f9fafb', overflow:'hidden' }
 const centered      = { display:'flex', alignItems:'center', justifyContent:'center', flex:1 }
 const spinner       = { width:28, height:28, borderRadius:'50%', border:'3px solid #e5e7eb', borderTopColor:'#5B3DF6', animation:'spin 0.7s linear infinite' }
-const header        = { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'12px 16px', background:'#fff', borderBottom:'1px solid #f3f4f6' }
+const header        = { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'8px 16px', background:'#fff', borderBottom:'1px solid #f3f4f6' }
 const groupAvatar   = { width:40, height:40, borderRadius:12, background:'#EDE9FE', color:'#5B3DF6', fontSize:18, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
 const memberBubble  = { width:28, height:28, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid #fff', flexShrink:0 }
-const daySelector   = { flexShrink:0, padding:'10px 16px 6px', background:'#fff', borderBottom:'1px solid #f3f4f6' }
-const counters      = { flexShrink:0, display:'flex', alignItems:'center', padding:'12px 20px', background:'#fff', borderBottom:'1px solid #f3f4f6', gap:0 }
+const daySelector   = { flexShrink:0, padding:'6px 16px 4px', background:'#fff', borderBottom:'1px solid #f3f4f6' }
+const counters      = { flexShrink:0, display:'flex', alignItems:'center', padding:'8px 20px', background:'#fff', borderBottom:'1px solid #f3f4f6', gap:0 }
 const counter       = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
 const counterDivider = { width:1, height:32, background:'#f3f4f6' }
 const taskList      = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px' }
