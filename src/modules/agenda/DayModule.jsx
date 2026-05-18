@@ -117,9 +117,9 @@ export function DayModule() {
         <div style={{ display:'flex', alignItems:'flex-start' }}>
           <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:'#C0C0C0', cursor:'pointer', padding:'0 12px 0 0', lineHeight:1.2, marginTop:2 }}>‹</button>
           <div style={{ flex:1 }}>
-            <p style={{ margin:'0 0 2px', fontSize:13, color:'#9CA3AF', fontWeight:400, letterSpacing:'0.01em' }}>Syng</p>
-            <p style={{ margin:'0 0 2px', fontSize:13, color:'#9CA3AF', fontWeight:400 }}>{dia}</p>
-            <p style={{ margin:0, fontSize:30, fontWeight:800, color:'#0F0F0F', letterSpacing:'-0.03em', lineHeight:1.1 }}>{fecha}</p>
+            <p style={{ margin:'0 0 0', fontSize:13, color:'#9CA3AF', fontWeight:400 }}>{dia}</p>
+            <p style={{ margin:'0 0 2px', fontSize:32, fontWeight:800, color:'#0F0F0F', letterSpacing:'-0.03em', lineHeight:1.1 }}>Syng</p>
+            <p style={{ margin:0, fontSize:17, fontWeight:500, color:'#6B7280' }}>{fecha}</p>
           </div>
           {haySeleccion && (
             <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:T.primary, fontSize:15, fontWeight:600, cursor:'pointer', paddingTop:4 }}>
@@ -140,8 +140,8 @@ export function DayModule() {
       <div style={{ flex:1, overflowY:'auto', padding:'16px 16px 140px', WebkitOverflowScrolling:'touch' }}>
 
         {/* Pendientes */}
-        <p style={{ margin:'0 4px 12px', fontSize:15, fontWeight:700, color:'#0F0F0F', letterSpacing:'-0.01em' }}>
-          Pendientes <span style={{ color:'#9CA3AF', fontWeight:500, fontSize:13 }}>({orderedPending.length})</span>
+        <p style={{ margin:'0 4px 10px', fontSize:18, fontWeight:800, color:'#0F0F0F', letterSpacing:'-0.02em' }}>
+          Pendientes ({orderedPending.length})
         </p>
         {orderedPending.length === 0 && (
           <div style={{ padding:'20px 16px', background:'#FFFFFF', borderRadius:16, textAlign:'center', marginBottom:16, boxShadow:'0 1px 4px rgba(0,0,0,0.06)' }}>
@@ -163,8 +163,8 @@ export function DayModule() {
         {/* Completadas */}
         {completedVisible.length > 0 && (
           <>
-            <p style={{ margin:'24px 4px 12px', fontSize:15, fontWeight:700, color:'#0F0F0F', letterSpacing:'-0.01em' }}>
-              Completadas <span style={{ color:'#9CA3AF', fontWeight:500, fontSize:13 }}>({completedVisible.length})</span>
+            <p style={{ margin:'24px 4px 10px', fontSize:18, fontWeight:800, color:'#0F0F0F', letterSpacing:'-0.02em' }}>
+              Completadas ({completedVisible.length})
             </p>
             {completedVisible.map(task => (
               <DayTaskItem key={task.id} task={task}
