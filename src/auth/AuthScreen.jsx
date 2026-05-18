@@ -59,7 +59,9 @@ export function AuthScreen() {
 
         <div style={{ textAlign:'center', marginBottom:36 }}>
           <div style={logoWrap}>
-            <div style={logoMark}>S</div>
+            <div style={logoMark}>
+              <img src='/icon-192.png' alt='Syng' style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+            </div>
           </div>
           <h1 style={{ margin:'16px 0 6px', fontSize:24, fontWeight:700, color:'#0F0F0F', letterSpacing:'-0.02em' }}>
             Syng
@@ -160,18 +162,11 @@ const card = {
   padding:'40px 32px 32px',
   boxShadow:'0 2px 2px rgba(0,0,0,0.03), 0 8px 32px rgba(91,61,246,0.07), 0 1px 0 rgba(255,255,255,0.8) inset',
 }
-const logoWrap = {
-  display:'inline-flex', padding:4,
-  borderRadius:20,
-  background:'linear-gradient(135deg, #EDE9FE, #DDD6FE)',
-  boxShadow:'0 4px 16px rgba(91,61,246,0.15)',
-}
+const logoWrap = { display:'inline-flex' }
 const logoMark = {
-  width:52, height:52, borderRadius:16,
-  background:'linear-gradient(135deg, #5B3DF6, #7C3AED)',
-  color:'#fff', fontSize:26, fontWeight:700,
-  display:'flex', alignItems:'center', justifyContent:'center',
-  letterSpacing:'-0.02em',
+  width:64, height:64, borderRadius:18,
+  overflow:'hidden', display:'flex',
+  boxShadow:'0 4px 16px rgba(91,61,246,0.20)',
 }
 const googleBtn = {
   width:'100%', padding:'13px 16px',
