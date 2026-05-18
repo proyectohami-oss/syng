@@ -93,20 +93,32 @@ export function ReminderPicker({ dateStr, reminder, onChange, onClose }) {
         {step === 'hora' && (
           <>
             <p style={title}>Hora de la tarea</p>
-            <p style={{ fontSize:13, color:'#9ca3af', textAlign:'center', margin:'0 0 20px' }}>
-              Elige la hora a la que vence esta tarea
+            <p style={{ fontSize:13, color:'#c4c4c4', textAlign:'center', margin:'0 0 28px' }}>
+              {dueTime ? '' : 'Selecciona una hora'}
             </p>
             <input
               type="time"
-              defaultValue={dueTime || '08:00'}
+              value={dueTime || ''}
               onChange={e => setDueTime(e.target.value)}
-              style={{ width:'100%', boxSizing:'border-box', padding:'14px', borderRadius:12, border:'1.5px solid #e5e7eb', fontSize:20, fontFamily:'inherit', textAlign:'center', marginBottom:16, color:'#111' }}
+              style={{
+                width:'100%', boxSizing:'border-box', padding:'18px 16px',
+                borderRadius:16, border:'1.5px solid #e5e7eb',
+                fontSize:22, fontFamily:'inherit', textAlign:'center',
+                marginBottom:24, color: dueTime ? '#111' : '#9ca3af',
+                background:'#fafafa', outline:'none',
+              }}
             />
             <button
               onClick={() => dueTime && handleHora(dueTime)}
               disabled={!dueTime}
-              style={{ ...optBtn, background: dueTime ? '#5B3DF6' : '#e5e7eb', color: dueTime ? '#fff' : '#9ca3af', textAlign:'center', fontWeight:600 }}>
-              Confirmar hora
+              style={{
+                ...optBtn,
+                background: dueTime ? '#5B3DF6' : '#f3f4f6',
+                color:      dueTime ? '#fff'    : '#c4c4c4',
+                textAlign:'center', fontWeight:600, fontSize:16,
+                padding:'15px', marginBottom:0,
+              }}>
+              Confirmar
             </button>
             {!needHora && (
               <button onClick={() => setStep('offset')}
