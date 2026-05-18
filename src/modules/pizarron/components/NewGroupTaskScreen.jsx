@@ -3,6 +3,7 @@ import { useParams, useNavigate }      from 'react-router-dom'
 import { Timestamp }                   from 'firebase/firestore'
 import { useTasks }                    from '../../../core/hooks/useTasks'
 import { usePizarronView }             from '../hooks/usePizarronView'
+import { useCoreState }                from '../../../core/hooks/useCoreData'
 import { RepeatDayPicker }             from '../../../shared/RepeatDayPicker'
 import { ReminderPicker }              from '../../../shared/ReminderPicker'
 
@@ -26,6 +27,8 @@ export function NewGroupTaskScreen() {
   const navigate       = useNavigate()
   const { createTask, updateTask } = useTasks()
   const { group, tasks }           = usePizarronView(groupId)
+  const state                        = useCoreState()
+  const groups                       = Array.from(state.groups.list.values())
   const inputRef = useRef(null)
 
   const isEdit = !!taskId
@@ -40,8 +43,10 @@ export function NewGroupTaskScreen() {
   const [showRepeat, setShowRepeat] = useState(false)
   const [repeatDays, setRepeatDays] = useState(new Set())
   const [ready,      setReady]      = useState(!isEdit)
-  const [reminder,   setReminder]   = useState(null)   // null | { label, offsetMin }
-  const [showReminder, setShowReminder] = useState(false)
+  const [reminder,     setReminder]     = useState(null)
+  const [showReminder,  setShowReminder]  = useState(false)
+  const [targetGroupId, setTargetGroupId] = useState(groupId)
+  const [showGroup,     setShowGroup]     = useState(false)
 
   // Precargar datos en modo edición
   useEffect(() => {
@@ -49,6 +54,7 @@ export function NewGroupTaskScreen() {
       setTitle(task.title ?? '')
       setDateStr(toDateStr(task.dueDate) || todayStr)
       if (task.reminder) setReminder(task.reminder)
+      setTargetGroupId(task.groupId || groupId)
       setReady(true)
     }
   }, [task?.id])
@@ -68,8 +74,9 @@ export function NewGroupTaskScreen() {
       : null
     navigate(-1)
 
+    const finalGroupId = isEdit ? targetGroupId : groupId
     if (isEdit && task) {
-      updateTask(task, { title: title.trim(), dueDate, reminder: reminder ?? null }).catch(console.error)
+      updateTask(task, { title: title.trim(), dueDate, reminder: reminder ?? null, groupId: finalGroupId, type: finalGroupId ? 'group' : 'personal' }).catch(console.error)
       // Si el usuario seleccionó días de repetición en edición → crear tareas adicionales independientes
       if (repeatDays.size > 0) {
         Array.from(repeatDays).sort().forEach(day => {
@@ -121,6 +128,28 @@ export function NewGroupTaskScreen() {
           rows={3}
           style={textArea}
         />
+
+        {isEdit && (
+          <>
+            <div style={row} onClick={() => setShowGroup(v=>!v)}>
+              <span>👥</span>
+              <span style={rLbl}>Grupo</span>
+              <span style={{ ...rVal, color:'#374151' }}>{groups.find(g => g.id === targetGroupId)?.name || 'Personal'}</span>
+              <span style={arr}>›</span>
+            </div>
+            {showGroup && (
+              <div style={{ background:'#f9fafb', borderRadius:10, overflow:'hidden', marginBottom:4, border:'1px solid #f3f4f6' }}>
+                {groups.map(g => (
+                  <div key={g.id}
+                    onClick={() => { setTargetGroupId(g.id); setShowGroup(false) }}
+                    style={{ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid #f3f4f6', color: targetGroupId===g.id ? '#5B3DF6' : '#374151', fontWeight: targetGroupId===g.id ? 600 : 400, background: targetGroupId===g.id ? '#EDE9FE' : 'transparent' }}>
+                    {g.name}
+                  </div>
+                ))}
+              </div>
+            )}
+          </>
+        )}
 
         <div style={row} onClick={() => setShowDate(v=>!v)}>
           <span>📅</span>
