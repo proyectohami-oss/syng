@@ -129,6 +129,7 @@ export function PizarronModule() {
   if (!group) {
     return (
       <EmptyState
+          emoji="📋"
         title="Grupo no encontrado"
         description="Este grupo no existe o ya no tienes acceso."
         action={<button onClick={() => navigate('/pizarrones')} style={backBtn}>Ver pizarrones</button>}

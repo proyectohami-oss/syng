@@ -30,6 +30,7 @@ export function AgendaTaskList({ tasks, filter, loading, onEdit, onDelete }) {
   if (pending.length === 0 && completed.length === 0) {
     return (
       <EmptyState
+        emoji="📅"
         title="Sin tareas"
         description={filter === 'all'
           ? 'Crea tu primera tarea personal o en un grupo.'

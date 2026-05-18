@@ -18,6 +18,7 @@ export function PizarronTaskList({ tasks, groupId, canCreate, onEdit, onDelete, 
   if (tasks.length === 0) {
     return (
       <EmptyState
+        emoji="🎯"
         title="Sin tareas en este grupo"
         description="Crea la primera tarea para empezar a colaborar."
         action={canCreate && (
