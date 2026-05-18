@@ -4,6 +4,7 @@ import { Timestamp }                   from 'firebase/firestore'
 import { useTasks }                    from '../../../core/hooks/useTasks'
 import { usePizarronView }             from '../hooks/usePizarronView'
 import { RepeatDayPicker }             from '../../../shared/RepeatDayPicker'
+import { ReminderPicker }              from '../../../shared/ReminderPicker'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
                'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -155,35 +156,12 @@ export function NewGroupTaskScreen() {
       </div>
 
       {showReminder && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}
-          onClick={() => setShowReminder(false)}>
-          <div style={{ background:'#fff', borderRadius:'16px 16px 0 0', padding:'24px 20px 40px', width:'100%', maxWidth:480 }}
-            onClick={e => e.stopPropagation()}>
-            <p style={{ margin:'0 0 16px', fontSize:15, fontWeight:600, color:'#111', textAlign:'center' }}>Recordatorio</p>
-            {[
-              { label:'15 min antes',    offsetMin: 15 },
-              { label:'1 hora antes',    offsetMin: 60 },
-              { label:'3 horas antes',   offsetMin: 180 },
-              { label:'Manana 8:00 AM',  offsetMin: null, special:'tomorrow8' },
-            ].map(opt => (
-              <button key={opt.label}
-                onClick={() => { setReminder(opt); setShowReminder(false) }}
-                style={{
-                  width:'100%', padding:'14px', borderRadius:12, border:'none', marginBottom:8,
-                  background: reminder?.label === opt.label ? '#5B3DF6' : '#f3f4f6',
-                  color:      reminder?.label === opt.label ? '#fff'    : '#111',
-                  fontSize:15, fontWeight:500, cursor:'pointer', textAlign:'left',
-                }}>
-                {opt.label}
-              </button>
-            ))}
-            <button
-              onClick={() => { setReminder(null); setShowReminder(false) }}
-              style={{ width:'100%', padding:'14px', borderRadius:12, border:'1.5px solid #e5e7eb', background:'#fff', color:'#6b7280', fontSize:15, cursor:'pointer', marginTop:4 }}>
-              Sin recordatorio
-            </button>
-          </div>
-        </div>
+        <ReminderPicker
+          dateStr={dateStr}
+          reminder={reminder}
+          onChange={r => setReminder(r)}
+          onClose={() => setShowReminder(false)}
+        />
       )}
 
       {showRepeat && (
