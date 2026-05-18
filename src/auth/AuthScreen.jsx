@@ -60,7 +60,7 @@ export function AuthScreen() {
         <div style={{ textAlign:'center', marginBottom:36 }}>
           <div style={logoWrap}>
             <div style={logoMark}>
-              <img src='/icon-192.png' alt='Syng' style={{ width:'100%', height:'100%', objectFit:'cover' }} />
+              <img src='/icon-192.png' alt='Syng' style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:18 }} />
             </div>
           </div>
           <h1 style={{ margin:'16px 0 6px', fontSize:24, fontWeight:700, color:'#0F0F0F', letterSpacing:'-0.02em' }}>
@@ -166,6 +166,7 @@ const logoWrap = { display:'inline-flex' }
 const logoMark = {
   width:64, height:64, borderRadius:18,
   overflow:'hidden', display:'flex',
+  background:'#0F1B3D',
   boxShadow:'0 4px 16px rgba(91,61,246,0.20)',
 }
 const googleBtn = {
