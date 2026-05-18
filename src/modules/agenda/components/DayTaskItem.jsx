@@ -46,11 +46,11 @@ export function DayTaskItem({
 
       <button onClick={handleCircleTap} style={{
         flexShrink:0, width:24, height:24, borderRadius:'50%',
-        border: selected ? '2px solid #FFFFFF' : localDone ? 'none' : '2px solid #D1CFC9',
-        background: selected ? '#2B76FA' : localDone ? '#34C759' : 'transparent',
+        border: selected ? '2px solid #E0E0E0' : localDone ? 'none' : '2px solid #D1CFC9',
+        background: selected ? '#4A90E2' : localDone ? '#C7C7C7' : 'transparent',
         display:'flex', alignItems:'center', justifyContent:'center',
         cursor:'pointer', padding:0,
-        boxShadow: selected ? '0 0 0 1px rgba(43,118,250,0.15), 0 0 14px 4px rgba(43,118,250,0.35)' : 'none',
+        boxShadow: selected ? '0 0 0 1px rgba(74,144,226,0.15), 0 0 14px 4px rgba(74,144,226,0.3)' : 'none',
         transition:'all 0.15s ease',
         WebkitTapHighlightColor:'transparent',
       }}>
@@ -64,7 +64,7 @@ export function DayTaskItem({
       <div onClick={handleTextTap} style={{ flex:1, cursor: hasSelection ? 'default' : 'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}>
         <p style={{
           margin:0, fontSize:16, fontWeight:500, lineHeight:1.4,
-          color: localDone ? '#A3A19C' : '#21201E',
+          color: localDone ? '#9B9B9B' : '#21201E',
           textDecoration: localDone ? 'line-through' : 'none',
           textDecorationColor: 'rgba(163,161,156,0.5)',
           wordBreak:'break-word',

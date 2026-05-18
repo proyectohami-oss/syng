@@ -116,10 +116,10 @@ export function DayModule() {
         <div style={{ display:'flex', alignItems:'flex-start' }}>
           <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:'#A3A19C', cursor:'pointer', padding:'0 10px 0 0', lineHeight:1.3, marginTop:4 }}>‹</button>
           <div style={{ flex:1 }}>
-            <p style={{ margin:'0 0 2px', fontSize:13, color:'#7E7C77', fontWeight:400 }}>{dia}</p>
-            <p style={{ margin:0, fontSize:34, fontWeight:800, color:'#21201E', letterSpacing:'-0.03em', lineHeight:1.1 }}>Syng</p>
-            <p style={{ margin:'4px 0 0', fontSize:22, fontWeight:800, color:'#21201E', letterSpacing:'-0.02em' }}>Pendientes</p>
-            <p style={{ margin:'2px 0 0', fontSize:13, color:'#7E7C77', fontWeight:400 }}>{orderedPending.length} tarea{orderedPending.length!==1?'s':''} pendiente{orderedPending.length!==1?'s':''}</p>
+            <p style={{ margin:'0 0 2px', fontSize:14, color:'#6B6B6B', fontWeight:400 }}>{dia}</p>
+            <p style={{ margin:0, fontSize:32, fontWeight:700, color:'#21201E', letterSpacing:'-0.02em', lineHeight:1.1 }}>Syng</p>
+            <p style={{ margin:'4px 0 0', fontSize:20, fontWeight:600, color:'#21201E' }}>Pendientes</p>
+            <p style={{ margin:'2px 0 0', fontSize:13, color:'#7E7C77', fontWeight:400 }}>{orderedPending.length} task{orderedPending.length!==1?'s':''} remaining</p>
           </div>
           {haySeleccion && (
             <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:'#2B76FA', fontSize:15, fontWeight:600, cursor:'pointer', paddingTop:6 }}>
@@ -160,11 +160,11 @@ export function DayModule() {
         {/* Completadas */}
         {completedVisible.length > 0 && (
           <>
-            <p style={{ margin:'24px 2px 2px', fontSize:22, fontWeight:800, color:'#21201E', letterSpacing:'-0.02em' }}>
+            <p style={{ margin:'24px 2px 2px', fontSize:20, fontWeight:600, color:'#21201E' }}>
               Completadas
             </p>
             <p style={{ margin:'2px 2px 14px', fontSize:13, color:'#7E7C77', fontWeight:400 }}>
-              {completedVisible.length} tarea{completedVisible.length !== 1 ? 's' : ''} terminada{completedVisible.length !== 1 ? 's' : ''}
+              {completedVisible.length} task{completedVisible.length !== 1 ? 's' : ''} finished
             </p>
             {completedVisible.map(task => (
               <DayTaskItem key={task.id} task={task}
@@ -208,7 +208,7 @@ export function DayModule() {
           {/* Cuerpo principal */}
           <div style={{
             height:80,
-            background:'rgba(253,252,248,0.4)',
+            background:'rgba(255,255,255,0.75)',
             backdropFilter:'blur(24px) saturate(190%)',
             WebkitBackdropFilter:'blur(24px) saturate(190%)',
             borderRadius:24,
