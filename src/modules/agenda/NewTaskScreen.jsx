@@ -4,6 +4,7 @@ import { Timestamp }                            from 'firebase/firestore'
 import { useTasks }                             from '../../core/hooks/useTasks'
 import { useCoreState }                         from '../../core/hooks/useCoreData'
 import { RepeatDayPicker }                      from '../../shared/RepeatDayPicker'
+import { ReminderPicker }                       from '../../shared/ReminderPicker'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
                'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -29,7 +30,9 @@ export function NewTaskScreen() {
   const [showGroup, setShowGroup] = useState(false)
   const [showDate,  setShowDate]  = useState(false)
   const [showRepeat, setShowRepeat] = useState(false)
-  const [repeatDays, setRepeatDays] = useState(new Set())
+  const [repeatDays,   setRepeatDays]   = useState(new Set())
+  const [reminder,     setReminder]     = useState(null)
+  const [showReminder, setShowReminder] = useState(false)
 
   const grupoLabel = groups.find(g => g.id === groupId)?.name ?? 'Personal'
   const puedeGuardar = !!title.trim()
@@ -50,10 +53,10 @@ export function NewTaskScreen() {
     navigate(-1)
     if (repeatDays.size > 0) {
       Array.from(repeatDays).sort().forEach(day => {
-        createTask({ title: title.trim(), type, groupId: gId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
+        createTask({ title: title.trim(), type, groupId: gId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')), reminder: reminder ?? null }).catch(console.error)
       })
     } else {
-      createTask({ title: title.trim(), type, groupId: gId, dueDate }).catch(console.error)
+      createTask({ title: title.trim(), type, groupId: gId, dueDate, reminder: reminder ?? null }).catch(console.error)
     }
   }
 
@@ -115,6 +118,20 @@ export function NewTaskScreen() {
           />
         )}
 
+        {/* Recordatorio */}
+        <div style={row} onClick={() => setShowReminder(true)}>
+          <span>🔔</span>
+          <span style={rLbl}>Recordatorio</span>
+          <span style={{ ...rVal, color: reminder ? '#5B3DF6' : '#6b7280' }}>
+            {reminder
+              ? (reminder.dueTime
+                  ? (() => { const [h,m]=reminder.dueTime.split(':').map(Number); const ap=h>=12?'PM':'AM'; const h12=h%12||12; return `${h12}:${String(m).padStart(2,'0')} ${ap} • ${reminder.label}` })()
+                  : reminder.label)
+              : 'Sin recordatorio'}
+          </span>
+          <span style={arr}>›</span>
+        </div>
+
         {/* Repetir */}
         <div style={row} onClick={() => setShowRepeat(true)}>
           <span>🔁</span>
@@ -126,6 +143,15 @@ export function NewTaskScreen() {
         </div>
 
       </div>
+
+      {showReminder && (
+        <ReminderPicker
+          dateStr={dateStr}
+          reminder={reminder}
+          onChange={r => setReminder(r)}
+          onClose={() => setShowReminder(false)}
+        />
+      )}
 
       {showRepeat && (
         <RepeatDayPicker
