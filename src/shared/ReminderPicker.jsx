@@ -106,12 +106,15 @@ export function ReminderPicker({ dateStr, reminder, onChange, onClose }) {
                 value={dueTime || ''}
                 onChange={e => setDueTime(e.target.value)}
                 style={{
-                  padding:'12px 24px', borderRadius:14,
+                  display:'block',
+                  width:'180px', height:'56px',
+                  padding:'0 16px', borderRadius:14,
                   border:'1.5px solid ' + (dueTime ? '#5B3DF6' : '#e5e7eb'),
-                  fontSize:28, fontWeight:600, fontFamily:'inherit',
-                  color: dueTime ? '#5B3DF6' : '#9ca3af',
+                  fontSize:24, fontWeight:600, fontFamily:'inherit',
+                  color: dueTime ? '#5B3DF6' : '#374151',
                   background:'#fafafa', outline:'none', textAlign:'center',
-                  letterSpacing:'0.05em',
+                  WebkitAppearance:'none', appearance:'none',
+                  boxSizing:'border-box',
                 }}
               />
             </div>
