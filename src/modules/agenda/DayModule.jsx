@@ -109,7 +109,7 @@ export function DayModule() {
   const dia = labelDia(date)
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#FFFFFF', overflow:'hidden' }}>
+    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'linear-gradient(135deg, #F5F1E8 0%, #FFE5D9 50%, #D6E6F2 100%)', backgroundAttachment:'fixed', overflow:'hidden' }}>
 
       {/* Header */}
       <div style={{ flexShrink:0, background:'#FFFFFF', padding:'16px 20px 8px' }}>
