@@ -100,23 +100,23 @@ export function ReminderPicker({ dateStr, reminder, onChange, onClose }) {
               </p>
             </div>
 
-            <div style={{ display:'flex', justifyContent:'center', marginBottom:28 }}>
-              <input
-                type="time"
-                value={dueTime || ''}
-                onChange={e => setDueTime(e.target.value)}
-                style={{
-                  display:'block',
-                  width:'180px', height:'56px',
-                  padding:'0 16px', borderRadius:14,
-                  border:'1.5px solid ' + (dueTime ? '#5B3DF6' : '#e5e7eb'),
-                  fontSize:24, fontWeight:600, fontFamily:'inherit',
-                  color: dueTime ? '#5B3DF6' : '#374151',
-                  background:'#fafafa', outline:'none', textAlign:'center',
-                  WebkitAppearance:'none', appearance:'none',
-                  boxSizing:'border-box',
-                }}
-              />
+            <div style={{ position:'relative', marginBottom:28 }}>
+              <label style={{
+                display:'flex', alignItems:'center', justifyContent:'center',
+                width:'100%', padding:'18px 16px', borderRadius:14, boxSizing:'border-box',
+                border:'1.5px solid ' + (dueTime ? '#5B3DF6' : '#e5e7eb'),
+                background:'#fafafa', cursor:'pointer', minHeight:60,
+              }}>
+                <span style={{ fontSize: dueTime ? 24 : 15, fontWeight: dueTime ? 600 : 400, color: dueTime ? '#5B3DF6' : '#9ca3af', pointerEvents:'none' }}>
+                  {dueTime || 'Selecciona el horario de tu tarea'}
+                </span>
+                <input
+                  type="time"
+                  value={dueTime || ''}
+                  onChange={e => setDueTime(e.target.value)}
+                  style={{ position:'absolute', opacity:0, top:0, left:0, width:'100%', height:'100%', cursor:'pointer' }}
+                />
+              </label>
             </div>
 
             <button
