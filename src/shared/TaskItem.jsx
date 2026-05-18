@@ -14,7 +14,7 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, showGroup, groupNam
 
   const hasDueDate = !!task.dueDate
   const dueLabel   = hasDueDate
-    ? task.dueDate.toDate().toLocaleDateString('es-MX', { day: 'numeric', month: 'short' })
+    ? (() => { const d = task.dueDate.toDate(); return `${d.getDate()} ${['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]}` })()
     : null
   const isOverdue  = hasDueDate && !isDone && task.dueDate.toDate() < new Date()
   const hasReminder = !!task.reminder
