@@ -1,11 +1,5 @@
 /**
  * AuthScreen — login and signup.
- *
- * Offers Google Sign-In (one tap) and email/password as fallback.
- * Purely presentational: all logic is in useAuthActions().
- *
- * The screen has two modes toggled by the user: 'login' and 'signup'.
- * Error messages are shown inline without a toast library.
  */
 import { useState }        from 'react'
 import { useAuthActions }  from './useAuthActions'
@@ -13,63 +7,48 @@ import { useAuthActions }  from './useAuthActions'
 export function AuthScreen() {
   const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuthActions()
 
-  const [mode,        setMode]        = useState('login') // 'login' | 'signup'
+  const [mode,        setMode]        = useState('login')
   const [email,       setEmail]       = useState('')
   const [password,    setPassword]    = useState('')
   const [displayName, setDisplayName] = useState('')
-  const [loading,     setLoading]     = useState(null)   // null | 'google' | 'email'
+  const [loading,     setLoading]     = useState(null)
   const [error,       setError]       = useState(null)
 
   function clearError() { setError(null) }
 
   function friendlyError(code) {
     const map = {
-      'auth/invalid-credential':       'Correo o contraseña incorrectos.',
-      'auth/user-not-found':           'No existe una cuenta con ese correo.',
-      'auth/wrong-password':           'Contraseña incorrecta.',
-      'auth/email-already-in-use':     'Ya existe una cuenta con ese correo.',
-      'auth/weak-password':            'La contraseña debe tener al menos 6 caracteres.',
-      'auth/invalid-email':            'El correo no es válido.',
-      'auth/popup-closed-by-user':     'Se cerró la ventana de Google antes de completar el acceso.',
-      'auth/network-request-failed':   'Sin conexión. Verifica tu red e intenta de nuevo.',
-      'auth/too-many-requests':        'Demasiados intentos. Intenta más tarde.',
+      'auth/invalid-credential':     'Correo o contraseña incorrectos.',
+      'auth/user-not-found':         'No existe una cuenta con ese correo.',
+      'auth/wrong-password':         'Contraseña incorrecta.',
+      'auth/email-already-in-use':   'Ya existe una cuenta con ese correo.',
+      'auth/weak-password':          'La contraseña debe tener al menos 6 caracteres.',
+      'auth/invalid-email':          'El correo no es válido.',
+      'auth/popup-closed-by-user':   'Se cerró la ventana de Google antes de completar el acceso.',
+      'auth/network-request-failed': 'Sin conexión. Verifica tu red e intenta de nuevo.',
+      'auth/too-many-requests':      'Demasiados intentos. Intenta más tarde.',
     }
     return map[code] ?? 'Ocurrió un error. Intenta de nuevo.'
   }
 
   async function handleGoogle() {
-    setLoading('google')
-    setError(null)
-    try {
-      await signInWithGoogle()
-      // useUserListener reacts to onAuthStateChanged — no redirect needed here
-    } catch (err) {
-      setError(friendlyError(err.code))
-    } finally {
-      setLoading(null)
-    }
+    setLoading('google'); setError(null)
+    try { await signInWithGoogle() }
+    catch (err) { setError(friendlyError(err.code)) }
+    finally { setLoading(null) }
   }
 
   async function handleEmailSubmit(e) {
-    e.preventDefault()
-    setLoading('email')
-    setError(null)
+    e.preventDefault(); setLoading('email'); setError(null)
     try {
       if (mode === 'login') {
         await signInWithEmail(email, password)
       } else {
-        if (!displayName.trim()) {
-          setError('Ingresa tu nombre.')
-          setLoading(null)
-          return
-        }
+        if (!displayName.trim()) { setError('Ingresa tu nombre.'); setLoading(null); return }
         await signUpWithEmail(email, password, displayName)
       }
-    } catch (err) {
-      setError(friendlyError(err.code))
-    } finally {
-      setLoading(null)
-    }
+    } catch (err) { setError(friendlyError(err.code)) }
+    finally { setLoading(null) }
   }
 
   const isLoading = loading !== null
@@ -77,115 +56,76 @@ export function AuthScreen() {
   return (
     <div style={screen}>
       <div style={card}>
-        {/* Logo / wordmark */}
-        <div style={{ textAlign: 'center', marginBottom: 32 }}>
-          <div style={logoMark}>S</div>
-          <h1 style={{ margin: '12px 0 4px', fontSize: 22, fontWeight: 700, color: '#111827' }}>
+
+        <div style={{ textAlign:'center', marginBottom:36 }}>
+          <div style={logoWrap}>
+            <div style={logoMark}>S</div>
+          </div>
+          <h1 style={{ margin:'16px 0 6px', fontSize:24, fontWeight:700, color:'#0F0F0F', letterSpacing:'-0.02em' }}>
             Syng
           </h1>
-          <p style={{ margin: 0, fontSize: 13, color: '#9ca3af' }}>
-            Tareas y colaboración en tiempo real
+          <p style={{ margin:0, fontSize:14, color:'#A0A0A0', lineHeight:1.5, fontWeight:400 }}>
+            Todo lo importante, en sincronía.
           </p>
         </div>
 
-        {/* Google Sign-In */}
-        <button
-          onClick={handleGoogle}
-          disabled={isLoading}
-          style={googleBtn}
-        >
-          {loading === 'google' ? (
-            <Spinner />
-          ) : (
-            <GoogleIcon />
-          )}
+        <button onClick={handleGoogle} disabled={isLoading} style={googleBtn}>
+          {loading === 'google' ? <Spinner /> : <GoogleIcon />}
           {loading === 'google' ? 'Conectando...' : 'Continuar con Google'}
         </button>
 
-        {/* Divider */}
         <div style={divider}>
           <span style={dividerLine} />
-          <span style={{ padding: '0 12px', fontSize: 12, color: '#9ca3af', flexShrink: 0 }}>o</span>
+          <span style={{ padding:'0 14px', fontSize:12, color:'#D0D0D0', flexShrink:0 }}>o</span>
           <span style={dividerLine} />
         </div>
 
-        {/* Email / Password form */}
-        <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <form onSubmit={handleEmailSubmit} style={{ display:'flex', flexDirection:'column', gap:14 }}>
           {mode === 'signup' && (
             <div>
-              <label style={label} htmlFor="auth-name">Nombre completo</label>
-              <input
-                id="auth-name"
-                type="text"
-                value={displayName}
-                onChange={(e) => { setDisplayName(e.target.value); clearError() }}
-                placeholder="Tu nombre"
-                autoComplete="name"
-                required={mode === 'signup'}
-                style={input}
-              />
+              <label style={lbl} htmlFor="auth-name">Nombre completo</label>
+              <input id="auth-name" type="text" value={displayName}
+                onChange={e => { setDisplayName(e.target.value); clearError() }}
+                placeholder="Tu nombre" autoComplete="name" required={mode==='signup'} style={inp} />
             </div>
           )}
-
           <div>
-            <label style={label} htmlFor="auth-email">Correo electrónico</label>
-            <input
-              id="auth-email"
-              type="email"
-              value={email}
-              onChange={(e) => { setEmail(e.target.value); clearError() }}
-              placeholder="correo@ejemplo.com"
-              autoComplete={mode === 'login' ? 'email' : 'email'}
-              required
-              style={input}
-            />
+            <label style={lbl} htmlFor="auth-email">Correo electrónico</label>
+            <input id="auth-email" type="email" value={email}
+              onChange={e => { setEmail(e.target.value); clearError() }}
+              placeholder="correo@ejemplo.com" autoComplete="email" required style={inp} />
+          </div>
+          <div>
+            <label style={lbl} htmlFor="auth-password">Contraseña</label>
+            <input id="auth-password" type="password" value={password}
+              onChange={e => { setPassword(e.target.value); clearError() }}
+              placeholder={mode==='signup' ? 'Mínimo 6 caracteres' : '••••••••'}
+              autoComplete={mode==='login' ? 'current-password' : 'new-password'}
+              required minLength={mode==='signup' ? 6 : undefined} style={inp} />
           </div>
 
-          <div>
-            <label style={label} htmlFor="auth-password">Contraseña</label>
-            <input
-              id="auth-password"
-              type="password"
-              value={password}
-              onChange={(e) => { setPassword(e.target.value); clearError() }}
-              placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              required
-              minLength={mode === 'signup' ? 6 : undefined}
-              style={input}
-            />
-          </div>
-
-          {error && (
-            <p style={errorMsg}>{error}</p>
-          )}
+          {error && <p style={errorMsg}>{error}</p>}
 
           <button type="submit" disabled={isLoading} style={submitBtn}>
             {loading === 'email' ? <Spinner light /> : null}
             {loading === 'email'
-              ? (mode === 'login' ? 'Entrando...' : 'Creando cuenta...')
-              : (mode === 'login' ? 'Entrar' : 'Crear cuenta')
-            }
+              ? (mode==='login' ? 'Entrando...' : 'Creando cuenta...')
+              : (mode==='login' ? 'Entrar' : 'Crear cuenta')}
           </button>
         </form>
 
-        {/* Mode toggle */}
-        <p style={{ textAlign: 'center', fontSize: 13, color: '#6b7280', marginTop: 20 }}>
-          {mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
-          <button
-            onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); clearError() }}
-            style={toggleBtn}
-            disabled={isLoading}
-          >
-            {mode === 'login' ? 'Crear cuenta' : 'Iniciar sesión'}
+        <p style={{ textAlign:'center', fontSize:13, color:'#A0A0A0', marginTop:24 }}>
+          {mode==='login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
+          <button onClick={() => { setMode(mode==='login' ? 'signup' : 'login'); clearError() }}
+            style={toggleBtn} disabled={isLoading}>
+            {mode==='login' ? 'Crear cuenta' : 'Iniciar sesión'}
           </button>
         </p>
+
       </div>
     </div>
   )
 }
-
-// ── Sub-components ────────────────────────────────────────────────────────────
 
 function GoogleIcon() {
   return (
@@ -201,69 +141,75 @@ function GoogleIcon() {
 function Spinner({ light }) {
   return (
     <span style={{
-      width: 16, height: 16, borderRadius: '50%',
-      border: `2px solid ${light ? 'rgba(255,255,255,0.3)' : '#e5e7eb'}`,
-      borderTopColor: light ? '#fff' : '#3b82f6',
-      display: 'inline-block',
-      animation: 'spin 0.7s linear infinite',
+      width:16, height:16, borderRadius:'50%',
+      border: `2px solid ${light ? 'rgba(255,255,255,0.3)' : '#E5E7EB'}`,
+      borderTopColor: light ? '#fff' : '#5B3DF6',
+      display:'inline-block', animation:'spin 0.7s linear infinite',
     }} />
   )
 }
 
-// ── Styles ────────────────────────────────────────────────────────────────────
-
 const screen = {
-  minHeight: '100%', display: 'flex',
-  alignItems: 'center', justifyContent: 'center',
-  padding: 20, background: '#f9fafb',
+  minHeight:'100%', display:'flex', alignItems:'center', justifyContent:'center',
+  padding:'24px 20px',
+  background:'linear-gradient(160deg, #F8F7FF 0%, #F3F4F6 100%)',
 }
 const card = {
-  width: '100%', maxWidth: 380,
-  background: '#fff', borderRadius: 16,
-  padding: '36px 32px',
-  boxShadow: '0 4px 24px rgba(0,0,0,0.07)',
+  width:'100%', maxWidth:380,
+  background:'#fff', borderRadius:20,
+  padding:'40px 32px 32px',
+  boxShadow:'0 2px 2px rgba(0,0,0,0.03), 0 8px 32px rgba(91,61,246,0.07), 0 1px 0 rgba(255,255,255,0.8) inset',
+}
+const logoWrap = {
+  display:'inline-flex', padding:4,
+  borderRadius:20,
+  background:'linear-gradient(135deg, #EDE9FE, #DDD6FE)',
+  boxShadow:'0 4px 16px rgba(91,61,246,0.15)',
 }
 const logoMark = {
-  width: 48, height: 48, borderRadius: 14,
-  background: '#3b82f6', color: '#fff',
-  fontSize: 24, fontWeight: 700,
-  display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+  width:52, height:52, borderRadius:16,
+  background:'linear-gradient(135deg, #5B3DF6, #7C3AED)',
+  color:'#fff', fontSize:26, fontWeight:700,
+  display:'flex', alignItems:'center', justifyContent:'center',
+  letterSpacing:'-0.02em',
 }
 const googleBtn = {
-  width: '100%', padding: '11px 16px',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
-  border: '1.5px solid #e5e7eb', borderRadius: 10,
-  background: '#fff', cursor: 'pointer',
-  fontSize: 14, fontWeight: 500, color: '#374151',
-  transition: 'background 0.15s',
+  width:'100%', padding:'13px 16px',
+  display:'flex', alignItems:'center', justifyContent:'center', gap:10,
+  border:'1.5px solid #EBEBEB', borderRadius:12,
+  background:'#FAFAFA', cursor:'pointer',
+  fontSize:14, fontWeight:500, color:'#374151',
+  boxShadow:'0 1px 3px rgba(0,0,0,0.04)',
 }
-const divider = { display: 'flex', alignItems: 'center', margin: '20px 0' }
-const dividerLine = { flex: 1, height: 1, background: '#f3f4f6' }
-const label = { display: 'block', fontSize: 13, fontWeight: 500, color: '#374151', marginBottom: 5 }
-const input = {
-  width: '100%', boxSizing: 'border-box',
-  padding: '10px 12px', borderRadius: 9,
-  border: '1.5px solid #e5e7eb',
-  fontSize: 14, color: '#111827',
-  outline: 'none', fontFamily: 'inherit',
-  transition: 'border-color 0.15s',
+const divider     = { display:'flex', alignItems:'center', margin:'22px 0' }
+const dividerLine = { flex:1, height:1, background:'#F0F0F0' }
+const lbl = { display:'block', fontSize:12, fontWeight:600, color:'#6B7280', marginBottom:6, letterSpacing:'0.01em' }
+const inp = {
+  width:'100%', boxSizing:'border-box',
+  padding:'11px 14px', borderRadius:10,
+  border:'1.5px solid #F0F0F0',
+  fontSize:15, color:'#111',
+  outline:'none', fontFamily:'inherit',
+  background:'#FAFAFA',
+  boxShadow:'0 1px 3px rgba(0,0,0,0.03) inset',
 }
 const errorMsg = {
-  margin: 0, padding: '9px 12px',
-  background: '#fef2f2', color: '#dc2626',
-  borderRadius: 8, fontSize: 13, lineHeight: 1.4,
+  margin:0, padding:'10px 14px',
+  background:'#FFF1F1', color:'#DC2626',
+  borderRadius:10, fontSize:13, lineHeight:1.4,
+  border:'1px solid #FEE2E2',
 }
 const submitBtn = {
-  width: '100%', padding: '11px 16px',
-  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-  border: 'none', borderRadius: 10,
-  background: '#3b82f6', color: '#fff',
-  fontSize: 14, fontWeight: 500, cursor: 'pointer',
-  transition: 'background 0.15s',
+  width:'100%', padding:'13px 16px',
+  display:'flex', alignItems:'center', justifyContent:'center', gap:8,
+  border:'none', borderRadius:12,
+  background:'linear-gradient(135deg, #5B3DF6, #7C3AED)',
+  color:'#fff', fontSize:15, fontWeight:600, cursor:'pointer',
+  boxShadow:'0 4px 16px rgba(91,61,246,0.30)',
+  letterSpacing:'-0.01em',
 }
 const toggleBtn = {
-  background: 'none', border: 'none',
-  color: '#3b82f6', cursor: 'pointer',
-  fontSize: 13, fontWeight: 500, padding: 0,
-  textDecoration: 'underline',
+  background:'none', border:'none',
+  color:'#5B3DF6', cursor:'pointer',
+  fontSize:13, fontWeight:600, padding:0,
 }
