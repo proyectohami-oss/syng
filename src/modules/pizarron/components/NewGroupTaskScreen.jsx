@@ -140,7 +140,11 @@ export function NewGroupTaskScreen() {
           <span>🔔</span>
           <span style={rLbl}>Recordatorio</span>
           <span style={{ ...rVal, color: reminder ? '#5B3DF6' : '#6b7280' }}>
-            {reminder ? reminder.label : 'Sin recordatorio'}
+            {reminder
+              ? (reminder.dueTime
+                  ? (() => { const [h,m]=reminder.dueTime.split(':').map(Number); const ap=h>=12?'PM':'AM'; const h12=h%12||12; return `${h12}:${String(m).padStart(2,'0')} ${ap} • ${reminder.label}` })()
+                  : reminder.label)
+              : 'Sin recordatorio'}
           </span>
           <span style={arr}>›</span>
         </div>
