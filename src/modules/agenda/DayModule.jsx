@@ -117,8 +117,8 @@ export function DayModule() {
         <div style={{ display:'flex', alignItems:'center', padding:'12px 20px 8px' }}>
           <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:24, color:T.textTertiary, cursor:'pointer', padding:'0 8px 0 0', lineHeight:1 }}>‹</button>
           <div style={{ flex:1 }}>
-            <p style={{ margin:0, fontSize:13, color:T.textTertiary, fontWeight:500 }}>{dia}</p>
-            <p style={{ margin:0, fontSize:22, fontWeight:700, color:T.textPrimary, letterSpacing:'-0.02em' }}>{fecha}</p>
+            <p style={{ margin:0, fontSize:11, color:T.textTertiary, fontWeight:600, textTransform:'uppercase', letterSpacing:'0.06em' }}>{dia}</p>
+            <p style={{ margin:0, fontSize:28, fontWeight:800, color:T.textPrimary, letterSpacing:'-0.03em', lineHeight:1.1 }}>{fecha}</p>
           </div>
           {haySeleccion && (
             <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:T.primary, fontSize:14, fontWeight:600, cursor:'pointer' }}>
