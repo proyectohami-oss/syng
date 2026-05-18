@@ -47,7 +47,7 @@ export function PizarronesModule() {
                     {(g.memberIds?.length ?? 1)} miembro{(g.memberIds?.length ?? 1) !== 1 ? 's' : ''}
                   </p>
                 </div>
-                <span style={{ fontSize:18, color:'#d1d5db' }}>›</span>
+                <span style={{ fontSize:20, color:'#9ca3af', fontWeight:300 }}>›</span>
               </div>
             ))}
           </div>
