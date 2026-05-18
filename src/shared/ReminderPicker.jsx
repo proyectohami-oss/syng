@@ -93,20 +93,24 @@ export function ReminderPicker({ dateStr, reminder, onChange, onClose }) {
         {step === 'hora' && (
           <>
             <p style={title}>Hora de la tarea</p>
-            {HORAS.map(h => (
-              <button key={h.value} onClick={() => handleHora(h.value)} style={{
-                ...optBtn,
-                background: dueTime === h.value ? '#5B3DF6' : '#f3f4f6',
-                color:      dueTime === h.value ? '#fff'    : '#111',
-              }}>
-                {h.label}
-              </button>
-            ))}
-            <input type="time" onChange={e => handleHora(e.target.value)}
-              style={{ width:'100%', boxSizing:'border-box', padding:'12px', borderRadius:12, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', marginTop:4 }} />
+            <p style={{ fontSize:13, color:'#9ca3af', textAlign:'center', margin:'0 0 20px' }}>
+              Elige la hora a la que vence esta tarea
+            </p>
+            <input
+              type="time"
+              defaultValue={dueTime || '08:00'}
+              onChange={e => setDueTime(e.target.value)}
+              style={{ width:'100%', boxSizing:'border-box', padding:'14px', borderRadius:12, border:'1.5px solid #e5e7eb', fontSize:20, fontFamily:'inherit', textAlign:'center', marginBottom:16, color:'#111' }}
+            />
+            <button
+              onClick={() => dueTime && handleHora(dueTime)}
+              disabled={!dueTime}
+              style={{ ...optBtn, background: dueTime ? '#5B3DF6' : '#e5e7eb', color: dueTime ? '#fff' : '#9ca3af', textAlign:'center', fontWeight:600 }}>
+              Confirmar hora
+            </button>
             {!needHora && (
               <button onClick={() => setStep('offset')}
-                style={{ ...optBtn, background:'#fff', color:'#9ca3af', border:'1.5px solid #e5e7eb', marginTop:4 }}>
+                style={{ ...optBtn, background:'#fff', color:'#9ca3af', border:'1.5px solid #e5e7eb', textAlign:'center' }}>
                 Atras
               </button>
             )}
