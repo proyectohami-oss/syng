@@ -13,7 +13,7 @@ export function PizarronesModule() {
     <div style={screen}>
       <div style={header}>
         <span style={{ fontSize:17, fontWeight:600, color:'#111', flex:1 }}>Pizarrones</span>
-        <button onClick={() => setShowForm(true)} style={btnNew}>+ Nuevo</button>
+        <button onClick={() => setShowForm(true)} style={btnNew}>+ Nuevo grupo</button>
       </div>
 
       <div style={body}>
