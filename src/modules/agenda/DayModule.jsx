@@ -7,15 +7,16 @@ import { useCoreState }               from '../../core/hooks/useCoreData'
 import { ConfirmDialog }              from '../../shared/ConfirmDialog'
 import { TaskFormNew }                from '../../shared/TaskFormNew'
 import { Timestamp }                  from 'firebase/firestore'
+import { T }                          from '../../theme'
 
-const DIAS  = ['domingo','lunes','martes','miércoles','jueves','viernes','sábado']
+const DIAS  = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado']
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
 function labelDia(dateKey) {
   const [y,m,d] = dateKey.split('-').map(Number)
   const dt  = new Date(y, m-1, d)
   const dow = DIAS[dt.getDay()]
-  return `${dow[0].toUpperCase()}${dow.slice(1)}, ${d} de ${MESES[m-1]}`
+  return { dia: `${dow[0].toUpperCase()}${dow.slice(1)}`, fecha: `${d} de ${MESES[m-1]}` }
 }
 
 function EditMultiModal({ count, groups, onSave, onClose }) {
@@ -31,28 +32,26 @@ function EditMultiModal({ count, groups, onSave, onClose }) {
   }
 
   return (
-    <div style={overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-      <div style={sheet}>
-        <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:16 }}>
-          <button onClick={onClose} style={btnVolver}>‹</button>
-          <span style={{ fontSize:17, fontWeight:600, color:'#111' }}>Editar {count} tarea{count!==1?'s':''}</span>
-        </div>
-        <p style={{ fontSize:13, color:'#9ca3af', margin:'0 0 16px' }}>Solo se aplican los campos que cambies.</p>
-        <p style={{ fontSize:12, color:'#6b7280', fontWeight:500, margin:'0 0 6px' }}>Nueva fecha</p>
-        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={inputStyle} />
-        <p style={{ fontSize:12, color:'#6b7280', fontWeight:500, margin:'16px 0 6px' }}>Mover a grupo</p>
-        <div style={{ background:'#f9fafb', borderRadius:10, overflow:'hidden', border:'1px solid #f3f4f6' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }} onClick={e => e.target===e.currentTarget && onClose()}>
+      <div style={{ background:'#fff', borderRadius:'20px 20px 0 0', padding:'24px 20px', paddingBottom:'calc(24px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480 }}>
+        <p style={{ margin:'0 0 4px', fontSize:17, fontWeight:700, color:T.textPrimary }}>Editar {count} tarea{count!==1?'s':''}</p>
+        <p style={{ margin:'0 0 20px', fontSize:13, color:T.textTertiary }}>Solo se aplican los campos que cambies.</p>
+        <p style={{ fontSize:12, color:T.textSecondary, fontWeight:600, margin:'0 0 6px' }}>Nueva fecha</p>
+        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)}
+          style={{ width:'100%', boxSizing:'border-box', padding:'10px 14px', borderRadius:10, border:`1.5px solid ${T.border}`, fontSize:15, fontFamily:'inherit', outline:'none', marginBottom:16 }} />
+        <p style={{ fontSize:12, color:T.textSecondary, fontWeight:600, margin:'0 0 6px' }}>Mover a grupo</p>
+        <div style={{ background:T.bg, borderRadius:12, overflow:'hidden', border:`1px solid ${T.border}`, marginBottom:20 }}>
           {[{ id:'__sin_cambio__', label:'Sin cambio' },{ id:'', label:'Personal' },...groups.map(g=>({id:g.id,label:g.name}))].map(op => (
-            <div key={op.id} onClick={() => setGroupId(op.id)} style={{ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid #f3f4f6', background: groupId===op.id?'#EDE9FE':'transparent', color: groupId===op.id?'#5B3DF6':'#374151', fontWeight: groupId===op.id?600:400 }}>
+            <div key={op.id} onClick={() => setGroupId(op.id)} style={{ padding:'12px 16px', fontSize:14, cursor:'pointer', borderBottom:`1px solid ${T.border}`, background: groupId===op.id?T.primaryLight:'transparent', color: groupId===op.id?T.primary:T.textPrimary, fontWeight: groupId===op.id?600:400 }}>
               {op.label}
             </div>
           ))}
         </div>
-        <div style={{ marginTop:20, display:'flex', flexDirection:'column', gap:10 }}>
-          <button onClick={guardar} disabled={!hayCambio||loading} style={{ width:'100%', padding:'13px', borderRadius:12, border:'none', fontSize:15, fontWeight:600, cursor:hayCambio?'pointer':'default', background:hayCambio?'#5B3DF6':'#e5e7eb', color:hayCambio?'#fff':'#9ca3af' }}>
-            {loading?'Aplicando...':'Aplicar cambios'}
+        <div style={{ display:'flex', gap:10 }}>
+          <button onClick={onClose} style={{ flex:1, padding:'13px', borderRadius:12, border:`1.5px solid ${T.border}`, background:'#fff', color:T.textSecondary, fontSize:15, cursor:'pointer' }}>Cancelar</button>
+          <button onClick={guardar} disabled={!hayCambio||loading} style={{ flex:1, padding:'13px', borderRadius:12, border:'none', fontSize:15, fontWeight:600, cursor:hayCambio?'pointer':'default', background:hayCambio?T.primary:T.border, color:hayCambio?'#fff':T.textTertiary }}>
+            {loading?'Aplicando...':'Aplicar'}
           </button>
-          <button onClick={onClose} style={{ background:'none', border:'none', color:'#6b7280', fontSize:15, cursor:'pointer', padding:'8px' }}>Cancelar</button>
         </div>
       </div>
     </div>
@@ -71,9 +70,9 @@ export function DayModule() {
   const [hiddenIds,    setHiddenIds]    = useState(new Set())
   const [modal,        setModal]        = useState(null)
 
-  const orderedPending  = pending.filter(t => !hiddenIds.has(t.id))
+  const orderedPending   = pending.filter(t => !hiddenIds.has(t.id))
   const completedVisible = completed.filter(t => !hiddenIds.has(t.id))
-  const haySeleccion    = selectedIds.size > 0
+  const haySeleccion     = selectedIds.size > 0
 
   function toggleSeleccion(taskId) {
     setSelectedIds(prev => {
@@ -82,10 +81,7 @@ export function DayModule() {
       return next
     })
   }
-
   function limpiarSeleccion() { setSelectedIds(new Set()) }
-
-
   function hideLocally(id) { setHiddenIds(prev => new Set([...prev, id])) }
 
   async function eliminarSeleccionadas() {
@@ -111,56 +107,48 @@ export function DayModule() {
     limpiarSeleccion()
   }
 
+  const { dia, fecha } = labelDia(date)
+
   return (
-    <div style={screen}>
-      <div style={header}>
-        <div style={{ display:'flex', alignItems:'center', gap:8, padding:'14px 20px' }}>
-          <button onClick={() => navigate('/agenda')} style={btnVolver} aria-label="Volver">‹</button>
-          <span style={{ fontSize:15, fontWeight:600, color:'#111', flex:1 }}>{labelDia(date)}</span>
+    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, background:T.bg, overflow:'hidden' }}>
+
+      {/* Header */}
+      <div style={{ flexShrink:0, background:T.surface, borderBottom:`1px solid ${T.border}` }}>
+        <div style={{ display:'flex', alignItems:'center', padding:'12px 20px 8px' }}>
+          <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:24, color:T.textTertiary, cursor:'pointer', padding:'0 8px 0 0', lineHeight:1 }}>‹</button>
+          <div style={{ flex:1 }}>
+            <p style={{ margin:0, fontSize:13, color:T.textTertiary, fontWeight:500 }}>{dia}</p>
+            <p style={{ margin:0, fontSize:22, fontWeight:700, color:T.textPrimary, letterSpacing:'-0.02em' }}>{fecha}</p>
+          </div>
           {haySeleccion && (
-            <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:'#5B3DF6', fontSize:14, fontWeight:500, cursor:'pointer', padding:'8px' }}>
+            <button onClick={limpiarSeleccion} style={{ background:'none', border:'none', color:T.primary, fontSize:14, fontWeight:600, cursor:'pointer' }}>
               Cancelar
             </button>
           )}
         </div>
         {!haySeleccion && (
-          <button
-            onClick={() => navigate(`/agenda/${date}/nueva`)}
-            style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 20px', background:'none', border:'none', borderTop:'1px solid #f3f4f6', cursor:'pointer', color:'#5B3DF6', fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent' }}
-          >
+          <button onClick={() => navigate(`/agenda/${date}/nueva`)}
+            style={{ display:'flex', alignItems:'center', gap:8, width:'100%', padding:'10px 20px', background:'none', border:'none', borderTop:`1px solid ${T.border}`, cursor:'pointer', color:T.primary, fontSize:15, fontWeight:600, WebkitTapHighlightColor:'transparent' }}>
             <span style={{ fontSize:20, lineHeight:1 }}>+</span>
             <span>Nueva tarea</span>
           </button>
         )}
       </div>
 
+      {/* Lista */}
+      <div style={{ flex:1, overflowY:'auto', padding:'16px 16px 120px', WebkitOverflowScrolling:'touch' }}>
 
-      <div style={{ flex:1, overflowY:'auto', padding:'0 20px', WebkitOverflowScrolling:'touch' }}>
-        <p style={{ fontSize:13, fontWeight:600, color:'#5B3DF6', margin:'16px 0 6px' }}>
-          Pendientes ({orderedPending.length})
+        {/* Pendientes */}
+        <p style={{ margin:'0 4px 12px', fontSize:13, fontWeight:700, color:T.primary, letterSpacing:'0.04em' }}>
+          PENDIENTES ({orderedPending.length})
         </p>
-        {orderedPending.length === 0 && <p style={{ fontSize:13, color:'#9ca3af', marginBottom:16 }}>Sin tareas pendientes.</p>}
-        {orderedPending.map((task) => (
-          <DayTaskItem
-            key={task.id} task={task}
-            groupName={getGroupName(task.groupId)}
-            onToggle={toggleStatus}
-            onEdit={t => setModal({ tipo:'editar', task:t })}
-            onDelete={t => { hideLocally(t.id); setModal({ tipo:'borrar', task:t }) }}
-            selected={selectedIds.has(task.id)}
-            onCircleTap={toggleSeleccion}
-            hasSelection={haySeleccion}
-
-          />
-        ))}
-
-        <p style={{ fontSize:13, fontWeight:600, color:'#22C55E', margin:'20px 0 6px' }}>
-          Completadas ({completedVisible.length})
-        </p>
-        {completedVisible.length === 0 && <p style={{ fontSize:13, color:'#9ca3af', marginBottom:16 }}>Ninguna completada aún.</p>}
-        {completedVisible.map(task => (
-          <DayTaskItem
-            key={task.id} task={task}
+        {orderedPending.length === 0 && (
+          <p style={{ fontSize:13, color:T.textTertiary, margin:'0 0 20px', padding:'16px', background:T.surface, borderRadius:T.radiusMD, textAlign:'center' }}>
+            Sin tareas pendientes
+          </p>
+        )}
+        {orderedPending.map(task => (
+          <DayTaskItem key={task.id} task={task}
             groupName={getGroupName(task.groupId)}
             onToggle={toggleStatus}
             onEdit={t => setModal({ tipo:'editar', task:t })}
@@ -170,34 +158,70 @@ export function DayModule() {
             hasSelection={haySeleccion}
           />
         ))}
-        <div style={{ height:24 }} />
+
+        {/* Completadas */}
+        {completedVisible.length > 0 && (
+          <>
+            <p style={{ margin:'20px 4px 12px', fontSize:13, fontWeight:700, color:T.success, letterSpacing:'0.04em' }}>
+              COMPLETADAS ({completedVisible.length})
+            </p>
+            {completedVisible.map(task => (
+              <DayTaskItem key={task.id} task={task}
+                groupName={getGroupName(task.groupId)}
+                onToggle={toggleStatus}
+                onEdit={t => setModal({ tipo:'editar', task:t })}
+                onDelete={t => { hideLocally(t.id); setModal({ tipo:'borrar', task:t }) }}
+                selected={selectedIds.has(task.id)}
+                onCircleTap={toggleSeleccion}
+                hasSelection={haySeleccion}
+              />
+            ))}
+          </>
+        )}
       </div>
 
-      {/* Selection bar — fixed at bottom, appears automatically */}
+      {/* Barra flotante glassmorphism */}
       {haySeleccion && (
-        <div style={barraSeleccion}>
-          <span style={{ fontSize:13, fontWeight:500, color:'#374151' }}>
-            {selectedIds.size} seleccionada{selectedIds.size!==1?'s':''}
-          </span>
-          <div style={{ display:'flex', gap:8 }}>
-            <button onClick={() => setModal({ tipo:'editarVarias' })} style={{ padding:'9px 16px', background:'#EDE9FE', color:'#5B3DF6', border:'none', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer' }}>
-              ✏️ Editar
-            </button>
-            <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ padding:'9px 16px', background:'#ef4444', color:'#fff', border:'none', borderRadius:10, fontSize:13, fontWeight:600, cursor:'pointer' }}>
-              🗑️ Eliminar
-            </button>
-          </div>
+        <div style={{
+          position:'fixed', bottom:'calc(80px + env(safe-area-inset-bottom))',
+          left:'50%', transform:'translateX(-50%)',
+          background:'rgba(255,255,255,0.85)',
+          backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)',
+          borderRadius:20, padding:'12px 20px',
+          boxShadow:'0 8px 32px rgba(0,0,0,0.15), 0 0 0 1px rgba(255,255,255,0.5)',
+          display:'flex', alignItems:'center', gap:12, zIndex:200,
+          minWidth:280,
+        }}>
+          <span style={{ flex:1, fontSize:13, fontWeight:600, color:T.textSecondary }}>
+            {selectedIds.size} seleccionada{selectedIds.size!==1?'s':''}</span>
+          <button onClick={() => {
+            const todas = [...pending, ...completed]
+            const t = todas.find(t => selectedIds.has(t.id))
+            if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
+          }} style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 16px', borderRadius:12, border:'none', background:T.primaryLight, color:T.primary, fontSize:14, fontWeight:600, cursor:'pointer' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+            </svg>
+            Editar
+          </button>
+          <button onClick={() => setModal({ tipo:'borrarVarias' })}
+            style={{ display:'flex', alignItems:'center', gap:6, padding:'9px 16px', borderRadius:12, border:'none', background:'rgba(239,68,68,0.1)', color:T.danger, fontSize:14, fontWeight:600, cursor:'pointer' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3 6 5 6 21 6"/>
+              <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+              <path d="M10 11v6M14 11v6"/>
+            </svg>
+            Eliminar
+          </button>
         </div>
       )}
 
-
-      {modal?.tipo === 'nueva'       && <TaskFormNew defaultDate={date} onClose={() => setModal(null)} />}
-      {modal?.tipo === 'editar'      && <TaskFormNew task={modal.task} defaultDate={date} onClose={() => setModal(null)} />}
-      {modal?.tipo === 'borrar'      && (
+      {modal?.tipo === 'editar'       && <TaskFormNew task={modal.task} defaultDate={date} onClose={() => setModal(null)} />}
+      {modal?.tipo === 'borrar'       && (
         <ConfirmDialog title="Eliminar tarea" message={`¿Eliminar "${modal.task.title}"?`} confirmLabel="Eliminar" danger
           onConfirm={async () => { await deleteTask(modal.task); setModal(null) }}
-          onCancel={() => { setHiddenIds(prev => { const n=new Set(prev); n.delete(modal.task.id); return n }); setModal(null) }}
-        />
+          onCancel={() => { setHiddenIds(prev => { const n=new Set(prev); n.delete(modal.task.id); return n }); setModal(null) }} />
       )}
       {modal?.tipo === 'borrarVarias' && (
         <ConfirmDialog title="Eliminar tareas" message={`¿Eliminar ${selectedIds.size} tarea${selectedIds.size!==1?'s':''}?`} confirmLabel={`Eliminar ${selectedIds.size}`} danger
@@ -209,11 +233,3 @@ export function DayModule() {
     </div>
   )
 }
-
-const screen       = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#fff', overflow:'hidden' }
-const header       = { display:'flex', flexDirection:'column', padding:'0', borderBottom:'1px solid #f3f4f6', flexShrink:0 }
-const btnVolver    = { background:'none', border:'none', fontSize:22, color:'#6b7280', cursor:'pointer', padding:'0 4px', minWidth:44, minHeight:44, display:'flex', alignItems:'center', justifyContent:'center' }
-const barraSeleccion = { flexShrink:0, padding:'12px 20px', paddingBottom:'calc(14px + env(safe-area-inset-bottom))', background:'#fff', borderTop:'1px solid #f3f4f6', display:'flex', alignItems:'center', justifyContent:'space-between' }
-const overlay      = { position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }
-const sheet        = { background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px 20px', paddingBottom:'calc(20px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480 }
-const inputStyle   = { width:'100%', boxSizing:'border-box', padding:'9px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:14, color:'#111', fontFamily:'inherit', outline:'none', marginBottom:4 }

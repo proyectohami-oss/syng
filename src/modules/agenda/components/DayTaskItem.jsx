@@ -1,22 +1,16 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
+import { T } from '../../../theme'
 
 export function DayTaskItem({
   task, groupName,
   onToggle, onEdit, onDelete,
   selected, onCircleTap, hasSelection,
-  draggable, onDragStart, onDragEnd, onMoveUp, onMoveDown,
-  isDragOver,
 }) {
   const [localDone, setLocalDone] = useState(task.status === 'completed')
+  useEffect(() => { setLocalDone(task.status === 'completed') }, [task.status])
 
-  useEffect(() => {
-    setLocalDone(task.status === 'completed')
-  }, [task.status])
-
-  const tag      = groupName || 'Personal'
-  const tagStyle = groupName
-    ? { background: '#DCFCE7', color: '#166634' }
-    : { background: '#EDE9FE', color: '#5B3DF6' }
+  const isGroup = !!groupName
+  const tag     = groupName || 'Personal'
 
   async function handleTextTap() {
     if (hasSelection) return
@@ -32,89 +26,60 @@ export function DayTaskItem({
   }
 
   return (
-    <>
-      {isDragOver && (
-        <div style={{ height: 3, background: '#5B3DF6', borderRadius: 2, margin: '0 0 -3px', boxShadow: '0 0 8px rgba(91,61,246,0.4)' }} />
-      )}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 6,
-        padding: '10px 0',
-        borderBottom: isDragOver ? 'none' : '1px solid #f3f4f6',
-        background: selected ? '#fff5f5' : 'transparent',
-        borderRadius: selected ? 8 : 0,
+    <div style={{
+      display:'flex', alignItems:'center', gap:14,
+      padding:'14px 16px',
+      background: selected ? '#FFF5F5' : T.surface,
+      borderRadius: T.radiusLG,
+      marginBottom: 10,
+      boxShadow: selected ? '0 0 0 2px #EF4444' : T.shadowSM,
+      transition:'box-shadow 0.15s, background 0.15s',
+      opacity: localDone ? 0.45 : 1,
+    }}>
+
+      {/* Circulo selector */}
+      <button onClick={handleCircleTap} style={{
+        flexShrink:0, width:26, height:26, borderRadius:'50%',
+        border: `2px solid ${selected ? T.danger : localDone ? T.success : T.borderStrong}`,
+        background: selected ? T.danger : localDone ? T.success : 'transparent',
+        display:'flex', alignItems:'center', justifyContent:'center',
+        cursor:'pointer', padding:0, transition:'all 0.15s',
+        WebkitTapHighlightColor:'transparent',
       }}>
-
-        {/* Reorder buttons — mobile friendly (up/down instead of drag) */}
-        {draggable && !hasSelection && (
-          <div style={{ display:'flex', flexDirection:'column', gap:0, flexShrink:0 }}>
-            <button
-              onClick={e => { e.stopPropagation(); onMoveUp?.() }}
-              style={{ background:'none', border:'none', color:'#d1d5db', cursor:'pointer', padding:'2px 4px', fontSize:12, lineHeight:1 }}
-              aria-label="Mover arriba"
-            >▲</button>
-            <button
-              onClick={e => { e.stopPropagation(); onMoveDown?.() }}
-              style={{ background:'none', border:'none', color:'#d1d5db', cursor:'pointer', padding:'2px 4px', fontSize:12, lineHeight:1 }}
-              aria-label="Mover abajo"
-            >▼</button>
-          </div>
+        {(selected || localDone) && (
+          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+            <polyline points="1.5,6 4.5,9 10.5,3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         )}
+      </button>
 
-        {/* Circle — selects only */}
-        <button
-          onClick={handleCircleTap}
-          style={{
-            flexShrink: 0,
-            width: 44, height: 44,
-            borderRadius: '50%',
-            background: 'transparent', border: 'none',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', padding: 0,
-            margin: '-10px -11px',
-            WebkitTapHighlightColor: 'transparent',
-          }}
-          aria-label="Seleccionar tarea"
-        >
+      {/* Contenido */}
+      <div onClick={handleTextTap} style={{ flex:1, cursor: hasSelection ? 'default' : 'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}>
+        <p style={{
+          margin:0, fontSize:T.fontMD, fontWeight:500, lineHeight:1.4,
+          color: localDone ? T.textTertiary : T.textPrimary,
+          textDecoration:'none',
+          wordBreak:'break-word',
+        }}>
+          {task.title}
+        </p>
+        <div style={{ display:'flex', alignItems:'center', gap:6, marginTop:4 }}>
           <span style={{
-            width: 22, height: 22, borderRadius: '50%',
-            border: `2px solid ${selected ? '#ef4444' : localDone ? '#22C55E' : '#d1d5db'}`,
-            background: selected ? '#ef4444' : localDone ? '#22C55E' : 'transparent',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            transition: 'background 0.12s, border-color 0.12s',
+            fontSize:11, fontWeight:600, padding:'2px 10px',
+            borderRadius: T.radiusFull,
+            background: isGroup ? 'rgba(34,197,94,0.1)' : 'rgba(91,61,246,0.1)',
+            color: isGroup ? '#166634' : T.primary,
           }}>
-            {(selected || localDone) && <span style={{ color:'#fff', fontSize:11, lineHeight:1 }}>✓</span>}
+            {tag}
           </span>
-        </button>
-
-        {/* Text — tap to complete */}
-        <div onClick={handleTextTap} style={{ flex:1, cursor: hasSelection ? 'default' : 'pointer', userSelect:'none', padding:'4px 0', WebkitTapHighlightColor:'transparent' }}>
-          <p style={{
-            margin:0, fontSize:15, lineHeight:1.5,
-            color: localDone ? '#9ca3af' : '#111827',
-            textDecoration: localDone ? 'line-through' : 'none',
-            wordBreak:'break-word',
-          }}>
-            {task.title}{' '}
-            <span style={{ fontSize:12, fontWeight:500, padding:'2px 8px', borderRadius:20, whiteSpace:'nowrap', ...tagStyle }}>
-              {tag}
-            </span>
-          </p>
+          {task.dueDate && (() => {
+            const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
+            const mes = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]
+            return <span style={{ fontSize:11, color: T.textTertiary }}>{d.getDate()} {mes}</span>
+          })()}
+          {task.reminder && <span style={{ fontSize:11, color: T.primary }}>🔔</span>}
         </div>
-
-        {/* Actions */}
-        {!hasSelection && (
-          <div style={{ display:'flex', gap:0, flexShrink:0 }}>
-            <button onClick={e => { e.stopPropagation(); onEdit(task) }} style={touchBtn} aria-label="Editar">✏️</button>
-            <button onClick={e => { e.stopPropagation(); onDelete(task) }} style={touchBtn} aria-label="Eliminar">🗑️</button>
-          </div>
-        )}
       </div>
-    </>
+    </div>
   )
-}
-
-const touchBtn = {
-  background:'none', border:'none', fontSize:17, cursor:'pointer',
-  width:44, height:44, display:'flex', alignItems:'center', justifyContent:'center',
-  borderRadius:10, WebkitTapHighlightColor:'transparent',
 }
