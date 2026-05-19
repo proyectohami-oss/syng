@@ -28,18 +28,18 @@ function EditMultiModal({ count, groups, onSave, onClose }) {
   }
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.35)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }} onClick={e => e.target===e.currentTarget && onClose()}>
-      <div style={{ background:'rgba(248,248,250,0.92)', backdropFilter:'blur(28px)', WebkitBackdropFilter:'blur(28px)', borderRadius:'28px 28px 0 0', padding:'28px 24px', paddingBottom:'calc(28px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480, border:'1px solid rgba(255,255,255,0.6)' }}>
+      <div style={{ background:'rgba(248,248,250,0.88)', backdropFilter:'blur(32px)', WebkitBackdropFilter:'blur(32px)', borderRadius:'28px 28px 0 0', padding:'28px 24px', paddingBottom:'calc(28px + env(safe-area-inset-bottom))', width:'100%', maxWidth:480, border:'1px solid rgba(255,255,255,0.6)' }}>
         <p style={{ margin:'0 0 6px', fontSize:18, fontWeight:600, color:'#111827' }}>Editar {count} tarea{count!==1?'s':''}</p>
-        <p style={{ margin:'0 0 24px', fontSize:13, color:'rgba(0,0,0,0.4)', fontWeight:400 }}>Solo se aplican los campos que cambies.</p>
-        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={{ width:'100%', boxSizing:'border-box', padding:'12px 16px', borderRadius:16, border:'1px solid rgba(0,0,0,0.08)', fontSize:15, fontFamily:'inherit', outline:'none', marginBottom:16, background:'rgba(255,255,255,0.7)', backdropFilter:'blur(8px)', WebkitBackdropFilter:'blur(8px)' }} />
+        <p style={{ margin:'0 0 24px', fontSize:13, color:'rgba(0,0,0,0.38)' }}>Solo se aplican los campos que cambies.</p>
+        <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={{ width:'100%', boxSizing:'border-box', padding:'12px 16px', borderRadius:16, border:'1px solid rgba(0,0,0,0.08)', fontSize:15, fontFamily:'inherit', outline:'none', marginBottom:16, background:'rgba(255,255,255,0.7)' }} />
         <div style={{ background:'rgba(255,255,255,0.5)', borderRadius:16, overflow:'hidden', border:'1px solid rgba(0,0,0,0.06)', marginBottom:24 }}>
           {[{ id:'__sin_cambio__', label:'Sin cambio' },{ id:'', label:'Personal' },...groups.map(g=>({id:g.id,label:g.name}))].map(op => (
             <div key={op.id} onClick={() => setGroupId(op.id)} style={{ padding:'13px 18px', fontSize:14, cursor:'pointer', borderBottom:'1px solid rgba(0,0,0,0.04)', background: groupId===op.id?'rgba(74,144,226,0.12)':'transparent', color: groupId===op.id?'#2563eb':'#111827', fontWeight: groupId===op.id?600:400 }}>{op.label}</div>
           ))}
         </div>
         <div style={{ display:'flex', gap:12 }}>
-          <button onClick={onClose} style={{ flex:1, padding:'14px', borderRadius:16, border:'1px solid rgba(0,0,0,0.08)', background:'rgba(255,255,255,0.6)', color:'rgba(0,0,0,0.5)', fontSize:15, cursor:'pointer' }}>Cancelar</button>
-          <button onClick={guardar} disabled={!hayCambio||loading} style={{ flex:1, padding:'14px', borderRadius:16, border:'none', fontSize:15, fontWeight:600, cursor:hayCambio?'pointer':'default', background:hayCambio?'#4A90E2':'rgba(0,0,0,0.08)', color:hayCambio?'#fff':'rgba(0,0,0,0.3)' }}>{loading?'Aplicando...':'Aplicar'}</button>
+          <button onClick={onClose} style={{ flex:1, padding:'14px', borderRadius:16, border:'1px solid rgba(0,0,0,0.08)', background:'rgba(255,255,255,0.6)', color:'rgba(0,0,0,0.45)', fontSize:15, cursor:'pointer' }}>Cancelar</button>
+          <button onClick={guardar} disabled={!hayCambio||loading} style={{ flex:1, padding:'14px', borderRadius:16, border:'none', fontSize:15, fontWeight:600, cursor:hayCambio?'pointer':'default', background:hayCambio?'#4A90E2':'rgba(0,0,0,0.08)', color:hayCambio?'#fff':'rgba(0,0,0,0.28)' }}>{loading?'Aplicando...':'Aplicar'}</button>
         </div>
       </div>
     </div>
@@ -90,22 +90,26 @@ export function DayModule() {
   }
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, overflow:'hidden', background:'transparent' }}>
+    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, overflow:'hidden', background:'transparent', position:'relative' }}>
+
+      {/* Glow ambiental peach */}
+      <div style={{ position:'absolute', top:-100, left:-80, width:320, height:320, borderRadius:'50%', background:'radial-gradient(circle, rgba(255,180,120,0.28) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
+      {/* Glow ambiental cyan */}
+      <div style={{ position:'absolute', bottom:100, right:-60, width:280, height:280, borderRadius:'50%', background:'radial-gradient(circle, rgba(120,200,255,0.22) 0%, transparent 70%)', pointerEvents:'none', zIndex:0 }} />
 
       {/* Header */}
-      <div style={{ flexShrink:0, padding:'24px 24px 16px', background:'transparent' }}>
+      <div style={{ flexShrink:0, padding:'24px 24px 16px', background:'transparent', position:'relative', zIndex:1 }}>
         <div style={{ display:'flex', alignItems:'flex-start' }}>
-          <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:'rgba(0,0,0,0.25)', cursor:'pointer', padding:'0 12px 0 0', lineHeight:1.3, marginTop:4 }}>‹</button>
+          <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:'rgba(0,0,0,0.2)', cursor:'pointer', padding:'0 12px 0 0', lineHeight:1.3, marginTop:4 }}>‹</button>
           <div style={{ flex:1 }}>
-            <p style={{ margin:'0 0 2px', fontSize:13, color:'rgba(0,0,0,0.4)', fontWeight:400 }}>{labelDia(date)}</p>
+            <p style={{ margin:'0 0 2px', fontSize:13, color:'rgba(0,0,0,0.35)', fontWeight:400 }}>{labelDia(date)}</p>
             <p style={{ margin:'0 0 6px', fontSize:34, fontWeight:700, color:'#111827', letterSpacing:'-0.03em', lineHeight:1.1 }}>Syng</p>
             <p style={{ margin:'0 0 2px', fontSize:22, fontWeight:600, color:'#111827', letterSpacing:'-0.01em' }}>Pendientes</p>
-            <p style={{ margin:0, fontSize:13, color:'rgba(0,0,0,0.38)', fontWeight:400 }}>{orderedPending.length} task{orderedPending.length!==1?'s':''} remaining</p>
+            <p style={{ margin:0, fontSize:13, color:'rgba(0,0,0,0.35)', fontWeight:400 }}>{orderedPending.length} task{orderedPending.length!==1?'s':''} remaining</p>
           </div>
         </div>
         {!haySeleccion && (
-          <button onClick={() => navigate(`/agenda/${date}/nueva`)}
-            style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 0 0', background:'none', border:'none', cursor:'pointer', color:'#4A90E2', fontSize:15, fontWeight:500, WebkitTapHighlightColor:'transparent', marginTop:14, borderTop:'1px solid rgba(0,0,0,0.06)', width:'100%' }}>
+          <button onClick={() => navigate(`/agenda/${date}/nueva`)} style={{ display:'flex', alignItems:'center', gap:8, padding:'12px 0 0', background:'none', border:'none', cursor:'pointer', color:'#4A90E2', fontSize:15, fontWeight:500, WebkitTapHighlightColor:'transparent', marginTop:14, borderTop:'1px solid rgba(0,0,0,0.06)', width:'100%' }}>
             <span style={{ fontSize:18 }}>+</span>
             <span>Nueva tarea</span>
           </button>
@@ -113,10 +117,10 @@ export function DayModule() {
       </div>
 
       {/* Lista */}
-      <div style={{ flex:1, overflowY:'auto', padding:'4px 18px 180px', WebkitOverflowScrolling:'touch' }}>
+      <div style={{ flex:1, overflowY:'auto', padding:'4px 18px 200px', WebkitOverflowScrolling:'touch', position:'relative', zIndex:1 }}>
         {orderedPending.length === 0 && (
-          <div style={{ padding:'24px', background:'rgba(255,255,255,0.35)', backdropFilter:'blur(18px)', WebkitBackdropFilter:'blur(18px)', borderRadius:28, textAlign:'center', marginBottom:16, border:'1px solid rgba(255,255,255,0.5)' }}>
-            <p style={{ fontSize:14, color:'rgba(0,0,0,0.35)', margin:0 }}>Sin tareas pendientes ✨</p>
+          <div style={{ padding:'28px', background:'rgba(255,255,255,0.35)', backdropFilter:'blur(24px)', WebkitBackdropFilter:'blur(24px)', borderRadius:28, textAlign:'center', marginBottom:18, border:'1px solid rgba(255,255,255,0.45)' }}>
+            <p style={{ fontSize:14, color:'rgba(0,0,0,0.3)', margin:0 }}>Sin tareas pendientes ✨</p>
           </div>
         )}
         {orderedPending.map(task => (
@@ -127,8 +131,8 @@ export function DayModule() {
         ))}
         {completedVisible.length > 0 && (
           <>
-            <p style={{ margin:'28px 4px 6px', fontSize:22, fontWeight:600, color:'#111827', letterSpacing:'-0.01em' }}>Completadas</p>
-            <p style={{ margin:'0 4px 16px', fontSize:13, color:'rgba(0,0,0,0.38)', fontWeight:400 }}>{completedVisible.length} task{completedVisible.length!==1?'s':''} finished</p>
+            <p style={{ margin:'32px 4px 6px', fontSize:22, fontWeight:600, color:'#111827', letterSpacing:'-0.01em' }}>Completadas</p>
+            <p style={{ margin:'0 4px 18px', fontSize:13, color:'rgba(0,0,0,0.35)', fontWeight:400 }}>{completedVisible.length} task{completedVisible.length!==1?'s':''} finished</p>
             {completedVisible.map(task => (
               <DayTaskItem key={task.id} task={task} groupName={getGroupName(task.groupId)}
                 onToggle={toggleStatus} onEdit={t => setModal({ tipo:'editar', task:t })}
@@ -139,31 +143,39 @@ export function DayModule() {
         )}
       </div>
 
-      {/* Toolbar flotante glass */}
+      {/* Toolbar flotante glass con glow */}
       {haySeleccion && (
-        <div style={{ position:'fixed', bottom:'calc(32px + env(safe-area-inset-bottom))', left:20, right:20, zIndex:200 }}>
-          <div style={{ display:'flex', justifyContent:'center', marginBottom:-2 }}>
-            <div style={{ background:'rgba(255,255,255,0.52)', backdropFilter:'blur(28px)', WebkitBackdropFilter:'blur(28px)', borderRadius:'16px 16px 0 0', padding:'6px 28px', border:'1px solid rgba(255,255,255,0.55)', borderBottom:'none' }}>
-              <span style={{ fontSize:11, fontWeight:600, color:'rgba(0,0,0,0.35)', letterSpacing:'0.06em' }}>EDIT TOOLBAR</span>
+        <div style={{ position:'fixed', bottom:'calc(32px + env(safe-area-inset-bottom))', left:18, right:18, zIndex:500 }}>
+          <div style={{ display:'flex', justifyContent:'center', marginBottom:-1 }}>
+            <div style={{ background:'rgba(255,255,255,0.55)', backdropFilter:'blur(32px)', WebkitBackdropFilter:'blur(32px)', borderRadius:'16px 16px 0 0', padding:'6px 28px', border:'1px solid rgba(255,255,255,0.55)', borderBottom:'none' }}>
+              <span style={{ fontSize:10, fontWeight:700, color:'rgba(0,0,0,0.3)', letterSpacing:'0.1em' }}>EDIT TOOLBAR</span>
             </div>
           </div>
-          <div style={{ height:84, background:'rgba(255,255,255,0.52)', backdropFilter:'blur(28px)', WebkitBackdropFilter:'blur(28px)', borderRadius:32, border:'1px solid rgba(255,255,255,0.55)', boxShadow:'0 25px 80px rgba(15,23,42,0.14)', display:'flex', alignItems:'center', justifyContent:'space-around', padding:'0 28px' }}>
-            <span style={{ fontSize:13, fontWeight:500, color:'rgba(0,0,0,0.4)' }}>{selectedIds.size} sel.</span>
+          <div style={{
+            height:88,
+            background:'rgba(255,255,255,0.52)',
+            backdropFilter:'blur(32px)', WebkitBackdropFilter:'blur(32px)',
+            borderRadius:32,
+            border:'1px solid rgba(255,255,255,0.55)',
+            boxShadow:'0 25px 80px rgba(15,23,42,0.16), 0 0 0 1px rgba(120,200,255,0.08)',
+            display:'flex', alignItems:'center', justifyContent:'space-around', padding:'0 28px',
+          }}>
+            <span style={{ fontSize:13, fontWeight:500, color:'rgba(0,0,0,0.35)' }}>{selectedIds.size} sel.</span>
             <button onClick={() => {
               const t = [...pending,...completed].find(t => selectedIds.has(t.id))
               if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
             }} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5, background:'none', border:'none', cursor:'pointer', padding:'8px 20px' }}>
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <defs><linearGradient id="pg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5B9FED"/><stop offset="100%" stopColor="#4A90E2"/></linearGradient></defs>
-                <path d="M16 5L21 10L11 20L6 21L7 16L16 5Z" fill="url(#pg)"/>
+                <defs><linearGradient id="pg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stopColor="#5B9FED"/><stop offset="100%" stopColor="#4A90E2"/></linearGradient></defs>
+                <path d="M16 5L21 10L11 20L6 21L7 16L16 5Z" fill="url(#pg2)"/>
                 <path d="M16 5L21 10" stroke="rgba(255,255,255,0.7)" strokeWidth="1.5" strokeLinecap="round"/>
               </svg>
               <span style={{ fontSize:12, fontWeight:600, color:'#4A90E2' }}>Editar</span>
             </button>
             <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5, background:'none', border:'none', cursor:'pointer', padding:'8px 20px' }}>
               <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
-                <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#E85C5C"/><stop offset="100%" stopColor="#D64545"/></linearGradient></defs>
-                <rect x="7" y="10" width="14" height="13" rx="2.5" fill="url(#tg)"/>
+                <defs><linearGradient id="tg2" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#E85C5C"/><stop offset="100%" stopColor="#D64545"/></linearGradient></defs>
+                <rect x="7" y="10" width="14" height="13" rx="2.5" fill="url(#tg2)"/>
                 <rect x="5" y="7" width="18" height="3.5" rx="1.75" fill="#E05555"/>
                 <rect x="10.5" y="4" width="7" height="4" rx="1.5" fill="#E05555" opacity="0.7"/>
                 <line x1="11" y1="13.5" x2="11" y2="20" stroke="rgba(255,255,255,0.6)" strokeWidth="1.5" strokeLinecap="round"/>

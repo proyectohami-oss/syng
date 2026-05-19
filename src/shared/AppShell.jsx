@@ -142,13 +142,13 @@ export function AppShell({ children }) {
              Hidden on desktop via CSS class.               */}
         <nav className="mobile-bottom-nav" aria-label="Navegación móvil" style={{
           display: 'flex',
-          background: 'rgba(255,255,255,0.55)',
-          backdropFilter: 'blur(28px)',
-          WebkitBackdropFilter: 'blur(28px)',
-          borderTop: '1px solid rgba(255,255,255,0.6)',
+          background: 'rgba(255,255,255,0.62)',
+          backdropFilter: 'blur(32px)',
+          WebkitBackdropFilter: 'blur(32px)',
+          borderTop: '1px solid rgba(255,255,255,0.55)',
           paddingBottom: 'env(safe-area-inset-bottom)',
           flexShrink: 0,
-          boxShadow: '0 -8px 32px rgba(15,23,42,0.06)',
+          boxShadow: '0 -12px 40px rgba(15,23,42,0.08)',
         }}>
           {NAV_ITEMS.map(item => (
             <button

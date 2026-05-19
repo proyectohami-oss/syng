@@ -21,29 +21,27 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 16,
-      padding: '20px 22px',
-      marginBottom: 16,
+      display: 'flex', alignItems: 'center', gap: 18,
+      padding: '22px 24px',
+      marginBottom: 18,
       borderRadius: 28,
-      background: localDone ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.42)',
-      backdropFilter: 'blur(28px) saturate(180%)',
-      WebkitBackdropFilter: 'blur(28px) saturate(180%)',
-      border: '1px solid rgba(255,255,255,0.55)',
-      boxShadow: localDone
-        ? '0 8px 32px rgba(15,23,42,0.04)'
-        : '0 20px 60px rgba(15,23,42,0.08), inset 0 1px 1px rgba(255,255,255,0.8), inset 0 -1px 1px rgba(255,255,255,0.2)',
-      opacity: localDone ? 0.55 : 1,
+      background: localDone ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.42)',
+      backdropFilter: 'blur(24px)',
+      WebkitBackdropFilter: 'blur(24px)',
+      border: '1px solid rgba(255,255,255,0.35)',
+      boxShadow: '0 30px 80px rgba(38,57,77,0.08)',
+      opacity: localDone ? 0.5 : 1,
       transition: 'all 0.25s ease',
     }}>
-
       <button onClick={e => { e.stopPropagation(); onCircleTap(task.id) }} style={{
         flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-        border: selected ? 'none' : localDone ? 'none' : '1.5px solid rgba(0,0,0,0.15)',
-        background: selected ? '#4A90E2' : localDone ? 'rgba(180,180,180,0.6)' : 'rgba(255,255,255,0.6)',
+        border: selected ? 'none' : localDone ? 'none' : '1.5px solid rgba(0,0,0,0.18)',
+        background: selected ? '#4A90E2' : localDone ? 'rgba(160,160,160,0.5)' : 'rgba(255,255,255,0.5)',
         backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', padding: 0, transition: 'all 0.2s ease',
-        boxShadow: selected ? '0 0 0 3px rgba(74,144,226,0.25)' : 'none',
+        cursor: 'pointer', padding: 0,
+        boxShadow: selected ? '0 0 0 3px rgba(74,144,226,0.2)' : 'none',
+        transition: 'all 0.2s ease',
         WebkitTapHighlightColor: 'transparent',
       }}>
         {(selected || localDone) && (
@@ -56,21 +54,21 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
       <div onClick={handleTextTap} style={{ flex: 1, cursor: hasSelection ? 'default' : 'pointer', userSelect: 'none', WebkitTapHighlightColor: 'transparent' }}>
         <p style={{
           margin: 0, fontSize: 16, fontWeight: 500, lineHeight: 1.45,
-          color: localDone ? 'rgba(0,0,0,0.35)' : '#111827',
+          color: localDone ? 'rgba(0,0,0,0.3)' : '#111827',
           textDecoration: localDone ? 'line-through' : 'none',
-          textDecorationColor: 'rgba(0,0,0,0.2)',
+          textDecorationColor: 'rgba(0,0,0,0.15)',
         }}>
           {task.title}
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 7, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
           <span style={{
             fontSize: 11, fontWeight: 500, padding: '3px 10px', borderRadius: 9999,
             background: isGroup ? 'rgba(52,199,89,0.15)' : 'rgba(139,92,246,0.12)',
             color: isGroup ? '#1a7a3a' : '#6d28d9',
             border: isGroup ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(139,92,246,0.15)',
           }}>{tag}</span>
-          {dueLabel && <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.35)', fontWeight: 400 }}>{dueLabel}</span>}
-          {task.reminder && <span style={{ fontSize: 11, opacity: 0.6 }}>🔔</span>}
+          {dueLabel && <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.32)', fontWeight: 400 }}>{dueLabel}</span>}
+          {task.reminder && <span style={{ fontSize: 11, opacity: 0.55 }}>🔔</span>}
         </div>
       </div>
     </div>
