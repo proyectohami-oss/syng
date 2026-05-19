@@ -100,7 +100,7 @@ export function DayModule() {
             <p style={{ margin:'0 0 4px', fontSize:13, color:'rgba(15,23,42,0.45)', fontWeight:400, letterSpacing:'0.01em' }}>{labelDia(date)}</p>
             <p style={{ margin:'0 0 4px', fontSize:36, fontWeight:800, color:'#0F172A', letterSpacing:'-0.03em', lineHeight:1.05 }}>Syng</p>
             <p style={{ margin:'0 0 2px', fontSize:22, fontWeight:700, color:'#0F172A', letterSpacing:'-0.01em' }}>Pendientes</p>
-            <p style={{ margin:0, fontSize:13, color:'rgba(15,23,42,0.38)', fontWeight:400 }}>{orderedPending.length} task{orderedPending.length!==1?'s':''} remaining</p>
+            <p style={{ margin:0, fontSize:13, color:'rgba(15,23,42,0.38)', fontWeight:400 }}>{orderedPending.length} tarea{orderedPending.length!==1?'s':''} pendiente{orderedPending.length!==1?'s':''}</p>
           </div>
         </div>
         {!haySeleccion && (
@@ -116,7 +116,7 @@ export function DayModule() {
 
         {/* Contenedor pendientes */}
         <div style={{
-          background: 'rgba(250,248,242,0.70)',
+          background: 'rgba(255,255,255,0.45)',
           backdropFilter: 'blur(40px)',
           WebkitBackdropFilter: 'blur(40px)',
           border: '1px solid rgba(255,255,255,0.40)',
@@ -139,7 +139,7 @@ export function DayModule() {
         {/* Contenedor completadas */}
         {completedVisible.length > 0 && (
           <div style={{
-            background: 'rgba(250,248,242,0.70)',
+            background: 'rgba(255,255,255,0.45)',
             backdropFilter: 'blur(40px)',
             WebkitBackdropFilter: 'blur(40px)',
             border: '1px solid rgba(255,255,255,0.40)',
@@ -149,7 +149,7 @@ export function DayModule() {
             boxShadow: '0 30px 60px -15px rgba(0,0,0,0.04)',
           }}>
             <p style={{ margin:'4px 4px 12px', fontSize:20, fontWeight:700, color:'#0F172A', letterSpacing:'-0.01em' }}>Completadas</p>
-            <p style={{ margin:'-8px 4px 14px', fontSize:13, color:'rgba(15,23,42,0.38)', fontWeight:400 }}>{completedVisible.length} task{completedVisible.length!==1?'s':''} finished</p>
+            <p style={{ margin:'-8px 4px 14px', fontSize:13, color:'rgba(15,23,42,0.38)', fontWeight:400 }}>{completedVisible.length} tarea{completedVisible.length!==1?'s':''} completada{completedVisible.length!==1?'s':''}</p>
             {completedVisible.map(task => (
               <DayTaskItem key={task.id} task={task} groupName={getGroupName(task.groupId)}
                 onToggle={toggleStatus} onEdit={t => setModal({ tipo:'editar', task:t })}
