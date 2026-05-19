@@ -111,7 +111,7 @@ export function DayModule() {
   return (
     <div style={{
       display:'flex', flexDirection:'column', flex:1, minHeight:'100vh', overflow:'hidden',
-      background:'radial-gradient(circle at top left, rgba(255,230,210,0.55), transparent 35%), radial-gradient(circle at bottom center, rgba(214,230,242,0.75), transparent 40%), linear-gradient(180deg, #f8f8f7 0%, #eef3f8 100%)',
+      background:'transparent',
     }}>
 
       {/* Header */}

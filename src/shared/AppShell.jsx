@@ -57,6 +57,7 @@ export function AppShell({ children }) {
       display: 'flex',
       height: '100%',
       overflow: 'hidden',
+      background: "radial-gradient(circle at top left, rgba(255,230,210,0.55), transparent 35%), radial-gradient(circle at bottom center, rgba(214,230,242,0.75), transparent 40%), linear-gradient(180deg, #f8f8f7 0%, #eef3f8 100%)",
     }}>
 
       {/* ── Sidebar desktop (hidden on mobile via class) ─────────── */}
@@ -141,7 +142,10 @@ export function AppShell({ children }) {
         <nav className="mobile-bottom-nav" aria-label="Navegación móvil" style={{
           display: 'flex',
           borderTop: '1px solid #f3f4f6',
-          background: '#fff',
+          background: 'rgba(255,255,255,0.72)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderTop: '1px solid rgba(255,255,255,0.5)',
           paddingBottom: 'env(safe-area-inset-bottom)',
           flexShrink: 0,
         }}>
