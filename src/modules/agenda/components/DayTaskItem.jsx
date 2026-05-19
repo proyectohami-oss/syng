@@ -21,54 +21,51 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 18,
-      padding: '22px 24px',
-      marginBottom: 18,
-      borderRadius: 28,
-      background: localDone ? 'rgba(255,255,255,0.20)' : 'rgba(255,255,255,0.42)',
-      backdropFilter: 'blur(24px)',
-      WebkitBackdropFilter: 'blur(24px)',
-      border: '1px solid rgba(255,255,255,0.35)',
-      boxShadow: '0 30px 80px rgba(38,57,77,0.08)',
-      opacity: localDone ? 0.5 : 1,
-      transition: 'all 0.25s ease',
+      display: 'flex', alignItems: 'center', gap: 16,
+      padding: '16px 18px',
+      marginBottom: 10,
+      borderRadius: 20,
+      background: 'rgba(255,255,255,0.40)',
+      backdropFilter: 'blur(20px)',
+      WebkitBackdropFilter: 'blur(20px)',
+      border: '1px solid rgba(255,255,255,0.30)',
+      opacity: localDone ? 0.55 : 1,
+      transition: 'all 0.2s ease',
     }}>
+
       <button onClick={e => { e.stopPropagation(); onCircleTap(task.id) }} style={{
         flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-        border: selected ? 'none' : localDone ? 'none' : '1.5px solid rgba(0,0,0,0.18)',
-        background: selected ? '#4A90E2' : localDone ? 'rgba(160,160,160,0.5)' : 'rgba(255,255,255,0.5)',
-        backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)',
+        border: (selected || localDone) ? 'none' : '1.5px solid #D0D0D8',
+        background: selected ? '#3B82F6' : localDone ? '#3B82F6' : '#FFFFFF',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer', padding: 0,
-        boxShadow: selected ? '0 0 0 3px rgba(74,144,226,0.2)' : 'none',
+        boxShadow: (selected || localDone) ? '0 0 0 3px rgba(59,130,246,0.15)' : 'none',
         transition: 'all 0.2s ease',
         WebkitTapHighlightColor: 'transparent',
       }}>
         {(selected || localDone) && (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <polyline points="1.5,6 4.5,9 10.5,3" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+            <polyline points="2,6.5 5,9.5 11,3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         )}
       </button>
 
       <div onClick={handleTextTap} style={{ flex: 1, cursor: hasSelection ? 'default' : 'pointer', userSelect: 'none', WebkitTapHighlightColor: 'transparent' }}>
         <p style={{
-          margin: 0, fontSize: 16, fontWeight: 500, lineHeight: 1.45,
-          color: localDone ? 'rgba(0,0,0,0.3)' : '#111827',
-          textDecoration: localDone ? 'line-through' : 'none',
-          textDecorationColor: 'rgba(0,0,0,0.15)',
+          margin: 0, fontSize: 16, fontWeight: 500, lineHeight: 1.4,
+          color: localDone ? 'rgba(15,23,42,0.4)' : '#0F172A',
+          textDecoration: 'none',
         }}>
           {task.title}
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 6, flexWrap: 'wrap' }}>
           <span style={{
-            fontSize: 11, fontWeight: 500, padding: '3px 10px', borderRadius: 9999,
-            background: isGroup ? 'rgba(52,199,89,0.15)' : 'rgba(139,92,246,0.12)',
-            color: isGroup ? '#1a7a3a' : '#6d28d9',
-            border: isGroup ? '1px solid rgba(52,199,89,0.2)' : '1px solid rgba(139,92,246,0.15)',
+            fontSize: 11, fontWeight: 500, padding: '2px 9px', borderRadius: 9999,
+            background: isGroup ? 'rgba(52,199,89,0.12)' : 'rgba(59,130,246,0.10)',
+            color: isGroup ? '#166534' : '#1d4ed8',
           }}>{tag}</span>
-          {dueLabel && <span style={{ fontSize: 11, color: 'rgba(0,0,0,0.32)', fontWeight: 400 }}>{dueLabel}</span>}
-          {task.reminder && <span style={{ fontSize: 11, opacity: 0.55 }}>🔔</span>}
+          {dueLabel && <span style={{ fontSize: 11, color: 'rgba(15,23,42,0.35)', fontWeight: 400 }}>{dueLabel}</span>}
+          {task.reminder && <span style={{ fontSize: 11, opacity: 0.5 }}>🔔</span>}
         </div>
       </div>
     </div>
