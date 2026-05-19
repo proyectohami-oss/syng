@@ -58,6 +58,7 @@ export function AppShell({ children }) {
       height: '100%',
       overflow: 'hidden',
       background: "radial-gradient(circle at top left, rgba(255,230,210,0.55), transparent 35%), radial-gradient(circle at bottom center, rgba(214,230,242,0.75), transparent 40%), linear-gradient(180deg, #f8f8f7 0%, #eef3f8 100%)",
+      backgroundAttachment: 'fixed',
     }}>
 
       {/* ── Sidebar desktop (hidden on mobile via class) ─────────── */}
@@ -132,7 +133,7 @@ export function AppShell({ children }) {
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
 
         {/* Page content */}
-        <main style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', minHeight:0 }}>
+        <main style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', minHeight:0, background:'transparent' }}>
           {children}
         </main>
 
