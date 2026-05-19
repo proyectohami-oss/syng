@@ -35,15 +35,15 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
 
       <button onClick={e => { e.stopPropagation(); onCircleTap(task.id) }} style={{
         flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-        border: (selected || localDone) ? 'none' : '1.5px solid #D0D0D8',
-        background: selected ? '#3B82F6' : localDone ? '#3B82F6' : '#FFFFFF',
+        border: selected ? 'none' : localDone ? '1.5px solid rgba(200,200,210,0.5)' : '1.5px solid #D0D0D8',
+        background: selected ? '#3B82F6' : localDone ? 'rgba(255,255,255,0.4)' : '#FFFFFF',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         cursor: 'pointer', padding: 0,
-        boxShadow: (selected || localDone) ? '0 0 0 3px rgba(59,130,246,0.15)' : 'none',
+        boxShadow: selected ? '0 0 0 6px rgba(59,130,246,0.15), 0 0 0 3px rgba(59,130,246,0.25)' : localDone ? 'none' : 'none',
         transition: 'all 0.2s ease',
         WebkitTapHighlightColor: 'transparent',
       }}>
-        {(selected || localDone) && (
+        {selected && (
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
             <polyline points="2,6.5 5,9.5 11,3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
@@ -54,7 +54,7 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
         <p style={{
           margin: 0, fontSize: 16, fontWeight: 500, lineHeight: 1.4,
           color: localDone ? 'rgba(15,23,42,0.4)' : '#0F172A',
-          textDecoration: 'none',
+          textDecoration: localDone ? 'line-through' : 'none',
         }}>
           {task.title}
         </p>

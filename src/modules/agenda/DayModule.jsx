@@ -162,19 +162,15 @@ export function DayModule() {
 
       {/* Toolbar flotante glass */}
       {haySeleccion && (
-        <div style={{ position:'fixed', bottom:'calc(32px + env(safe-area-inset-bottom))', left:18, right:18, zIndex:500 }}>
-          <div style={{ display:'flex', justifyContent:'center', marginBottom:-1 }}>
-            <div style={{ background:'rgba(255,255,255,0.30)', backdropFilter:'blur(40px)', WebkitBackdropFilter:'blur(40px)', borderRadius:'14px 14px 0 0', padding:'5px 24px', border:'1px solid rgba(255,255,255,0.40)', borderBottom:'none' }}>
-              <span style={{ fontSize:10, fontWeight:600, color:'rgba(15,23,42,0.35)', letterSpacing:'0.12em' }}>EDIT TOOLBAR</span>
-            </div>
-          </div>
+        <div style={{ position:'fixed', bottom:'calc(90px + env(safe-area-inset-bottom))', left:18, right:18, zIndex:500 }}>
+
           <div style={{
             height:86,
-            background:'rgba(255,255,255,0.30)',
-            backdropFilter:'blur(40px)', WebkitBackdropFilter:'blur(40px)',
-            borderRadius:24,
-            border:'1px solid rgba(255,255,255,0.40)',
-            boxShadow:'0 25px 80px rgba(15,23,42,0.14)',
+            background:'rgba(250,247,240,0.75)',
+            backdropFilter:'blur(32px) saturate(180%)', WebkitBackdropFilter:'blur(32px) saturate(180%)',
+            borderRadius:28,
+            border:'1px solid rgba(255,255,255,0.6)',
+            boxShadow:'0 20px 60px rgba(15,23,42,0.18), 0 4px 16px rgba(15,23,42,0.08), inset 0 1px 1px rgba(255,255,255,0.9)',
             display:'flex', alignItems:'center', justifyContent:'space-around', padding:'0 24px',
           }}>
             <span style={{ fontSize:13, fontWeight:500, color:'rgba(15,23,42,0.4)' }}>{selectedIds.size} sel.</span>
