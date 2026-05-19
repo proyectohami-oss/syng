@@ -130,10 +130,10 @@ export function AppShell({ children }) {
       </nav>
 
       {/* ── Right side: content + mobile nav ─────────────────────── */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0 }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0, background:'transparent' }}>
 
         {/* Page content */}
-        <main style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', minHeight:0, background:'transparent' }}>
+        <main style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', minHeight:0, background:'transparent', isolation:'isolate' }}>
           {children}
         </main>
 
