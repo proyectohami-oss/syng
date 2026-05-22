@@ -29,6 +29,16 @@
   <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
 
   <title>Syng</title>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  <script>
+    window.__installPrompt = null;
+    window.addEventListener("beforeinstallprompt", function(e) {
+      e.preventDefault();
+      window.__installPrompt = e;
+    });
+  </script>
 </head>
 <body>
   <div id="root"></div>
