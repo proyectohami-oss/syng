@@ -7,14 +7,15 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      strategies:   'generateSW',
+      strategies:   'injectManifest',
+      srcDir:       'src',
       filename:     'sw.js',
 
       manifest: {
         name:             'Syng',
         short_name:       'Syng',
         description:      'Tareas y colaboración en tiempo real',
-        start_url:        '/agenda',
+        start_url:        '/',
         scope:            '/',
         display:          'standalone',
         orientation:      'portrait',
@@ -29,23 +30,10 @@ export default defineConfig({
         ],
       },
 
-      workbox: {
+      injectManifest: {
         globPatterns:    ['**/*.{js,css,html,ico,png,svg,woff2}'],
         globIgnores:     ['firebase-messaging-sw.js'],
-        skipWaiting:     true,
-        clientsClaim:    true,
         maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
-        runtimeCaching: [
-          {
-            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
-            handler:    'StaleWhileRevalidate',
-            options: {
-              cacheName:         'google-fonts-stylesheets',
-              expiration:        { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
-              cacheableResponse: { statuses: [0, 200] },
-            },
-          },
-        ],
       },
 
       devOptions: { enabled: false, type: 'module' },
