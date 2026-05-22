@@ -24,20 +24,19 @@ export function NewTaskScreen() {
 
   const groups = useMemo(() => Array.from(state.groups.list.values()), [state.groups.list])
 
-  const [title,     setTitle]     = useState('')
-  const [groupId,   setGroupId]   = useState('')
-  const [dateStr,   setDateStr]   = useState(date ?? '')
-  const [showGroup, setShowGroup] = useState(false)
-  const [showDate,  setShowDate]  = useState(false)
-  const [showRepeat, setShowRepeat] = useState(false)
-  const [repeatDays,   setRepeatDays]   = useState(new Set())
-  const [reminder,     setReminder]     = useState(null)
-  const [showReminder, setShowReminder] = useState(false)
+  const [title,       setTitle]       = useState('')
+  const [groupId,     setGroupId]     = useState('')
+  const [dateStr,     setDateStr]     = useState(date ?? '')
+  const [showGroup,   setShowGroup]   = useState(false)
+  const [showDate,    setShowDate]    = useState(false)
+  const [showRepeat,  setShowRepeat]  = useState(false)
+  const [repeatDays,  setRepeatDays]  = useState(new Set())
+  const [reminder,    setReminder]    = useState(null)
+  const [showReminder,setShowReminder]= useState(false)
 
-  const grupoLabel = groups.find(g => g.id === groupId)?.name ?? 'Personal'
+  const grupoLabel  = groups.find(g => g.id === groupId)?.name ?? 'Personal'
   const puedeGuardar = !!title.trim()
 
-  // Focus suave después de que la pantalla esté montada
   useEffect(() => {
     const t = setTimeout(() => inputRef.current?.focus(), 80)
     return () => clearTimeout(t)
@@ -66,13 +65,19 @@ export function NewTaskScreen() {
       {/* Header */}
       <div style={header}>
         <button onClick={() => navigate(-1)} style={btnBack}>Cancelar</button>
-        <span style={{ fontSize:16, fontWeight:600, color:'#111' }}>Nueva tarea</span>
+        <span style={{ fontSize:16, fontWeight:600, color:'#0D1240', letterSpacing:'-0.01em' }}>Nueva tarea</span>
         <button
           onClick={handleSave}
           disabled={!puedeGuardar}
-          style={{ background:'none', border:'none', fontSize:16, fontWeight:600, cursor: puedeGuardar ? 'pointer' : 'default', color: puedeGuardar ? '#5B3DF6' : '#c4b5fd', padding:'0 4px' }}
+          style={{
+            background: 'none', border: 'none', fontSize: 16, fontWeight: 600,
+            cursor: puedeGuardar ? 'pointer' : 'default',
+            color: puedeGuardar ? '#2D3A8C' : 'rgba(45,58,140,0.30)',
+            padding: '0 4px',
+            transition: 'color 0.15s',
+          }}
         >
-          {repeatDays.size > 0 ? `Crear ${repeatDays.size} tarea${repeatDays.size !== 1 ? "s" : ""}` : "Crear tarea"}
+          {repeatDays.size > 0 ? `Crear ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''}` : 'Crear tarea'}
         </button>
       </div>
 
@@ -114,7 +119,14 @@ export function NewTaskScreen() {
           <input
             type="date" value={dateStr}
             onChange={e => { setDateStr(e.target.value); setShowDate(false) }}
-            style={{ width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, marginBottom:8, fontFamily:'inherit' }}
+            style={{
+              width:'100%', boxSizing:'border-box',
+              padding:'10px 14px', borderRadius:12,
+              border:'1.5px solid rgba(13,18,64,0.12)',
+              fontSize:16, marginBottom:8, fontFamily:'inherit',
+              color:'#0D1240', background:'#FAFBFE',
+              outline:'none',
+            }}
           />
         )}
 
@@ -122,7 +134,7 @@ export function NewTaskScreen() {
         <div style={row} onClick={() => setShowReminder(true)}>
           <span>🔔</span>
           <span style={rLbl}>Recordatorio</span>
-          <span style={{ ...rVal, color: reminder ? '#5B3DF6' : '#6b7280' }}>
+          <span style={{ ...rVal, color: reminder ? '#2D3A8C' : 'rgba(13,18,64,0.40)' }}>
             {reminder
               ? (reminder.dueTime
                   ? (() => { const [h,m]=reminder.dueTime.split(':').map(Number); const ap=h>=12?'PM':'AM'; const h12=h%12||12; return `${h12}:${String(m).padStart(2,'0')} ${ap} • ${reminder.label}` })()
@@ -136,7 +148,7 @@ export function NewTaskScreen() {
         <div style={row} onClick={() => setShowRepeat(true)}>
           <span>🔁</span>
           <span style={rLbl}>Repetir</span>
-          <span style={{ ...rVal, color: repeatDays.size > 0 ? '#5B3DF6' : '#6b7280' }}>
+          <span style={{ ...rVal, color: repeatDays.size > 0 ? '#2D3A8C' : 'rgba(13,18,64,0.40)' }}>
             {repeatDays.size === 0 ? 'No repetir' : `${repeatDays.size} día${repeatDays.size !== 1 ? 's' : ''} seleccionado${repeatDays.size !== 1 ? 's' : ''}`}
           </span>
           <span style={arr}>›</span>
@@ -161,19 +173,41 @@ export function NewTaskScreen() {
         />
       )}
 
-
     </div>
   )
 }
 
-const screen = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#fff' }
-const header = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid #f3f4f6' }
-const btnBack = { background:'none', border:'none', fontSize:16, color:'#6b7280', cursor:'pointer', padding:'0 4px' }
-const body   = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px 20px' }
-const textArea = { width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, color:'#111', fontFamily:'inherit', resize:'none', outline:'none', marginBottom:14 }
-const row    = { display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }
-const rLbl   = { fontSize:14, color:'#111', flex:1 }
-const rVal   = { fontSize:14, color:'#6b7280' }
-const arr    = { fontSize:16, color:'#d1d5db' }
-const picker = { background:'#f9fafb', borderRadius:10, overflow:'hidden', marginBottom:4, border:'1px solid #f3f4f6' }
-const opt    = sel => ({ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid #f3f4f6', color: sel ? '#5B3DF6' : '#374151', fontWeight: sel ? 600 : 400, background: sel ? '#EDE9FE' : 'transparent' })
+const screen   = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'transparent' }
+const header   = {
+  flexShrink: 0, display:'flex', alignItems:'center', justifyContent:'space-between',
+  padding:'14px 20px',
+  borderBottom:'1px solid rgba(13,18,64,0.07)',
+  background:'transparent',
+}
+const btnBack  = {
+  background:'none', border:'none', fontSize:16,
+  color:'rgba(13,18,64,0.40)', cursor:'pointer', padding:'0 4px',
+}
+const body     = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px 20px' }
+const textArea = {
+  width:'100%', boxSizing:'border-box',
+  padding:'12px 14px', borderRadius:14,
+  border:'1.5px solid rgba(13,18,64,0.10)',
+  fontSize:16, color:'#0D1240', fontFamily:'inherit',
+  resize:'none', outline:'none', marginBottom:14,
+  background:'rgba(255,255,255,0.80)',
+  boxShadow:'inset 0 1px 3px rgba(13,18,64,0.04)',
+  lineHeight:1.5,
+}
+const row    = { display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid rgba(13,18,64,0.06)', cursor:'pointer' }
+const rLbl   = { fontSize:14, color:'#0D1240', flex:1, fontWeight:400 }
+const rVal   = { fontSize:14, color:'rgba(13,18,64,0.40)' }
+const arr    = { fontSize:16, color:'rgba(13,18,64,0.20)' }
+const picker = { background:'rgba(255,255,255,0.80)', borderRadius:12, overflow:'hidden', marginBottom:4, border:'1px solid rgba(13,18,64,0.08)' }
+const opt    = sel => ({
+  padding:'11px 16px', fontSize:14, cursor:'pointer',
+  borderBottom:'1px solid rgba(13,18,64,0.06)',
+  color:      sel ? '#2D3A8C' : '#0D1240',
+  fontWeight: sel ? 600 : 400,
+  background: sel ? 'rgba(45,58,140,0.08)' : 'transparent',
+})

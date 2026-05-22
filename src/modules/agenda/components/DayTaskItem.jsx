@@ -1,11 +1,12 @@
 import { useState, useEffect } from 'react'
 
-export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selected, onCircleTap, hasSelection }) {
+export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selected, onCircleTap, hasSelection, variant }) {
   const [localDone, setLocalDone] = useState(task.status === 'completed')
   useEffect(() => { setLocalDone(task.status === 'completed') }, [task.status])
 
   const isGroup = !!groupName
   const tag = groupName || 'Personal'
+  const isCompleted = variant === 'completed' || localDone
 
   async function handleTextTap() {
     if (hasSelection) return
@@ -21,51 +22,112 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
 
   return (
     <div style={{
-      display: 'flex', alignItems: 'center', gap: 16,
-      padding: '16px 18px',
-      marginBottom: 10,
+      display: 'flex',
+      alignItems: 'center',
+      gap: 14,
+      padding: '15px 16px',
+      marginBottom: 8,
       borderRadius: 20,
-      background: 'rgba(255,255,255,0.40)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      border: '1px solid rgba(255,255,255,0.30)',
-      opacity: localDone ? 0.55 : 1,
-      transition: 'all 0.2s ease',
+      transition: 'opacity 0.25s ease',
+      ...(isCompleted ? {
+        /* Completadas — etéreas, hundidas, resueltas */
+        background: 'rgba(255,255,255,0.40)',
+        backdropFilter: 'blur(16px)',
+        WebkitBackdropFilter: 'blur(16px)',
+        border: '1px solid rgba(255,255,255,0.45)',
+        boxShadow: 'none',
+        opacity: 0.65,
+      } : {
+        /* Pendientes — blanco glass puro, premium */
+        background: 'rgba(255,255,255,0.82)',
+        backdropFilter: 'blur(24px) saturate(140%)',
+        WebkitBackdropFilter: 'blur(24px) saturate(140%)',
+        border: '1px solid rgba(255,255,255,0.75)',
+        boxShadow: '0 4px 16px rgba(13,18,64,0.06), inset 0 1px 0 rgba(255,255,255,0.95)',
+        opacity: 1,
+      }),
     }}>
 
-      <button onClick={e => { e.stopPropagation(); onCircleTap(task.id) }} style={{
-        flexShrink: 0, width: 26, height: 26, borderRadius: '50%',
-        border: selected ? 'none' : localDone ? '1.5px solid rgba(200,200,210,0.5)' : '1.5px solid #D0D0D8',
-        background: selected ? '#3B82F6' : localDone ? 'rgba(255,255,255,0.4)' : '#FFFFFF',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', padding: 0,
-        boxShadow: selected ? '0 0 0 6px rgba(59,130,246,0.15), 0 0 0 3px rgba(59,130,246,0.25)' : localDone ? 'none' : 'none',
-        transition: 'all 0.2s ease',
-        WebkitTapHighlightColor: 'transparent',
-      }}>
+      {/* Círculo selector */}
+      <button
+        onClick={e => { e.stopPropagation(); onCircleTap(task.id) }}
+        style={{
+          flexShrink: 0,
+          width: 28,
+          height: 28,
+          borderRadius: '50%',
+          cursor: 'pointer',
+          padding: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          transition: 'all 0.18s ease',
+          WebkitTapHighlightColor: 'transparent',
+          ...(selected ? {
+            background: '#2D3A8C',
+            border: 'none',
+            boxShadow: '0 0 0 2.5px #ffffff, 0 0 0 5px rgba(45,58,140,0.28), 0 0 14px rgba(45,58,140,0.22)',
+          } : isCompleted ? {
+            background: 'transparent',
+            border: '2px solid rgba(13,18,64,0.18)',
+            boxShadow: 'none',
+          } : {
+            background: 'rgba(255,255,255,0.90)',
+            border: '2px solid rgba(13,18,64,0.28)',
+            boxShadow: '0 1px 4px rgba(13,18,64,0.06)',
+          }),
+        }}
+      >
         {selected && (
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
-            <polyline points="2,6.5 5,9.5 11,3.5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+            <polyline points="2.5,7 5.5,10 11.5,4" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        )}
+        {!selected && isCompleted && (
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none">
+            <polyline points="2.5,7 5.5,10 11.5,4" stroke="rgba(13,18,64,0.22)" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         )}
       </button>
 
-      <div onClick={handleTextTap} style={{ flex: 1, cursor: hasSelection ? 'default' : 'pointer', userSelect: 'none', WebkitTapHighlightColor: 'transparent' }}>
+      {/* Contenido */}
+      <div
+        onClick={handleTextTap}
+        style={{ flex:1, cursor:hasSelection?'default':'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}
+      >
         <p style={{
-          margin: 0, fontSize: 16, fontWeight: 500, lineHeight: 1.4,
-          color: localDone ? 'rgba(15,23,42,0.4)' : '#0F172A',
-          textDecoration: localDone ? 'line-through' : 'none',
+          margin: 0,
+          fontSize: 15.5,
+          fontWeight: isCompleted ? 400 : 500,
+          lineHeight: 1.4,
+          letterSpacing: '-0.01em',
+          color: isCompleted ? 'rgba(13,18,64,0.30)' : '#0D1240',
+          textDecoration: isCompleted ? 'line-through' : 'none',
+          textDecorationColor: 'rgba(13,18,64,0.22)',
         }}>
           {task.title}
         </p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginTop: 6, flexWrap: 'wrap' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:7, marginTop:6, flexWrap:'wrap' }}>
           <span style={{
-            fontSize: 11, fontWeight: 500, padding: '2px 9px', borderRadius: 9999,
-            background: isGroup ? 'rgba(52,199,89,0.12)' : 'rgba(59,130,246,0.10)',
-            color: isGroup ? '#166534' : '#1d4ed8',
+            fontSize: 11,
+            fontWeight: 500,
+            padding: '2px 9px',
+            borderRadius: 9999,
+            background: isCompleted
+              ? 'rgba(13,18,64,0.05)'
+              : isGroup
+                ? 'rgba(52,199,89,0.10)'
+                : 'rgba(45,58,140,0.09)',
+            color: isCompleted
+              ? 'rgba(13,18,64,0.28)'
+              : isGroup ? '#15803d' : '#2D3A8C',
           }}>{tag}</span>
-          {dueLabel && <span style={{ fontSize: 11, color: 'rgba(15,23,42,0.35)', fontWeight: 400 }}>{dueLabel}</span>}
-          {task.reminder && <span style={{ fontSize: 11, opacity: 0.5 }}>🔔</span>}
+          {dueLabel && (
+            <span style={{ fontSize:11, color:'rgba(13,18,64,0.30)', fontWeight:400 }}>{dueLabel}</span>
+          )}
+          {task.reminder && (
+            <span style={{ fontSize:11, opacity: isCompleted ? 0.25 : 0.45 }}>🔔</span>
+          )}
         </div>
       </div>
     </div>

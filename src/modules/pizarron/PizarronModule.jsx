@@ -22,7 +22,6 @@ function toDateKey(date) {
 function EditVariasModal({ count, groups, onSave, onClose }) {
   const [fecha,        setFecha]        = useState('')
   const [nuevoGroupId, setNuevoGroupId] = useState('__sin_cambio__')
-  const [showDate,     setShowDate]     = useState(false)
   const [loading,      setLoading]      = useState(false)
   const hayCambio = fecha !== '' || nuevoGroupId !== '__sin_cambio__'
 
@@ -32,17 +31,25 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
   }
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
-      <div style={{ background:'#fff', borderRadius:'20px 20px 0 0', padding:'20px', width:'100%', maxWidth:480, paddingBottom:'calc(20px + env(safe-area-inset-bottom))' }}>
-        <p style={{ margin:'0 0 4px', fontSize:16, fontWeight:600, color:'#111' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(13,18,64,0.30)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
+      <div style={{
+        background:'rgba(250,251,255,0.97)',
+        backdropFilter:'blur(48px)',
+        WebkitBackdropFilter:'blur(48px)',
+        borderRadius:'24px 24px 0 0',
+        padding:'20px', width:'100%', maxWidth:480,
+        paddingBottom:'calc(20px + env(safe-area-inset-bottom))',
+        boxShadow:'0 -8px 48px rgba(13,18,64,0.12)',
+      }}>
+        <p style={{ margin:'0 0 4px', fontSize:16, fontWeight:600, color:'#0D1240', letterSpacing:'-0.01em' }}>
           Editar {count} tarea{count !== 1 ? 's' : ''}
         </p>
-        <p style={{ margin:'0 0 20px', fontSize:13, color:'#9ca3af' }}>Solo se aplican los campos que cambies.</p>
+        <p style={{ margin:'0 0 20px', fontSize:13, color:'rgba(13,18,64,0.40)' }}>Solo se aplican los campos que cambies.</p>
 
-        <label style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid #f3f4f6', cursor:'pointer' }}>
+        <label style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid rgba(13,18,64,0.07)', cursor:'pointer' }}>
           <span>📅</span>
-          <span style={{ flex:1, fontSize:14, color:'#111' }}>Nueva fecha</span>
-          <span style={{ fontSize:14, color: fecha ? '#5B3DF6' : '#9ca3af' }}>
+          <span style={{ flex:1, fontSize:14, color:'#0D1240' }}>Nueva fecha</span>
+          <span style={{ fontSize:14, color: fecha ? '#2D3A8C' : 'rgba(13,18,64,0.35)' }}>
             {fecha ? (() => { const [y,m,d] = fecha.split('-').map(Number); return `${d} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][m-1]}` })() : 'Sin cambio ›'}
           </span>
           <input type="date" value={fecha}
@@ -51,26 +58,33 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
           />
         </label>
 
-        <p style={{ margin:'0 0 6px', fontSize:12, color:'#6b7280', fontWeight:500 }}>👥 Cambiar grupo</p>
-        <div style={{ background:'#f9fafb', borderRadius:10, overflow:'hidden', border:'1px solid #f3f4f6', marginBottom:20 }}>
+        <p style={{ margin:'12px 0 6px', fontSize:12, color:'rgba(13,18,64,0.40)', fontWeight:600, letterSpacing:'0.04em' }}>👥 CAMBIAR GRUPO</p>
+        <div style={{ background:'rgba(255,255,255,0.80)', borderRadius:12, overflow:'hidden', border:'1px solid rgba(13,18,64,0.08)', marginBottom:20 }}>
           {[{ id:'__sin_cambio__', name:'Sin cambio' }, { id:'', name:'Personal' }, ...groups].map(g => (
             <div key={g.id} onClick={() => setNuevoGroupId(g.id)}
-              style={{ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid #f3f4f6',
-                background: nuevoGroupId === g.id ? '#EDE9FE' : 'transparent',
-                color: nuevoGroupId === g.id ? '#5B3DF6' : '#374151',
-                fontWeight: nuevoGroupId === g.id ? 600 : 400 }}>
+              style={{
+                padding:'11px 16px', fontSize:14, cursor:'pointer',
+                borderBottom:'1px solid rgba(13,18,64,0.06)',
+                background: nuevoGroupId === g.id ? 'rgba(45,58,140,0.08)' : 'transparent',
+                color:      nuevoGroupId === g.id ? '#2D3A8C' : '#0D1240',
+                fontWeight: nuevoGroupId === g.id ? 600 : 400,
+              }}>
               {g.name}
             </div>
           ))}
         </div>
 
         <div style={{ display:'flex', gap:8 }}>
-          <button onClick={onClose} style={{ flex:1, padding:'12px', borderRadius:12, border:'1px solid #e5e7eb', background:'#fff', color:'#6b7280', fontSize:15, cursor:'pointer' }}>
+          <button onClick={onClose} style={{ flex:1, padding:'12px', borderRadius:12, border:'1px solid rgba(13,18,64,0.12)', background:'rgba(255,255,255,0.80)', color:'rgba(13,18,64,0.45)', fontSize:15, cursor:'pointer' }}>
             Cancelar
           </button>
           <button onClick={guardar} disabled={!hayCambio || loading}
-            style={{ flex:1, padding:'12px', borderRadius:12, border:'none', fontSize:15, fontWeight:600, cursor: hayCambio ? 'pointer' : 'default',
-              background: hayCambio ? '#5B3DF6' : '#e5e7eb', color: hayCambio ? '#fff' : '#9ca3af' }}>
+            style={{ flex:1, padding:'12px', borderRadius:12, border:'none', fontSize:15, fontWeight:600,
+              cursor: hayCambio ? 'pointer' : 'default',
+              background: hayCambio ? 'linear-gradient(135deg, #3D4FA8, #2D3A8C)' : 'rgba(13,18,64,0.08)',
+              color: hayCambio ? '#fff' : 'rgba(13,18,64,0.28)',
+              boxShadow: hayCambio ? '0 2px 8px rgba(45,58,140,0.28)' : 'none',
+            }}>
             {loading ? 'Aplicando...' : 'Aplicar cambios'}
           </button>
         </div>
@@ -96,7 +110,6 @@ export function PizarronModule() {
 
   const [modal,       setModal]       = useState(null)
   const [selectedIds, setSelectedIds] = useState(new Set())
-
   const haySeleccion = selectedIds.size > 0
 
   function toggleSeleccion(taskId) {
@@ -109,7 +122,6 @@ export function PizarronModule() {
   function limpiarSeleccion() { setSelectedIds(new Set()) }
   const daySelectorRef = useRef(null)
 
-  // Centrar en "Hoy" solo al montar
   useEffect(() => {
     if (!daySelectorRef.current) return
     const hoy = daySelectorRef.current.querySelector('[data-today="true"]')
@@ -129,7 +141,7 @@ export function PizarronModule() {
   if (!group) {
     return (
       <EmptyState
-          emoji="📋"
+        emoji="📋"
         title="Grupo no encontrado"
         description="Este grupo no existe o ya no tienes acceso."
         action={<button onClick={() => navigate('/pizarrones')} style={backBtn}>Ver pizarrones</button>}
@@ -144,16 +156,16 @@ export function PizarronModule() {
   return (
     <div style={screen}>
 
-      {/* ── Header ── */}
+      {/* Header */}
       <div style={header}>
         <div style={{ display:'flex', alignItems:'center', gap:10, cursor:'pointer', flex:1, minWidth:0 }}
           onClick={() => navigate(`/pizarron/${groupId}/info`)}>
           <div style={groupAvatar}>{group.name[0].toUpperCase()}</div>
           <div style={{ minWidth:0 }}>
-            <p style={{ margin:0, fontSize:16, fontWeight:700, color:'#111', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
+            <p style={{ margin:0, fontSize:16, fontWeight:700, color:'#0D1240', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'-0.01em' }}>
               {group.name}
             </p>
-            <p style={{ margin:0, fontSize:11, color:'#9ca3af' }}>
+            <p style={{ margin:0, fontSize:11, color:'rgba(13,18,64,0.38)' }}>
               {members.length} miembro{members.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -165,7 +177,7 @@ export function PizarronModule() {
             </div>
           ))}
           {members.length > 3 && (
-            <div style={{ ...memberBubble, marginLeft:-6, background:'#e5e7eb', color:'#6b7280', fontSize:10 }}>
+            <div style={{ ...memberBubble, marginLeft:-6, background:'rgba(13,18,64,0.08)', color:'rgba(13,18,64,0.45)', fontSize:10 }}>
               +{members.length - 3}
             </div>
           )}
@@ -173,11 +185,11 @@ export function PizarronModule() {
         <SyncBadge />
       </div>
 
-      {/* ── Selector de días ── */}
+      {/* Selector de días */}
       <div style={daySelector}>
         <div ref={daySelectorRef} style={{ display:'flex', gap:6, overflowX:'auto', paddingBottom:4, WebkitOverflowScrolling:'touch', scrollbarWidth:'none' }}>
           {days.map(d => {
-            const isSelected = d.key === selectedKey
+            const isSelected  = d.key === selectedKey
             const hasActivity = daysWithActivity[d.key]
             return (
               <button
@@ -186,20 +198,23 @@ export function PizarronModule() {
                 onClick={() => setSelectedKey(d.key)}
                 style={{
                   flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center',
-                  padding:'8px 12px', borderRadius:12, border:'none', cursor:'pointer',
-                  background: isSelected ? '#5B3DF6' : 'transparent',
+                  padding:'8px 12px', borderRadius:14, border:'none', cursor:'pointer',
+                  background: isSelected
+                    ? 'linear-gradient(145deg, #3D4FA8, #2D3A8C)'
+                    : 'transparent',
+                  boxShadow: isSelected ? '0 2px 8px rgba(45,58,140,0.28)' : 'none',
                   WebkitTapHighlightColor:'transparent',
-                  position:'relative',
+                  transition:'background 0.15s',
                 }}
               >
-                <span style={{ fontSize:10, fontWeight:500, color: isSelected ? 'rgba(255,255,255,0.7)' : '#9ca3af' }}>
+                <span style={{ fontSize:10, fontWeight:500, color: isSelected ? 'rgba(255,255,255,0.70)' : 'rgba(13,18,64,0.38)' }}>
                   {d.isToday ? 'Hoy' : DIAS_CORTO[d.date.getDay()]}
                 </span>
-                <span style={{ fontSize:16, fontWeight:700, color: isSelected ? '#fff' : '#111', lineHeight:1.2 }}>
+                <span style={{ fontSize:16, fontWeight:700, color: isSelected ? '#fff' : '#0D1240', lineHeight:1.2 }}>
                   {d.dayNum}
                 </span>
                 {hasActivity && !isSelected && (
-                  <div style={{ width:4, height:4, borderRadius:'50%', background:'#5B3DF6', marginTop:2 }} />
+                  <div style={{ width:4, height:4, borderRadius:'50%', background:'#2D3A8C', marginTop:2, opacity:0.55 }} />
                 )}
               </button>
             )
@@ -207,32 +222,32 @@ export function PizarronModule() {
         </div>
       </div>
 
-      {/* ── Contadores ── */}
+      {/* Contadores */}
       <div style={counters}>
         <div style={counter}>
-          <span style={{ fontSize:20, fontWeight:700, color:'#5B3DF6' }}>{pending.length}</span>
-          <span style={{ fontSize:11, color:'#9ca3af' }}>Pendientes</span>
+          <span style={{ fontSize:20, fontWeight:700, color:'#2D3A8C' }}>{pending.length}</span>
+          <span style={{ fontSize:11, color:'rgba(13,18,64,0.38)' }}>Pendientes</span>
         </div>
         <div style={counterDivider} />
         <div style={counter}>
           <span style={{ fontSize:20, fontWeight:700, color:'#22C55E' }}>{completed.length}</span>
-          <span style={{ fontSize:11, color:'#9ca3af' }}>Completadas</span>
+          <span style={{ fontSize:11, color:'rgba(13,18,64,0.38)' }}>Completadas</span>
         </div>
       </div>
 
-      {/* ── Lista de tareas ── */}
+      {/* Lista de tareas */}
       <div style={taskList}>
-        <p style={{ margin:'0 2px', fontSize:15, fontWeight:700, color:'#111' }}>
+        <p style={{ margin:'0 0 4px', fontSize:15, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em' }}>
           {selectedDateLabel}
         </p>
         {pending.length > 0 && (
-          <p style={{ margin:'0 0 12px', fontSize:13, fontWeight:600, color:'#5B3DF6' }}>
+          <p style={{ margin:'0 0 12px', fontSize:13, fontWeight:600, color:'#2D3A8C' }}>
             Pendientes ({pending.length})
           </p>
         )}
 
         {pending.length === 0 && completed.length === 0 && (
-          <p style={{ fontSize:13, color:'#9ca3af', textAlign:'center', padding:'24px 0' }}>
+          <p style={{ fontSize:13, color:'rgba(13,18,64,0.35)', textAlign:'center', padding:'24px 0' }}>
             Sin tareas para este día
           </p>
         )}
@@ -244,17 +259,17 @@ export function PizarronModule() {
             return d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
           })() : null
           return (
-            <div key={task.id} style={{ ...taskCard, background: selectedIds.has(task.id) ? '#f5f3ff' : 'transparent' }}>
+            <div key={task.id} style={{ ...taskCard, background: selectedIds.has(task.id) ? 'rgba(45,58,140,0.06)' : 'transparent' }}>
               <button
                 onClick={() => toggleSeleccion(task.id)}
                 style={{ ...checkBtn,
-                  border: selectedIds.has(task.id) ? '2px solid #5B3DF6' : '2px solid #d1d5db',
-                  background: selectedIds.has(task.id) ? '#5B3DF6' : 'none'
+                  border: selectedIds.has(task.id) ? '2px solid #2D3A8C' : '2px solid rgba(13,18,64,0.28)',
+                  background: selectedIds.has(task.id) ? '#2D3A8C' : 'none',
                 }}
               />
               <div style={{ flex:1, minWidth:0, cursor:'pointer' }} onClick={() => !haySeleccion && toggleStatus(task)}>
-                <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#111', lineHeight:1.3 }}>{task.title}</p>
-                {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:'#9ca3af' }}>{hora}</p>}
+                <div style={{ display:'flex', alignItems:'center', gap:4 }}>{task.reminder && <span style={{ fontSize:12, opacity:0.5 }}>🔔</span>}<p style={{ margin:0, fontSize:14, fontWeight:500, color:'#0D1240', lineHeight:1.3 }}>{task.title}</p></div>
+                {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:'rgba(13,18,64,0.35)' }}>{hora}</p>}
               </div>
               {member && (
                 <div style={memberMini} title={member.displayName}>
@@ -269,27 +284,26 @@ export function PizarronModule() {
 
         {completed.length > 0 && (
           <>
-            <p style={{ margin:'20px 0 8px', fontSize:12, color:'#9ca3af', fontWeight:600, letterSpacing:'0.04em' }}>
+            <p style={{ margin:'20px 0 8px', fontSize:11, color:'rgba(13,18,64,0.32)', fontWeight:600, letterSpacing:'0.06em' }}>
               COMPLETADAS ({completed.length})
             </p>
             {completed.map(task => (
               <div key={task.id} style={{ ...taskCard, opacity:0.55 }}>
                 <button
                   onClick={() => toggleStatus(task)}
-                  style={{ ...checkBtn, border:'2px solid #22C55E', background:'#22C55E', WebkitTapHighlightColor:'transparent' }}
+                  style={{ ...checkBtn, border:'2px solid rgba(13,18,64,0.20)', background:'rgba(13,18,64,0.08)', WebkitTapHighlightColor:'transparent' }}
                 />
-                <p style={{ flex:1, margin:0, fontSize:14, color:'#6b7280', textDecoration:'line-through', cursor:'pointer' }} onClick={() => toggleStatus(task)}>{task.title}</p>
+                <p style={{ flex:1, margin:0, fontSize:14, color:'rgba(13,18,64,0.35)', textDecoration:'line-through', cursor:'pointer' }} onClick={() => toggleStatus(task)}>{task.title}</p>
               </div>
             ))}
           </>
         )}
-
       </div>
 
-      {/* ── Barra contextual de selección ── */}
+      {/* Barra de selección */}
       {haySeleccion && (
         <div style={barraSeleccion}>
-          <span style={{ fontSize:13, color:'#374151', fontWeight:500 }}>
+          <span style={{ fontSize:13, color:'#0D1240', fontWeight:500 }}>
             {selectedIds.size} seleccionada{selectedIds.size !== 1 ? 's' : ''}
           </span>
           <div style={{ display:'flex', gap:8 }}>
@@ -300,7 +314,7 @@ export function PizarronModule() {
               limpiarSeleccion()
             }} style={btnBarra}>✅ Completar</button>
             <button onClick={() => setModal({ tipo:'editarVarias' })} style={btnBarra}>✏️ Editar</button>
-            <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ ...btnBarra, background:'#fee2e2', color:'#ef4444' }}>🗑️ Eliminar</button>
+            <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ ...btnBarra, background:'rgba(224,82,82,0.10)', color:'#E05252' }}>🗑️ Eliminar</button>
           </div>
         </div>
       )}
@@ -314,7 +328,7 @@ export function PizarronModule() {
         </button>
       )}
 
-      {/* ── Modals ── */}
+      {/* Modales */}
       {modal?.tipo === 'borrar' && (
         <ConfirmDialog
           title="Eliminar tarea"
@@ -370,22 +384,22 @@ export function PizarronModule() {
   )
 }
 
-const screen        = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#f9fafb', overflow:'hidden' }
+const screen        = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'transparent', overflow:'hidden' }
 const centered      = { display:'flex', alignItems:'center', justifyContent:'center', flex:1 }
-const spinner       = { width:28, height:28, borderRadius:'50%', border:'3px solid #e5e7eb', borderTopColor:'#5B3DF6', animation:'spin 0.7s linear infinite' }
-const header        = { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'8px 16px', background:'#fff', borderBottom:'1px solid #f3f4f6' }
-const groupAvatar   = { width:40, height:40, borderRadius:12, background:'#EDE9FE', color:'#5B3DF6', fontSize:18, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
-const memberBubble  = { width:28, height:28, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid #fff', flexShrink:0 }
-const daySelector   = { flexShrink:0, padding:'6px 16px 4px', background:'#fff', borderBottom:'1px solid #f3f4f6' }
-const counters      = { flexShrink:0, display:'flex', alignItems:'center', padding:'8px 20px', background:'#fff', borderBottom:'1px solid #f3f4f6', gap:0 }
+const spinner       = { width:28, height:28, borderRadius:'50%', border:'3px solid rgba(13,18,64,0.10)', borderTopColor:'#2D3A8C', animation:'spin 0.7s linear infinite' }
+const header        = { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'8px 16px', background:'transparent', borderBottom:'1px solid rgba(13,18,64,0.07)' }
+const groupAvatar   = { width:40, height:40, borderRadius:12, background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:18, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const memberBubble  = { width:28, height:28, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid rgba(255,255,255,0.80)', flexShrink:0 }
+const daySelector   = { flexShrink:0, padding:'6px 16px 4px', background:'rgba(255,255,255,0.70)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)' }
+const counters      = { flexShrink:0, display:'flex', alignItems:'center', padding:'10px 20px', background:'rgba(255,255,255,0.60)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', gap:0 }
 const counter       = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
-const counterDivider = { width:1, height:32, background:'#f3f4f6' }
+const counterDivider = { width:1, height:32, background:'rgba(13,18,64,0.08)' }
 const taskList      = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px' }
-const taskCard      = { display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid #f3f4f6' }
-const checkBtn      = { width:22, height:22, borderRadius:'50%', border:'2px solid #d1d5db', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
-const memberMini    = { width:24, height:24, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
-const btnTask       = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'#9ca3af' }
-const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:'#fff', borderTop:'1px solid #f3f4f6' }
-const btnBarra      = { padding:'8px 14px', borderRadius:8, border:'none', background:'#EDE9FE', color:'#5B3DF6', fontSize:13, fontWeight:600, cursor:'pointer' }
-const fabBtn = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:8, height:50, padding:'0 24px', borderRadius:25, background:'#5B3DF6', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 4px 20px rgba(91,61,246,0.4)', zIndex:50, WebkitTapHighlightColor:'transparent' }
-const backBtn       = { padding:'10px 20px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
+const taskCard      = { display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid rgba(13,18,64,0.07)' }
+const checkBtn      = { width:22, height:22, borderRadius:'50%', border:'2px solid rgba(13,18,64,0.28)', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
+const memberMini    = { width:24, height:24, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const btnTask       = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'rgba(13,18,64,0.35)' }
+const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:'rgba(255,255,255,0.88)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderTop:'1px solid rgba(13,18,64,0.07)' }
+const btnBarra      = { padding:'8px 14px', borderRadius:10, border:'none', background:'rgba(45,58,140,0.09)', color:'#2D3A8C', fontSize:13, fontWeight:600, cursor:'pointer' }
+const fabBtn        = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:8, height:50, padding:'0 24px', borderRadius:25, background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 4px 20px rgba(45,58,140,0.40)', zIndex:50, WebkitTapHighlightColor:'transparent' }
+const backBtn       = { padding:'10px 20px', borderRadius:10, border:'none', background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }

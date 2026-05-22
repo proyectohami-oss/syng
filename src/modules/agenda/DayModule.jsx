@@ -90,113 +90,132 @@ export function DayModule() {
   }
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', flex:1, minHeight:0, overflow:'hidden', background:'transparent' }}>
+    <div style={{
+      display: 'flex',
+      flexDirection: 'column',
+      flex: 1,
+      minHeight: 0,
+      overflow: 'hidden',
+      background: 'transparent',
+    }}>
 
       {/* Header */}
-      <div style={{ flexShrink:0, padding:'20px 22px 16px', background:'transparent' }}>
+      <div style={{ flexShrink:0, padding:'24px 24px 18px', background:'transparent' }}>
         <div style={{ display:'flex', alignItems:'flex-start' }}>
-          <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:26, color:'rgba(15,23,42,0.25)', cursor:'pointer', padding:'0 10px 0 0', lineHeight:1.3, marginTop:6 }}>‹</button>
+          <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:'rgba(15,23,42,0.22)', cursor:'pointer', padding:'0 12px 0 0', lineHeight:1.3, marginTop:8 }}>‹</button>
           <div style={{ flex:1 }}>
-            <p style={{ margin:'0 0 4px', fontSize:13, color:'rgba(15,23,42,0.45)', fontWeight:400, letterSpacing:'0.01em' }}>{labelDia(date)}</p>
-            <p style={{ margin:'0 0 4px', fontSize:36, fontWeight:800, color:'#0F172A', letterSpacing:'-0.03em', lineHeight:1.05 }}>Syng</p>
-            <p style={{ margin:'0 0 2px', fontSize:22, fontWeight:700, color:'#0F172A', letterSpacing:'-0.01em' }}>Pendientes</p>
-            <p style={{ margin:0, fontSize:13, color:'rgba(15,23,42,0.38)', fontWeight:400 }}>{orderedPending.length} tarea{orderedPending.length!==1?'s':''} pendiente{orderedPending.length!==1?'s':''}</p>
+            <p style={{ margin:'0 0 6px', fontSize:12, color:'rgba(15,23,42,0.36)', fontWeight:500, letterSpacing:'0.07em', textTransform:'uppercase' }}>{labelDia(date)}</p>
+            <p style={{ margin:'0 0 10px', fontSize:38, fontWeight:800, color:'#0F172A', letterSpacing:'-0.04em', lineHeight:1 }}>Syng</p>
+            <p style={{ margin:'0 0 3px', fontSize:22, fontWeight:700, color:'#0F172A', letterSpacing:'-0.02em' }}>Pendientes</p>
+            <p style={{ margin:0, fontSize:13, color:'rgba(15,23,42,0.30)', fontWeight:400 }}>{orderedPending.length} tarea{orderedPending.length!==1?'s':''} pendiente{orderedPending.length!==1?'s':''}</p>
           </div>
         </div>
-        {!haySeleccion && (
-          <button onClick={() => navigate(`/agenda/${date}/nueva`)} style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 0 0', background:'none', border:'none', cursor:'pointer', color:'#3B82F6', fontSize:15, fontWeight:500, WebkitTapHighlightColor:'transparent', marginTop:12, borderTop:'1px solid rgba(15,23,42,0.06)', width:'100%' }}>
-            <span style={{ fontSize:18 }}>+</span>
-            <span>Nueva tarea</span>
-          </button>
-        )}
       </div>
 
-      {/* Lista */}
-      <div style={{ flex:1, overflowY:'auto', padding:'8px 16px 200px', WebkitOverflowScrolling:'touch' }}>
+      {/* Scroll */}
+      <div style={{ flex:1, overflowY:'auto', padding:'4px 16px 140px', WebkitOverflowScrolling:'touch' }}>
 
-        {/* Contenedor pendientes */}
-        <div style={{
-          background: 'rgba(255,255,255,0.45)',
-          backdropFilter: 'blur(40px)',
-          WebkitBackdropFilter: 'blur(40px)',
-          border: '1px solid rgba(255,255,255,0.40)',
-          borderRadius: 32,
-          padding: '16px',
-          marginBottom: 20,
-          boxShadow: '0 30px 60px -15px rgba(0,0,0,0.04)',
-        }}>
-          {orderedPending.length === 0 && (
-            <p style={{ fontSize:14, color:'rgba(15,23,42,0.3)', margin:'8px 0', textAlign:'center' }}>Sin tareas pendientes ✨</p>
-          )}
-          {orderedPending.map(task => (
-            <DayTaskItem key={task.id} task={task} groupName={getGroupName(task.groupId)}
-              onToggle={toggleStatus} onEdit={t => setModal({ tipo:'editar', task:t })}
-              onDelete={t => { hideLocally(t.id); setModal({ tipo:'borrar', task:t }) }}
-              selected={selectedIds.has(task.id)} onCircleTap={toggleSeleccion} hasSelection={haySeleccion} />
-          ))}
-        </div>
+        {/* Tareas pendientes */}
+        {orderedPending.length === 0 && (
+          <p style={{ fontSize:14, color:'rgba(15,23,42,0.28)', margin:'16px 0', textAlign:'center' }}>Sin tareas pendientes ✨</p>
+        )}
+        {orderedPending.map(task => (
+          <DayTaskItem
+            key={task.id}
+            task={task}
+            groupName={getGroupName(task.groupId)}
+            onToggle={toggleStatus}
+            onEdit={t => setModal({ tipo:'editar', task:t })}
+            onDelete={t => { hideLocally(t.id); setModal({ tipo:'borrar', task:t }) }}
+            selected={selectedIds.has(task.id)}
+            onCircleTap={toggleSeleccion}
+            hasSelection={haySeleccion}
+            variant="pending"
+          />
+        ))}
 
-        {/* Contenedor completadas */}
+        {/* Toolbar sticky con emojis 3D */}
+        {haySeleccion && (
+          <div style={{ position:'sticky', bottom:12, zIndex:500, margin:'12px 0' }}>
+            <div style={{
+              height: 84,
+              background: 'rgba(246,250,255,0.88)',
+              backdropFilter: 'blur(40px) saturate(200%)',
+              WebkitBackdropFilter: 'blur(40px) saturate(200%)',
+              borderRadius: 28,
+              border: '1px solid rgba(120,215,255,0.28)',
+              boxShadow: '0 16px 48px rgba(15,23,42,0.12), 0 3px 12px rgba(15,23,42,0.06), 0 -2px 18px rgba(56,189,248,0.10), inset 0 1px 0 rgba(255,255,255,0.95)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-around',
+              padding: '0 16px',
+            }}>
+              <span style={{ fontSize:12, fontWeight:600, color:'rgba(15,23,42,0.28)', letterSpacing:'0.03em' }}>{selectedIds.size} sel.</span>
+              <button onClick={() => {
+                const t = [...pending,...completed].find(t => selectedIds.has(t.id))
+                if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
+              }} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', padding:'4px 24px', WebkitTapHighlightColor:'transparent' }}>
+                <span style={{ fontSize:36, lineHeight:1, filter:'drop-shadow(0 2px 6px rgba(59,130,246,0.30))' }}>✏️</span>
+                <span style={{ fontSize:11, fontWeight:700, color:'#2563EB', letterSpacing:'0.02em' }}>Editar</span>
+              </button>
+              <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', padding:'4px 24px', WebkitTapHighlightColor:'transparent' }}>
+                <span style={{ fontSize:36, lineHeight:1, filter:'drop-shadow(0 2px 6px rgba(239,68,68,0.30))' }}>🗑️</span>
+                <span style={{ fontSize:11, fontWeight:700, color:'#DC2626', letterSpacing:'0.02em' }}>Eliminar</span>
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Completadas */}
         {completedVisible.length > 0 && (
-          <div style={{
-            background: 'rgba(255,255,255,0.45)',
-            backdropFilter: 'blur(40px)',
-            WebkitBackdropFilter: 'blur(40px)',
-            border: '1px solid rgba(255,255,255,0.40)',
-            borderRadius: 32,
-            padding: '16px',
-            marginBottom: 20,
-            boxShadow: '0 30px 60px -15px rgba(0,0,0,0.04)',
-          }}>
-            <p style={{ margin:'4px 4px 12px', fontSize:20, fontWeight:700, color:'#0F172A', letterSpacing:'-0.01em' }}>Completadas</p>
-            <p style={{ margin:'-8px 4px 14px', fontSize:13, color:'rgba(15,23,42,0.38)', fontWeight:400 }}>{completedVisible.length} tarea{completedVisible.length!==1?'s':''} completada{completedVisible.length!==1?'s':''}</p>
+          <>
+            <div style={{ padding:'8px 4px 10px' }}>
+              <p style={{ margin:0, fontSize:22, fontWeight:700, color:'#0F172A', letterSpacing:'-0.02em' }}>Completadas</p>
+              <p style={{ margin:'2px 0 0', fontSize:13, color:'rgba(15,23,42,0.30)', fontWeight:400 }}>{completedVisible.length} tarea{completedVisible.length!==1?'s':''} completada{completedVisible.length!==1?'s':''}</p>
+            </div>
             {completedVisible.map(task => (
-              <DayTaskItem key={task.id} task={task} groupName={getGroupName(task.groupId)}
-                onToggle={toggleStatus} onEdit={t => setModal({ tipo:'editar', task:t })}
+              <DayTaskItem
+                key={task.id}
+                task={task}
+                groupName={getGroupName(task.groupId)}
+                onToggle={toggleStatus}
+                onEdit={t => setModal({ tipo:'editar', task:t })}
                 onDelete={t => { hideLocally(t.id); setModal({ tipo:'borrar', task:t }) }}
-                selected={selectedIds.has(task.id)} onCircleTap={toggleSeleccion} hasSelection={haySeleccion} />
+                selected={selectedIds.has(task.id)}
+                onCircleTap={toggleSeleccion}
+                hasSelection={haySeleccion}
+                variant="completed"
+              />
             ))}
-          </div>
+          </>
         )}
       </div>
 
-      {/* Toolbar flotante glass */}
-      {haySeleccion && (
-        <div style={{ position:'fixed', bottom:'calc(90px + env(safe-area-inset-bottom))', left:18, right:18, zIndex:500 }}>
-
-          <div style={{
-            height:86,
-            background:'rgba(250,247,240,0.75)',
-            backdropFilter:'blur(32px) saturate(180%)', WebkitBackdropFilter:'blur(32px) saturate(180%)',
-            borderRadius:28,
-            border:'1px solid rgba(255,255,255,0.6)',
-            boxShadow:'0 20px 60px rgba(15,23,42,0.18), 0 4px 16px rgba(15,23,42,0.08), inset 0 1px 1px rgba(255,255,255,0.9)',
-            display:'flex', alignItems:'center', justifyContent:'space-around', padding:'0 24px',
-          }}>
-            <span style={{ fontSize:13, fontWeight:500, color:'rgba(15,23,42,0.4)' }}>{selectedIds.size} sel.</span>
-
-            <button onClick={() => {
-              const t = [...pending,...completed].find(t => selectedIds.has(t.id))
-              if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
-            }} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5, background:'none', border:'none', cursor:'pointer', padding:'8px 20px' }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#3B82F6" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
-              </svg>
-              <span style={{ fontSize:12, fontWeight:600, color:'#3B82F6' }}>Editar</span>
-            </button>
-
-            <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5, background:'none', border:'none', cursor:'pointer', padding:'8px 20px' }}>
-              <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
-                <polyline points="3 6 5 6 21 6"/>
-                <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
-                <path d="M10 11v6M14 11v6"/>
-                <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/>
-              </svg>
-              <span style={{ fontSize:12, fontWeight:600, color:'#EF4444' }}>Eliminar</span>
-            </button>
-          </div>
-        </div>
+      {/* ── FAB: Nueva tarea — esquina inferior derecha ── */}
+      {!haySeleccion && (
+        <button
+          onClick={() => navigate(`/agenda/${date}/nueva`)}
+          style={{
+            position: 'fixed',
+            bottom: 'calc(76px + env(safe-area-inset-bottom))',
+            right: 20,
+            zIndex: 400,
+            width: 56,
+            height: 56,
+            borderRadius: '50%',
+            background: 'linear-gradient(145deg, #5B9BF6 0%, #3B82F6 50%, #2563EB 100%)',
+            border: 'none',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 4px 20px rgba(59,130,246,0.50), 0 2px 8px rgba(59,130,246,0.30), inset 0 1px 1px rgba(255,255,255,0.25)',
+            WebkitTapHighlightColor: 'transparent',
+            transition: 'transform 0.15s ease',
+          }}
+        >
+          <span style={{ fontSize: 28, color: '#fff', lineHeight: 1, marginTop: -2, fontWeight: 300 }}>+</span>
+        </button>
       )}
 
       {modal?.tipo==='editar' && <TaskFormNew task={modal.task} defaultDate={date} onClose={() => setModal(null)} />}

@@ -52,7 +52,7 @@ const globalStyles = `
   @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.35;} }
 
   :focus-visible {
-    outline: 2px solid #5B3DF6;
+    outline: 2px solid #2D3A8C;
     outline-offset: 2px;
     border-radius: 4px;
   }

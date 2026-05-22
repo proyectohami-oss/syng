@@ -29,9 +29,19 @@
   <link rel="preconnect" href="https://identitytoolkit.googleapis.com" crossorigin />
 
   <title>Syng</title>
-  <script type="module" crossorigin src="/assets/index-tQ3iLdaB.js"></script>
+  <style>
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+  <script>
+    window.__installPrompt = null;
+    window.addEventListener("beforeinstallprompt", function(e) {
+      e.preventDefault();
+      window.__installPrompt = e;
+    });
+  </script>
+  <script type="module" crossorigin src="/assets/index-Do1kTrxE.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/vendor-react-CGaFXDi2.js">
-  <link rel="modulepreload" crossorigin href="/assets/vendor-firebase-CG_pOZBi.js">
+  <link rel="modulepreload" crossorigin href="/assets/vendor-firebase-DB29GqGo.js">
 <link rel="manifest" href="/manifest.webmanifest"></head>
 <body>
   <div id="root"></div>

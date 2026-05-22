@@ -51,30 +51,43 @@ export function GroupInfoScreen() {
 
   return (
     <div style={screen}>
+
+      {/* Header */}
       <div style={header}>
         <button onClick={() => navigate(-1)} style={btnBack}>‹</button>
-        <span style={{ fontSize:16, fontWeight:600, color:'#111' }}>Info del grupo</span>
+        <span style={{ fontSize:16, fontWeight:600, color:'#0D1240', letterSpacing:'-0.01em' }}>Info del grupo</span>
         <div style={{ width:44 }} />
       </div>
 
       <div style={body}>
-        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'28px 20px 20px', borderBottom:'1px solid #f3f4f6' }}>
-          <div style={{ width:72, height:72, borderRadius:20, background:'#EDE9FE', color:'#5B3DF6', fontSize:30, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', marginBottom:12 }}>
+
+        {/* Avatar del grupo */}
+        <div style={{ display:'flex', flexDirection:'column', alignItems:'center', padding:'28px 20px 20px', borderBottom:'1px solid rgba(13,18,64,0.07)' }}>
+          <div style={{
+            width:72, height:72, borderRadius:20,
+            background:'rgba(45,58,140,0.10)',
+            color:'#2D3A8C',
+            fontSize:30, fontWeight:700,
+            display:'flex', alignItems:'center', justifyContent:'center',
+            marginBottom:12,
+            boxShadow:'0 4px 16px rgba(45,58,140,0.12)',
+          }}>
             {group.name[0].toUpperCase()}
           </div>
           {isAdmin ? (
             <p onClick={() => { setNewName(group.name); setEditingName(true) }}
-              style={{ margin:0, fontSize:20, fontWeight:700, color:'#111', cursor:'pointer', borderBottom:'1.5px dashed #e5e7eb', paddingBottom:2 }}>
+              style={{ margin:0, fontSize:20, fontWeight:700, color:'#0D1240', cursor:'pointer', letterSpacing:'-0.02em' }}>
               {group.name}
             </p>
           ) : (
-            <p style={{ margin:0, fontSize:20, fontWeight:700, color:'#111' }}>{group.name}</p>
+            <p style={{ margin:0, fontSize:20, fontWeight:700, color:'#0D1240', letterSpacing:'-0.02em' }}>{group.name}</p>
           )}
-          <p style={{ margin:'4px 0 0', fontSize:13, color:'#9ca3af' }}>
+          <p style={{ margin:'4px 0 0', fontSize:13, color:'rgba(13,18,64,0.38)' }}>
             {members.length} miembro{members.length !== 1 ? 's' : ''}
           </p>
         </div>
 
+        {/* Miembros */}
         <div style={section}>
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px 8px' }}>
             <p style={sectionLabel}>MIEMBROS</p>
@@ -89,10 +102,10 @@ export function GroupInfoScreen() {
               <div key={m.uid} style={memberRow}>
                 <div style={memberAvatar}>{(m.displayName?.[0] ?? '?').toUpperCase()}</div>
                 <div style={{ flex:1, minWidth:0 }}>
-                  <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#111' }}>
+                  <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#0D1240' }}>
                     {m.displayName || m.email}{isMe ? ' (tú)' : ''}
                   </p>
-                  <p style={{ margin:0, fontSize:12, color:'#9ca3af' }}>
+                  <p style={{ margin:0, fontSize:12, color:'rgba(13,18,64,0.38)' }}>
                     {isMAdmin ? 'Admin' : 'Miembro'}
                   </p>
                 </div>
@@ -104,7 +117,7 @@ export function GroupInfoScreen() {
                       </button>
                     )}
                     <button onClick={() => removeMember({ groupId, targetUid: m.uid })}
-                      style={{ ...btnAction, color:'#ef4444', borderColor:'#fecaca' }}>
+                      style={{ ...btnAction, color:'#E05252', borderColor:'rgba(224,82,82,0.25)' }}>
                       Eliminar
                     </button>
                   </div>
@@ -114,24 +127,25 @@ export function GroupInfoScreen() {
           })}
         </div>
 
+        {/* Invitados pendientes */}
         {pendingInvites.length > 0 && (
-          <div style={{ borderTop:'1px solid #f3f4f6', paddingTop:8 }}>
-            <p style={{ margin:'10px 20px 4px', fontSize:11, fontWeight:600, color:'#9ca3af', letterSpacing:'0.06em' }}>
+          <div style={{ borderTop:'1px solid rgba(13,18,64,0.07)', paddingTop:8 }}>
+            <p style={{ margin:'10px 20px 4px', fontSize:11, fontWeight:600, color:'rgba(13,18,64,0.32)', letterSpacing:'0.08em' }}>
               INVITADOS PENDIENTES
             </p>
             {pendingInvites.map(inv => (
               <div key={inv.id} style={{ display:'flex', alignItems:'center', gap:12, padding:'10px 20px' }}>
-                <div style={{ width:36, height:36, borderRadius:'50%', background:'#fef9c3', color:'#ca8a04', fontSize:16, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                <div style={{ width:36, height:36, borderRadius:'50%', background:'rgba(245,158,11,0.10)', color:'#B45309', fontSize:16, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
                   ⏳
                 </div>
                 <div style={{ flex:1 }}>
-                  <p style={{ margin:0, fontSize:14, color:'#6b7280' }}>{inv.phoneNumber}</p>
-                  <p style={{ margin:0, fontSize:11, color:'#9ca3af' }}>Invitación pendiente</p>
+                  <p style={{ margin:0, fontSize:14, color:'rgba(13,18,64,0.55)' }}>{inv.phoneNumber}</p>
+                  <p style={{ margin:0, fontSize:11, color:'rgba(13,18,64,0.35)' }}>Invitación pendiente</p>
                 </div>
                 {isAdmin && (
                   <button
                     onClick={() => setConfirmCancelId(inv.id)}
-                    style={{ background:'none', border:'none', color:'#d1d5db', fontSize:18, cursor:'pointer', padding:'4px 8px' }}
+                    style={{ background:'none', border:'none', color:'rgba(13,18,64,0.22)', fontSize:18, cursor:'pointer', padding:'4px 8px' }}
                   >
                     ✕
                   </button>
@@ -143,6 +157,7 @@ export function GroupInfoScreen() {
 
         <ActivityFeed groupId={groupId} />
 
+        {/* Acciones peligrosas */}
         <div style={{ padding:'20px' }}>
           <button onClick={() => setConfirmLeave(true)} style={{ ...btnDanger, marginBottom:10 }}>
             Salir del grupo
@@ -155,26 +170,24 @@ export function GroupInfoScreen() {
         </div>
       </div>
 
+      {/* Modal editar nombre */}
       {editingName && (
-        <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }}>
-          <div style={{ background:'#fff', borderRadius:16, padding:'24px 20px', width:'100%', maxWidth:320 }}>
-            <p style={{ margin:'0 0 16px', fontWeight:600, fontSize:16 }}>Editar nombre</p>
+        <div style={overlayModal}>
+          <div style={dialog}>
+            <p style={{ margin:'0 0 16px', fontWeight:600, fontSize:16, color:'#0D1240', letterSpacing:'-0.01em' }}>Editar nombre</p>
             <input
               value={newName}
               onChange={e => setNewName(e.target.value)}
-              style={{ width:'100%', boxSizing:'border-box', padding:'10px 12px', borderRadius:10, border:'1.5px solid #e5e7eb', fontSize:16, fontFamily:'inherit', outline:'none', marginBottom:16 }}
+              style={{ width:'100%', boxSizing:'border-box', padding:'11px 14px', borderRadius:12, border:'1.5px solid rgba(13,18,64,0.10)', fontSize:16, fontFamily:'inherit', outline:'none', marginBottom:16, background:'rgba(255,255,255,0.80)' }}
               autoFocus
             />
             <div style={{ display:'flex', gap:8 }}>
-              <button onClick={() => setEditingName(false)}
-                style={{ flex:1, padding:'11px', borderRadius:10, border:'1px solid #e5e7eb', background:'#fff', fontSize:14, cursor:'pointer', color:'#374151' }}>
-                Cancelar
-              </button>
+              <button onClick={() => setEditingName(false)} style={btnCancel}>Cancelar</button>
               <button onClick={async () => {
                 if (!newName.trim()) return
                 await updateGroupName(groupId, newName.trim())
                 setEditingName(false)
-              }} style={{ flex:1, padding:'11px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }}>
+              }} style={{ ...btnConfirm, background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)' }}>
                 Guardar
               </button>
             </div>
@@ -182,40 +195,43 @@ export function GroupInfoScreen() {
         </div>
       )}
 
+      {/* Confirmar cancelar invitación */}
       {confirmCancelId && (
         <div style={overlayModal}>
           <div style={dialog}>
-            <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16 }}>¿Cancelar invitación?</p>
-            <p style={{ margin:'0 0 20px', fontSize:14, color:'#6b7280' }}>La persona ya no podrá unirse con esta invitación.</p>
+            <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16, color:'#0D1240' }}>¿Cancelar invitación?</p>
+            <p style={{ margin:'0 0 20px', fontSize:14, color:'rgba(13,18,64,0.45)', lineHeight:1.5 }}>La persona ya no podrá unirse con esta invitación.</p>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={() => setConfirmCancelId(null)} style={btnCancel}>No, mantener</button>
-              <button onClick={() => handleCancelInvitation(confirmCancelId)} style={{ ...btnConfirm, background:'#dc2626' }}>Sí, cancelar</button>
+              <button onClick={() => handleCancelInvitation(confirmCancelId)} style={{ ...btnConfirm, background:'linear-gradient(135deg, #E86060, #E05252)' }}>Sí, cancelar</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Confirmar salir */}
       {confirmLeave && (
         <div style={overlayModal}>
           <div style={dialog}>
-            <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16 }}>¿Salir del grupo?</p>
-            <p style={{ margin:'0 0 20px', fontSize:14, color:'#6b7280' }}>Perderás acceso a las tareas del grupo.</p>
+            <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16, color:'#0D1240' }}>¿Salir del grupo?</p>
+            <p style={{ margin:'0 0 20px', fontSize:14, color:'rgba(13,18,64,0.45)', lineHeight:1.5 }}>Perderás acceso a las tareas del grupo.</p>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={() => setConfirmLeave(false)} style={btnCancel}>Cancelar</button>
-              <button onClick={handleLeave} style={btnConfirm}>Salir</button>
+              <button onClick={handleLeave} style={{ ...btnConfirm, background:'linear-gradient(135deg, #E86060, #E05252)' }}>Salir</button>
             </div>
           </div>
         </div>
       )}
 
+      {/* Confirmar eliminar */}
       {confirmDelete && (
         <div style={overlayModal}>
           <div style={dialog}>
-            <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16 }}>¿Eliminar grupo?</p>
-            <p style={{ margin:'0 0 20px', fontSize:14, color:'#6b7280' }}>Esta acción no se puede deshacer.</p>
+            <p style={{ margin:'0 0 8px', fontWeight:600, fontSize:16, color:'#0D1240' }}>¿Eliminar grupo?</p>
+            <p style={{ margin:'0 0 20px', fontSize:14, color:'rgba(13,18,64,0.45)', lineHeight:1.5 }}>Esta acción no se puede deshacer.</p>
             <div style={{ display:'flex', gap:8 }}>
               <button onClick={() => setConfirmDelete(false)} style={btnCancel}>Cancelar</button>
-              <button onClick={handleDelete} style={{ ...btnConfirm, background:'#dc2626' }}>Eliminar</button>
+              <button onClick={handleDelete} style={{ ...btnConfirm, background:'linear-gradient(135deg, #E86060, #E05252)' }}>Eliminar</button>
             </div>
           </div>
         </div>
@@ -233,18 +249,19 @@ export function GroupInfoScreen() {
   )
 }
 
-const screen       = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'#f9fafb' }
-const header       = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid #f3f4f6', background:'#fff' }
-const btnBack      = { background:'none', border:'none', fontSize:22, color:'#6b7280', cursor:'pointer', padding:'0 4px', minWidth:44, display:'flex', alignItems:'center' }
+const screen       = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'transparent' }
+const header       = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'14px 20px', borderBottom:'1px solid rgba(13,18,64,0.07)', background:'transparent' }
+const btnBack      = { background:'none', border:'none', fontSize:22, color:'rgba(13,18,64,0.35)', cursor:'pointer', padding:'0 4px', minWidth:44, display:'flex', alignItems:'center' }
 const body         = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch' }
-const section      = { background:'#fff', margin:'12px 0 0', borderTop:'1px solid #f3f4f6', borderBottom:'1px solid #f3f4f6' }
-const sectionLabel = { margin:0, fontSize:11, fontWeight:600, color:'#9ca3af', letterSpacing:'0.06em' }
-const memberRow    = { display:'flex', alignItems:'center', gap:12, padding:'12px 20px', borderTop:'1px solid #f9fafb' }
-const memberAvatar = { width:36, height:36, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:14, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
-const btnInvite    = { background:'none', border:'none', color:'#5B3DF6', fontSize:13, fontWeight:600, cursor:'pointer' }
-const btnAction    = { padding:'5px 10px', borderRadius:8, border:'1px solid #e5e7eb', background:'#fff', fontSize:12, color:'#374151', cursor:'pointer' }
-const btnDanger    = { width:'100%', padding:'13px', borderRadius:12, border:'1.5px solid #fee2e2', background:'#fff', color:'#dc2626', fontSize:15, fontWeight:600, cursor:'pointer' }
-const overlayModal = { position:'fixed', inset:0, background:'rgba(0,0,0,0.4)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }
-const dialog       = { background:'#fff', borderRadius:16, padding:'24px 20px', width:'100%', maxWidth:320 }
-const btnCancel    = { flex:1, padding:'11px', borderRadius:10, border:'1px solid #e5e7eb', background:'#fff', fontSize:14, cursor:'pointer', color:'#374151' }
-const btnConfirm   = { flex:1, padding:'11px', borderRadius:10, border:'none', background:'#5B3DF6', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
+const section      = { background:'rgba(255,255,255,0.70)', margin:'12px 0 0', borderTop:'1px solid rgba(13,18,64,0.07)', borderBottom:'1px solid rgba(13,18,64,0.07)' }
+const sectionLabel = { margin:0, fontSize:11, fontWeight:600, color:'rgba(13,18,64,0.32)', letterSpacing:'0.08em' }
+const memberRow    = { display:'flex', alignItems:'center', gap:12, padding:'12px 20px', borderTop:'1px solid rgba(13,18,64,0.05)' }
+const memberAvatar = { width:36, height:36, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:14, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const btnInvite    = { background:'none', border:'none', color:'#2D3A8C', fontSize:13, fontWeight:600, cursor:'pointer' }
+const btnAction    = { padding:'5px 10px', borderRadius:8, border:'1px solid rgba(13,18,64,0.12)', background:'rgba(255,255,255,0.80)', fontSize:12, color:'rgba(13,18,64,0.55)', cursor:'pointer' }
+const btnDanger    = { width:'100%', padding:'14px', borderRadius:14, border:'1.5px solid rgba(224,82,82,0.22)', background:'rgba(224,82,82,0.05)', color:'#E05252', fontSize:15, fontWeight:600, cursor:'pointer' }
+/* Sin backdropFilter en el overlay — evita que iOS bloquee los clicks en botones */
+const overlayModal = { position:'fixed', inset:0, background:'rgba(13,18,64,0.35)', display:'flex', alignItems:'center', justifyContent:'center', zIndex:1000, padding:20 }
+const dialog       = { background:'#FAFBFF', borderRadius:20, padding:'24px 20px', width:'100%', maxWidth:320, boxShadow:'0 20px 60px rgba(13,18,64,0.20)', border:'1px solid rgba(255,255,255,0.70)' }
+const btnCancel    = { flex:1, padding:'11px', borderRadius:12, border:'1px solid rgba(13,18,64,0.12)', background:'rgba(255,255,255,0.80)', fontSize:14, cursor:'pointer', color:'rgba(13,18,64,0.45)' }
+const btnConfirm   = { flex:1, padding:'11px', borderRadius:12, border:'none', background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer', boxShadow:'0 2px 8px rgba(45,58,140,0.28)' }

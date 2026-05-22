@@ -63,10 +63,11 @@ export function AuthScreen() {
               <img src='/icon-192.png' alt='Syng' style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:18 }} />
             </div>
           </div>
-          <h1 style={{ margin:'16px 0 6px', fontSize:24, fontWeight:700, color:'#0F0F0F', letterSpacing:'-0.02em' }}>
+          {/* Tipografía: 28px/700, color sistema */}
+          <h1 style={{ margin:'18px 0 6px', fontSize:28, fontWeight:700, color:'#0D1240', letterSpacing:'-0.03em' }}>
             Syng
           </h1>
-          <p style={{ margin:0, fontSize:14, color:'#A0A0A0', lineHeight:1.5, fontWeight:400 }}>
+          <p style={{ margin:0, fontSize:14, color:'#5B6480', lineHeight:1.5, fontWeight:400 }}>
             Todo lo importante, en sincronía.
           </p>
         </div>
@@ -78,7 +79,7 @@ export function AuthScreen() {
 
         <div style={divider}>
           <span style={dividerLine} />
-          <span style={{ padding:'0 14px', fontSize:12, color:'#D0D0D0', flexShrink:0 }}>o</span>
+          <span style={{ padding:'0 14px', fontSize:12, color:'#C8CEDD', flexShrink:0 }}>o</span>
           <span style={dividerLine} />
         </div>
 
@@ -116,7 +117,7 @@ export function AuthScreen() {
           </button>
         </form>
 
-        <p style={{ textAlign:'center', fontSize:13, color:'#A0A0A0', marginTop:24 }}>
+        <p style={{ textAlign:'center', fontSize:13, color:'#5B6480', marginTop:24 }}>
           {mode==='login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
           <button onClick={() => { setMode(mode==='login' ? 'signup' : 'login'); clearError() }}
             style={toggleBtn} disabled={isLoading}>
@@ -144,68 +145,135 @@ function Spinner({ light }) {
   return (
     <span style={{
       width:16, height:16, borderRadius:'50%',
-      border: `2px solid ${light ? 'rgba(255,255,255,0.3)' : '#E5E7EB'}`,
-      borderTopColor: light ? '#fff' : '#5B3DF6',
+      border: `2px solid ${light ? 'rgba(255,255,255,0.30)' : '#E8EBF4'}`,
+      borderTopColor: light ? '#fff' : '#2D3A8C',
       display:'inline-block', animation:'spin 0.7s linear infinite',
     }} />
   )
 }
 
+// ── Estilos ─────────────────────────────────────────────────────────────────
+
 const screen = {
-  minHeight:'100%', display:'flex', alignItems:'center', justifyContent:'center',
-  padding:'24px 20px',
-  background:'linear-gradient(160deg, #F8F7FF 0%, #F3F4F6 100%)',
+  minHeight: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '24px 20px',
+  /* Fondo sistema Syng — azul-blanco neutro, sin púrpura */
+  background: 'linear-gradient(158deg, #F7F8FC 0%, #EEF1F8 100%)',
 }
+
 const card = {
-  width:'100%', maxWidth:380,
-  background:'#fff', borderRadius:20,
-  padding:'40px 32px 32px',
-  boxShadow:'0 2px 2px rgba(0,0,0,0.03), 0 8px 32px rgba(91,61,246,0.07), 0 1px 0 rgba(255,255,255,0.8) inset',
+  width: '100%',
+  maxWidth: 380,
+  background: '#FFFFFF',
+  borderRadius: 24,
+  padding: '40px 32px 32px',
+  /* Sombra sistema — tono índigo, no púrpura */
+  boxShadow: [
+    '0 2px 4px rgba(13,18,64,0.04)',
+    '0 8px 32px rgba(13,18,64,0.08)',
+    'inset 0 1px 0 rgba(255,255,255,0.90)',
+  ].join(', '),
 }
-const logoWrap = { display:'inline-flex' }
+
+const logoWrap = { display: 'inline-flex' }
+
 const logoMark = {
-  width:64, height:64, borderRadius:18,
-  overflow:'hidden', display:'flex',
-  background:'#0F1B3D',
-  boxShadow:'0 4px 16px rgba(91,61,246,0.20)',
+  width: 64,
+  height: 64,
+  borderRadius: 18,
+  overflow: 'hidden',
+  display: 'flex',
+  background: '#0D1240',
+  /* Sombra logo — índigo */
+  boxShadow: '0 4px 16px rgba(13,18,64,0.22)',
 }
+
 const googleBtn = {
-  width:'100%', padding:'13px 16px',
-  display:'flex', alignItems:'center', justifyContent:'center', gap:10,
-  border:'1.5px solid #EBEBEB', borderRadius:12,
-  background:'#FAFAFA', cursor:'pointer',
-  fontSize:14, fontWeight:500, color:'#374151',
-  boxShadow:'0 1px 3px rgba(0,0,0,0.04)',
+  width: '100%',
+  padding: '13px 16px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 10,
+  border: '1.5px solid #E8EBF4',
+  borderRadius: 14,
+  background: '#FAFBFE',
+  cursor: 'pointer',
+  fontSize: 14,
+  fontWeight: 500,
+  color: '#0D1240',
+  boxShadow: '0 1px 4px rgba(13,18,64,0.05)',
+  transition: 'background 0.15s',
 }
-const divider     = { display:'flex', alignItems:'center', margin:'22px 0' }
-const dividerLine = { flex:1, height:1, background:'#F0F0F0' }
-const lbl = { display:'block', fontSize:12, fontWeight:600, color:'#6B7280', marginBottom:6, letterSpacing:'0.01em' }
+
+const divider     = { display: 'flex', alignItems: 'center', margin: '22px 0' }
+const dividerLine = { flex: 1, height: 1, background: '#EEF1F8' }
+
+const lbl = {
+  display: 'block',
+  fontSize: 12,
+  fontWeight: 600,
+  color: '#5B6480',
+  marginBottom: 6,
+  letterSpacing: '0.02em',
+}
+
 const inp = {
-  width:'100%', boxSizing:'border-box',
-  padding:'11px 14px', borderRadius:10,
-  border:'1.5px solid #F0F0F0',
-  fontSize:15, color:'#111',
-  outline:'none', fontFamily:'inherit',
-  background:'#FAFAFA',
-  boxShadow:'0 1px 3px rgba(0,0,0,0.03) inset',
+  width: '100%',
+  boxSizing: 'border-box',
+  padding: '12px 14px',
+  borderRadius: 12,
+  border: '1.5px solid #E8EBF4',
+  fontSize: 15,
+  color: '#0D1240',
+  outline: 'none',
+  fontFamily: 'inherit',
+  background: '#FAFBFE',
+  boxShadow: 'inset 0 1px 3px rgba(13,18,64,0.04)',
+  transition: 'border-color 0.15s',
 }
+
 const errorMsg = {
-  margin:0, padding:'10px 14px',
-  background:'#FFF1F1', color:'#DC2626',
-  borderRadius:10, fontSize:13, lineHeight:1.4,
-  border:'1px solid #FEE2E2',
+  margin: 0,
+  padding: '10px 14px',
+  background: '#FFF1F1',
+  color: '#C0392B',
+  borderRadius: 12,
+  fontSize: 13,
+  lineHeight: 1.5,
+  border: '1px solid #FEE2E2',
 }
+
 const submitBtn = {
-  width:'100%', padding:'13px 16px',
-  display:'flex', alignItems:'center', justifyContent:'center', gap:8,
-  border:'none', borderRadius:12,
-  background:'linear-gradient(135deg, #5B3DF6, #7C3AED)',
-  color:'#fff', fontSize:15, fontWeight:600, cursor:'pointer',
-  boxShadow:'0 4px 16px rgba(91,61,246,0.30)',
-  letterSpacing:'-0.01em',
+  width: '100%',
+  padding: '14px 16px',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  border: 'none',
+  borderRadius: 14,
+  /* Gradiente índigo — sistema Syng */
+  background: 'linear-gradient(135deg, #3D4FA8 0%, #2D3A8C 100%)',
+  color: '#fff',
+  fontSize: 15,
+  fontWeight: 600,
+  cursor: 'pointer',
+  /* Sombra con tono de marca */
+  boxShadow: '0 4px 16px rgba(45,58,140,0.32)',
+  letterSpacing: '-0.01em',
 }
+
 const toggleBtn = {
-  background:'none', border:'none',
-  color:'#5B3DF6', cursor:'pointer',
-  fontSize:13, fontWeight:600, padding:0,
+  background: 'none',
+  border: 'none',
+  /* Color marca índigo */
+  color: '#2D3A8C',
+  cursor: 'pointer',
+  fontSize: 13,
+  fontWeight: 600,
+  padding: 0,
 }

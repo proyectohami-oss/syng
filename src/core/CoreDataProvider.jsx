@@ -18,6 +18,7 @@ import { usePersonalTasksListener } from './listeners/usePersonalTasksListener'
 import { useGroupTasksListener }    from './listeners/useGroupTasksListener'
 import { useGroupsListener }        from './listeners/useGroupsListener'
 import { useOnlineStatus }          from './hooks/useOnlineStatus'
+import { useRollover }              from './hooks/useRollover'
 
 export const CoreDispatchContext = createContext(null)
 export const CoreAuthContext     = createContext(null)
@@ -43,6 +44,9 @@ export function CoreDataProvider({ children }) {
   useGroupTasksListener(groupIdsKey, dispatch)
   useGroupsListener(uid, dispatch)
   useOnlineStatus(dispatch)
+
+  /* Rollover — mueve tareas personales vencidas al día actual */
+  useRollover(uid)
 
   // Slices memoizados — cada contexto solo cambia cuando su slice cambia
   const authValue   = useMemo(() => state.auth,   [state.auth])

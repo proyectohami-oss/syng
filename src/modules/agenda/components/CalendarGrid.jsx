@@ -31,20 +31,28 @@ export function CalendarGrid({ viewMonth, selectedDate, daysWithActivity, onSele
 
   return (
     <div style={{ padding:'0 16px 12px' }}>
+
+      {/* Nav mes */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
         <button onClick={onPrevMonth} style={navBtn}>‹</button>
-        <span style={{ fontSize:16, fontWeight:500, color:'#111' }}>
+        <span style={{ fontSize:16, fontWeight:500, color:'#0D1240', letterSpacing:'-0.01em' }}>
           {MONTHS_ES[month]} {year}
         </span>
         <button onClick={onNextMonth} style={navBtn}>›</button>
       </div>
 
+      {/* Días encabezado */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:6 }}>
         {DAYS_HDR.map((d,i) => (
-          <span key={i} style={{ fontSize:11, color:'#9ca3af', textAlign:'center', fontWeight:500 }}>{d}</span>
+          <span key={i} style={{
+            fontSize: 11, color: 'rgba(13,18,64,0.32)',
+            textAlign: 'center', fontWeight: 600,
+            letterSpacing: '0.04em',
+          }}>{d}</span>
         ))}
       </div>
 
+      {/* Celdas */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)' }}>
         {cells.map((day, i) => {
           if (!day) return <div key={i} style={{ height:48 }} />
@@ -53,11 +61,6 @@ export function CalendarGrid({ viewMonth, selectedDate, daysWithActivity, onSele
           const hasDot = !!daysWithActivity[key]
           const todayD = isToday(day)
           const selD   = isSelected(day)
-
-          // Visual states:
-          // selected → filled purple circle
-          // today (not selected) → purple ring, no fill
-          // normal → nothing
 
           return (
             <div
@@ -73,33 +76,39 @@ export function CalendarGrid({ viewMonth, selectedDate, daysWithActivity, onSele
                 gap: 2,
               }}
             >
-              {/* Number circle */}
+              {/* Círculo del número — índigo sistema */}
               <div style={{
                 width: 30, height: 30,
                 borderRadius: '50%',
-                background: selD ? '#5B3DF6' : 'transparent',
-                border: (!selD && todayD) ? '2px solid #5B3DF6' : '2px solid transparent',
+                background: selD
+                  ? 'linear-gradient(145deg, #3D4FA8, #2D3A8C)'
+                  : 'transparent',
+                border: (!selD && todayD)
+                  ? '2px solid #2D3A8C'
+                  : '2px solid transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: selD ? '0 2px 8px rgba(45,58,140,0.32)' : 'none',
+                transition: 'all 0.15s ease',
               }}>
                 <span style={{
                   fontSize: 13, lineHeight: 1,
                   fontWeight: (selD || todayD) ? 600 : 400,
-                  color: selD ? '#fff' : todayD ? '#5B3DF6' : '#111',
+                  color: selD ? '#fff' : todayD ? '#2D3A8C' : '#0D1240',
                 }}>
                   {day}
                 </span>
               </div>
 
-              {/* Activity dot — OUTSIDE the circle, always visible when there's activity */}
-              <div style={{ height: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              {/* Punto de actividad */}
+              <div style={{ height:5, display:'flex', alignItems:'center', justifyContent:'center' }}>
                 {hasDot ? (
                   <div style={{
                     width: 4, height: 4, borderRadius: '50%',
-                    background: selD ? '#5B3DF6' : todayD ? '#5B3DF6' : '#5B3DF6',
-                    opacity: selD ? 0.5 : 1,
+                    background: '#2D3A8C',
+                    opacity: 1,
                   }} />
                 ) : (
-                  <div style={{ width: 4, height: 4 }} />
+                  <div style={{ width:4, height:4 }} />
                 )}
               </div>
             </div>
@@ -111,9 +120,10 @@ export function CalendarGrid({ viewMonth, selectedDate, daysWithActivity, onSele
 }
 
 const navBtn = {
-  background:'none', border:'none', fontSize:22, color:'#6b7280',
-  cursor:'pointer', padding:'4px 12px',
-  minWidth:44, minHeight:44,
-  display:'flex', alignItems:'center', justifyContent:'center',
-  WebkitTapHighlightColor:'transparent',
+  background: 'none', border: 'none', fontSize: 22,
+  color: 'rgba(13,18,64,0.35)',
+  cursor: 'pointer', padding: '4px 12px',
+  minWidth: 44, minHeight: 44,
+  display: 'flex', alignItems: 'center', justifyContent: 'center',
+  WebkitTapHighlightColor: 'transparent',
 }

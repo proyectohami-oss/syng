@@ -57,54 +57,88 @@ export function AppShell({ children }) {
       display: 'flex',
       height: '100%',
       overflow: 'hidden',
-      background: "radial-gradient(circle at top left, rgba(255,230,210,0.55), transparent 35%), radial-gradient(circle at bottom center, rgba(214,230,242,0.75), transparent 40%), linear-gradient(180deg, #f8f8f7 0%, #eef3f8 100%)",
+      /* Fondo sistema Syng — azul-blanco neutro con luz atmosférica suave */
+      background: [
+        'radial-gradient(ellipse at 92% 4%,  rgba(255,200,150,0.28) 0%, transparent 48%)',
+        'radial-gradient(ellipse at 8%  96%,  rgba(150,180,255,0.22) 0%, transparent 48%)',
+        'linear-gradient(168deg, #F7F8FC 0%, #F2F4FB 50%, #EEF1F8 100%)',
+      ].join(', '),
       backgroundAttachment: 'fixed',
     }}>
 
-      {/* ── Sidebar desktop (hidden on mobile via class) ─────────── */}
+      {/* ── Sidebar desktop ─────────────────────────────────────────── */}
       <nav className="desktop-sidebar" aria-label="Navegación principal" style={{
-        width: 220, flexShrink: 0,
-        borderRight: '1px solid #f3f4f6',
-        display: 'flex', flexDirection: 'column',
-        padding: '16px 8px 12px', gap: 2, overflowY: 'auto',
+        width: 220,
+        flexShrink: 0,
+        borderRight: '1px solid rgba(13,18,64,0.07)',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '16px 8px 12px',
+        gap: 2,
+        overflowY: 'auto',
+        background: 'rgba(255,255,255,0.55)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
       }}>
+
+        {/* Logo */}
         <div
           onClick={() => navigate('/agenda')}
           style={{ display:'flex', alignItems:'center', gap:10, padding:'4px 10px 16px', cursor:'pointer' }}
         >
-          <div style={{ width:30, height:30, borderRadius:8, background:'#5B3DF6', color:'#fff', fontSize:16, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>S</div>
-          <span style={{ fontSize:15, fontWeight:700, color:'#111' }}>Syng</span>
+          <div style={{
+            width: 30, height: 30, borderRadius: 8,
+            background: 'linear-gradient(145deg, #3D4FA8, #2D3A8C)',
+            color: '#fff', fontSize: 15, fontWeight: 700,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            flexShrink: 0,
+            boxShadow: '0 2px 8px rgba(45,58,140,0.28)',
+          }}>S</div>
+          <span style={{ fontSize:15, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em' }}>Syng</span>
         </div>
 
+        {/* Nav items */}
         {NAV_ITEMS.map(item => (
           <button key={item.label} onClick={() => navigate(item.path)} style={{
-            display:'flex', alignItems:'center', gap:10,
-            width:'100%', padding:'9px 10px', borderRadius:10,
-            border:'none', textAlign:'left', cursor:'pointer',
-            fontSize:13, fontWeight: isActive(item.path) ? 600 : 400,
-            background: isActive(item.path) ? '#EDE9FE' : 'transparent',
-            color:      isActive(item.path) ? '#5B3DF6' : '#374151',
+            display: 'flex', alignItems: 'center', gap: 10,
+            width: '100%', padding: '9px 10px', borderRadius: 10,
+            border: 'none', textAlign: 'left', cursor: 'pointer',
+            fontSize: 13,
+            fontWeight: isActive(item.path) ? 600 : 400,
+            background: isActive(item.path) ? 'rgba(45,58,140,0.10)' : 'transparent',
+            color:      isActive(item.path) ? '#2D3A8C' : '#5B6480',
+            transition: 'background 0.15s',
           }}>
             <span style={{ fontSize:18 }}>{item.emoji}</span>
             {item.label}
           </button>
         ))}
 
+        {/* Grupos */}
         {groups.length > 0 && (
           <div style={{ marginTop:16 }}>
-            <p style={{ margin:'0 0 4px', padding:'0 10px', fontSize:10, fontWeight:600, color:'#d1d5db', letterSpacing:'0.08em' }}>MIS GRUPOS</p>
+            <p style={{ margin:'0 0 4px', padding:'0 10px', fontSize:10, fontWeight:600, color:'rgba(13,18,64,0.30)', letterSpacing:'0.08em' }}>MIS GRUPOS</p>
             {groups.map(g => {
               const active = location.pathname === `/pizarron/${g.id}`
               return (
                 <button key={g.id} onClick={() => navigate(`/pizarron/${g.id}`)} style={{
-                  display:'flex', alignItems:'center', gap:8,
-                  width:'100%', padding:'8px 10px', borderRadius:10,
-                  border:'none', cursor:'pointer', textAlign:'left',
-                  fontSize:13, fontWeight: active ? 600 : 400,
-                  background: active ? '#EDE9FE' : 'transparent',
-                  color:      active ? '#5B3DF6' : '#374151',
+                  display: 'flex', alignItems: 'center', gap: 8,
+                  width: '100%', padding: '8px 10px', borderRadius: 10,
+                  border: 'none', cursor: 'pointer', textAlign: 'left',
+                  fontSize: 13,
+                  fontWeight: active ? 600 : 400,
+                  background: active ? 'rgba(45,58,140,0.10)' : 'transparent',
+                  color:      active ? '#2D3A8C' : '#5B6480',
+                  transition: 'background 0.15s',
                 }}>
-                  <span style={{ width:22, height:22, borderRadius:'50%', background:'#EDE9FE', color:'#5B3DF6', fontSize:11, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }}>
+                  <span style={{
+                    width: 22, height: 22, borderRadius: '50%',
+                    background: 'rgba(45,58,140,0.10)',
+                    color: '#2D3A8C',
+                    fontSize: 11, fontWeight: 700,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    flexShrink: 0,
+                  }}>
                     {g.name[0].toUpperCase()}
                   </span>
                   <span style={{ overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>{g.name}</span>
@@ -116,63 +150,73 @@ export function AppShell({ children }) {
 
         <div style={{ flex:1 }} />
 
-        <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 8px', borderTop:'1px solid #f3f4f6' }}>
-          <div style={{ width:30, height:30, borderRadius:'50%', flexShrink:0, background:'#EDE9FE', color:'#5B3DF6', fontSize:13, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center' }}>
+        {/* Usuario */}
+        <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 8px', borderTop:'1px solid rgba(13,18,64,0.07)' }}>
+          <div style={{
+            width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
+            background: 'rgba(45,58,140,0.10)',
+            color: '#2D3A8C',
+            fontSize: 13, fontWeight: 600,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
             {(user?.displayName?.[0] ?? user?.email?.[0] ?? '?').toUpperCase()}
           </div>
           <div style={{ flex:1, minWidth:0 }}>
-            <p style={{ margin:0, fontSize:13, fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', color:'#111' }}>
+            <p style={{ margin:0, fontSize:13, fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', color:'#0D1240' }}>
               {user?.displayName || user?.email}
             </p>
           </div>
-          <button onClick={handleSignOut} disabled={signingOut} style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, color:'#9ca3af', padding:4 }} title="Cerrar sesión">⎋</button>
+          <button
+            onClick={handleSignOut}
+            disabled={signingOut}
+            style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, color:'rgba(13,18,64,0.30)', padding:4 }}
+            title="Cerrar sesión"
+          >⎋</button>
         </div>
       </nav>
 
-      {/* ── Right side: content + mobile nav ─────────────────────── */}
+      {/* ── Contenido + nav móvil ────────────────────────────────────── */}
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0, background:'transparent' }}>
 
-        {/* Page content */}
         <main style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', minHeight:0, background:'transparent', isolation:'isolate' }}>
           {children}
         </main>
 
-        {/* ── Mobile bottom nav ──────────────────────────────────────
-             Always in document flow — never position:fixed.
-             Hidden on desktop via CSS class.               */}
+        {/* Mobile bottom nav */}
         <nav className="mobile-bottom-nav" aria-label="Navegación móvil" style={{
           display: 'flex',
-          background: 'rgba(255,255,255,0.62)',
+          background: 'rgba(255,255,255,0.78)',
           backdropFilter: 'blur(32px)',
           WebkitBackdropFilter: 'blur(32px)',
-          borderTop: '1px solid rgba(255,255,255,0.55)',
+          borderTop: '1px solid rgba(255,255,255,0.60)',
           paddingBottom: 'env(safe-area-inset-bottom)',
           flexShrink: 0,
-          boxShadow: '0 -12px 40px rgba(15,23,42,0.08)',
+          boxShadow: '0 -8px 32px rgba(13,18,64,0.07)',
         }}>
           {NAV_ITEMS.map(item => (
             <button
               key={item.label}
               onClick={() => navigate(item.path)}
               style={{
-                flex:1, display:'flex', flexDirection:'column',
-                alignItems:'center', justifyContent:'center', gap:3,
-                border:'none', background:'transparent', cursor:'pointer',
-                padding:'8px 4px', minHeight:56,
-                WebkitTapHighlightColor:'transparent',
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 3,
+                border: 'none', background: 'transparent', cursor: 'pointer',
+                padding: '8px 4px', minHeight: 56,
+                WebkitTapHighlightColor: 'transparent',
               }}
             >
               <span style={{
                 fontSize: 22, lineHeight: 1,
-                filter: isActive(item.path) ? 'none' : 'grayscale(40%) opacity(0.65)',
+                filter: isActive(item.path) ? 'none' : 'grayscale(40%) opacity(0.60)',
                 transform: isActive(item.path) ? 'scale(1.1)' : 'scale(1)',
-                transition: 'transform 0.1s',
+                transition: 'transform 0.12s ease',
                 display: 'block',
               }}>{item.emoji}</span>
               <span style={{
                 fontSize: 10, lineHeight: 1,
                 fontWeight: isActive(item.path) ? 600 : 400,
-                color: isActive(item.path) ? '#5B3DF6' : '#9ca3af',
+                color: isActive(item.path) ? '#2D3A8C' : 'rgba(13,18,64,0.38)',
+                transition: 'color 0.12s ease',
               }}>
                 {item.label}
               </span>
