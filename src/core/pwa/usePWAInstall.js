@@ -1,39 +1,37 @@
-/**
- * usePWAInstall — maneja la lógica de instalación PWA.
- * Separado de usePushNotifications para mantener responsabilidades claras.
- */
 import { useState, useEffect, useCallback } from 'react'
 
 function detectIOS() {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent)
+  return (
+    /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  )
 }
 
 function detectStandalone() {
-  return window.matchMedia('(display-mode: standalone)').matches ||
+  return (
+    window.matchMedia('(display-mode: standalone)').matches ||
     window.navigator.standalone === true
+  )
 }
 
 export function usePWAInstall() {
   const [installPrompt, setInstallPrompt] = useState(null)
   const [isInstalled,   setIsInstalled]   = useState(false)
   const [installing,    setInstalling]    = useState(false)
-
-  const isIOS        = detectIOS()
-  const isStandalone = detectStandalone()
+  const [isIOS,         setIsIOS]         = useState(false)
 
   useEffect(() => {
-    // Si ya está instalada, no hay nada que hacer
-    if (isStandalone) {
+    setIsIOS(detectIOS())
+
+    if (detectStandalone()) {
       setIsInstalled(true)
       return
     }
 
-    // Recoge el prompt que se capturó en index.html antes de que React montara
     if (window.__installPrompt) {
       setInstallPrompt(window.__installPrompt)
     }
 
-    // Por si llega después (raro pero posible)
     function onPrompt(e) {
       e.preventDefault()
       window.__installPrompt = e
@@ -53,9 +51,8 @@ export function usePWAInstall() {
       window.removeEventListener('beforeinstallprompt', onPrompt)
       window.removeEventListener('appinstalled', onInstalled)
     }
-  }, [isStandalone])
+  }, [])
 
-  // Dispara la instalación nativa en Android
   const triggerInstall = useCallback(async () => {
     if (!installPrompt) return false
     setInstalling(true)
@@ -75,8 +72,7 @@ export function usePWAInstall() {
   }, [installPrompt])
 
   return {
-    // ¿Puede instalarse? Android con prompt o iOS en Safari
-    canInstall:  !isInstalled && (!!installPrompt || isIOS),
+    canInstall: !isInstalled && (!!installPrompt || isIOS),
     isIOS,
     isInstalled,
     installing,
