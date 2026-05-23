@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
 import { useAuthActions } from '../../auth/useAuthActions'
@@ -7,9 +6,7 @@ import { NotifPrefsSection } from './NotifPrefsSection'
 
 export function PerfilModule() {
   const auth = useCoreAuth()
-  const navigate = useNavigate()
   const { signOut } = useAuthActions()
-  const goDebug = () => navigate("/debug-sw")
 
   const user     = auth.user
   const userData = auth.userData
@@ -158,7 +155,7 @@ export function PerfilModule() {
 
         {/* Cerrar sesión */}
         <NotifPrefsSection />
-        <div style={{ padding:'32px 16px 48px' }}>
+        <div style={{ padding:'32px 16px 0' }}>
           <button
             onClick={handleSignOut}
             disabled={signingOut}
@@ -174,7 +171,6 @@ export function PerfilModule() {
           >
             {signingOut ? 'Cerrando...' : 'Cerrar sesión'}
           </button>
-          <button onClick={goDebug} style={{width:'100%',padding:'10px',borderRadius:12,border:'1px solid #ccc',background:'#f5f5f5',color:'#333',fontSize:13,cursor:'pointer',marginTop:8}}>🔧 Debug SW</button>
         </div>
 
       </div>
