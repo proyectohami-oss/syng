@@ -197,19 +197,17 @@ export function PizarronModule() {
         <SyncBadge />
       </div>
 
-      {/* Barra del mes — toca para abrir/cerrar calendario */}
-      <div style={monthBar}>
-        <div
-          onClick={() => { setCalOpen(o => !o); setShowYearPicker(false) }}
-          style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer', userSelect:'none' }}
-        >
-          <span style={{ fontSize:14, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em' }}>
-            {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
-          </span>
-          <span style={{ fontSize:12, color:'#2D3A8C', lineHeight:1 }}>
-            {calOpen ? '▲' : '▼'}
-          </span>
-        </div>
+      {/* Mes — jerarquía visual dominante */}
+      <div
+        onClick={() => { setCalOpen(o => !o); setShowYearPicker(false) }}
+        style={monthBar}
+      >
+        <span style={{ fontSize:26, fontWeight:700, color:'#0D1240', letterSpacing:'-0.8px', lineHeight:1 }}>
+          {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
+        </span>
+        <span style={{ fontSize:13, color:'#2D3A8C', lineHeight:1, marginLeft:6 }}>
+          {calOpen ? '▲' : '▼'}
+        </span>
       </div>
 
       {/* Persiana — calendario completo */}
@@ -227,21 +225,23 @@ export function PizarronModule() {
             <button onClick={e => { e.stopPropagation(); nextMonth() }} style={arrowBtn}>›</button>
           </div>
 
-          {/* Picker de año */}
+          {/* Picker de año — bottom sheet */}
           {showYearPicker && (
-            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:4, marginBottom:12, maxHeight:160, overflowY:'auto' }}>
-              {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => {
-                const isSelected = year === calViewMonth.getFullYear()
-                return (
-                  <button
-                    key={year}
-                    onClick={e => { e.stopPropagation(); setCalViewMonth(new Date(year, calViewMonth.getMonth(), 1)); setShowYearPicker(false) }}
-                    style={{ padding:'6px 0', borderRadius:8, border:'none', cursor:'pointer', fontSize:13, fontWeight: isSelected ? 700 : 400, background: isSelected ? 'linear-gradient(135deg,#3D4FA8,#2D3A8C)' : 'transparent', color: isSelected ? '#fff' : '#0D1240' }}
-                  >
-                    {year}
-                  </button>
-                )
-              })}
+            <div style={{ marginBottom:12 }}>
+              <div style={{ display:'flex', overflowX:'auto', gap:8, paddingBottom:4, WebkitOverflowScrolling:'touch', scrollbarWidth:'none' }}>
+                {Array.from({ length: 12 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => {
+                  const isSel = year === calViewMonth.getFullYear()
+                  return (
+                    <button
+                      key={year}
+                      onClick={e => { e.stopPropagation(); setCalViewMonth(new Date(year, calViewMonth.getMonth(), 1)); setShowYearPicker(false) }}
+                      style={{ flexShrink:0, padding:'8px 16px', borderRadius:20, border:'none', cursor:'pointer', fontSize:14, fontWeight: isSel ? 700 : 400, background: isSel ? 'linear-gradient(135deg,#3D4FA8,#2D3A8C)' : 'rgba(45,58,140,0.07)', color: isSel ? '#fff' : '#0D1240', minHeight:36 }}
+                    >
+                      {year}
+                    </button>
+                  )
+                })}
+              </div>
             </div>
           )}
 
@@ -305,9 +305,10 @@ export function PizarronModule() {
                       width:        4,
                       height:       4,
                       borderRadius: '50%',
-                      background:   isToday ? 'rgba(255,255,255,0.8)' : '#2D3A8C',
+                      background:   isToday ? 'rgba(255,255,255,0.8)' : isSelected ? '#2D3A8C' : '#2D3A8C',
                       position:     'absolute',
                       bottom:       3,
+                      opacity:      1,
                     }} />
                   )}
                 </button>
@@ -347,7 +348,7 @@ export function PizarronModule() {
                     {d.dayNum}
                   </span>
                   {hasActivity && (
-                    <div style={{ width:4, height:4, borderRadius:'50%', background: isSelected ? 'rgba(255,255,255,0.7)' : '#2D3A8C', marginTop:2 }} />
+                    <div style={{ width:4, height:4, borderRadius:'50%', background: isSelected ? 'rgba(255,255,255,0.75)' : '#2D3A8C', marginTop:2, opacity:1 }} />
                   )}
                 </button>
               )
@@ -518,9 +519,9 @@ const spinner        = { width:28, height:28, borderRadius:'50%', border:'3px so
 const header         = { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'8px 16px', background:'transparent', borderBottom:'1px solid rgba(13,18,64,0.07)' }
 const groupAvatar    = { width:40, height:40, borderRadius:12, background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:18, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
 const memberBubble   = { width:28, height:28, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid rgba(255,255,255,0.80)', flexShrink:0 }
-const monthBar       = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 16px', background:'rgba(255,255,255,0.75)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', cursor:'pointer', userSelect:'none' }
+const monthBar       = { flexShrink:0, display:'flex', alignItems:'center', padding:'14px 16px 10px', background:'transparent', cursor:'pointer', userSelect:'none' }
 const calDrawer      = { flexShrink:0, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', padding:'12px 16px 16px', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const arrowBtn       = { background:'none', border:'none', fontSize:22, color:'#2D3A8C', cursor:'pointer', padding:'0 8px', fontWeight:300 }
+const arrowBtn       = { background:'rgba(45,58,140,0.07)', border:'none', fontSize:18, color:'#2D3A8C', cursor:'pointer', width:44, height:44, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
 const daySelector    = { flexShrink:0, padding:'6px 16px 4px', background:'rgba(255,255,255,0.70)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)' }
 const counters       = { flexShrink:0, display:'flex', alignItems:'center', padding:'10px 20px', background:'rgba(255,255,255,0.60)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', gap:0 }
 const counter        = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
@@ -532,5 +533,5 @@ const memberMini     = { width:24, height:24, borderRadius:'50%', background:'rg
 const btnTask        = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'rgba(13,18,64,0.35)' }
 const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:'rgba(255,255,255,0.88)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderTop:'1px solid rgba(13,18,64,0.07)' }
 const btnBarra       = { padding:'8px 14px', borderRadius:10, border:'none', background:'rgba(45,58,140,0.09)', color:'#2D3A8C', fontSize:13, fontWeight:600, cursor:'pointer' }
-const fabBtn         = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:8, height:50, padding:'0 24px', borderRadius:25, background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 4px 20px rgba(45,58,140,0.40)', zIndex:50, WebkitTapHighlightColor:'transparent' }
+const fabBtn         = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:6, height:42, padding:'0 18px', borderRadius:21, background:'rgba(45,58,140,0.88)', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 2px 12px rgba(45,58,140,0.28)', zIndex:50, WebkitTapHighlightColor:'transparent', fontSize:14, fontWeight:600 }
 const backBtn        = { padding:'10px 20px', borderRadius:10, border:'none', background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
