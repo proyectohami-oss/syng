@@ -4,7 +4,7 @@ export function registerSW() {
 
   window.addEventListener('load', async () => {
     try {
-      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      const reg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
       console.debug('[SW] Registered:', reg.scope)
 
       // Revisa actualizaciones cada hora

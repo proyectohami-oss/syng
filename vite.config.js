@@ -9,7 +9,7 @@ export default defineConfig({
       registerType: 'autoUpdate',
       strategies:   'injectManifest',
       srcDir:       'src',
-      filename:     'sw.js',
+      filename:     'sw-v2.js',
 
       manifest: {
         name:             'Syng',
