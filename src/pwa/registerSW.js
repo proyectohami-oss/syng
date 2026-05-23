@@ -1,3 +1,16 @@
+let updateAvailable = false
+const listeners = new Set()
+
+export function onUpdateAvailable(cb) {
+  listeners.add(cb)
+  if (updateAvailable) cb()
+  return () => listeners.delete(cb)
+}
+
+export function applyUpdate() {
+  window.location.reload()
+}
+
 export function registerSW() {
   if (typeof window === 'undefined') return
   if (!('serviceWorker' in navigator)) return
@@ -7,12 +20,11 @@ export function registerSW() {
       vitePwaRegister({
         onRegisteredSW(swUrl, registration) {
           if (!registration) return
-          setInterval(() => {
-            registration.update().catch(() => {})
-          }, 60 * 60 * 1000)
+          setInterval(() => registration.update().catch(() => {}), 60 * 60 * 1000)
         },
         onNeedRefresh() {
-          window.location.reload()
+          updateAvailable = true
+          listeners.forEach(cb => cb())
         },
         onOfflineReady() {},
         onRegisterError(error) {
@@ -22,7 +34,6 @@ export function registerSW() {
     })
     .catch(() => {})
 
-  // Fuerza reload cuando el SW nuevo toma control — clave para iOS
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     window.location.reload()
   })

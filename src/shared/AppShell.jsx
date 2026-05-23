@@ -21,7 +21,8 @@
 import { useNavigate, useLocation } from 'react-router-dom'
 import { useCoreAuth, useCoreGroups } from '../core/hooks/useCoreData'
 import { useAuthActions }             from '../auth/useAuthActions'
-import { useState }                   from 'react'
+import { useState, useEffect }        from 'react'
+import { onUpdateAvailable, applyUpdate } from '../pwa/registerSW'
 
 const NAV_ITEMS = [
   { emoji:'📅', label:'Mi Agenda',  path:'/agenda' },
@@ -52,6 +53,12 @@ export function AppShell({ children }) {
     try { await signOut() } finally { setSigningOut(false) }
   }
 
+  const [updateReady, setUpdateReady] = useState(false)
+
+  useEffect(() => {
+    return onUpdateAvailable(() => setUpdateReady(true))
+  }, [])
+
   return (
     <div style={{
       display: 'flex',
@@ -66,6 +73,48 @@ export function AppShell({ children }) {
       ].join(', '),
       backgroundAttachment: 'fixed',
     }}>
+
+      {/* ── Banner de actualización estilo iOS ── */}
+      {updateReady && (
+        <div style={{
+          position:       'absolute',
+          top:            'calc(env(safe-area-inset-top) + 8px)',
+          left:           '50%',
+          transform:      'translateX(-50%)',
+          zIndex:         9999,
+          background:     'rgba(30,30,32,0.92)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderRadius:   14,
+          padding:        '10px 16px',
+          display:        'flex',
+          alignItems:     'center',
+          gap:            12,
+          boxShadow:      '0 4px 24px rgba(0,0,0,0.18)',
+          minWidth:       240,
+          maxWidth:       320,
+        }}>
+          <span style={{ fontSize:13, color:'#fff', flex:1, fontWeight:500 }}>
+            Nueva versión disponible
+          </span>
+          <button
+            onClick={applyUpdate}
+            style={{
+              background:   '#0A84FF',
+              border:       'none',
+              borderRadius: 8,
+              padding:      '5px 12px',
+              fontSize:     13,
+              fontWeight:   600,
+              color:        '#fff',
+              cursor:       'pointer',
+              flexShrink:   0,
+            }}
+          >
+            Actualizar
+          </button>
+        </div>
+      )}
 
       {/* ── Sidebar desktop ─────────────────────────────────────────── */}
       <nav className="desktop-sidebar" aria-label="Navegación principal" style={{
