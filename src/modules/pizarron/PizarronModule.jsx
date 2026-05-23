@@ -96,6 +96,7 @@ export function PizarronModule() {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [calOpen,     setCalOpen]     = useState(false)
   const [calViewMonth, setCalViewMonth] = useState(() => new Date())
+  const [showYearPicker, setShowYearPicker] = useState(false)
 
   const haySeleccion = selectedIds.size > 0
 
@@ -197,11 +198,11 @@ export function PizarronModule() {
       </div>
 
       {/* Barra del mes — toca para abrir/cerrar calendario */}
-      <div
-        onClick={() => setCalOpen(o => !o)}
-        style={monthBar}
-      >
-        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+      <div style={monthBar}>
+        <div
+          onClick={() => { setCalOpen(o => !o); setShowYearPicker(false) }}
+          style={{ display:'flex', alignItems:'center', gap:6, cursor:'pointer', userSelect:'none' }}
+        >
           <span style={{ fontSize:14, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em' }}>
             {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
           </span>
@@ -217,11 +218,32 @@ export function PizarronModule() {
           {/* Navegación de meses */}
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
             <button onClick={e => { e.stopPropagation(); prevMonth() }} style={arrowBtn}>‹</button>
-            <span style={{ fontSize:14, fontWeight:700, color:'#0D1240' }}>
-              {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
-            </span>
+            <button
+              onClick={e => { e.stopPropagation(); setShowYearPicker(y => !y) }}
+              style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:700, color: showYearPicker ? '#2D3A8C' : '#0D1240' }}
+            >
+              {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()} {showYearPicker ? '▲' : '▼'}
+            </button>
             <button onClick={e => { e.stopPropagation(); nextMonth() }} style={arrowBtn}>›</button>
           </div>
+
+          {/* Picker de año */}
+          {showYearPicker && (
+            <div style={{ display:'grid', gridTemplateColumns:'repeat(4,1fr)', gap:4, marginBottom:12, maxHeight:160, overflowY:'auto' }}>
+              {Array.from({ length: 20 }, (_, i) => new Date().getFullYear() - 5 + i).map(year => {
+                const isSelected = year === calViewMonth.getFullYear()
+                return (
+                  <button
+                    key={year}
+                    onClick={e => { e.stopPropagation(); setCalViewMonth(new Date(year, calViewMonth.getMonth(), 1)); setShowYearPicker(false) }}
+                    style={{ padding:'6px 0', borderRadius:8, border:'none', cursor:'pointer', fontSize:13, fontWeight: isSelected ? 700 : 400, background: isSelected ? 'linear-gradient(135deg,#3D4FA8,#2D3A8C)' : 'transparent', color: isSelected ? '#fff' : '#0D1240' }}
+                  >
+                    {year}
+                  </button>
+                )
+              })}
+            </div>
+          )}
 
           {/* Encabezados días */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:4 }}>
