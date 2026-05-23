@@ -1,34 +1,25 @@
 <!DOCTYPE html>
 <html>
-<head><meta charset="UTF-8"><title>Syng Debug</title></head>
-<body style="font-family:monospace;padding:20px;font-size:13px;">
-<h2>SW Debug</h2>
+<head><meta charset="UTF-8"><title>SW Debug</title></head>
+<body style="font-family:monospace;padding:20px;font-size:13px;line-height:1.8;">
+<h2>SW Debug v2</h2>
 <div id="out"></div>
 <script>
 async function run() {
   const o = document.getElementById('out')
   const log = t => { o.innerHTML += '<p>' + t + '</p>' }
-
-  log('navigator.serviceWorker: ' + ('serviceWorker' in navigator))
-
-  if (!('serviceWorker' in navigator)) return
-
-  const reg = await navigator.serviceWorker.getRegistration('/')
-  if (!reg) { log('❌ No SW registration found'); return }
-
-  log('✅ SW registration found')
-  log('scope: ' + reg.scope)
-  log('active scriptURL: ' + (reg.active?.scriptURL ?? 'none'))
-  log('waiting scriptURL: ' + (reg.waiting?.scriptURL ?? 'none'))
-  log('installing scriptURL: ' + (reg.installing?.scriptURL ?? 'none'))
-  log('controller: ' + (navigator.serviceWorker.controller?.scriptURL ?? 'none'))
-  log('active state: ' + (reg.active?.state ?? 'none'))
-
-  await reg.update()
-  log('update() called')
-  log('waiting after update: ' + (reg.waiting?.scriptURL ?? 'none'))
+  log('serviceWorker: ' + ('serviceWorker' in navigator))
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+    log('✅ registered: ' + reg.scope)
+    log('active: ' + (reg.active?.scriptURL ?? 'none'))
+    log('installing: ' + (reg.installing?.scriptURL ?? 'none'))
+    log('waiting: ' + (reg.waiting?.scriptURL ?? 'none'))
+  } catch(e) {
+    log('❌ FAILED: ' + e.name + ' — ' + e.message)
+  }
 }
-run().catch(e => document.getElementById('out').innerHTML += '<p>ERROR: ' + e + '</p>')
+run()
 </script>
 </body>
 </html>
