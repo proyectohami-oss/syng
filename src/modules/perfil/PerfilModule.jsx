@@ -156,7 +156,7 @@ export function PerfilModule() {
 
         {/* Cerrar sesión */}
         <NotifPrefsSection />
-        <div style={{ padding:'32px 16px 0' }}>
+        <div style={{ padding:'32px 16px 48px' }}>
           <button
             onClick={handleSignOut}
             disabled={signingOut}
