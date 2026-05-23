@@ -7,6 +7,7 @@ import { NotifPrefsSection } from './NotifPrefsSection'
 export function PerfilModule() {
   const auth = useCoreAuth()
   const { signOut } = useAuthActions()
+  const goDebug = () => navigate("/debug-sw")
 
   const user     = auth.user
   const userData = auth.userData
@@ -171,6 +172,7 @@ export function PerfilModule() {
           >
             {signingOut ? 'Cerrando...' : 'Cerrar sesión'}
           </button>
+          <button onClick={goDebug} style={{width:'100%',padding:'10px',borderRadius:12,border:'1px solid #ccc',background:'#f5f5f5',color:'#333',fontSize:13,cursor:'pointer',marginTop:8}}>🔧 Debug SW</button>
         </div>
 
       </div>
