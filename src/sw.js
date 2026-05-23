@@ -1,10 +1,26 @@
-import { precacheAndRoute, cleanupOutdatedCaches } from 'workbox-precaching'
+import { precacheAndRoute, cleanupOutdatedCaches, createHandlerBoundToURL } from 'workbox-precaching'
+import { NavigationRoute, registerRoute } from 'workbox-routing'
+import { NetworkFirst } from 'workbox-strategies'
 
 self.skipWaiting()
 self.clients.claim()
 
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
+
+// index.html siempre desde red — garantiza que el bundle nuevo llega
+registerRoute(
+  new NavigationRoute(
+    new NetworkFirst({
+      cacheName: 'navigation',
+      networkTimeoutSeconds: 3,
+    })
+  )
+)
+
+self.addEventListener('message', event => {
+  if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
+})
 
 self.addEventListener('push', event => {
   if (!event.data) return
