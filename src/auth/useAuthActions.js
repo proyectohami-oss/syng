@@ -28,17 +28,20 @@ export function useAuthActions() {
   const signInWithGoogle = useCallback(async () => {
     // Siempre popup — signInWithRedirect falla en iOS 26 / Safari moderno
     const result = await signInWithPopup(auth, googleProvider)
+    sessionStorage.setItem('justLoggedIn', '1')
     return result.user
   }, [])
 
   const signInWithEmail = useCallback(async (email, password) => {
     const result = await signInWithEmailAndPassword(auth, email, password)
+    sessionStorage.setItem('justLoggedIn', '1')
     return result.user
   }, [])
 
   const signUpWithEmail = useCallback(async (email, password, displayName) => {
     const result = await createUserWithEmailAndPassword(auth, email, password)
     await updateProfile(result.user, { displayName: displayName.trim() })
+    sessionStorage.setItem('justLoggedIn', '1')
     return result.user
   }, [])
 

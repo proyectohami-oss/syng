@@ -9,12 +9,19 @@ export function AuthGuard({ children }) {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (auth?.user && auth?.userData) {
-      const path = window.location.pathname
-      /* Si la URL es una fecha específica, volver al calendario */
-      if (path.match(/\/agenda\/\d{4}-\d{2}-\d{2}/)) {
-        navigate('/agenda', { replace: true })
-      }
+    if (!auth?.user || !auth?.userData) return
+    const path = window.location.pathname
+
+    // Ruta de fecha específica → volver al calendario
+    if (path.match(/\/agenda\/\d{4}-\d{2}-\d{2}/)) {
+      navigate('/agenda', { replace: true })
+      return
+    }
+
+    // Login fresco detectado → ir a agenda y limpiar bandera
+    if (sessionStorage.getItem('justLoggedIn') === '1') {
+      sessionStorage.removeItem('justLoggedIn')
+      navigate('/agenda', { replace: true })
     }
   }, [auth?.user, auth?.userData])
 
