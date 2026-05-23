@@ -55,6 +55,7 @@ export function AppShell({ children }) {
   return (
     <div style={{
       display: 'flex',
+      paddingTop: 'env(safe-area-inset-top)',
       height: '100%',
       overflow: 'hidden',
       /* Fondo sistema Syng — azul-blanco neutro con luz atmosférica suave */
