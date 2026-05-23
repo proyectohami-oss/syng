@@ -11,12 +11,24 @@ import { TaskFormNew }                 from '../../shared/TaskFormNew'
 import { EmptyState }                  from '../../shared/EmptyState'
 import { SyncBadge }                   from '../../shared/SyncBadge'
 
-const DIAS = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
+const DIAS       = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
 const DIAS_CORTO = ['Do','Lu','Ma','Mi','Ju','Vi','Sá']
-const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+const MESES      = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
+const MESES_CAP  = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+const DIAS_GRID  = ['L','M','M','J','V','S','D']
 
 function toDateKey(date) {
   return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
+}
+
+function buildCalendarDays(year, month) {
+  const firstDay = new Date(year, month, 1)
+  const lastDay  = new Date(year, month + 1, 0)
+  const startDow = (firstDay.getDay() + 6) % 7 // lunes = 0
+  const days = []
+  for (let i = 0; i < startDow; i++) days.push(null)
+  for (let d = 1; d <= lastDay.getDate(); d++) days.push(new Date(year, month, d))
+  return days
 }
 
 function EditVariasModal({ count, groups, onSave, onClose }) {
@@ -32,15 +44,7 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
 
   return (
     <div style={{ position:'fixed', inset:0, background:'rgba(13,18,64,0.30)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
-      <div style={{
-        background:'rgba(250,251,255,0.97)',
-        backdropFilter:'blur(48px)',
-        WebkitBackdropFilter:'blur(48px)',
-        borderRadius:'24px 24px 0 0',
-        padding:'20px', width:'100%', maxWidth:480,
-        paddingBottom:'calc(20px + env(safe-area-inset-bottom))',
-        boxShadow:'0 -8px 48px rgba(13,18,64,0.12)',
-      }}>
+      <div style={{ background:'rgba(250,251,255,0.97)', backdropFilter:'blur(48px)', WebkitBackdropFilter:'blur(48px)', borderRadius:'24px 24px 0 0', padding:'20px', width:'100%', maxWidth:480, paddingBottom:'calc(20px + env(safe-area-inset-bottom))', boxShadow:'0 -8px 48px rgba(13,18,64,0.12)' }}>
         <p style={{ margin:'0 0 4px', fontSize:16, fontWeight:600, color:'#0D1240', letterSpacing:'-0.01em' }}>
           Editar {count} tarea{count !== 1 ? 's' : ''}
         </p>
@@ -50,41 +54,25 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
           <span>📅</span>
           <span style={{ flex:1, fontSize:14, color:'#0D1240' }}>Nueva fecha</span>
           <span style={{ fontSize:14, color: fecha ? '#2D3A8C' : 'rgba(13,18,64,0.35)' }}>
-            {fecha ? (() => { const [y,m,d] = fecha.split('-').map(Number); return `${d} de ${['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'][m-1]}` })() : 'Sin cambio ›'}
+            {fecha ? (() => { const [y,m,d] = fecha.split('-').map(Number); return `${d} de ${MESES[m-1]}` })() : 'Sin cambio ›'}
           </span>
-          <input type="date" value={fecha}
-            onChange={e => setFecha(e.target.value)}
-            style={{ position:'absolute', opacity:0, pointerEvents:'none', width:0, height:0 }}
-          />
+          <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={{ position:'absolute', opacity:0, pointerEvents:'none', width:0, height:0 }} />
         </label>
 
         <p style={{ margin:'12px 0 6px', fontSize:12, color:'rgba(13,18,64,0.40)', fontWeight:600, letterSpacing:'0.04em' }}>👥 CAMBIAR GRUPO</p>
         <div style={{ background:'rgba(255,255,255,0.80)', borderRadius:12, overflow:'hidden', border:'1px solid rgba(13,18,64,0.08)', marginBottom:20 }}>
           {[{ id:'__sin_cambio__', name:'Sin cambio' }, { id:'', name:'Personal' }, ...groups].map(g => (
             <div key={g.id} onClick={() => setNuevoGroupId(g.id)}
-              style={{
-                padding:'11px 16px', fontSize:14, cursor:'pointer',
-                borderBottom:'1px solid rgba(13,18,64,0.06)',
-                background: nuevoGroupId === g.id ? 'rgba(45,58,140,0.08)' : 'transparent',
-                color:      nuevoGroupId === g.id ? '#2D3A8C' : '#0D1240',
-                fontWeight: nuevoGroupId === g.id ? 600 : 400,
-              }}>
+              style={{ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid rgba(13,18,64,0.06)', background: nuevoGroupId === g.id ? 'rgba(45,58,140,0.08)' : 'transparent', color: nuevoGroupId === g.id ? '#2D3A8C' : '#0D1240', fontWeight: nuevoGroupId === g.id ? 600 : 400 }}>
               {g.name}
             </div>
           ))}
         </div>
 
         <div style={{ display:'flex', gap:8 }}>
-          <button onClick={onClose} style={{ flex:1, padding:'12px', borderRadius:12, border:'1px solid rgba(13,18,64,0.12)', background:'rgba(255,255,255,0.80)', color:'rgba(13,18,64,0.45)', fontSize:15, cursor:'pointer' }}>
-            Cancelar
-          </button>
+          <button onClick={onClose} style={{ flex:1, padding:'12px', borderRadius:12, border:'1px solid rgba(13,18,64,0.12)', background:'rgba(255,255,255,0.80)', color:'rgba(13,18,64,0.45)', fontSize:15, cursor:'pointer' }}>Cancelar</button>
           <button onClick={guardar} disabled={!hayCambio || loading}
-            style={{ flex:1, padding:'12px', borderRadius:12, border:'none', fontSize:15, fontWeight:600,
-              cursor: hayCambio ? 'pointer' : 'default',
-              background: hayCambio ? 'linear-gradient(135deg, #3D4FA8, #2D3A8C)' : 'rgba(13,18,64,0.08)',
-              color: hayCambio ? '#fff' : 'rgba(13,18,64,0.28)',
-              boxShadow: hayCambio ? '0 2px 8px rgba(45,58,140,0.28)' : 'none',
-            }}>
+            style={{ flex:1, padding:'12px', borderRadius:12, border:'none', fontSize:15, fontWeight:600, cursor: hayCambio ? 'pointer' : 'default', background: hayCambio ? 'linear-gradient(135deg, #3D4FA8, #2D3A8C)' : 'rgba(13,18,64,0.08)', color: hayCambio ? '#fff' : 'rgba(13,18,64,0.28)', boxShadow: hayCambio ? '0 2px 8px rgba(45,58,140,0.28)' : 'none' }}>
             {loading ? 'Aplicando...' : 'Aplicar cambios'}
           </button>
         </div>
@@ -98,18 +86,17 @@ export function PizarronModule() {
   const navigate        = useNavigate()
   const state           = useCoreState()
   const { tasks, group, members, role, loading, uid } = usePizarronView(groupId)
-  const { toggleStatus, deleteTask, updateTask }  = useTasks()
-  const { leaveGroup, deleteGroup }   = useGroups()
+  const { toggleStatus, deleteTask, updateTask } = useTasks()
+  const { leaveGroup, deleteGroup }              = useGroups()
   const perms = usePermissions(groupId)
 
-  const {
-    days, selectedKey, setSelectedKey,
-    selectedDate, pending, completed,
-    daysWithActivity, todayKey,
-  } = usePizarronDayView(tasks)
+  const { days, selectedKey, setSelectedKey, selectedDate, pending, completed, daysWithActivity, todayKey } = usePizarronDayView(tasks)
 
   const [modal,       setModal]       = useState(null)
   const [selectedIds, setSelectedIds] = useState(new Set())
+  const [calOpen,     setCalOpen]     = useState(false)
+  const [calViewMonth, setCalViewMonth] = useState(() => new Date())
+
   const haySeleccion = selectedIds.size > 0
 
   function toggleSeleccion(taskId) {
@@ -120,22 +107,46 @@ export function PizarronModule() {
     })
   }
   function limpiarSeleccion() { setSelectedIds(new Set()) }
+
   const daySelectorRef = useRef(null)
 
+  // Scroll al día seleccionado cuando cambia o se cierra el calendario
   useEffect(() => {
-    if (!daySelectorRef.current) return
-    const hoy = daySelectorRef.current.querySelector('[data-today="true"]')
-    if (hoy) hoy.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' })
-  }, [])
+    if (calOpen || !daySelectorRef.current) return
+    const target = daySelectorRef.current.querySelector(`[data-key="${selectedKey}"]`)
+    if (target) target.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' })
+    else {
+      const hoy = daySelectorRef.current.querySelector('[data-today="true"]')
+      if (hoy) hoy.scrollIntoView({ behavior:'smooth', block:'nearest', inline:'center' })
+    }
+  }, [selectedKey, calOpen])
+
+  // Sincroniza el mes del calendario con la fecha seleccionada
+  useEffect(() => {
+    setCalViewMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1))
+  }, [selectedDate])
+
+  function handleCalDayPress(date) {
+    const key = toDateKey(date)
+    setSelectedKey(key)
+    setCalOpen(false)
+  }
+
+  function prevMonth() {
+    setCalViewMonth(m => new Date(m.getFullYear(), m.getMonth() - 1, 1))
+  }
+  function nextMonth() {
+    setCalViewMonth(m => new Date(m.getFullYear(), m.getMonth() + 1, 1))
+  }
+
+  const todayDate   = new Date()
+  const todayKeyStr = toDateKey(todayDate)
+  const calDays     = buildCalendarDays(calViewMonth.getFullYear(), calViewMonth.getMonth())
 
   const groupsLoaded = state.groups.list.size > 0
 
   if (!group && (!groupsLoaded || loading)) {
-    return (
-      <div style={centered}>
-        <div style={spinner} />
-      </div>
-    )
+    return <div style={centered}><div style={spinner} /></div>
   }
 
   if (!group) {
@@ -185,42 +196,143 @@ export function PizarronModule() {
         <SyncBadge />
       </div>
 
-      {/* Selector de días */}
-      <div style={daySelector}>
-        <div ref={daySelectorRef} style={{ display:'flex', gap:6, overflowX:'auto', paddingBottom:4, WebkitOverflowScrolling:'touch', scrollbarWidth:'none' }}>
-          {days.map(d => {
-            const isSelected  = d.key === selectedKey
-            const hasActivity = daysWithActivity[d.key]
-            return (
-              <button
-                key={d.key}
-                data-today={d.isToday ? 'true' : 'false'}
-                onClick={() => setSelectedKey(d.key)}
-                style={{
-                  flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center',
-                  padding:'8px 12px', borderRadius:14, border:'none', cursor:'pointer',
-                  background: isSelected
-                    ? 'linear-gradient(145deg, #3D4FA8, #2D3A8C)'
-                    : 'transparent',
-                  boxShadow: isSelected ? '0 2px 8px rgba(45,58,140,0.28)' : 'none',
-                  WebkitTapHighlightColor:'transparent',
-                  transition:'background 0.15s',
-                }}
-              >
-                <span style={{ fontSize:10, fontWeight:500, color: isSelected ? 'rgba(255,255,255,0.70)' : 'rgba(13,18,64,0.38)' }}>
-                  {d.isToday ? 'Hoy' : DIAS_CORTO[d.date.getDay()]}
-                </span>
-                <span style={{ fontSize:16, fontWeight:700, color: isSelected ? '#fff' : '#0D1240', lineHeight:1.2 }}>
-                  {d.dayNum}
-                </span>
-                {hasActivity && !isSelected && (
-                  <div style={{ width:4, height:4, borderRadius:'50%', background:'#2D3A8C', marginTop:2, opacity:0.55 }} />
-                )}
-              </button>
-            )
-          })}
+      {/* Barra del mes — toca para abrir/cerrar calendario */}
+      <div
+        onClick={() => setCalOpen(o => !o)}
+        style={monthBar}
+      >
+        <div style={{ display:'flex', alignItems:'center', gap:6 }}>
+          <span style={{ fontSize:14, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em' }}>
+            {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
+          </span>
+          <span style={{ fontSize:12, color:'#2D3A8C', lineHeight:1 }}>
+            {calOpen ? '▲' : '▼'}
+          </span>
         </div>
       </div>
+
+      {/* Persiana — calendario completo */}
+      {calOpen && (
+        <div style={calDrawer}>
+          {/* Navegación de meses */}
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
+            <button onClick={e => { e.stopPropagation(); prevMonth() }} style={arrowBtn}>‹</button>
+            <span style={{ fontSize:14, fontWeight:700, color:'#0D1240' }}>
+              {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
+            </span>
+            <button onClick={e => { e.stopPropagation(); nextMonth() }} style={arrowBtn}>›</button>
+          </div>
+
+          {/* Encabezados días */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:4 }}>
+            {DIAS_GRID.map((d, i) => (
+              <div key={i} style={{ textAlign:'center', fontSize:11, fontWeight:600, color: i === 6 ? 'rgba(224,82,82,0.8)' : 'rgba(13,18,64,0.35)', padding:'2px 0' }}>
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {/* Grid de días */}
+          <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:2 }}>
+            {calDays.map((date, i) => {
+              if (!date) return <div key={`empty-${i}`} />
+              const key        = toDateKey(date)
+              const isToday    = key === todayKeyStr
+              const isSelected = key === selectedKey
+              const hasTask    = !!daysWithActivity[key]
+              const isSunday   = date.getDay() === 0
+
+              return (
+                <button
+                  key={key}
+                  onClick={() => handleCalDayPress(date)}
+                  style={{
+                    aspectRatio:    '1',
+                    display:        'flex',
+                    flexDirection:  'column',
+                    alignItems:     'center',
+                    justifyContent: 'center',
+                    borderRadius:   '50%',
+                    border:         'none',
+                    cursor:         'pointer',
+                    position:       'relative',
+                    background:     isToday
+                      ? 'linear-gradient(135deg, #3D4FA8, #2D3A8C)'
+                      : isSelected
+                        ? 'rgba(45,58,140,0.10)'
+                        : 'transparent',
+                    WebkitTapHighlightColor: 'transparent',
+                  }}
+                >
+                  <span style={{
+                    fontSize:   13,
+                    fontWeight: isToday || isSelected ? 700 : 400,
+                    color:      isToday
+                      ? '#fff'
+                      : isSelected
+                        ? '#2D3A8C'
+                        : isSunday
+                          ? 'rgba(224,82,82,0.85)'
+                          : '#0D1240',
+                    lineHeight: 1,
+                  }}>
+                    {date.getDate()}
+                  </span>
+                  {hasTask && (
+                    <div style={{
+                      width:        4,
+                      height:       4,
+                      borderRadius: '50%',
+                      background:   isToday ? 'rgba(255,255,255,0.8)' : '#2D3A8C',
+                      position:     'absolute',
+                      bottom:       3,
+                    }} />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Selector de días — solo cuando el calendario está cerrado */}
+      {!calOpen && (
+        <div style={daySelector}>
+          <div ref={daySelectorRef} style={{ display:'flex', gap:6, overflowX:'auto', paddingBottom:4, WebkitOverflowScrolling:'touch', scrollbarWidth:'none' }}>
+            {days.map(d => {
+              const isSelected  = d.key === selectedKey
+              const hasActivity = daysWithActivity[d.key]
+              const isToday     = d.key === todayKeyStr
+              return (
+                <button
+                  key={d.key}
+                  data-key={d.key}
+                  data-today={isToday ? 'true' : 'false'}
+                  onClick={() => setSelectedKey(d.key)}
+                  style={{
+                    flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center',
+                    padding:'8px 12px', borderRadius:14, border:'none', cursor:'pointer',
+                    background: isSelected ? 'linear-gradient(145deg, #3D4FA8, #2D3A8C)' : 'transparent',
+                    boxShadow:  isSelected ? '0 2px 8px rgba(45,58,140,0.28)' : 'none',
+                    WebkitTapHighlightColor:'transparent',
+                    transition:'background 0.15s',
+                  }}
+                >
+                  <span style={{ fontSize:10, fontWeight:500, color: isSelected ? 'rgba(255,255,255,0.70)' : 'rgba(13,18,64,0.38)' }}>
+                    {d.isToday ? 'Hoy' : DIAS_CORTO[d.date.getDay()]}
+                  </span>
+                  <span style={{ fontSize:16, fontWeight:700, color: isSelected ? '#fff' : '#0D1240', lineHeight:1.2 }}>
+                    {d.dayNum}
+                  </span>
+                  {hasActivity && (
+                    <div style={{ width:4, height:4, borderRadius:'50%', background: isSelected ? 'rgba(255,255,255,0.7)' : '#2D3A8C', marginTop:2 }} />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Contadores */}
       <div style={counters}>
@@ -262,13 +374,13 @@ export function PizarronModule() {
             <div key={task.id} style={{ ...taskCard, background: selectedIds.has(task.id) ? 'rgba(45,58,140,0.06)' : 'transparent' }}>
               <button
                 onClick={() => toggleSeleccion(task.id)}
-                style={{ ...checkBtn,
-                  border: selectedIds.has(task.id) ? '2px solid #2D3A8C' : '2px solid rgba(13,18,64,0.28)',
-                  background: selectedIds.has(task.id) ? '#2D3A8C' : 'none',
-                }}
+                style={{ ...checkBtn, border: selectedIds.has(task.id) ? '2px solid #2D3A8C' : '2px solid rgba(13,18,64,0.28)', background: selectedIds.has(task.id) ? '#2D3A8C' : 'none' }}
               />
               <div style={{ flex:1, minWidth:0, cursor:'pointer' }} onClick={() => !haySeleccion && toggleStatus(task)}>
-                <div style={{ display:'flex', alignItems:'center', gap:4 }}>{task.reminder && <span style={{ fontSize:12, opacity:0.5 }}>🔔</span>}<p style={{ margin:0, fontSize:14, fontWeight:500, color:'#0D1240', lineHeight:1.3 }}>{task.title}</p></div>
+                <div style={{ display:'flex', alignItems:'center', gap:4 }}>
+                  {task.reminder && <span style={{ fontSize:12, opacity:0.5 }}>🔔</span>}
+                  <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#0D1240', lineHeight:1.3 }}>{task.title}</p>
+                </div>
                 {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:'rgba(13,18,64,0.35)' }}>{hora}</p>}
               </div>
               {member && (
@@ -289,10 +401,7 @@ export function PizarronModule() {
             </p>
             {completed.map(task => (
               <div key={task.id} style={{ ...taskCard, opacity:0.55 }}>
-                <button
-                  onClick={() => toggleStatus(task)}
-                  style={{ ...checkBtn, border:'2px solid rgba(13,18,64,0.20)', background:'rgba(13,18,64,0.08)', WebkitTapHighlightColor:'transparent' }}
-                />
+                <button onClick={() => toggleStatus(task)} style={{ ...checkBtn, border:'2px solid rgba(13,18,64,0.20)', background:'rgba(13,18,64,0.08)', WebkitTapHighlightColor:'transparent' }} />
                 <p style={{ flex:1, margin:0, fontSize:14, color:'rgba(13,18,64,0.35)', textDecoration:'line-through', cursor:'pointer' }} onClick={() => toggleStatus(task)}>{task.title}</p>
               </div>
             ))}
@@ -320,10 +429,7 @@ export function PizarronModule() {
       )}
 
       {perms.canCreateGroupTask && !haySeleccion && (
-        <button
-          onClick={() => navigate(`/pizarron/${groupId}/nueva/${selectedKey}`)}
-          style={fabBtn}
-        >
+        <button onClick={() => navigate(`/pizarron/${groupId}/nueva/${selectedKey}`)} style={fabBtn}>
           <span style={{ fontSize:15, fontWeight:600 }}>+ Añadir tarea</span>
         </button>
       )}
@@ -370,7 +476,7 @@ export function PizarronModule() {
             if (fecha) updates.dueDate = Timestamp.fromDate(new Date(fecha + 'T23:59:59'))
             if (nuevoGroupId !== '__sin_cambio__') {
               updates.groupId = nuevoGroupId || null
-              updates.type = nuevoGroupId ? 'group' : 'personal'
+              updates.type    = nuevoGroupId ? 'group' : 'personal'
             }
             if (Object.keys(updates).length > 0) {
               await Promise.all(seleccionadas.map(t => updateTask(t, updates)))
@@ -384,22 +490,25 @@ export function PizarronModule() {
   )
 }
 
-const screen        = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'transparent', overflow:'hidden' }
-const centered      = { display:'flex', alignItems:'center', justifyContent:'center', flex:1 }
-const spinner       = { width:28, height:28, borderRadius:'50%', border:'3px solid rgba(13,18,64,0.10)', borderTopColor:'#2D3A8C', animation:'spin 0.7s linear infinite' }
-const header        = { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'8px 16px', background:'transparent', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const groupAvatar   = { width:40, height:40, borderRadius:12, background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:18, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
-const memberBubble  = { width:28, height:28, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid rgba(255,255,255,0.80)', flexShrink:0 }
-const daySelector   = { flexShrink:0, padding:'6px 16px 4px', background:'rgba(255,255,255,0.70)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const counters      = { flexShrink:0, display:'flex', alignItems:'center', padding:'10px 20px', background:'rgba(255,255,255,0.60)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', gap:0 }
-const counter       = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
+const screen         = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'transparent', overflow:'hidden' }
+const centered       = { display:'flex', alignItems:'center', justifyContent:'center', flex:1 }
+const spinner        = { width:28, height:28, borderRadius:'50%', border:'3px solid rgba(13,18,64,0.10)', borderTopColor:'#2D3A8C', animation:'spin 0.7s linear infinite' }
+const header         = { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'8px 16px', background:'transparent', borderBottom:'1px solid rgba(13,18,64,0.07)' }
+const groupAvatar    = { width:40, height:40, borderRadius:12, background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:18, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const memberBubble   = { width:28, height:28, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid rgba(255,255,255,0.80)', flexShrink:0 }
+const monthBar       = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'8px 16px', background:'rgba(255,255,255,0.75)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', cursor:'pointer', userSelect:'none' }
+const calDrawer      = { flexShrink:0, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', padding:'12px 16px 16px', borderBottom:'1px solid rgba(13,18,64,0.07)' }
+const arrowBtn       = { background:'none', border:'none', fontSize:22, color:'#2D3A8C', cursor:'pointer', padding:'0 8px', fontWeight:300 }
+const daySelector    = { flexShrink:0, padding:'6px 16px 4px', background:'rgba(255,255,255,0.70)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)' }
+const counters       = { flexShrink:0, display:'flex', alignItems:'center', padding:'10px 20px', background:'rgba(255,255,255,0.60)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', gap:0 }
+const counter        = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
 const counterDivider = { width:1, height:32, background:'rgba(13,18,64,0.08)' }
-const taskList      = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px' }
-const taskCard      = { display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const checkBtn      = { width:22, height:22, borderRadius:'50%', border:'2px solid rgba(13,18,64,0.28)', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
-const memberMini    = { width:24, height:24, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
-const btnTask       = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'rgba(13,18,64,0.35)' }
+const taskList       = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px' }
+const taskCard       = { display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid rgba(13,18,64,0.07)' }
+const checkBtn       = { width:22, height:22, borderRadius:'50%', border:'2px solid rgba(13,18,64,0.28)', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
+const memberMini     = { width:24, height:24, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const btnTask        = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'rgba(13,18,64,0.35)' }
 const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:'rgba(255,255,255,0.88)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderTop:'1px solid rgba(13,18,64,0.07)' }
-const btnBarra      = { padding:'8px 14px', borderRadius:10, border:'none', background:'rgba(45,58,140,0.09)', color:'#2D3A8C', fontSize:13, fontWeight:600, cursor:'pointer' }
-const fabBtn        = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:8, height:50, padding:'0 24px', borderRadius:25, background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 4px 20px rgba(45,58,140,0.40)', zIndex:50, WebkitTapHighlightColor:'transparent' }
-const backBtn       = { padding:'10px 20px', borderRadius:10, border:'none', background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
+const btnBarra       = { padding:'8px 14px', borderRadius:10, border:'none', background:'rgba(45,58,140,0.09)', color:'#2D3A8C', fontSize:13, fontWeight:600, cursor:'pointer' }
+const fabBtn         = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:8, height:50, padding:'0 24px', borderRadius:25, background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 4px 20px rgba(45,58,140,0.40)', zIndex:50, WebkitTapHighlightColor:'transparent' }
+const backBtn        = { padding:'10px 20px', borderRadius:10, border:'none', background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
