@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
 import { useAuthActions } from '../../auth/useAuthActions'
@@ -6,6 +7,7 @@ import { NotifPrefsSection } from './NotifPrefsSection'
 
 export function PerfilModule() {
   const auth = useCoreAuth()
+  const navigate = useNavigate()
   const { signOut } = useAuthActions()
   const goDebug = () => navigate("/debug-sw")
 
