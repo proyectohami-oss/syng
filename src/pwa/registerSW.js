@@ -1,39 +1,32 @@
-let updateAvailable = false
-const listeners = new Set()
-
-export function onUpdateAvailable(cb) {
-  listeners.add(cb)
-  if (updateAvailable) cb()
-  return () => listeners.delete(cb)
-}
-
-export function applyUpdate() {
-  window.location.reload()
-}
-
 export function registerSW() {
   if (typeof window === 'undefined') return
   if (!('serviceWorker' in navigator)) return
 
-  import('virtual:pwa-register')
-    .then(({ registerSW: vitePwaRegister }) => {
-      vitePwaRegister({
-        onRegisteredSW(swUrl, registration) {
-          if (!registration) return
-          setInterval(() => registration.update().catch(() => {}), 60 * 60 * 1000)
-        },
-        onNeedRefresh() {
-          updateAvailable = true
-          listeners.forEach(cb => cb())
-        },
-        onOfflineReady() {},
-        onRegisterError(error) {
-          console.error('[SW] Registration failed:', error)
-        },
-      })
-    })
-    .catch(() => {})
+  window.addEventListener('load', async () => {
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' })
+      console.debug('[SW] Registered:', reg.scope)
 
+      // Revisa actualizaciones cada hora
+      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000)
+
+      // Cuando hay SW nuevo esperando — recarga
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing
+        if (!newSW) return
+        newSW.addEventListener('statechange', () => {
+          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+            window.location.reload()
+          }
+        })
+      })
+
+    } catch (e) {
+      console.error('[SW] Registration failed:', e)
+    }
+  })
+
+  // Recarga cuando el SW nuevo toma control
   navigator.serviceWorker.addEventListener('controllerchange', () => {
     window.location.reload()
   })
