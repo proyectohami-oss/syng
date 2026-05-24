@@ -237,11 +237,6 @@ export function PizarronModule() {
     }
   }, [selectedKey, calOpen])
 
-  // Sincroniza el mes del calendario con la fecha seleccionada
-  useEffect(() => {
-    setCalViewMonth(new Date(selectedDate.getFullYear(), selectedDate.getMonth(), 1))
-  }, [selectedDate])
-
   function handleCalDayPress(date) {
     const key = toDateKey(date)
     handleDayChange(key)
