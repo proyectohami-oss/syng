@@ -248,24 +248,32 @@ export function PizarronModule() {
     setCalOpen(false)
   }
 
-  function navigateMonth(delta) {
-    const current   = parseKey(selectedKey)
-    const newYear   = calViewMonth.getFullYear()
-    const newMonth  = calViewMonth.getMonth() + delta
-    const newDate   = new Date(newYear, newMonth, 1)
-
-    // Mismo día del mes, o último día válido si no existe
-    const targetDay = current.getDate()
-    const lastDay   = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
-    const safeDay   = Math.min(targetDay, lastDay)
-    const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
-
-    setCalViewMonth(new Date(newDate.getFullYear(), newDate.getMonth(), 1))
-    handleDayChange(toDateKey(finalDate))
-    setTaskExpanded(false)
+  function prevMonth() {
+    const current = parseKey(selectedKey)
+    setCalViewMonth(m => {
+      const newDate   = new Date(m.getFullYear(), m.getMonth() - 1, 1)
+      const targetDay = current.getDate()
+      const lastDay   = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
+      const safeDay   = Math.min(targetDay, lastDay)
+      const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
+      handleDayChange(toDateKey(finalDate))
+      setTaskExpanded(false)
+      return newDate
+    })
   }
-  function prevMonth() { navigateMonth(-1) }
-  function nextMonth() { navigateMonth(1) }
+  function nextMonth() {
+    const current = parseKey(selectedKey)
+    setCalViewMonth(m => {
+      const newDate   = new Date(m.getFullYear(), m.getMonth() + 1, 1)
+      const targetDay = current.getDate()
+      const lastDay   = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
+      const safeDay   = Math.min(targetDay, lastDay)
+      const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
+      handleDayChange(toDateKey(finalDate))
+      setTaskExpanded(false)
+      return newDate
+    })
+  }
 
   const todayDate   = new Date()
   const todayKeyStr = toDateKey(todayDate)
