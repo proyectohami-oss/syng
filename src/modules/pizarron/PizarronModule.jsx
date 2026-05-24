@@ -43,10 +43,21 @@ function buildMonthDays(year, month) {
 }
 
 function DatePickerModal({ selectedKey, todayKey, daysWithActivity, onSelect, onClose }) {
-  const today    = new Date()
+  const today     = new Date()
   const startYear = today.getFullYear() - 1
-  const years    = Array.from({ length: 5 }, (_, i) => startYear + i)
+  const years     = Array.from({ length: 5 }, (_, i) => startYear + i)
   const MESES_MINI = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+  const scrollRef  = useRef(null)
+  const anchorRef  = useRef(null)
+
+  // Al abrir, posicionar en la fecha seleccionada o en hoy
+  useEffect(() => {
+    if (!anchorRef.current || !scrollRef.current) return
+    const container = scrollRef.current
+    const target    = anchorRef.current
+    const offset    = target.offsetTop - 60
+    container.scrollTo({ top: Math.max(0, offset), behavior: 'instant' })
+  }, [])
 
   function toKey(date) {
     return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
@@ -61,9 +72,13 @@ function DatePickerModal({ selectedKey, todayKey, daysWithActivity, onSelect, on
           <p style={{ margin:0, fontSize:16, fontWeight:700, color:'#0D1240' }}>Seleccionar fecha</p>
           <button onClick={onClose} style={{ background:'rgba(13,18,64,0.07)', border:'none', borderRadius:'50%', width:28, height:28, fontSize:14, cursor:'pointer', color:'rgba(13,18,64,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
         </div>
-        <div style={{ overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'12px 12px 40px', flex:1 }}>
-          {years.map(year => (
-            <div key={year} style={{ marginBottom:20 }}>
+        <div ref={scrollRef} style={{ overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'12px 12px 40px', flex:1 }}>
+          {years.map(year => {
+            const anchor = selectedKey
+              ? parseInt(selectedKey.split('-')[0]) === year
+              : today.getFullYear() === year
+            return (
+            <div key={year} ref={anchor ? anchorRef : null} style={{ marginBottom:20 }}>
               <p style={{ margin:'0 0 10px 2px', fontSize:22, fontWeight:700, color:'#0D1240', letterSpacing:'-0.5px' }}>{year}</p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                 {Array.from({ length: 12 }, (_, m) => {
@@ -116,7 +131,8 @@ function DatePickerModal({ selectedKey, todayKey, daysWithActivity, onSelect, on
                 })}
               </div>
             </div>
-          ))}
+          )
+          })}
         </div>
       </div>
     </>
