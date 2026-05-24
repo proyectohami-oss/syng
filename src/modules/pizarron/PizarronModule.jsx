@@ -342,14 +342,14 @@ export function PizarronModule() {
         <div style={calDrawer}>
           {/* Navegación de meses */}
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-            <button onClick={e => { e.stopPropagation(); prevMonth() }} style={arrowBtn}>‹</button>
+            <button onClick={prevMonth} style={arrowBtn}>‹</button>
             <button
               onClick={e => { e.stopPropagation(); setShowDateModal(true) }}
               style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, fontWeight:700, color:'#0D1240' }}
             >
               {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
             </button>
-            <button onClick={e => { e.stopPropagation(); nextMonth() }} style={arrowBtn}>›</button>
+            <button onClick={nextMonth} style={arrowBtn}>›</button>
           </div>
 
 
@@ -654,7 +654,7 @@ const groupAvatar    = { width:40, height:40, borderRadius:12, background:'rgba(
 const memberBubble   = { width:28, height:28, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid rgba(255,255,255,0.80)', flexShrink:0 }
 const monthBar       = { flexShrink:0, display:'flex', alignItems:'center', padding:'14px 16px 10px', background:'transparent', cursor:'pointer', userSelect:'none' }
 const calDrawer      = { flexShrink:0, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', padding:'12px 16px 16px', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const arrowBtn       = { background:'rgba(45,58,140,0.06)', border:'none', fontSize:15, color:'#2D3A8C', cursor:'pointer', width:34, height:34, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const arrowBtn       = { background:'none', border:'none', fontSize:22, color:'rgba(13,18,64,0.35)', cursor:'pointer', padding:'4px 12px', minWidth:44, minHeight:44, display:'flex', alignItems:'center', justifyContent:'center', WebkitTapHighlightColor:'transparent' }
 const daySelector    = { flexShrink:0, padding:'6px 16px 4px', background:'rgba(255,255,255,0.70)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)' }
 const counters       = { flexShrink:0, display:'flex', alignItems:'center', padding:'10px 20px', background:'rgba(255,255,255,0.60)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', gap:0 }
 const counter        = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
