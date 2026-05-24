@@ -31,6 +31,98 @@ function buildCalendarDays(year, month) {
   return days
 }
 
+
+function buildMonthDays(year, month) {
+  const firstDay = new Date(year, month, 1)
+  const lastDay  = new Date(year, month + 1, 0)
+  const startDow = (firstDay.getDay() + 6) % 7
+  const days = []
+  for (let i = 0; i < startDow; i++) days.push(null)
+  for (let d = 1; d <= lastDay.getDate(); d++) days.push(new Date(year, month, d))
+  return days
+}
+
+function DatePickerModal({ selectedKey, todayKey, daysWithActivity, onSelect, onClose }) {
+  const today    = new Date()
+  const startYear = today.getFullYear() - 1
+  const years    = Array.from({ length: 5 }, (_, i) => startYear + i)
+  const MESES_MINI = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
+
+  function toKey(date) {
+    return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,'0')}-${String(date.getDate()).padStart(2,'0')}`
+  }
+
+  return (
+    <>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', zIndex:1000, backdropFilter:'blur(4px)' }} />
+      <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:1001, background:'#fff', borderRadius:'22px 22px 0 0', maxHeight:'82vh', display:'flex', flexDirection:'column' }}>
+        <div style={{ width:32, height:3, borderRadius:2, background:'rgba(13,18,64,0.12)', margin:'10px auto 6px' }} />
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px 10px', borderBottom:'0.5px solid rgba(13,18,64,0.07)' }}>
+          <p style={{ margin:0, fontSize:16, fontWeight:700, color:'#0D1240' }}>Seleccionar fecha</p>
+          <button onClick={onClose} style={{ background:'rgba(13,18,64,0.07)', border:'none', borderRadius:'50%', width:28, height:28, fontSize:14, cursor:'pointer', color:'rgba(13,18,64,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+        </div>
+        <div style={{ overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'12px 12px 40px', flex:1 }}>
+          {years.map(year => (
+            <div key={year} style={{ marginBottom:20 }}>
+              <p style={{ margin:'0 0 10px 2px', fontSize:22, fontWeight:700, color:'#0D1240', letterSpacing:'-0.5px' }}>{year}</p>
+              <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
+                {Array.from({ length: 12 }, (_, m) => {
+                  const days = buildMonthDays(year, m)
+                  return (
+                    <div key={m} style={{ background:'#F8F9FC', borderRadius:12, padding:'7px 7px 8px' }}>
+                      <p style={{ margin:'0 0 4px', fontSize:10, fontWeight:700, color:'#0D1240', textAlign:'center' }}>{MESES_MINI[m]}</p>
+                      <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:0 }}>
+                        {['L','M','M','J','V','S','D'].map((d,i) => (
+                          <div key={i} style={{ textAlign:'center', fontSize:6, color: i===6 ? 'rgba(224,82,82,0.7)' : '#8E8E93', fontWeight:600, paddingBottom:1 }}>{d}</div>
+                        ))}
+                        {days.map((date, i) => {
+                          if (!date) return <div key={`e-${i}`} />
+                          const key      = toKey(date)
+                          const isToday  = key === todayKey
+                          const isSel    = key === selectedKey
+                          const hasTask  = !!daysWithActivity[key]
+                          const isSun    = date.getDay() === 0
+                          return (
+                            <button
+                              key={key}
+                              onClick={() => onSelect(date)}
+                              style={{
+                                aspectRatio:    '1',
+                                display:        'flex',
+                                flexDirection:  'column',
+                                alignItems:     'center',
+                                justifyContent: 'center',
+                                borderRadius:   '50%',
+                                border:         'none',
+                                cursor:         'pointer',
+                                position:       'relative',
+                                background:     isToday ? 'linear-gradient(135deg,#3D4FA8,#2D3A8C)' : isSel ? 'rgba(45,58,140,0.12)' : 'transparent',
+                                WebkitTapHighlightColor: 'transparent',
+                                padding:        0,
+                              }}
+                            >
+                              <span style={{ fontSize:7, fontWeight: isToday||isSel ? 700 : 400, color: isToday ? '#fff' : isSel ? '#2D3A8C' : isSun ? 'rgba(224,82,82,0.85)' : '#0D1240', lineHeight:1 }}>
+                                {date.getDate()}
+                              </span>
+                              {hasTask && (
+                                <div style={{ width:2, height:2, borderRadius:'50%', background: isToday ? 'rgba(255,255,255,0.8)' : '#2D3A8C', position:'absolute', bottom:1 }} />
+                              )}
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </>
+  )
+}
+
 function EditVariasModal({ count, groups, onSave, onClose }) {
   const [fecha,        setFecha]        = useState('')
   const [nuevoGroupId, setNuevoGroupId] = useState('__sin_cambio__')
@@ -98,6 +190,7 @@ export function PizarronModule() {
   const [taskExpanded, setTaskExpanded] = useState(false)
   const [calViewMonth, setCalViewMonth] = useState(() => new Date())
   const [showYearPicker, setShowYearPicker] = useState(false)
+  const [showDateModal,  setShowDateModal]  = useState(false)
 
   const haySeleccion = selectedIds.size > 0
 
@@ -205,7 +298,7 @@ export function PizarronModule() {
 
       {/* Mes — jerarquía visual dominante */}
       <div
-        onClick={() => { setCalOpen(o => !o); setShowYearPicker(false) }}
+        onClick={() => { setCalOpen(o => !o); setShowYearPicker(false); if(!calOpen) setShowDateModal(false) }}
         style={monthBar}
       >
         <span style={{ fontSize:22, fontWeight:600, color:'#0D1240', letterSpacing:'-0.5px', lineHeight:1 }}>
@@ -223,33 +316,15 @@ export function PizarronModule() {
           <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
             <button onClick={e => { e.stopPropagation(); prevMonth() }} style={arrowBtn}>‹</button>
             <button
-              onClick={e => { e.stopPropagation(); setShowYearPicker(y => !y) }}
-              style={{ background:'none', border:'none', cursor:'pointer', fontSize:14, fontWeight:700, color: showYearPicker ? '#2D3A8C' : '#0D1240' }}
+              onClick={e => { e.stopPropagation(); setShowDateModal(true) }}
+              style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, fontWeight:700, color:'#0D1240' }}
             >
-              {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()} {showYearPicker ? '▲' : '▼'}
+              {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
             </button>
             <button onClick={e => { e.stopPropagation(); nextMonth() }} style={arrowBtn}>›</button>
           </div>
 
-          {/* Picker de año — bottom sheet */}
-          {showYearPicker && (
-            <div style={{ marginBottom:12 }}>
-              <div style={{ display:'flex', overflowX:'auto', gap:8, paddingBottom:4, WebkitOverflowScrolling:'touch', scrollbarWidth:'none' }}>
-                {Array.from({ length: 12 }, (_, i) => new Date().getFullYear() - 2 + i).map(year => {
-                  const isSel = year === calViewMonth.getFullYear()
-                  return (
-                    <button
-                      key={year}
-                      onClick={e => { e.stopPropagation(); setCalViewMonth(new Date(year, calViewMonth.getMonth(), 1)); setShowYearPicker(false) }}
-                      style={{ flexShrink:0, padding:'8px 16px', borderRadius:20, border:'none', cursor:'pointer', fontSize:14, fontWeight: isSel ? 700 : 400, background: isSel ? 'linear-gradient(135deg,#3D4FA8,#2D3A8C)' : 'rgba(45,58,140,0.07)', color: isSel ? '#fff' : '#0D1240', minHeight:36 }}
-                    >
-                      {year}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-          )}
+
 
           {/* Encabezados días */}
           <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:4 }}>
@@ -464,6 +539,21 @@ export function PizarronModule() {
             <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ ...btnBarra, background:'rgba(224,82,82,0.10)', color:'#E05252' }}>🗑️ Eliminar</button>
           </div>
         </div>
+      )}
+
+      {/* Modal selector de fecha */}
+      {showDateModal && (
+        <DatePickerModal
+          selectedKey={selectedKey}
+          todayKey={toDateKey(new Date())}
+          daysWithActivity={daysWithActivity}
+          onSelect={date => {
+            handleCalDayPress(date)
+            setShowDateModal(false)
+            setCalOpen(false)
+          }}
+          onClose={() => setShowDateModal(false)}
+        />
       )}
 
       {perms.canCreateGroupTask && !haySeleccion && (
