@@ -19,11 +19,12 @@ export function usePizarronDayView(tasks) {
 
   const [selectedKey, setSelectedKey] = useState(todayKey)
 
-  // Genera 7 días: 3 antes de hoy, hoy, 3 después
+  // Genera 14 días centrados en el día seleccionado
   const days = useMemo(() => {
+    const anchor = parseKey(selectedKey)
     const result = []
     for (let i = -3; i <= 10; i++) {
-      const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() + i)
+      const d = new Date(anchor.getFullYear(), anchor.getMonth(), anchor.getDate() + i)
       result.push({
         key:     toDateKey(d),
         date:    d,
@@ -33,7 +34,7 @@ export function usePizarronDayView(tasks) {
       })
     }
     return result
-  }, [])
+  }, [selectedKey])
 
   // Tareas del día seleccionado
   const dayTasks = useMemo(() => {
