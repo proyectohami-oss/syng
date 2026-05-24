@@ -95,10 +95,16 @@ export function PizarronModule() {
   const [modal,       setModal]       = useState(null)
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [calOpen,     setCalOpen]     = useState(false)
+  const [taskExpanded, setTaskExpanded] = useState(false)
   const [calViewMonth, setCalViewMonth] = useState(() => new Date())
   const [showYearPicker, setShowYearPicker] = useState(false)
 
   const haySeleccion = selectedIds.size > 0
+
+  function handleDayChange(key) {
+    setSelectedKey(key)
+    setTaskExpanded(false)
+  }
 
   function toggleSeleccion(taskId) {
     setSelectedIds(prev => {
@@ -129,7 +135,7 @@ export function PizarronModule() {
 
   function handleCalDayPress(date) {
     const key = toDateKey(date)
-    setSelectedKey(key)
+    handleDayChange(key)
     setCalOpen(false)
   }
 
@@ -202,11 +208,11 @@ export function PizarronModule() {
         onClick={() => { setCalOpen(o => !o); setShowYearPicker(false) }}
         style={monthBar}
       >
-        <span style={{ fontSize:26, fontWeight:700, color:'#0D1240', letterSpacing:'-0.8px', lineHeight:1 }}>
+        <span style={{ fontSize:22, fontWeight:600, color:'#0D1240', letterSpacing:'-0.5px', lineHeight:1 }}>
           {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
         </span>
-        <span style={{ fontSize:13, color:'#2D3A8C', lineHeight:1, marginLeft:6 }}>
-          {calOpen ? '▲' : '▼'}
+        <span style={{ fontSize:11, color:'#2D3A8C', lineHeight:1, marginLeft:4, opacity:0.7 }}>
+          {calOpen ? '⌃' : '⌄'}
         </span>
       </div>
 
@@ -331,7 +337,7 @@ export function PizarronModule() {
                   key={d.key}
                   data-key={d.key}
                   data-today={isToday ? 'true' : 'false'}
-                  onClick={() => setSelectedKey(d.key)}
+                  onClick={() => handleDayChange(d.key)}
                   style={{
                     flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center',
                     padding:'8px 12px', borderRadius:14, border:'none', cursor:'pointer',
@@ -387,7 +393,7 @@ export function PizarronModule() {
           </p>
         )}
 
-        {pending.map(task => {
+        {(taskExpanded ? pending : pending.slice(0,3)).map(task => {
           const member = members.find(m => m.uid === task.ownerId)
           const hora = task.dueDate ? (() => {
             const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
@@ -416,6 +422,15 @@ export function PizarronModule() {
             </div>
           )
         })}
+
+        {!taskExpanded && pending.length > 3 && (
+          <button
+            onClick={() => setTaskExpanded(true)}
+            style={{ width:'100%', padding:'10px 0', background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#2D3A8C', fontWeight:600, textAlign:'center', letterSpacing:'-0.01em' }}
+          >
+            Ver {pending.length - 3} más ⌄
+          </button>
+        )}
 
         {completed.length > 0 && (
           <>
@@ -521,7 +536,7 @@ const groupAvatar    = { width:40, height:40, borderRadius:12, background:'rgba(
 const memberBubble   = { width:28, height:28, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid rgba(255,255,255,0.80)', flexShrink:0 }
 const monthBar       = { flexShrink:0, display:'flex', alignItems:'center', padding:'14px 16px 10px', background:'transparent', cursor:'pointer', userSelect:'none' }
 const calDrawer      = { flexShrink:0, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', padding:'12px 16px 16px', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const arrowBtn       = { background:'rgba(45,58,140,0.07)', border:'none', fontSize:18, color:'#2D3A8C', cursor:'pointer', width:44, height:44, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const arrowBtn       = { background:'rgba(45,58,140,0.06)', border:'none', fontSize:15, color:'#2D3A8C', cursor:'pointer', width:34, height:34, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
 const daySelector    = { flexShrink:0, padding:'6px 16px 4px', background:'rgba(255,255,255,0.70)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)' }
 const counters       = { flexShrink:0, display:'flex', alignItems:'center', padding:'10px 20px', background:'rgba(255,255,255,0.60)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', gap:0 }
 const counter        = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
