@@ -23,6 +23,24 @@ import { useCoreAuth, useCoreGroups } from '../core/hooks/useCoreData'
 import { useAuthActions }             from '../auth/useAuthActions'
 import { useState, useEffect }        from 'react'
 
+async function shareApp() {
+  const data = {
+    title: 'Syng',
+    text:  'Estoy organizando mi vida y proyectos con Syng. Pruébala:',
+    url:   'https://syng-psi.vercel.app',
+  }
+  if (navigator.share) {
+    try { await navigator.share(data) } catch {}
+  } else {
+    try {
+      await navigator.clipboard.writeText(data.url)
+      alert('Link copiado al portapapeles')
+    } catch {
+      alert('https://syng-psi.vercel.app')
+    }
+  }
+}
+
 const NAV_ITEMS = [
   { emoji:'📅', label:'Mi Agenda',  path:'/agenda' },
   { emoji:'📌', label:'Pizarrones', path:'/pizarrones' },
@@ -197,7 +215,7 @@ export function AppShell({ children }) {
           {NAV_ITEMS.map(item => (
             <button
               key={item.label}
-              onClick={() => navigate(item.path)}
+              onClick={() => item.path === '/compartir' ? shareApp() : navigate(item.path)}
               style={{
                 flex: 1, display: 'flex', flexDirection: 'column',
                 alignItems: 'center', justifyContent: 'center', gap: 3,
