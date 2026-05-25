@@ -5,7 +5,7 @@
       "destination": "/api/invite/[token]"
     },
     {
-      "source": "/(.*)",
+      "source": "/((?!api/).*)",
       "destination": "/index.html"
     }
   ],
