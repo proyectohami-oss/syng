@@ -1,10 +1,6 @@
 {
   "rewrites": [
     {
-      "source": "/api/og/group/:token",
-      "destination": "/api/og/group/[token]"
-    },
-    {
       "source": "/invite/:token",
       "destination": "/api/invite/[token]"
     },
