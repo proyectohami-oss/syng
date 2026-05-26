@@ -52,7 +52,7 @@ export default async function handler(req) {
   <meta property="og:image"       content="${ogImage}"/>
   <meta property="og:image:width"  content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:url"         content="${joinUrl}"/>
+  <meta property="og:url"         content="https://syng-psi.vercel.app/invite/${token}"/>
   <meta property="og:type"        content="website"/>
   <meta name="twitter:card"        content="summary_large_image"/>
   <meta name="twitter:title"       content="${title}"/>
