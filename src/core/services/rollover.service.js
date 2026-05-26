@@ -1,29 +1,30 @@
 /**
  * rollover.service.js
- * Mueve al día actual todas las tareas personales pendientes
+ * Mueve al día actual todas las tareas pendientes
  * cuya fecha de vencimiento sea anterior a hoy.
- * Solo se ejecuta una vez por día, a medianoche.
+ * Compara solo YYYY-MM-DD — ignora la hora.
  */
 import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { updateTask } from './tasks.service'
 
+function toDateKey(date) {
+  const d = date instanceof Date ? date : (date.toDate ? date.toDate() : new Date(date))
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+}
+
 export async function rolloverPersonalTasks(uid) {
   if (!uid) return
 
-  /* Inicio del día de hoy a las 00:00:00 */
-  const todayStart = new Date()
-  todayStart.setHours(0, 0, 0, 0)
+  const today = new Date()
+  const todayKey = toDateKey(today)
 
-  /* Final del día de hoy a las 23:59:59 */
   const todayEnd = new Date()
   todayEnd.setHours(23, 59, 59, 999)
-
-  /* Nueva fecha: hoy a las 23:59:59 */
   const newDueDate = Timestamp.fromDate(todayEnd)
 
   try {
-    const q = query(
+    const qPersonal = query(
       collection(db, 'tasks'),
       where('ownerId',   '==', uid),
       where('type',      '==', 'personal'),
@@ -31,17 +32,27 @@ export async function rolloverPersonalTasks(uid) {
       where('isDeleted', '==', false),
     )
 
-    const snapshot = await getDocs(q)
+    const qGroup = query(
+      collection(db, 'tasks'),
+      where('ownerId',   '==', uid),
+      where('type',      '==', 'group'),
+      where('status',    '==', 'pending'),
+      where('isDeleted', '==', false),
+    )
 
+    const [snapPersonal, snapGroup] = await Promise.all([
+      getDocs(qPersonal),
+      getDocs(qGroup),
+    ])
+
+    const allDocs = [...snapPersonal.docs, ...snapGroup.docs]
     const promises = []
-    snapshot.forEach(docSnap => {
+
+    allDocs.forEach(docSnap => {
       const task = docSnap.data()
       if (!task.dueDate) return
-
-      const dueDate = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
-
-      /* Solo mover si la fecha es anterior a hoy */
-      if (dueDate < todayStart) {
+      const taskKey = toDateKey(task.dueDate)
+      if (taskKey < todayKey) {
         promises.push(updateTask(task.id, { dueDate: newDueDate }))
       }
     })
