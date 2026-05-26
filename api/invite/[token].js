@@ -10,7 +10,6 @@ export default async function handler(req) {
 
   let groupName   = 'Grupo Syng'
   let inviterName = 'Alguien'
-  let memberCount = 0
 
   try {
     const now     = Math.floor(Date.now() / 1000)
@@ -33,27 +32,27 @@ export default async function handler(req) {
     if (fields) {
       groupName   = fields.groupName?.stringValue   ?? groupName
       inviterName = fields.inviterName?.stringValue  ?? inviterName
-      memberCount = parseInt(fields.memberCount?.integerValue ?? '0')
     }
   } catch(e) { console.error('[invite] Error:', e) }
 
-  const ogImage  = `https://syng-psi.vercel.app/api/og-group?groupName=${encodeURIComponent(groupName)}&inviterName=${encodeURIComponent(inviterName)}`
-  const joinUrl  = `https://syng-psi.vercel.app/unirse?inv=${token}`
-  const title    = `${inviterName} te invitó a ${groupName}`
-  const desc     = `Únete a ${groupName} en Syng y organiza tareas juntos.`
+  const inviteUrl = `https://syng-psi.vercel.app/invite/${token}`
+  const ogImage   = `https://syng-psi.vercel.app/api/og-group?groupName=${encodeURIComponent(groupName)}&inviterName=${encodeURIComponent(inviterName)}`
+  const joinUrl   = `https://syng-psi.vercel.app/unirse?inv=${token}`
+  const title     = `${inviterName} te invitó a ${groupName}`
+  const desc      = `Únete a ${groupName} en Syng y organiza tareas juntos.`
 
   const html = `<!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8"/>
   <title>${title}</title>
-  <meta property="og:title"       content="${title}"/>
-  <meta property="og:description" content="${desc}"/>
-  <meta property="og:image"       content="${ogImage}"/>
+  <meta property="og:title"        content="${title}"/>
+  <meta property="og:description"  content="${desc}"/>
+  <meta property="og:image"        content="${ogImage}"/>
   <meta property="og:image:width"  content="1200"/>
   <meta property="og:image:height" content="630"/>
-  <meta property="og:url"         content="https://syng-psi.vercel.app/invite/${token}"/>
-  <meta property="og:type"        content="website"/>
+  <meta property="og:url"          content="${inviteUrl}"/>
+  <meta property="og:type"         content="website"/>
   <meta name="twitter:card"        content="summary_large_image"/>
   <meta name="twitter:title"       content="${title}"/>
   <meta name="twitter:description" content="${desc}"/>
