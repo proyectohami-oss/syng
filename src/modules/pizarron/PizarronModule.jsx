@@ -338,17 +338,29 @@ export function PizarronModule() {
 
       {/* Persiana — calendario completo */}
       {calOpen && (
-        <div style={calDrawer}>
+        <div
+          style={calDrawer}
+          onTouchStart={e => { e._swipeX = e.touches[0].clientX; e._swipeY = e.touches[0].clientY }}
+          onTouchEnd={e => {
+            const dx = e.changedTouches[0].clientX - e._swipeX
+            const dy = e.changedTouches[0].clientY - e._swipeY
+            if (Math.abs(dx) > Math.abs(dy)) {
+              if (dx > 40) prevMonth()
+              else if (dx < -40) nextMonth()
+            } else {
+              if (dy > 40) prevMonth()
+              else if (dy < -40) nextMonth()
+            }
+          }}
+        >
           {/* Navegación de meses */}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:10 }}>
-            <button onClick={prevMonth} style={arrowBtn}>‹</button>
+          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', marginBottom:10 }}>
             <button
               onClick={e => { e.stopPropagation(); setShowDateModal(true) }}
               style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, fontWeight:700, color:'#0D1240' }}
             >
               {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
             </button>
-            <button onClick={nextMonth} style={arrowBtn}>›</button>
           </div>
 
 
