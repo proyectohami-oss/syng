@@ -37,7 +37,7 @@ export default async function handler(req) {
     }
   } catch(e) { console.error('[invite] Error:', e) }
 
-  const ogImage  = `https://syng-psi.vercel.app/api/og-group?token=${token}`
+  const ogImage  = `https://syng-psi.vercel.app/api/og-group?groupName=${encodeURIComponent(groupName)}&inviterName=${encodeURIComponent(inviterName)}`
   const joinUrl  = `https://syng-psi.vercel.app/unirse?inv=${token}`
   const title    = `${inviterName} te invitó a ${groupName}`
   const desc     = `Únete a ${groupName} en Syng y organiza tareas juntos.`
