@@ -244,30 +244,26 @@ export function PizarronModule() {
   }
 
   function prevMonth() {
-    const current = parseKey(selectedKey)
-    setCalViewMonth(m => {
-      const newDate   = new Date(m.getFullYear(), m.getMonth() - 1, 1)
-      const targetDay = current.getDate()
-      const lastDay   = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
-      const safeDay   = Math.min(targetDay, lastDay)
-      const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
-      handleDayChange(toDateKey(finalDate))
-      setTaskExpanded(false)
-      return newDate
-    })
+    const current   = parseKey(selectedKey)
+    const newDate   = new Date(calViewMonth.getFullYear(), calViewMonth.getMonth() - 1, 1)
+    const targetDay = current.getDate()
+    const lastDay   = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
+    const safeDay   = Math.min(targetDay, lastDay)
+    const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
+    setCalViewMonth(newDate)
+    handleDayChange(toDateKey(finalDate))
+    setTaskExpanded(false)
   }
   function nextMonth() {
-    const current = parseKey(selectedKey)
-    setCalViewMonth(m => {
-      const newDate   = new Date(m.getFullYear(), m.getMonth() + 1, 1)
-      const targetDay = current.getDate()
-      const lastDay   = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
-      const safeDay   = Math.min(targetDay, lastDay)
-      const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
-      handleDayChange(toDateKey(finalDate))
-      setTaskExpanded(false)
-      return newDate
-    })
+    const current   = parseKey(selectedKey)
+    const newDate   = new Date(calViewMonth.getFullYear(), calViewMonth.getMonth() + 1, 1)
+    const targetDay = current.getDate()
+    const lastDay   = new Date(newDate.getFullYear(), newDate.getMonth() + 1, 0).getDate()
+    const safeDay   = Math.min(targetDay, lastDay)
+    const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
+    setCalViewMonth(newDate)
+    handleDayChange(toDateKey(finalDate))
+    setTaskExpanded(false)
   }
 
   const todayDate   = new Date()
