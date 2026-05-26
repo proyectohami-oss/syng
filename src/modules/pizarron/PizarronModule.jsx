@@ -225,6 +225,7 @@ export function PizarronModule() {
   function limpiarSeleccion() { setSelectedIds(new Set()) }
 
   const daySelectorRef = useRef(null)
+  const swipeRef = useRef({ x: 0, y: 0 })
 
   // Scroll al día seleccionado cuando cambia o se cierra el calendario
   useEffect(() => {
@@ -340,10 +341,10 @@ export function PizarronModule() {
       {calOpen && (
         <div
           style={calDrawer}
-          onTouchStart={e => { e._swipeX = e.touches[0].clientX; e._swipeY = e.touches[0].clientY }}
+          onTouchStart={e => { swipeRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }}
           onTouchEnd={e => {
-            const dx = e.changedTouches[0].clientX - e._swipeX
-            const dy = e.changedTouches[0].clientY - e._swipeY
+            const dx = e.changedTouches[0].clientX - swipeRef.current.x
+            const dy = e.changedTouches[0].clientY - swipeRef.current.y
             if (Math.abs(dx) > Math.abs(dy)) {
               if (dx > 40) prevMonth()
               else if (dx < -40) nextMonth()
