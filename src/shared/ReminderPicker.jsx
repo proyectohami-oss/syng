@@ -123,8 +123,13 @@ export function ReminderPicker({ dateStr, reminder, onChange, onClose }) {
     const dueTime = `${String(hh).padStart(2,'0')}:${String(mm).padStart(2,'0')}`
     const label   = buildLabel(aDays, aHours, aMins)
     const scheduledAt = dateStr ? (() => {
+      // Construir fecha+hora real de la tarea
+      const hh   = Math.floor(taskMin / 60)
+      const mm   = taskMin % 60
       const base = new Date(dateStr + 'T00:00:00')
-      base.setMinutes(taskMin - totalOffsetMin)
+      base.setHours(hh, mm, 0, 0)
+      // Restar offset del recordatorio
+      base.setTime(base.getTime() - totalOffsetMin * 60000)
       return Timestamp.fromDate(base)
     })() : null
     onChange({ label, offsetMin: totalOffsetMin, dueTime, scheduledAt })
