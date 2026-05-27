@@ -10,6 +10,7 @@ import { ConfirmDialog }               from '../../shared/ConfirmDialog'
 import { TaskFormNew }                 from '../../shared/TaskFormNew'
 import { EmptyState }                  from '../../shared/EmptyState'
 import { SyncBadge }                   from '../../shared/SyncBadge'
+import { CalendarGrid }                from '../agenda/components/CalendarGrid'
 
 const DIAS       = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
 const DIAS_CORTO = ['Do','Lu','Ma','Mi','Ju','Vi','Sá']
@@ -339,103 +340,15 @@ export function PizarronModule() {
 
       {/* Persiana — calendario completo */}
       {calOpen && (
-        <div
-          style={calDrawer}
-          onTouchStart={e => { swipeRef.current = { x: e.touches[0].clientX, y: e.touches[0].clientY } }}
-          onTouchEnd={e => {
-            const dx = e.changedTouches[0].clientX - swipeRef.current.x
-            const dy = e.changedTouches[0].clientY - swipeRef.current.y
-            if (Math.abs(dx) > Math.abs(dy)) {
-              if (dx > 40) prevMonth()
-              else if (dx < -40) nextMonth()
-            } else {
-              if (dy > 40) prevMonth()
-              else if (dy < -40) nextMonth()
-            }
-          }}
-        >
-          {/* Navegación de meses */}
-          <div style={{ display:'flex', alignItems:'center', justifyContent:'center', marginBottom:10 }}>
-            <button
-              onClick={e => { e.stopPropagation(); setShowDateModal(true) }}
-              style={{ background:'none', border:'none', cursor:'pointer', fontSize:12, fontWeight:700, color:'#0D1240' }}
-            >
-              {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
-            </button>
-          </div>
-
-
-
-          {/* Encabezados días */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:4 }}>
-            {DIAS_GRID.map((d, i) => (
-              <div key={i} style={{ textAlign:'center', fontSize:11, fontWeight:600, color: i === 6 ? 'rgba(224,82,82,0.8)' : 'rgba(13,18,64,0.35)', padding:'2px 0' }}>
-                {d}
-              </div>
-            ))}
-          </div>
-
-          {/* Grid de días */}
-          <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:2 }}>
-            {calDays.map((date, i) => {
-              if (!date) return <div key={`empty-${i}`} />
-              const key        = toDateKey(date)
-              const isToday    = key === todayKeyStr
-              const isSelected = key === selectedKey
-              const hasTask    = !!daysWithActivity[key]
-              const isSunday   = date.getDay() === 0
-
-              return (
-                <button
-                  key={key}
-                  onClick={() => handleCalDayPress(date)}
-                  style={{
-                    aspectRatio:    '1',
-                    display:        'flex',
-                    flexDirection:  'column',
-                    alignItems:     'center',
-                    justifyContent: 'center',
-                    borderRadius:   '50%',
-                    border:         'none',
-                    cursor:         'pointer',
-                    position:       'relative',
-                    background:     isToday
-                      ? 'linear-gradient(135deg, #3D4FA8, #2D3A8C)'
-                      : isSelected
-                        ? 'rgba(45,58,140,0.10)'
-                        : 'transparent',
-                    WebkitTapHighlightColor: 'transparent',
-                  }}
-                >
-                  <span style={{
-                    fontSize:   13,
-                    fontWeight: isToday || isSelected ? 700 : 400,
-                    color:      isToday
-                      ? '#fff'
-                      : isSelected
-                        ? '#2D3A8C'
-                        : isSunday
-                          ? 'rgba(224,82,82,0.85)'
-                          : '#0D1240',
-                    lineHeight: 1,
-                  }}>
-                    {date.getDate()}
-                  </span>
-                  {hasTask && (
-                    <div style={{
-                      width:        4,
-                      height:       4,
-                      borderRadius: '50%',
-                      background:   isToday ? 'rgba(255,255,255,0.8)' : isSelected ? '#2D3A8C' : '#2D3A8C',
-                      position:     'absolute',
-                      bottom:       3,
-                      opacity:      1,
-                    }} />
-                  )}
-                </button>
-              )
-            })}
-          </div>
+        <div style={calDrawer}>
+          <CalendarGrid
+            viewMonth={calViewMonth}
+            selectedDate={selectedDate}
+            daysWithActivity={daysWithActivity}
+            onSelectDate={date => handleCalDayPress(date)}
+            onPrevMonth={prevMonth}
+            onNextMonth={nextMonth}
+          />
         </div>
       )}
 
