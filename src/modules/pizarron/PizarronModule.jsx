@@ -346,6 +346,7 @@ export function PizarronModule() {
             daysWithActivity={daysWithActivity}
             onSelectDate={date => handleCalDayPress(date)}
             onMonthChange={date => setCalViewMonth(new Date(date.getFullYear(), date.getMonth(), 1))}
+            onMonthTap={() => setShowDateModal(true)}
           />
         </div>
       )}

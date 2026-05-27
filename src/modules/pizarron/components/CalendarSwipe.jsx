@@ -78,7 +78,7 @@ function MonthGrid({ monthDate, selectedDate, daysWithActivity, onSelectDate }) 
   )
 }
 
-export function CalendarSwipe({ selectedDate, daysWithActivity, onSelectDate, onMonthChange }) {
+export function CalendarSwipe({ selectedDate, daysWithActivity, onSelectDate, onMonthChange, onMonthTap }) {
   const today = new Date()
   const [months, setMonths] = useState([
     subMonths(today, 1),
@@ -137,7 +137,10 @@ export function CalendarSwipe({ selectedDate, daysWithActivity, onSelectDate, on
     <div>
       {/* Header mes */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'8px 0 4px' }}>
-        <span style={{ fontSize:13, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em' }}>
+        <span
+          onClick={onMonthTap}
+          style={{ fontSize:13, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em', cursor: onMonthTap ? 'pointer' : 'default', WebkitTapHighlightColor:'transparent' }}
+        >
           {monthLabel}
         </span>
       </div>
