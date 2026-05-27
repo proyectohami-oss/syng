@@ -44,7 +44,7 @@ async function shareApp() {
 const NAV_ITEMS = [
   { emoji:'📅', label:'Mi Agenda',  path:'/agenda' },
   { emoji:'📌', label:'Pizarrones', path:'/pizarrones' },
-  { emoji:'🛒', label:'Súper',      path:'/super' },
+  // { emoji:'🛒', label:'Súper',      path:'/super' },
   { emoji:'📤', label:'Compartir',  path:'/compartir' },
   { emoji:'👤', label:'Perfil',     path:'/perfil' },
 ]
