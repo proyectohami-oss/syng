@@ -66,8 +66,10 @@ export function usePushNotifications() {
         const { messaging, getToken, onMessage } = await getMessaging()
         const token = await getToken(messaging, { vapidKey: VAPID_KEY })
 
+        console.log('[FCM] token obtenido:', token ? token.substring(0,20)+'...' : 'NULO')
         if (token) {
           await saveFcmToken(uid, token, 'web')
+          console.log('[FCM] token guardado en Firestore')
 
           onMessage(messaging, (payload) => {
             console.debug('[FCM] Foreground message:', payload)
