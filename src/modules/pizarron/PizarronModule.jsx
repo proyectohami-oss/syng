@@ -205,6 +205,7 @@ export function PizarronModule() {
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [calOpen,     setCalOpen]     = useState(false)
   const [taskExpanded, setTaskExpanded] = useState(false)
+  const [daySelected, setDaySelected] = useState(false)
   const [calViewMonth, setCalViewMonth] = useState(() => new Date())
   const [showYearPicker, setShowYearPicker] = useState(false)
   const [showDateModal,  setShowDateModal]  = useState(false)
@@ -214,6 +215,7 @@ export function PizarronModule() {
   function handleDayChange(key) {
     setSelectedKey(key)
     setTaskExpanded(false)
+    setDaySelected(true)
   }
 
   function toggleSeleccion(taskId) {
@@ -391,7 +393,7 @@ export function PizarronModule() {
       )}
 
       {/* Contadores */}
-      <div style={counters}>
+      {daySelected && <div style={counters}>
         <div style={counter}>
           <span style={{ fontSize:20, fontWeight:700, color:'#2D3A8C' }}>{pending.length}</span>
           <span style={{ fontSize:11, color:'rgba(13,18,64,0.38)' }}>Pendientes</span>
@@ -401,7 +403,7 @@ export function PizarronModule() {
           <span style={{ fontSize:20, fontWeight:700, color:'#22C55E' }}>{completed.length}</span>
           <span style={{ fontSize:11, color:'rgba(13,18,64,0.38)' }}>Completadas</span>
         </div>
-      </div>
+      </div>}
 
       {/* Lista de tareas */}
       <div style={taskList}>
