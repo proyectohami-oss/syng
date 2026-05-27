@@ -10,7 +10,7 @@ import { ConfirmDialog }               from '../../shared/ConfirmDialog'
 import { TaskFormNew }                 from '../../shared/TaskFormNew'
 import { EmptyState }                  from '../../shared/EmptyState'
 import { SyncBadge }                   from '../../shared/SyncBadge'
-import { CalendarGrid }                from '../agenda/components/CalendarGrid'
+import { CalendarSwipe }               from './components/CalendarSwipe'
 
 const DIAS       = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
 const DIAS_CORTO = ['Do','Lu','Ma','Mi','Ju','Vi','Sá']
@@ -341,13 +341,11 @@ export function PizarronModule() {
       {/* Persiana — calendario completo */}
       {calOpen && (
         <div style={calDrawer}>
-          <CalendarGrid
-            viewMonth={calViewMonth}
+          <CalendarSwipe
             selectedDate={selectedDate}
             daysWithActivity={daysWithActivity}
             onSelectDate={date => handleCalDayPress(date)}
-            onPrevMonth={prevMonth}
-            onNextMonth={nextMonth}
+            onMonthChange={date => setCalViewMonth(new Date(date.getFullYear(), date.getMonth(), 1))}
           />
         </div>
       )}
