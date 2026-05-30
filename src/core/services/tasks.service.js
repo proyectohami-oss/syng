@@ -1,3 +1,4 @@
+import { logActivityEvent } from "./activityLog.service"
 /**
  * Tasks service — CRUD puro de Firestore. Sin React, sin estado.
  */
@@ -59,6 +60,7 @@ export async function toggleTaskStatus(taskId, currentStatus, uid, groupId = nul
   })
   if (groupId && isCompleting) {
     await logActivity({ groupId, type: 'task_completed', actorUid: uid, actorName, targetName: taskTitle })
+  await logActivityEvent({ eventAction: "task.completed", actorId: uid, groupId: groupId, entityType: "task", entityId: taskId, metadata: { task_title: taskTitle } })
   }
 }
 
