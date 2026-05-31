@@ -19,9 +19,11 @@
  *   └──────────┴──────────────┘
  */
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useState, useEffect }        from 'react'
+import { collection, query, where, onSnapshot } from 'firebase/firestore'
+import { db } from '../firebase'
 import { useCoreAuth, useCoreGroups } from '../core/hooks/useCoreData'
 import { useAuthActions }             from '../auth/useAuthActions'
-import { useState, useEffect }        from 'react'
 
 async function shareApp() {
   const data = {
@@ -56,6 +58,13 @@ export function AppShell({ children }) {
   const navigate  = useNavigate()
   const location  = useLocation()
   const { signOut } = useAuthActions()
+  const [unreadCount, setUnreadCount] = useState(0)
+  useEffect(() => {
+    const uid = auth?.user?.uid
+    if (!uid) return
+    const q = query(collection(db, `users/${uid}/notifications`), where('read', '==', false))
+    return onSnapshot(q, snap => setUnreadCount(snap.size))
+  }, [auth?.user?.uid])
   const [signingOut, setSigningOut] = useState(false)
 
   const user   = auth.user
@@ -225,13 +234,25 @@ export function AppShell({ children }) {
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              <span style={{
-                fontSize: 22, lineHeight: 1,
-                filter: isActive(item.path) ? 'none' : 'grayscale(40%) opacity(0.60)',
-                transform: isActive(item.path) ? 'scale(1.1)' : 'scale(1)',
-                transition: 'transform 0.12s ease',
-                display: 'block',
-              }}>{item.emoji}</span>
+              <span style={{ position:'relative', display:'inline-block' }}>
+                <span style={{
+                  fontSize: 22, lineHeight: 1,
+                  filter: isActive(item.path) ? 'none' : 'grayscale(40%) opacity(0.60)',
+                  transform: isActive(item.path) ? 'scale(1.1)' : 'scale(1)',
+                  transition: 'transform 0.12s ease',
+                  display: 'block',
+                }}>{item.emoji}</span>
+                {item.path === '/notificaciones' && unreadCount > 0 && (
+                  <span style={{
+                    position:'absolute', top:-4, right:-6,
+                    background:'#E53E3E', color:'#fff',
+                    fontSize:10, fontWeight:700,
+                    borderRadius:10, minWidth:16, height:16,
+                    display:'flex', alignItems:'center', justifyContent:'center',
+                    padding:'0 4px', lineHeight:1,
+                  }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
+                )}
+              </span>
               <span style={{
                 fontSize: 10, lineHeight: 1,
                 fontWeight: isActive(item.path) ? 600 : 400,
