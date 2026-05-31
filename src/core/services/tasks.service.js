@@ -32,6 +32,7 @@ export async function createTask({ id, title, description, type, ownerId, groupI
   })
   if (groupId) {
     await logActivity({ groupId, type: 'task_created', actorUid: ownerId, actorName, targetName: title.trim() })
+    await logActivityEvent({ eventAction: 'task.created', actorId: ownerId, groupId, entityType: 'task', metadata: { task_title: title.trim() } })
   }
 }
 

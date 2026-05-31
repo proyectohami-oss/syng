@@ -10,7 +10,7 @@
  *
  * Un componente que solo lee tareas no re-renderiza cuando cambia un grupo.
  */
-import { createContext, useReducer, useMemo } from 'react'
+import { createContext, useReducer, useMemo, useEffect } from 'react'
 import { coreReducer }              from './store/coreReducer'
 import { initialState }             from './store/initialState'
 import { useUserListener }          from './listeners/useUserListener'
@@ -47,6 +47,8 @@ export function CoreDataProvider({ children }) {
 
   /* Rollover — mueve tareas personales vencidas al día actual */
   useRollover(uid)
+
+
 
   // Slices memoizados — cada contexto solo cambia cuando su slice cambia
   const authValue   = useMemo(() => state.auth,   [state.auth])

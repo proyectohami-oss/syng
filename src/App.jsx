@@ -13,6 +13,7 @@ import { PerfilModule }      from './modules/perfil/PerfilModule'
 import { UnirseScreen }      from './modules/UnirseScreen'
 import { Toast }             from './shared/Toast'
 import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
+import { NotificacionesModule } from './modules/notificaciones/NotificacionesModule'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -95,6 +96,7 @@ function AppWithViewport() {
               <Route path="/pizarrones"   element={<PizarronesModule />} />
               <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
               <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />
+              <Route path="/notificaciones" element={<NotificacionesModule />} />
               <Route path="/perfil"       element={<PerfilModule />} />
               <Route path="/unirse"       element={<UnirseScreen />} />
             </Routes>

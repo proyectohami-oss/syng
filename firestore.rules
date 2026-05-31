@@ -21,6 +21,9 @@ service cloud.firestore {
       allow create: if isAuthenticated() && isOwner(uid);
       allow update: if isAuthenticated() && isOwner(uid);
       allow delete: if false;
+      match /notifications/{notifId} {
+        allow read, write: if request.auth.uid == uid;
+      }
     }
 
     match /tasks/{taskId} {
@@ -56,6 +59,16 @@ service cloud.firestore {
       allow create: if isAuthenticated();
       allow update: if isAuthenticated();
       allow delete: if isAuthenticated();
+    }
+
+    match /activity_log/{logId} {
+      allow create: if request.auth != null
+        && request.resource.data.actor_id == request.auth.uid
+        && request.resource.data.event_action is string
+        && request.resource.data.group_id is string;
+      allow read: if request.auth != null
+        && resource.data.actor_id == request.auth.uid;
+      allow update, delete: if false;
     }
   }
 }

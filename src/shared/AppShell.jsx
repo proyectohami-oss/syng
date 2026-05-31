@@ -46,6 +46,7 @@ const NAV_ITEMS = [
   { emoji:'📌', label:'Pizarrones', path:'/pizarrones' },
   // { emoji:'🛒', label:'Súper',      path:'/super' },
   { emoji:'📤', label:'Compartir',  path:'/compartir' },
+  { emoji:'🔔', label:'Avisos',     path:'/notificaciones' },
   { emoji:'👤', label:'Perfil',     path:'/perfil' },
 ]
 

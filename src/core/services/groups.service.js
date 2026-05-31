@@ -12,6 +12,7 @@ import {
   arrayRemove,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { logActivityEvent } from './activityLog.service'
 
 /**
  * Create a new group and add the creator as admin.
@@ -48,15 +49,17 @@ export async function createGroup({ name, adminId, adminDisplayName, adminEmail 
     groupIds: arrayUnion(id),
   })
 
+  await logActivityEvent({ eventAction: 'group.created', actorId: adminId, groupId: id, metadata: { group_name: name.trim() } })
   return { id }
 }
 
 /** Rename a group. Only admins should call this. */
-export async function updateGroupName(groupId, name) {
+export async function updateGroupName(groupId, name, actorId) {
   await updateDoc(doc(db, 'groups', groupId), {
     name:      name.trim(),
     updatedAt: serverTimestamp(),
   })
+  if (actorId) await logActivityEvent({ eventAction: 'group.updated', actorId, groupId, metadata: { group_name: name.trim() } })
 }
 
 /**
@@ -109,6 +112,7 @@ export async function removeMember(groupId, uid) {
   })
 
   await batch.commit()
+  await logActivityEvent({ eventAction: 'member.removed', actorId: uid, groupId, metadata: {} })
 }
 
 /**
@@ -116,6 +120,7 @@ export async function removeMember(groupId, uid) {
  * Same as removeMember but called by the member themselves.
  */
 export async function leaveGroup(groupId, uid) {
+  await logActivityEvent({ eventAction: 'member.left', actorId: uid, groupId, metadata: {} })
   return removeMember(groupId, uid)
 }
 

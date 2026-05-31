@@ -14,6 +14,7 @@ import {
 import { db } from '../../firebase'
 import { addMember } from './groups.service'
 import { logActivity } from './activity.service'
+import { logActivityEvent } from './activityLog.service'
 
 export async function createInvitation({ groupId, groupName, inviterUid, inviterName, phoneNumber }) {
   await addDoc(collection(db, 'invitations'), {
@@ -161,5 +162,6 @@ export async function acceptInvitationLink({ token, user }) {
     actorName:  user.displayName || 'Alguien',
     targetName: '',
   })
+  await logActivityEvent({ eventAction: 'member.joined', actorId: user.uid, groupId: inv.groupId, metadata: { actor_name: user.displayName || 'Alguien', group_name: inv.groupName } })
   return { status: 'joined', groupId: inv.groupId, groupName: inv.groupName }
 }
