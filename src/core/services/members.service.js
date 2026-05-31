@@ -151,6 +151,10 @@ export async function leaveGroup({ groupId, uid, isAdmin, memberIds }) {
   }
 
   await removeMember({ groupId, targetUid: uid })
+  try {
+    const { logActivityEvent } = await import('./activityLog.service.js')
+    await logActivityEvent({ eventAction: 'member.left', actorId: uid, groupId, metadata: {} })
+  } catch (_) {}
   return { deleted: false }
 }
 
