@@ -21,12 +21,24 @@ export function AuthGuard({ children }) {
     // Login fresco detectado → ir a agenda y limpiar bandera
     if (sessionStorage.getItem('justLoggedIn') === '1') {
       sessionStorage.removeItem('justLoggedIn')
-      navigate('/agenda', { replace: true })
+      const pendingInv = sessionStorage.getItem('pendingInvToken')
+      if (pendingInv) {
+        sessionStorage.removeItem('pendingInvToken')
+        navigate(`/unirse?inv=${pendingInv}`, { replace: true })
+      } else {
+        navigate('/agenda', { replace: true })
+      }
     }
   }, [auth?.user, auth?.userData])
 
   if (!auth || auth.loading) return <LoadingScreen />
-  if (!auth.user) return <AuthScreen />
+  if (!auth.user) {
+    // Guardar token de invitación antes de ir al login
+    const params = new URLSearchParams(window.location.search)
+    const inv = params.get('inv')
+    if (inv) sessionStorage.setItem('pendingInvToken', inv)
+    return <AuthScreen />
+  }
   if (auth.userData && !auth.userData.phoneNumber) return <PhoneSetupScreen />
   if (!auth.userData) return <LoadingScreen />
 
