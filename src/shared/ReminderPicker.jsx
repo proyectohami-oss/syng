@@ -13,7 +13,7 @@ const ITEM_H = 42
 
 /* ── Helpers para pre-cargar ── */
 function parseOffsetMin(offsetMin) {
-  if (!offsetMin) return { d:0, h:1, m:0 }
+  if (!offsetMin) return { d:0, h:0, m:0 }
   const d     = Math.floor(offsetMin / 1440)
   const rem   = offsetMin % 1440
   const h     = Math.floor(rem / 60)
@@ -32,20 +32,37 @@ function parseDueTime(dueTime) {
   return { h: snapH, m: snapM, ampm }
 }
 
-/* ── Columna rueda ── */
-function WheelCol({ items, value, onChange, format, label }) {
-  const ref = useRef(null)
-  const idx = items.indexOf(value)
+/* ── Columna rueda infinita ── */
+const REPEAT = 20
+function WheelCol({ items, value, onChange, format, label, infinite=true }) {
+  const ref      = useRef(null)
+  const n        = items.length
+  const repeated = infinite ? Array.from({length: REPEAT * n}, (_, i) => items[i % n]) : items
+  const midBlock = Math.floor(REPEAT / 2)
+  const idx      = items.indexOf(value)
 
   useEffect(() => {
-    if (ref.current) ref.current.scrollTop = idx * ITEM_H
+    if (ref.current) {
+      ref.current.scrollTop = infinite ? (midBlock * n + idx) * ITEM_H : idx * ITEM_H
+    }
   }, [])
 
   function handleScroll() {
     if (!ref.current) return
-    const newIdx  = Math.round(ref.current.scrollTop / ITEM_H)
-    const clamped = Math.max(0, Math.min(items.length - 1, newIdx))
-    if (items[clamped] !== value) onChange(items[clamped])
+    const raw    = ref.current.scrollTop
+    const newIdx = Math.round(raw / ITEM_H)
+    if (infinite) {
+      const item   = items[((newIdx % n) + n) % n]
+      const total  = repeated.length
+      if (newIdx < n || newIdx > total - n - 1) {
+        const normalized = ((newIdx % n) + n) % n
+        ref.current.scrollTop = (midBlock * n + normalized) * ITEM_H
+      }
+      if (item !== value) onChange(item)
+    } else {
+      const clamped = Math.max(0, Math.min(n - 1, newIdx))
+      if (items[clamped] !== value) onChange(items[clamped])
+    }
   }
 
   return (
@@ -56,8 +73,8 @@ function WheelCol({ items, value, onChange, format, label }) {
         <div style={{ position:'absolute', top:0, left:0, right:0, height: ITEM_H * 2, background:'linear-gradient(to bottom, rgba(250,251,255,1), rgba(250,251,255,0))', pointerEvents:'none', zIndex:2 }} />
         <div style={{ position:'absolute', bottom:0, left:0, right:0, height: ITEM_H * 2, background:'linear-gradient(to top, rgba(250,251,255,1), rgba(250,251,255,0))', pointerEvents:'none', zIndex:2 }} />
         <div ref={ref} onScroll={handleScroll} style={{ height:'100%', overflowY:'scroll', scrollSnapType:'y mandatory', WebkitOverflowScrolling:'touch', scrollbarWidth:'none', msOverflowStyle:'none', paddingTop: ITEM_H * 2, paddingBottom: ITEM_H * 2, boxSizing:'border-box' }}>
-          {items.map((item, i) => (
-            <div key={i} onClick={() => { onChange(item); if(ref.current) ref.current.scrollTop = i * ITEM_H }}
+          {repeated.map((item, i) => (
+            <div key={i} onClick={() => { onChange(item); if(ref.current) ref.current.scrollTop = (midBlock * n + items.indexOf(item)) * ITEM_H }}
               style={{ height: ITEM_H, display:'flex', alignItems:'center', justifyContent:'center', scrollSnapAlign:'center', fontSize: item === value ? 24 : 17, fontWeight: item === value ? 700 : 400, color: item === value ? '#0D1240' : 'rgba(13,18,64,0.22)', cursor:'pointer', transition:'all 0.15s ease', userSelect:'none', WebkitUserSelect:'none', textAlign:'center', width:'100%' }}
             >
               {format ? format(item) : item}
@@ -166,7 +183,7 @@ export function ReminderPicker({ dateStr, reminder, onChange, onClose }) {
             <div style={{ display:'flex', gap:4, marginBottom:16 }}>
               <WheelCol items={WHEEL_HOURS} value={wHour} onChange={setWHour} label="HORA"  format={v=>v} />
               <WheelCol items={WHEEL_MINS}  value={wMin}  onChange={setWMin}  label="MIN"   format={v=>String(v).padStart(2,'0')} />
-              <WheelCol items={WHEEL_AMPM}  value={wAmpm} onChange={setWAmpm} label="AM/PM" />
+              <WheelCol items={WHEEL_AMPM}  value={wAmpm} onChange={setWAmpm} label="AM/PM" infinite={false} />
             </div>
 
             {/* Jerarquía iOS — sin cajas, tipografía flotante */}
