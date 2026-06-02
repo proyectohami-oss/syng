@@ -12,6 +12,20 @@ export function generateTaskId() {
   return doc(collection(db, 'tasks')).id
 }
 
+async function programarRecordatorio(taskId, reminder) {
+  if (!reminder?.scheduledAt) return
+  try {
+    const scheduledAt = reminder.scheduledAt.toDate ? reminder.scheduledAt.toDate().toISOString() : new Date(reminder.scheduledAt).toISOString()
+    await fetch('https://us-central1-syng-app.cloudfunctions.net/scheduleReminder', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ taskId, scheduledAt }),
+    })
+  } catch (e) {
+    console.warn('[tasks] no se pudo programar recordatorio:', e.message)
+  }
+}
+
 export async function createTask({ id, title, description, type, ownerId, groupId, dueDate, actorName = '', reminder = null }) {
   await setDoc(doc(db, 'tasks', id), {
     id,
@@ -30,6 +44,7 @@ export async function createTask({ id, title, description, type, ownerId, groupI
     createdAt:   serverTimestamp(),
     updatedAt:   serverTimestamp(),
   })
+  if (reminder) await programarRecordatorio(id, reminder)
   if (groupId) {
     await logActivity({ groupId, type: 'task_created', actorUid: ownerId, actorName, targetName: title.trim() })
     await logActivityEvent({ eventAction: 'task.created', actorId: ownerId, groupId, entityType: 'task', metadata: { task_title: title.trim() } })
@@ -48,6 +63,7 @@ export async function updateTask(taskId, updates) {
     ...updates,
     updatedAt: serverTimestamp(),
   })
+  if (updates.reminder) await programarRecordatorio(taskId, updates.reminder)
 }
 
 export async function toggleTaskStatus(taskId, currentStatus, uid, groupId = null, actorName = '', taskTitle = '') {

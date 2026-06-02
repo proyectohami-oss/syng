@@ -45,7 +45,7 @@ async function sendPush(tokens, title, body, data = {}) {
 }
 
 exports.sendReminders = onSchedule(
-  { schedule: 'every 1 minutes', timeZone: 'America/Mexico_City' },
+  { schedule: 'every 60 minutes', timeZone: 'America/Mexico_City' },
   async () => {
     const now  = new Date()
     const from = Timestamp.fromDate(new Date(now.getTime() - 60_000))
@@ -338,3 +338,70 @@ exports.onActivityLogCreated = onDocumentCreated('activity_log/{logId}', async e
 
   console.log(`[onActivityLogCreated] ${event_action} → ${otherUids.length} miembros notificados`)
 })
+
+// ─── Recordatorios con Cloud Tasks ───────────────────────────────────────────
+
+const { CloudTasksClient } = require('@google-cloud/tasks')
+const tasksClient = new CloudTasksClient()
+
+const PROJECT    = 'syng-app'
+const LOCATION   = 'us-central1'
+const QUEUE      = 'syng-reminders'
+const FUNC_URL   = `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendReminderTask`
+
+exports.scheduleReminder = onRequest(
+  { timeoutSeconds: 30 },
+  async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
+    const { taskId, scheduledAt } = req.body
+    if (!taskId || !scheduledAt) return res.status(400).json({ error: 'faltan campos' })
+
+    const scheduleTime = new Date(scheduledAt)
+    if (isNaN(scheduleTime.getTime())) return res.status(400).json({ error: 'scheduledAt inválido' })
+
+    const queue = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
+    const task = {
+      httpRequest: {
+        httpMethod: 'POST',
+        url: FUNC_URL,
+        headers: { 'Content-Type': 'application/json' },
+        body: Buffer.from(JSON.stringify({ taskId })).toString('base64'),
+      },
+      scheduleTime: {
+        seconds: Math.floor(scheduleTime.getTime() / 1000),
+      },
+    }
+
+    try {
+      await tasksClient.createTask({ parent: queue, task })
+      res.json({ ok: true, scheduledAt: scheduleTime.toISOString() })
+    } catch (err) {
+      console.error('[scheduleReminder] error:', err)
+      res.status(500).json({ error: err.message })
+    }
+  }
+)
+
+exports.sendReminderTask = onRequest(
+  { timeoutSeconds: 30 },
+  async (req, res) => {
+    const { taskId } = req.body
+    if (!taskId) return res.status(400).send('falta taskId')
+
+    const taskDoc = await db.doc(`tasks/${taskId}`).get()
+    if (!taskDoc.exists) return res.status(404).send('tarea no encontrada')
+
+    const task = taskDoc.data()
+    if (task.status !== 'pending' || task.isDeleted) return res.status(200).send('skip')
+
+    const tokens = await getUserTokens(task.ownerId)
+    if (tokens.length) {
+      await sendPush(tokens, '⏰ Recordatorio', task.title, {
+        type: 'reminder', taskId, url: '/agenda',
+      })
+    }
+
+    await db.doc(`tasks/${taskId}`).update({ 'reminder.notification_sent': true })
+    res.json({ ok: true })
+  }
+)

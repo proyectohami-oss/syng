@@ -105,7 +105,7 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
           textDecoration: isCompleted ? 'line-through' : 'none',
           textDecorationColor: 'rgba(13,18,64,0.22)',
         }}>
-          {task.title}
+          {task.reminder && task.reminder.dueTime && <span style={{marginRight:4}}>🔔</span>}{task.title}
         </p>
         <div style={{ display:'flex', alignItems:'center', gap:7, marginTop:6, flexWrap:'wrap' }}>
           <span style={{
@@ -125,9 +125,15 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
           {dueLabel && (
             <span style={{ fontSize:11, color:'rgba(13,18,64,0.30)', fontWeight:400 }}>{dueLabel}</span>
           )}
-          {task.reminder && (
-            <span style={{ fontSize:11, opacity: isCompleted ? 0.25 : 0.45 }}>🔔</span>
-          )}
+          {task.reminder && (() => {
+            const dt = task.reminder.dueTime
+            if (!dt) return <span style={{ fontSize:11, opacity: isCompleted ? 0.25 : 0.45 }}>🔔</span>
+            const [h, m] = dt.split(':').map(Number)
+            const ap  = h >= 12 ? 'PM' : 'AM'
+            const h12 = h % 12 || 12
+            const label = `${h12}:${String(m).padStart(2,'0')} ${ap}`
+            return <span style={{ fontSize:11, opacity: isCompleted ? 0.25 : 0.55, color:'#2D3A8C', fontWeight:500 }}>{label}</span>
+          })()}
         </div>
       </div>
     </div>
