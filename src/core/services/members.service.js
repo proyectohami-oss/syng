@@ -131,7 +131,7 @@ export async function removeMember({ groupId, targetUid }) {
  *
  * @returns {{ deleted: boolean }} whether the group was deleted
  */
-export async function leaveGroup({ groupId, uid, isAdmin, memberIds }) {
+export async function leaveGroup({ groupId, uid, isAdmin, memberIds, actorName = 'Alguien' }) {
   if (isAdmin && memberIds.length > 1) {
     throw new Error('group/admin-must-transfer-before-leaving')
   }
@@ -153,7 +153,7 @@ export async function leaveGroup({ groupId, uid, isAdmin, memberIds }) {
   await removeMember({ groupId, targetUid: uid })
   try {
     const { logActivityEvent } = await import('./activityLog.service.js')
-    await logActivityEvent({ eventAction: 'member.left', actorId: uid, groupId, metadata: {} })
+    await logActivityEvent({ eventAction: 'member.left', actorId: uid, groupId, metadata: { actor_name: actorName } })
   } catch (_) {}
   return { deleted: false }
 }

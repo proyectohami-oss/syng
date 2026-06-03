@@ -84,10 +84,11 @@ export function useGroups() {
     const membersMap = state.groups.members.get(groupId) ?? new Map()
     const memberIds  = Array.from(membersMap.keys())
     const isAdmin    = group?.adminId === uid
+    const actorName  = state.auth.userData?.displayName || 'Alguien'
     if (!uid || !group) throw new Error('Invalid state')
     dispatch({ type: CORE_ACTIONS.REMOVE_GROUP_DATA, groupId })
     try {
-      return await membersService.leaveGroup({ groupId, uid, isAdmin, memberIds })
+      return await membersService.leaveGroup({ groupId, uid, isAdmin, memberIds, actorName })
     } catch (error) {
       console.error('[useGroups] leaveGroup error:', error)
       throw error
