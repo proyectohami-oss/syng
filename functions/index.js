@@ -72,7 +72,7 @@ exports.sendReminders = onSchedule(
       console.log('[sendReminders] tokens del usuario:', tokens.length)
       if (!tokens.length) return
       await sendPush(tokens, '⏰ Recordatorio', task.title, {
-        type: 'reminder', taskId: taskDoc.id, url: '/agenda',
+        type: 'reminder', taskId: taskDoc.id, url: `/recordatorio/${taskDoc.id}`,
       })
     }))
   }
@@ -397,11 +397,174 @@ exports.sendReminderTask = onRequest(
     const tokens = await getUserTokens(task.ownerId)
     if (tokens.length) {
       await sendPush(tokens, '⏰ Recordatorio', task.title, {
-        type: 'reminder', taskId, url: '/agenda',
+        type: 'reminder', taskId, url: `/recordatorio/${taskId}`,
       })
     }
 
     await db.doc(`tasks/${taskId}`).update({ 'reminder.notification_sent': true })
     res.json({ ok: true })
+  }
+)
+
+// ─── Resumen Diario con Cloud Tasks ──────────────────────────────────────────
+
+exports.scheduleDailySummary = onRequest(
+  { timeoutSeconds: 30 },
+  async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
+    const { uid, dailyTime } = req.body
+    if (!uid || !dailyTime) return res.status(400).json({ error: 'faltan campos' })
+
+    const [hh, mm] = dailyTime.split(':').map(Number)
+    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
+    const scheduled = new Date(now)
+    scheduled.setHours(hh, mm, 0, 0)
+    if (scheduled <= now) scheduled.setDate(scheduled.getDate() + 1)
+
+    const queue = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
+    const task = {
+      httpRequest: {
+        httpMethod: 'POST',
+        url: `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendDailySummaryTask`,
+        headers: { 'Content-Type': 'application/json' },
+        body: Buffer.from(JSON.stringify({ uid, dailyTime })).toString('base64'),
+      },
+      scheduleTime: { seconds: Math.floor(scheduled.getTime() / 1000) },
+    }
+
+    try {
+      await tasksClient.createTask({ parent: queue, task })
+      res.json({ ok: true, scheduledAt: scheduled.toISOString() })
+    } catch (err) {
+      console.error('[scheduleDailySummary] error:', err)
+      res.status(500).json({ error: err.message })
+    }
+  }
+)
+
+exports.sendDailySummaryTask = onRequest(
+  { timeoutSeconds: 30 },
+  async (req, res) => {
+    const { uid, dailyTime } = req.body
+    if (!uid) return res.status(400).send('falta uid')
+
+    const userDoc = await db.doc(`users/${uid}`).get()
+    if (!userDoc.exists) return res.status(404).send('usuario no encontrado')
+
+    const user   = userDoc.data()
+    const tokens = Object.keys(user.fcmTokens || {})
+
+    if (tokens.length) {
+      const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
+      const dayStart = new Date(mxNow); dayStart.setHours(0, 0, 0, 0)
+      const dayEnd   = new Date(mxNow); dayEnd.setHours(23, 59, 59, 999)
+
+      const tasksSnap = await db.collection('tasks')
+        .where('ownerId',   '==', uid)
+        .where('status',    '==', 'pending')
+        .where('isDeleted', '==', false)
+        .where('dueDate',   '>=', Timestamp.fromDate(dayStart))
+        .where('dueDate',   '<=', Timestamp.fromDate(dayEnd))
+        .get()
+
+      if (tasksSnap.size > 0) {
+        const n = tasksSnap.size
+        await sendPush(tokens, '📋 Tu día en Syng', `${n} tarea${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''} hoy`, {
+          type: 'daily_summary', url: '/agenda',
+        })
+      }
+    }
+
+    // Reprogramar para mañana a la misma hora
+    const [hh, mm] = (dailyTime || '08:00').split(':').map(Number)
+    const manana = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
+    manana.setDate(manana.getDate() + 1)
+    manana.setHours(hh, mm, 0, 0)
+
+    const queue = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
+    const task = {
+      httpRequest: {
+        httpMethod: 'POST',
+        url: `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendDailySummaryTask`,
+        headers: { 'Content-Type': 'application/json' },
+        body: Buffer.from(JSON.stringify({ uid, dailyTime })).toString('base64'),
+      },
+      scheduleTime: { seconds: Math.floor(manana.getTime() / 1000) },
+    }
+
+    try {
+      await tasksClient.createTask({ parent: queue, task })
+    } catch (err) {
+      console.error('[sendDailySummaryTask] error al reprogramar:', err)
+    }
+
+    res.json({ ok: true })
+  }
+)
+
+// ─── Reenganche ───────────────────────────────────────────────────────────────
+
+exports.checkReenganche = onSchedule(
+  { schedule: 'every 24 hours', timeZone: 'America/Mexico_City' },
+  async () => {
+    const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
+
+    // Buscar usuarios con notifPrefs.dailyTime — tienen notificaciones activas
+    const usersSnap = await db.collection('users')
+      .where('notifPrefs.dailyTime', '!=', null)
+      .get()
+
+    if (usersSnap.empty) return
+
+    const hace5dias = new Date(mxNow)
+    hace5dias.setDate(hace5dias.getDate() - 5)
+    const hace3dias = new Date(mxNow)
+    hace3dias.setDate(hace3dias.getDate() - 3)
+
+    await Promise.all(usersSnap.docs.map(async userDoc => {
+      const user   = userDoc.data()
+      const tokens = Object.keys(user.fcmTokens || {})
+      if (!tokens.length) return
+
+      // Verificar si ya mandamos reenganche recientemente
+      const ultimoReenganche = user.notifPrefs?.lastReenganche?.toDate?.()
+      if (ultimoReenganche) {
+        const diffDias = (mxNow - ultimoReenganche) / (1000 * 60 * 60 * 24)
+        if (diffDias < 3) return // Ya se mandó hace menos de 3 días
+      }
+
+      // Buscar tareas futuras — si tiene, no está en racha seca
+      const tareasSnap = await db.collection('tasks')
+        .where('ownerId',   '==', userDoc.id)
+        .where('type',      '==', 'personal')
+        .where('status',    '==', 'pending')
+        .where('isDeleted', '==', false)
+        .where('dueDate',   '>=', Timestamp.fromDate(hace3dias))
+        .get()
+
+      if (tareasSnap.size > 0) return // Tiene tareas recientes, no reenganchamos
+
+      // Verificar que lleva al menos 3 días sin tareas
+      const todasSnap = await db.collection('tasks')
+        .where('ownerId',   '==', userDoc.id)
+        .where('type',      '==', 'personal')
+        .where('status',    '==', 'pending')
+        .where('isDeleted', '==', false)
+        .get()
+
+      if (todasSnap.size > 0) return // Tiene tareas futuras, no reenganchamos
+
+      // Mandar push de reenganche
+      await sendPush(tokens, '👋 ¿Cómo va todo?', 'Llevas unos días sin organizar nada. Entra un momento.', {
+        type: 'reenganche', url: '/bienvenido-de-vuelta',
+      })
+
+      // Guardar fecha del último reenganche para no repetir
+      await db.doc(`users/${userDoc.id}`).update({
+        'notifPrefs.lastReenganche': Timestamp.now(),
+      })
+
+      console.log('[checkReenganche] reenganche enviado a:', userDoc.id)
+    }))
   }
 )
