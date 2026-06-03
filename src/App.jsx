@@ -1,4 +1,5 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-router-dom'
+import { useEffect } from 'react'
 import { CoreDataProvider }  from './core/CoreDataProvider'
 import { AuthGuard }         from './auth/AuthGuard'
 import { InvitationChecker } from './auth/InvitationChecker'
@@ -14,6 +15,8 @@ import { UnirseScreen }      from './modules/UnirseScreen'
 import { Toast }             from './shared/Toast'
 import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
 import { NotificacionesModule } from './modules/notificaciones/NotificacionesModule'
+import { RecordatorioScreen } from './modules/recordatorio/RecordatorioScreen'
+import { ResumenDiarioScreen } from './modules/resumen/ResumenDiarioScreen'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -97,6 +100,8 @@ function AppWithViewport() {
               <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
               <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />
               <Route path="/notificaciones" element={<NotificacionesModule />} />
+              <Route path="/recordatorio/:taskId" element={<RecordatorioScreen />} />
+              <Route path="/resumen-diario" element={<ResumenDiarioScreen />} />
               <Route path="/perfil"       element={<PerfilModule />} />
               <Route path="/unirse"       element={<UnirseScreen />} />
             </Routes>
