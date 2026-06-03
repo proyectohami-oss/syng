@@ -17,6 +17,7 @@ import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
 import { NotificacionesModule } from './modules/notificaciones/NotificacionesModule'
 import { RecordatorioScreen } from './modules/recordatorio/RecordatorioScreen'
 import { ResumenDiarioScreen } from './modules/resumen/ResumenDiarioScreen'
+import { BienvenidoDeVueltaScreen } from './modules/reenganche/BienvenidoDeVueltaScreen'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -102,6 +103,7 @@ function AppWithViewport() {
               <Route path="/notificaciones" element={<NotificacionesModule />} />
               <Route path="/recordatorio/:taskId" element={<RecordatorioScreen />} />
               <Route path="/resumen-diario" element={<ResumenDiarioScreen />} />
+              <Route path="/bienvenido-de-vuelta" element={<BienvenidoDeVueltaScreen />} />
               <Route path="/perfil"       element={<PerfilModule />} />
               <Route path="/unirse"       element={<UnirseScreen />} />
             </Routes>
