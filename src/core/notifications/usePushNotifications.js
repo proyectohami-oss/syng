@@ -64,7 +64,8 @@ export function usePushNotifications() {
 
       try {
         const { messaging, getToken, onMessage } = await getMessaging()
-        const token = await getToken(messaging, { vapidKey: VAPID_KEY })
+        const swReg = await navigator.serviceWorker.getRegistration()
+        const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg })
 
         console.log('[FCM] token obtenido:', token ? token.substring(0,20)+'...' : 'NULO')
         if (token) {
@@ -97,7 +98,8 @@ export function usePushNotifications() {
 
       const { messaging, getToken, onMessage } = await getMessaging()
 
-      const token = await getToken(messaging, { vapidKey: VAPID_KEY })
+      const swReg = await navigator.serviceWorker.getRegistration()
+        const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg })
       if (!token) {
         console.warn('[FCM] No token received — check VAPID key and service worker')
         return
@@ -119,7 +121,8 @@ export function usePushNotifications() {
     if (!uid || !isSupported) return
     try {
       const { messaging, getToken } = await getMessaging()
-      const token = await getToken(messaging, { vapidKey: VAPID_KEY })
+      const swReg = await navigator.serviceWorker.getRegistration()
+        const token = await getToken(messaging, { vapidKey: VAPID_KEY, serviceWorkerRegistration: swReg })
       if (token) await removeFcmToken(uid, token)
     } catch (error) {
       console.error('[FCM] disableNotifications error:', error)
