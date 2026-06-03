@@ -12,11 +12,26 @@ URL: https://syng-psi.vercel.app
 - Archivo: src/core/notifications/usePushNotifications.js
 
 ### Fix 2 — member.left notifica en Avisos (commit 55aaffb)
-- Problema: cuando alguien sale del grupo no aparecía en el centro de Avisos
-- Causa: metadata llegaba vacío, sin actor_name
+- Problema: cuando alguien sale del grupo no aparecía en Avisos
+- Causa: metadata llegaba vacío sin actor_name
 - Solución: pasar actorName desde useGroups.js a members.service.js
-- Archivos: src/core/hooks/useGroups.js, src/core/services/members.service.js
 - Pendiente: probar con cuenta de prueba
+
+## Próxima sesión — en este orden
+1. Fix sw-v2.js — navegación por tipo de notificación
+2. Pantalla /recordatorio/:taskId — ya existe, conectar desde notificationclick
+3. Pantalla /resumen-diario — tareas del día, botón Cerrar y botón Organizar mi día
+4. Pantalla /bienvenido-de-vuelta — reenganche, tono humano y cercano
+
+## Navegación por tipo de notificación (diseño aprobado)
+- Recordatorio de tarea → /recordatorio/:taskId
+- Actividad de grupo → /avisos
+- Resumen diario → /resumen-diario
+- Reenganche → /bienvenido-de-vuelta
+
+## Tono aprobado para pantallas
+- Resumen diario: simple y honesto, muestra tareas del día
+- Reenganche: humano, cercano, sin sermón. Mercado: familias, emprendedores, comerciantes, 30-60 años, hombres y mujeres que quieren salir adelante
 
 ## Notificaciones — 4 tipos
 1. Actividad de grupo — todos los miembros — FUNCIONANDO
@@ -36,12 +51,6 @@ URL: https://syng-psi.vercel.app
 - sendReminderTask — ejecuta push a hora exacta, marca reminder.notification_sent true
 - scheduleDailySummary — crea tarea en cola para resumen diario
 - sendDailySummaryTask — ejecuta push y se reprograma para el día siguiente
-
-## Pendientes
-- notificationclick abre / en lugar de la tarea — fix en src/sw-v2.js
-- Resumen diario sin probar end-to-end
-- Reenganche por construir
-- member.left — fix aplicado, pendiente probar
 
 ## Lo que funciona
 - Push iOS y Android
