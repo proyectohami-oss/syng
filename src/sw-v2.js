@@ -34,19 +34,23 @@ self.addEventListener('push', event => {
       vibrate:  [200, 100, 200],
       tag:      'syng-notif',
       renotify: true,
-      data:     { url: '/' }
+      data:     { url: data.url || '/' }
     })
   )
 })
 
 self.addEventListener('notificationclick', event => {
   event.notification.close()
+  const url = event.notification.data?.url || '/'
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
       for (const client of list) {
-        if (client.url.includes('syng-psi.vercel.app') && 'focus' in client) return client.focus()
+        if (client.url.includes('syng-psi.vercel.app') && 'focus' in client) {
+          client.focus()
+          return client.navigate(url)
+        }
       }
-      if (clients.openWindow) return clients.openWindow('/')
+      if (clients.openWindow) return clients.openWindow(url)
     })
   )
 })
