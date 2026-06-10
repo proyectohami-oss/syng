@@ -1,33 +1,30 @@
+/**
+ * Registra el SW de caché DESPUÉS del login para no interrumpir
+ * el redirect de Google (controllerchange recargaba la página a mitad de auth).
+ */
 export function registerSW() {
   if (typeof window === 'undefined') return
   if (!('serviceWorker' in navigator)) return
 
-  window.addEventListener('load', async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
-      console.debug('[SW] Registered:', reg.scope)
+  let installed = false
 
-      // Revisa actualizaciones cada hora
-      setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000)
-
-      // Cuando hay SW nuevo esperando — recarga
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing
-        if (!newSW) return
-        newSW.addEventListener('statechange', () => {
-          if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
-            window.location.reload()
-          }
+  function install() {
+    if (installed) return
+    installed = true
+    window.removeEventListener('syng:auth-ready', install)
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
+        .then(reg => {
+          console.debug('[SW] Registered:', reg.scope)
+          setInterval(() => reg.update().catch(() => {}), 60 * 60 * 1000)
         })
-      })
+        .catch(e => console.error('[SW] Registration failed:', e))
+    }, { once: true })
+  }
 
-    } catch (e) {
-      console.error('[SW] Registration failed:', e)
-    }
-  })
+  if (window.__syngAuthReady) install()
+  else window.addEventListener('syng:auth-ready', install)
 
-  // Recarga cuando el SW nuevo toma control
-  navigator.serviceWorker.addEventListener('controllerchange', () => {
-    window.location.reload()
-  })
+  // Fallback: registrar tras 12s aunque auth tarde
+  setTimeout(install, 12000)
 }

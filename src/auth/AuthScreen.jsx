@@ -1,7 +1,7 @@
 /**
  * AuthScreen — login and signup.
  */
-import { useState }        from 'react'
+import { useState, useEffect } from 'react'
 import { useAuthActions }  from './useAuthActions'
 
 export function AuthScreen() {
@@ -16,6 +16,14 @@ export function AuthScreen() {
 
   function clearError() { setError(null) }
 
+  useEffect(() => {
+    const code = sessionStorage.getItem('authRedirectError')
+    if (code) {
+      sessionStorage.removeItem('authRedirectError')
+      setError(friendlyError(code))
+    }
+  }, [])
+
   function friendlyError(code) {
     const map = {
       'auth/invalid-credential':     'Correo o contraseña incorrectos.',
@@ -29,6 +37,8 @@ export function AuthScreen() {
       'auth/unauthorized-domain':    'Dominio no autorizado. Contacta soporte.',
       'auth/network-request-failed': 'Sin conexión. Verifica tu red e intenta de nuevo.',
       'auth/too-many-requests':      'Demasiados intentos. Intenta más tarde.',
+      'auth/account-exists-with-different-credential': 'Ya tienes cuenta con otro método. Usa correo y contraseña.',
+      'auth/web-storage-unsupported': 'Activa cookies/datos del sitio en Ajustes → Safari.',
     }
     return map[code] ?? 'Ocurrió un error. Intenta de nuevo.'
   }
