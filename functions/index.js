@@ -86,6 +86,7 @@ async function sendFcm(uid, tokens, title, body, { taskId, url }) {
 
   const messages = tokens.map(token => ({
     token,
+    notification: { title, body },
     data,
     fcmOptions: { link: url },
     webpush: {
@@ -98,6 +99,7 @@ async function sendFcm(uid, tokens, title, body, { taskId, url }) {
         requireInteraction: true,
         tag: taskId ? `syng-reminder-${taskId}` : 'syng-notif',
       },
+      fcmOptions: { link: url },
     },
   }))
 
