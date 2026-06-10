@@ -10,11 +10,20 @@ import { RepeatCinemaPicker } from './RepeatCinemaPicker'
 
 /* ── Wheel data ── */
 const ITEM_H = 28
+const ITEM_H_LG = 36
 const REPEAT = 20
-const WHEEL_H24  = Array.from({ length: 24 }, (_, i) => i)
+const WHEEL_H12  = Array.from({ length: 12 }, (_, i) => i + 1)
+const WHEEL_AMPM = ['AM', 'PM']
 const WHEEL_MINS = Array.from({ length: 60 }, (_, i) => i)
 const WHEEL_DAYS = Array.from({ length: 31 }, (_, i) => i)
 const WHEEL_OFF_H = Array.from({ length: 24 }, (_, i) => i)
+
+const OFFSET_CHIPS = [
+  { label: '10 min', d: 0, h: 0, m: 10 },
+  { label: '30 min', d: 0, h: 0, m: 30 },
+  { label: '1 hora', d: 0, h: 1, m: 0 },
+  { label: 'Exacto', d: 0, h: 0, m: 0 },
+]
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
   'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -32,10 +41,23 @@ function labelFechaLarga(ds) {
   return `${d} de ${MESES[m - 1]} de ${y}`
 }
 
+function from24h(h24) {
+  return { h12: h24 % 12 || 12, ampm: h24 >= 12 ? 'PM' : 'AM' }
+}
+
+function to24h(h12, ampm) {
+  let h = h12 % 12
+  if (ampm === 'PM') h += 12
+  return h
+}
+
 function format12h(h24, min) {
-  const ap = h24 >= 12 ? 'PM' : 'AM'
-  const h12 = h24 % 12 || 12
-  return `${h12}:${pad2(min)} ${ap}`
+  const { h12, ampm } = from24h(h24)
+  return `${h12}:${pad2(min)} ${ampm}`
+}
+
+function offsetMatches(d, h, m, chip) {
+  return d === chip.d && h === chip.h && m === chip.m
 }
 
 function formatFromMin(totalMin) {
@@ -69,26 +91,27 @@ function buildPat(baseDate, dowList, weeks = 4) {
 function dKey(y, m, d) { return `${y}-${pad2(m + 1)}-${pad2(d)}` }
 
 /* ── Scroll wheel column ── */
-function WheelCol({ items, value, onChange, label, format, infinite = true }) {
+function WheelCol({ items, value, onChange, label, format, infinite = true, itemHeight = ITEM_H, large = false }) {
   const ref = useRef(null)
   const n = items.length
   const repeated = infinite ? Array.from({ length: REPEAT * n }, (_, i) => items[i % n]) : items
   const midBlock = Math.floor(REPEAT / 2)
+  const h = itemHeight
 
   useEffect(() => {
     const idx = items.indexOf(value)
     if (ref.current && idx >= 0) {
-      ref.current.scrollTop = infinite ? (midBlock * n + idx) * ITEM_H : idx * ITEM_H
+      ref.current.scrollTop = infinite ? (midBlock * n + idx) * h : idx * h
     }
   }, [])
 
   function handleScroll() {
     if (!ref.current) return
-    const newIdx = Math.round(ref.current.scrollTop / ITEM_H)
+    const newIdx = Math.round(ref.current.scrollTop / h)
     if (infinite) {
       const item = items[((newIdx % n) + n) % n]
       if (newIdx < n || newIdx > repeated.length - n - 1) {
-        ref.current.scrollTop = (midBlock * n + ((newIdx % n) + n) % n) * ITEM_H
+        ref.current.scrollTop = (midBlock * n + ((newIdx % n) + n) % n) * h
       }
       if (item !== value) onChange(item)
     } else {
@@ -97,29 +120,30 @@ function WheelCol({ items, value, onChange, label, format, infinite = true }) {
     }
   }
 
+  const hl = { ...wheel.highlight, top: h, height: h, borderRadius: large ? 12 : 8 }
+  const fadeTop = { ...wheel.fadeTop, height: h }
+  const fadeBot = { ...wheel.fadeBot, height: h }
+  const scroller = { ...wheel.scroller, paddingTop: h, paddingBottom: h }
+  const itemBase = { ...wheel.item, height: h }
+
   return (
     <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       {label && <p style={wheel.label}>{label}</p>}
-      <div style={{ position: 'relative', height: ITEM_H * 3, width: '100%' }}>
-        <div style={wheel.highlight} />
-        <div style={wheel.fadeTop} />
-        <div style={wheel.fadeBot} />
-        <div
-          ref={ref}
-          className="syng-wheel"
-          onScroll={handleScroll}
-          style={wheel.scroller}
-        >
+      <div style={{ position: 'relative', height: h * 3, width: '100%' }}>
+        <div style={hl} />
+        <div style={fadeTop} />
+        <div style={fadeBot} />
+        <div ref={ref} className="syng-wheel" onScroll={handleScroll} style={scroller}>
           {repeated.map((item, i) => (
             <div
               key={i}
               onClick={() => {
                 onChange(item)
-                if (ref.current) ref.current.scrollTop = (midBlock * n + items.indexOf(item)) * ITEM_H
+                if (ref.current) ref.current.scrollTop = (midBlock * n + items.indexOf(item)) * h
               }}
               style={{
-                ...wheel.item,
-                fontSize: item === value ? 17 : 13,
+                ...itemBase,
+                fontSize: item === value ? (large ? 22 : 17) : (large ? 15 : 13),
                 fontWeight: item === value ? 700 : 400,
                 color: item === value ? T.textPrimary : T.textDisabled,
               }}
@@ -184,8 +208,11 @@ export function NewTaskScreen() {
   const [titleError, setTitleError] = useState(false)
   const [dateStr, setDateStr] = useState(dateParam || todayKey())
 
+  const initTime = useMemo(() => from24h(now.getHours()), [now])
+
   const [reminderOn, setReminderOn] = useState(false)
-  const [actH, setActH] = useState(now.getHours())
+  const [actH12, setActH12] = useState(initTime.h12)
+  const [actAmpm, setActAmpm] = useState(initTime.ampm)
   const [actM, setActM] = useState(now.getMinutes())
   const [offD, setOffD] = useState(0)
   const [offH, setOffH] = useState(0)
@@ -200,15 +227,26 @@ export function NewTaskScreen() {
     return () => clearTimeout(t)
   }, [])
 
+  const actH24 = useMemo(() => to24h(actH12, actAmpm), [actH12, actAmpm])
+  const taskTimeStr = `${actH12}:${pad2(actM)} ${actAmpm}`
+
   const totalOffsetMin = offD * 1440 + offH * 60 + offM
   const notifyTime = useMemo(() => {
-    const taskMin = actH * 60 + actM
+    const taskMin = actH24 * 60 + actM
     return formatFromMin(taskMin - totalOffsetMin)
-  }, [actH, actM, totalOffsetMin])
+  }, [actH24, actM, totalOffsetMin])
+
+  const offsetSummary = buildOffsetLabel(offD, offH, offM)
 
   const reminderSummary = reminderOn
-    ? `${format12h(actH, actM)} · ${buildOffsetLabel(offD, offH, offM)}`
+    ? `${taskTimeStr} · ${offsetSummary}`
     : 'Sin recordatorio'
+
+  function applyOffsetChip(chip) {
+    setOffD(chip.d)
+    setOffH(chip.h)
+    setOffM(chip.m)
+  }
 
   const repeatSummary = useMemo(() => {
     if (repeatMode === 'daily') return 'Diario'
@@ -269,7 +307,7 @@ export function NewTaskScreen() {
       for (const day of days) {
         const taskId = generateTaskId()
         const activityDate = new Date(`${day}T00:00:00`)
-        activityDate.setHours(actH, actM, 0, 0)
+        activityDate.setHours(actH24, actM, 0, 0)
 
         if (reminderOn) {
           const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
@@ -279,8 +317,8 @@ export function NewTaskScreen() {
             dueDate: Timestamp.fromDate(activityDate), reminderTime,
             reminder: {
               scheduledAt: reminderTime, offsetMin: totalOffsetMin,
-              dueTime: `${pad2(actH)}:${pad2(actM)}`,
-              label: buildOffsetLabel(offD, offH, offM),
+              dueTime: `${pad2(actH24)}:${pad2(actM)}`,
+              label: offsetSummary,
             },
           })
           await scheduleReminder({
@@ -373,32 +411,63 @@ export function NewTaskScreen() {
           </div>
         )}
 
-        {/* ── RECORDATORIO — todo en una pantalla, sin scroll ── */}
+        {/* ── RECORDATORIO — 12 h + AM/PM, sin ambigüedad ── */}
         {panel === 'reminder' && (
           <div style={s.subPanel}>
             <div style={s.card}>
-              <p style={s.cardLabel}>Hora de la actividad</p>
+              <p style={s.sectionTitle}>Hora de la actividad</p>
+              <p style={s.sectionHint}>Elige hora, minutos y si es AM o PM</p>
+
               <div style={s.wheelRow}>
-                <WheelCol items={WHEEL_H24} value={actH} onChange={setActH} label="HORA" format={v => pad2(v)} />
-                <span style={s.colon}>:</span>
-                <WheelCol items={WHEEL_MINS} value={actM} onChange={setActM} label="MIN" format={v => pad2(v)} />
+                <WheelCol items={WHEEL_H12} value={actH12} onChange={setActH12} label="HORA" large itemHeight={ITEM_H_LG} />
+                <span style={{ ...s.colon, paddingBottom: 18, fontSize: 24 }}>:</span>
+                <WheelCol items={WHEEL_MINS} value={actM} onChange={setActM} label="MIN" format={v => pad2(v)} large itemHeight={ITEM_H_LG} />
+                <WheelCol items={WHEEL_AMPM} value={actAmpm} onChange={setActAmpm} label="PERIODO" infinite={false} large itemHeight={ITEM_H_LG} />
               </div>
 
-              <p style={{ ...s.cardLabel, marginTop: 6 }}>¿Cuánto antes te aviso?</p>
-              <div style={s.wheelRow}>
-                <WheelCol items={WHEEL_DAYS} value={offD} onChange={setOffD} label="DÍAS" />
-                <WheelCol items={WHEEL_OFF_H} value={offH} onChange={setOffH} label="HRS" format={v => pad2(v)} />
-                <WheelCol items={WHEEL_MINS} value={offM} onChange={setOffM} label="MIN" format={v => pad2(v)} />
+              <div style={s.timeHero}>
+                <p style={s.timeHeroValue}>{taskTimeStr}</p>
+                <p style={s.timeHeroSub}>Hora de tu actividad</p>
               </div>
 
-              <div style={s.previewBlock}>
+              <div style={s.sectionDivider} />
+
+              <p style={s.sectionTitle}>¿Cuánto antes quieres el aviso?</p>
+              <div style={s.offsetChipRow}>
+                {OFFSET_CHIPS.map(chip => {
+                  const on = offsetMatches(offD, offH, offM, chip)
+                  return (
+                    <button
+                      key={chip.label}
+                      type="button"
+                      onClick={() => applyOffsetChip(chip)}
+                      style={{ ...s.offsetChip, ...(on ? s.offsetChipOn : {}) }}
+                    >
+                      {chip.label}
+                    </button>
+                  )
+                })}
+              </div>
+
+              <p style={s.sectionHint}>O ajusta con precisión</p>
+              <div style={s.wheelRow}>
+                <WheelCol items={WHEEL_DAYS} value={offD} onChange={setOffD} label="DÍAS ANTES" />
+                <WheelCol items={WHEEL_OFF_H} value={offH} onChange={setOffH} label="HORAS ANTES" format={v => pad2(v)} />
+                <WheelCol items={WHEEL_MINS} value={offM} onChange={setOffM} label="MIN ANTES" format={v => pad2(v)} />
+              </div>
+              <p style={s.offsetSummary}>{offsetSummary}</p>
+
+              <div style={s.previewBox}>
                 <p style={s.previewLabel}>Tu aviso llegará a las</p>
                 <p style={s.previewTime}>{notifyTime}</p>
+                <p style={s.previewSub}>
+                  Actividad a las {taskTimeStr} · {offsetSummary.toLowerCase()}
+                </p>
               </div>
 
               <div style={s.actions}>
                 <button type="button" style={s.btnPrimary} onClick={() => { setReminderOn(true); setPanel('main') }}>
-                  Confirmar
+                  Confirmar recordatorio
                 </button>
                 <button type="button" style={s.btnGhost} onClick={() => { setReminderOn(false); setPanel('main') }}>
                   Sin recordatorio
@@ -502,11 +571,53 @@ const s = {
     margin: '0 0 4px', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
     textTransform: 'uppercase', color: T.textTertiary, textAlign: 'center',
   },
+  sectionTitle: {
+    margin: '0 0 2px', fontSize: T.fontSM, fontWeight: 700, color: T.textPrimary, textAlign: 'center',
+  },
+  sectionHint: {
+    margin: '0 0 6px', fontSize: 11, color: T.textTertiary, textAlign: 'center', lineHeight: 1.35,
+  },
+  sectionDivider: {
+    height: 1, background: 'rgba(13,18,64,0.07)', margin: '8px 0 10px', flexShrink: 0,
+  },
   wheelRow: { display: 'flex', alignItems: 'center', gap: 2, flexShrink: 0 },
   colon: { fontSize: 20, fontWeight: 300, color: T.textDisabled, paddingBottom: 14 },
-  previewBlock: { textAlign: 'center', padding: '8px 0 4px', flexShrink: 0 },
+  timeHero: {
+    textAlign: 'center', padding: '6px 0 2px', flexShrink: 0,
+  },
+  timeHeroValue: {
+    margin: 0, fontSize: 34, fontWeight: 800, color: T.textPrimary,
+    letterSpacing: '-0.03em', lineHeight: 1.1,
+  },
+  timeHeroSub: {
+    margin: '4px 0 0', fontSize: 11, fontWeight: 600, color: T.primary,
+    letterSpacing: '0.06em', textTransform: 'uppercase',
+  },
+  offsetChipRow: {
+    display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center',
+    marginBottom: 6, flexShrink: 0,
+  },
+  offsetChip: {
+    padding: '8px 14px', borderRadius: T.radiusFull,
+    border: `1.5px solid rgba(13,18,64,0.10)`,
+    background: T.bgSecondary, color: T.textSecondary,
+    fontSize: 12, fontWeight: 600, cursor: 'pointer',
+  },
+  offsetChipOn: {
+    background: 'linear-gradient(135deg,#3D4FA8,#2D3A8C)', color: '#fff',
+    border: 'none', boxShadow: T.shadowPrimary,
+  },
+  offsetSummary: {
+    margin: '2px 0 8px', fontSize: 12, fontWeight: 600, color: T.primary, textAlign: 'center',
+  },
+  previewBox: {
+    textAlign: 'center', padding: '12px 14px', flexShrink: 0,
+    background: T.primaryLight, borderRadius: T.radiusLG,
+    border: '1px solid rgba(45,58,140,0.12)',
+  },
   previewLabel: { margin: 0, fontSize: T.fontSM, color: T.textSecondary, fontWeight: 500 },
-  previewTime: { margin: '4px 0 0', fontSize: 28, fontWeight: 800, color: T.primary, letterSpacing: '-0.03em' },
+  previewTime: { margin: '6px 0 0', fontSize: 28, fontWeight: 800, color: T.primary, letterSpacing: '-0.03em' },
+  previewSub: { margin: '6px 0 0', fontSize: 11, color: T.textTertiary, lineHeight: 1.4 },
   actions: { marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 4, flexShrink: 0 },
   btnPrimary: {
     width: '100%', padding: 13, borderRadius: T.radiusLG, border: 'none', cursor: 'pointer',
