@@ -35,8 +35,10 @@ export function AuthScreen() {
 
   async function handleGoogle() {
     setLoading('google'); setError(null)
-    try { await signInWithGoogle() }
-    catch (err) { setError(friendlyError(err.code)) }
+    try {
+      const result = await signInWithGoogle()
+      if (result?.redirected) return
+    } catch (err) { setError(friendlyError(err.code)) }
     finally { setLoading(null) }
   }
 

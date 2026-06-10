@@ -1,27 +1,16 @@
-import { useCallback }                          from 'react'
+import { useCallback } from 'react'
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
   signInWithRedirect,
-  getRedirectResult,
   GoogleAuthProvider,
   signOut as firebaseSignOut,
   updateProfile,
-}                                               from 'firebase/auth'
-import { auth }                                 from '../firebase'
+} from 'firebase/auth'
+import { auth } from '../firebase'
 
 const googleProvider = new GoogleAuthProvider()
-
-/**
- * Detecta si el dispositivo es móvil/tablet.
- * En móvil usamos signInWithRedirect (más compatible).
- * En desktop usamos signInWithPopup (más conveniente).
- */
-function isMobile() {
-  return /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i
-    .test(navigator.userAgent)
-}
 
 function isStandalonePwa() {
   return window.matchMedia('(display-mode: standalone)').matches
@@ -30,15 +19,16 @@ function isStandalonePwa() {
 
 export function useAuthActions() {
 
+  /** @returns {{ redirected: true } | { redirected: false, user }} */
   const signInWithGoogle = useCallback(async () => {
-    // iPhone/iPad instalado: popup falla con "Unable to process request" → redirect
-    if (isMobile() || isStandalonePwa()) {
+    // Solo la app instalada en iPhone necesita redirect (popup da "Unable to process request")
+    if (isStandalonePwa()) {
       await signInWithRedirect(auth, googleProvider)
-      return null
+      return { redirected: true }
     }
     const result = await signInWithPopup(auth, googleProvider)
     sessionStorage.setItem('justLoggedIn', '1')
-    return result.user
+    return { redirected: false, user: result.user }
   }, [])
 
   const signInWithEmail = useCallback(async (email, password) => {
@@ -56,12 +46,9 @@ export function useAuthActions() {
 
   const signOut = useCallback(async () => {
     try {
-      const { removeFcmToken, getLocalFcmToken } = await import('../core/services/users.service')
-      if (auth.currentUser) {
-        const token = await getLocalFcmToken()
-        if (token) await removeFcmToken(auth.currentUser.uid, token)
-      }
-    } catch (_) { /* FCM no configurado aún */ }
+      const { unsyncFcmToken } = await import('../core/notifications/fcm.service')
+      if (auth.currentUser) await unsyncFcmToken(auth.currentUser.uid)
+    } catch (_) {}
     await firebaseSignOut(auth)
   }, [])
 
