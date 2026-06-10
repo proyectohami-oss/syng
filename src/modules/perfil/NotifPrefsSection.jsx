@@ -95,6 +95,10 @@ export function NotifPrefsSection() {
     if (reason === 'permission' || reason === 'denied') return 'Permiso bloqueado — ve a Ajustes → Syng'
     if (reason === 'no_sw') return 'Espera 5 segundos e intenta de nuevo'
     if (reason === 'unsupported') return 'Notificaciones no disponibles aquí'
+    if (reason === 'empty') return 'No se obtuvo token — intenta de nuevo'
+    if (reason?.includes('token-subscribe')) return 'Error de suscripción — toca Activar de nuevo'
+    if (reason?.includes('failed-service-worker')) return 'Actualiza Syng: cierra y abre desde el ícono'
+    if (reason) return `Error: ${reason}`
     return 'Sin conexión — abre Syng desde el ícono de inicio'
   }
 

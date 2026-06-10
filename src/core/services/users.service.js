@@ -120,7 +120,7 @@ export async function removeFcmToken(uid, token) {
   }, { merge: true })
 }
 
-/** Clave pública Web Push de Firebase (syng-app). Segura en el cliente. */
+/** Clave pública Web Push de Firebase (syng-app). */
 const FCM_VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY
   || 'BBCXfEUieJEA9wdUgmDjiqjpKeD2E4_IKrXQNgShgGKBeAt0Y0ty3krLN_aZ4MgDWoaPBWvaE5lY7IxPOyvNanA'
 
@@ -128,20 +128,20 @@ function isIosDevice() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent)
 }
 
-function isStandaloneApp() {
-  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
-}
+async function getFcmServiceWorkerRegistration() {
+  await navigator.serviceWorker.ready
 
-async function waitForActiveSw(timeoutMs = 10000) {
+  if (isIosDevice()) {
+    // iOS: FCM funciona mejor con firebase-messaging-sw.js dedicado
+    return navigator.serviceWorker.register('/firebase-messaging-sw.js', {
+      scope: '/firebase-cloud-messaging-push-scope',
+    })
+  }
+
   let reg = await navigator.serviceWorker.getRegistration('/')
   if (!reg) {
-    reg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/', updateViaCache: 'none' })
-  }
-  const deadline = Date.now() + timeoutMs
-  while (Date.now() < deadline) {
+    reg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
     await navigator.serviceWorker.ready
-    if (reg.active) return reg
-    await new Promise(r => setTimeout(r, 250))
   }
   return reg
 }
@@ -153,17 +153,13 @@ export async function getLocalFcmTokenResult() {
   if (typeof Notification === 'undefined') return { ok: false, reason: 'unsupported' }
   if (Notification.permission !== 'granted') return { ok: false, reason: 'permission' }
   if (!('serviceWorker' in navigator)) return { ok: false, reason: 'unsupported' }
-  if (isIosDevice() && !isStandaloneApp()) return { ok: false, reason: 'not_installed' }
-
-  const { getMessaging, getToken, isSupported } = await import('firebase/messaging')
-  if (!(await isSupported())) return { ok: false, reason: 'unsupported' }
-
-  const { app } = await import('../../firebase')
-  const messaging = getMessaging(app)
-  const swReg = await waitForActiveSw()
-  if (!swReg?.active) return { ok: false, reason: 'no_sw' }
 
   try {
+    const { getMessaging, getToken } = await import('firebase/messaging')
+    const { app } = await import('../../firebase')
+    const messaging = getMessaging(app)
+    const swReg = await getFcmServiceWorkerRegistration()
+
     const token = await getToken(messaging, {
       vapidKey: FCM_VAPID_KEY,
       serviceWorkerRegistration: swReg,
@@ -172,7 +168,8 @@ export async function getLocalFcmTokenResult() {
     return { ok: true, token }
   } catch (error) {
     console.error('[FCM] getToken error:', error)
-    return { ok: false, reason: error?.code || 'error' }
+    const code = error?.code || error?.message || 'error'
+    return { ok: false, reason: String(code) }
   }
 }
 

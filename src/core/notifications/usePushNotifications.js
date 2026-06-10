@@ -20,9 +20,13 @@ let foregroundListenerBound = false
 
 async function showViaServiceWorker(title, body, url, taskId) {
   if (!('serviceWorker' in navigator)) return false
-  const reg = await navigator.serviceWorker.ready
-  if (!reg.active) return false
-  reg.active.postMessage({ type: 'SHOW_NOTIFICATION', title, body, url, taskId })
+  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
+  const reg = isIos
+    ? await navigator.serviceWorker.getRegistration('/firebase-cloud-messaging-push-scope')
+    : await navigator.serviceWorker.getRegistration('/')
+  const active = reg?.active
+  if (!active) return false
+  active.postMessage({ type: 'SHOW_NOTIFICATION', title, body, url, taskId })
   return true
 }
 
