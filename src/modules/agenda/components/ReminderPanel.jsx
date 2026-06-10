@@ -83,26 +83,33 @@ function offsetMatches(d, h, m, opt) {
 }
 
 /* ── iOS wheel column ── */
-function IOSWheel({ items, value, onChange, format, infinite = true }) {
+function IOSWheel({ items, value, onChange, format, infinite = true, label }) {
   const ref = useRef(null)
+  const syncing = useRef(false)
   const n = items.length
   const repeated = infinite ? Array.from({ length: REPEAT * n }, (_, i) => items[i % n]) : items
   const mid = Math.floor(REPEAT / 2)
 
-  useEffect(() => {
-    const idx = items.indexOf(value)
-    if (ref.current && idx >= 0) {
-      ref.current.scrollTop = infinite ? (mid * n + idx) * IOS_ROW : idx * IOS_ROW
-    }
-  }, [])
+  function scrollTo(v) {
+    const idx = items.indexOf(v)
+    if (idx < 0 || !ref.current) return
+    syncing.current = true
+    ref.current.scrollTop = infinite ? (mid * n + idx) * IOS_ROW : idx * IOS_ROW
+    requestAnimationFrame(() => { syncing.current = false })
+  }
+
+  useEffect(() => { scrollTo(value) }, [value])
 
   function onScroll() {
-    if (!ref.current) return
+    if (!ref.current || syncing.current) return
     const idx = Math.round(ref.current.scrollTop / IOS_ROW)
     if (infinite) {
-      const item = items[((idx % n) + n) % n]
+      const norm = ((idx % n) + n) % n
+      const item = items[norm]
       if (idx < n || idx > repeated.length - n - 1) {
-        ref.current.scrollTop = (mid * n + ((idx % n) + n) % n) * IOS_ROW
+        syncing.current = true
+        ref.current.scrollTop = (mid * n + norm) * IOS_ROW
+        requestAnimationFrame(() => { syncing.current = false })
       }
       if (item !== value) onChange(item)
     } else {
@@ -112,31 +119,31 @@ function IOSWheel({ items, value, onChange, format, infinite = true }) {
   }
 
   return (
-    <div style={ios.wheelWrap}>
-      <div style={ios.wheelFadeTop} />
-      <div style={ios.wheelFadeBot} />
-      <div style={ios.wheelSelect} />
-      <div ref={ref} className="syng-ios-wheel" onScroll={onScroll} style={ios.wheelScroll}>
-        {repeated.map((item, i) => {
-          const selected = item === value
-          return (
-            <div
-              key={i}
-              onClick={() => {
-                onChange(item)
-                if (ref.current) ref.current.scrollTop = (mid * n + items.indexOf(item)) * IOS_ROW
-              }}
-              style={{
-                ...ios.wheelItem,
-                fontSize: selected ? 23 : 20,
-                fontWeight: selected ? 600 : 400,
-                color: selected ? '#000' : 'rgba(60,60,67,0.36)',
-              }}
-            >
-              {format ? format(item) : item}
-            </div>
-          )
-        })}
+    <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      {label && <p style={ios.wheelColLabel}>{label}</p>}
+      <div style={ios.wheelWrap}>
+        <div style={ios.wheelFadeTop} />
+        <div style={ios.wheelFadeBot} />
+        <div style={ios.wheelSelect} />
+        <div ref={ref} className="syng-ios-wheel" onScroll={onScroll} style={ios.wheelScroll}>
+          {repeated.map((item, i) => {
+            const selected = item === value
+            return (
+              <div
+                key={i}
+                onClick={() => { onChange(item); scrollTo(item) }}
+                style={{
+                  ...ios.wheelItem,
+                  fontSize: selected ? 23 : 20,
+                  fontWeight: selected ? 600 : 400,
+                  color: selected ? '#000' : 'rgba(60,60,67,0.36)',
+                }}
+              >
+                {format ? format(item) : item}
+              </div>
+            )
+          })}
+        </div>
       </div>
     </div>
   )
@@ -290,13 +297,12 @@ export function ReminderPanel({
 
           {advanced && (
             <div style={{ ...ios.grouped, marginTop: 8, animation: 'syngFadeIn 0.2s ease' }}>
-              <div style={{ padding: '8px 0' }}>
+              <div style={{ padding: '8px 4px 12px' }}>
                 <div style={ios.wheelRow}>
-                  <IOSWheel items={WHEEL_DAYS} value={offD} onChange={v => onChangeOffset(v, offH, offM)} />
-                  <IOSWheel items={WHEEL_OFF_H} value={offH} onChange={v => onChangeOffset(offD, v, offM)} format={v => pad2(v)} />
-                  <IOSWheel items={WHEEL_MINS} value={offM} onChange={v => onChangeOffset(offD, offH, v)} format={v => pad2(v)} />
+                  <IOSWheel items={WHEEL_DAYS} value={offD} onChange={v => onChangeOffset(v, offH, offM)} label="Días" />
+                  <IOSWheel items={WHEEL_OFF_H} value={offH} onChange={v => onChangeOffset(offD, v, offM)} label="Horas" format={v => pad2(v)} />
+                  <IOSWheel items={WHEEL_MINS} value={offM} onChange={v => onChangeOffset(offD, offH, v)} label="Minutos" format={v => pad2(v)} />
                 </div>
-                <p style={ios.manualLabel}>Días · Horas · Minutos antes</p>
               </div>
             </div>
           )}
@@ -388,11 +394,15 @@ const ios = {
     boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
   },
   wheelRow: {
-    display: 'flex', gap: 0, flex: 1, minHeight: 0, maxHeight: 220,
-    marginBottom: 8, flexShrink: 1,
+    display: 'flex', gap: 0, flexShrink: 0,
+    marginBottom: 4,
+  },
+  wheelColLabel: {
+    margin: '0 0 4px', fontSize: 11, fontWeight: 600,
+    color: 'rgba(60,60,67,0.45)', letterSpacing: '0.04em',
   },
   wheelWrap: {
-    flex: 1, position: 'relative', height: '100%', minHeight: IOS_ROW * 5, overflow: 'hidden',
+    position: 'relative', width: '100%', height: IOS_ROW * 5, overflow: 'hidden',
   },
   wheelSelect: {
     position: 'absolute', left: 8, right: 8, top: '50%',
