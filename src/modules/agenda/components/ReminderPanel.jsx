@@ -268,37 +268,39 @@ export function ReminderPanel({
             Tu tarea es {summary.taskDayLabel} a las {summary.taskTimeStr}
           </p>
 
-          <div style={ios.grouped}>
-            {AVISO_OPCIONES.map((opt, i) => {
-              const on = offsetMatches(offD, offH, offM, opt)
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => onChangeOffset(opt.d, opt.h, opt.m)}
-                  style={{
-                    ...ios.groupRow,
-                    borderBottom: i < AVISO_OPCIONES.length - 1 ? '0.5px solid rgba(60,60,67,0.12)' : 'none',
-                  }}
-                >
-                  <div style={{ textAlign: 'left' }}>
-                    <p style={{ ...ios.groupTitle, color: on ? T.primary : '#000' }}>{opt.label}</p>
-                    <p style={ios.groupSub}>{opt.sub}</p>
-                  </div>
-                  {on && <CheckIcon />}
-                </button>
-              )
-            })}
-          </div>
+          {!advanced && (
+            <div style={ios.grouped}>
+              {AVISO_OPCIONES.map((opt, i) => {
+                const on = offsetMatches(offD, offH, offM, opt)
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => onChangeOffset(opt.d, opt.h, opt.m)}
+                    style={{
+                      ...ios.groupRow,
+                      borderBottom: i < AVISO_OPCIONES.length - 1 ? '0.5px solid rgba(60,60,67,0.12)' : 'none',
+                    }}
+                  >
+                    <div style={{ textAlign: 'left' }}>
+                      <p style={{ ...ios.groupTitle, color: on ? T.primary : '#000' }}>{opt.label}</p>
+                      <p style={ios.groupSub}>{opt.sub}</p>
+                    </div>
+                    {on && <CheckIcon />}
+                  </button>
+                )
+              })}
+            </div>
+          )}
 
           <button type="button" style={ios.advancedBtn} onClick={() => setAdvanced(v => !v)}>
-            {advanced ? 'Ocultar ajuste manual' : 'Ajuste manual'}
+            {advanced ? 'Volver a opciones' : 'Ajuste manual'}
           </button>
 
           {advanced && (
-            <div style={{ ...ios.grouped, marginTop: 8, animation: 'syngFadeIn 0.2s ease' }}>
-              <div style={{ padding: '8px 4px 12px' }}>
-                <div style={ios.wheelRow}>
+            <div style={{ ...ios.grouped, flex: 1, minHeight: 0, marginTop: 4, animation: 'syngFadeIn 0.2s ease' }}>
+              <div style={{ padding: '8px 4px 12px', height: '100%', display: 'flex', flexDirection: 'column' }}>
+                <div style={{ ...ios.wheelRow, flex: 1, minHeight: IOS_ROW * 5 }}>
                   <IOSWheel items={WHEEL_DAYS} value={offD} onChange={v => onChangeOffset(v, offH, offM)} label="Días" />
                   <IOSWheel items={WHEEL_OFF_H} value={offH} onChange={v => onChangeOffset(offD, v, offM)} label="Horas" format={v => pad2(v)} />
                   <IOSWheel items={WHEEL_MINS} value={offM} onChange={v => onChangeOffset(offD, offH, v)} label="Minutos" format={v => pad2(v)} />
