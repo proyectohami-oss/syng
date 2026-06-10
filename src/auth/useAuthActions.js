@@ -12,23 +12,39 @@ import { auth } from '../firebase'
 
 const googleProvider = new GoogleAuthProvider()
 
+function isIOS() {
+  return /iPhone|iPad|iPod/i.test(navigator.userAgent)
+}
+
 function isStandalonePwa() {
   return window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true
+}
+
+/** iOS (Safari o app instalada) necesita redirect; popup falla o no persiste sesión. */
+function needsGoogleRedirect() {
+  return isIOS() || isStandalonePwa()
 }
 
 export function useAuthActions() {
 
   /** @returns {{ redirected: true } | { redirected: false, user }} */
   const signInWithGoogle = useCallback(async () => {
-    // Solo la app instalada en iPhone necesita redirect (popup da "Unable to process request")
-    if (isStandalonePwa()) {
+    if (needsGoogleRedirect()) {
       await signInWithRedirect(auth, googleProvider)
       return { redirected: true }
     }
-    const result = await signInWithPopup(auth, googleProvider)
-    sessionStorage.setItem('justLoggedIn', '1')
-    return { redirected: false, user: result.user }
+    try {
+      const result = await signInWithPopup(auth, googleProvider)
+      sessionStorage.setItem('justLoggedIn', '1')
+      return { redirected: false, user: result.user }
+    } catch (err) {
+      if (err?.code === 'auth/popup-blocked' || err?.code === 'auth/popup-closed-by-user') {
+        await signInWithRedirect(auth, googleProvider)
+        return { redirected: true }
+      }
+      throw err
+    }
   }, [])
 
   const signInWithEmail = useCallback(async (email, password) => {

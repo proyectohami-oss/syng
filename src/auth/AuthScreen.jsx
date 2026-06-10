@@ -37,9 +37,9 @@ export function AuthScreen() {
     setLoading('google'); setError(null)
     try {
       const result = await signInWithGoogle()
-      if (result?.redirected) return
+      if (result?.redirected) return // página navega a Google; mantener spinner
     } catch (err) { setError(friendlyError(err.code)) }
-    finally { setLoading(null) }
+    setLoading(null)
   }
 
   async function handleEmailSubmit(e) {
