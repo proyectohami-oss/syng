@@ -14,8 +14,9 @@ export function useUserListener(dispatch) {
      * getRedirectResult() resuelve con el usuario si viene de un redirect,
      * o con null si no hay redirect pendiente. Es seguro llamarlo siempre.
      */
-    getRedirectResult(auth).catch(err => {
-      // Error en el redirect (ej. popup cerrado, dominio no autorizado)
+    getRedirectResult(auth).then(result => {
+      if (result?.user) sessionStorage.setItem('justLoggedIn', '1')
+    }).catch(err => {
       console.error('[UserListener] getRedirectResult error:', err)
     })
 

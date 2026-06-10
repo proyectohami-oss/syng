@@ -23,10 +23,19 @@ function isMobile() {
     .test(navigator.userAgent)
 }
 
+function isStandalonePwa() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true
+}
+
 export function useAuthActions() {
 
   const signInWithGoogle = useCallback(async () => {
-    // Siempre popup — signInWithRedirect falla en iOS 26 / Safari moderno
+    // iPhone/iPad instalado: popup falla con "Unable to process request" → redirect
+    if (isMobile() || isStandalonePwa()) {
+      await signInWithRedirect(auth, googleProvider)
+      return null
+    }
     const result = await signInWithPopup(auth, googleProvider)
     sessionStorage.setItem('justLoggedIn', '1')
     return result.user

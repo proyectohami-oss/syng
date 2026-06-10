@@ -25,6 +25,8 @@ export function AuthScreen() {
       'auth/weak-password':          'La contraseña debe tener al menos 6 caracteres.',
       'auth/invalid-email':          'El correo no es válido.',
       'auth/popup-closed-by-user':   'Se cerró la ventana de Google antes de completar el acceso.',
+      'auth/popup-blocked':          'No se pudo abrir Google. Cierra la app y ábrela desde Safari.',
+      'auth/unauthorized-domain':    'Dominio no autorizado. Contacta soporte.',
       'auth/network-request-failed': 'Sin conexión. Verifica tu red e intenta de nuevo.',
       'auth/too-many-requests':      'Demasiados intentos. Intenta más tarde.',
     }

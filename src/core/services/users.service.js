@@ -120,34 +120,13 @@ export async function removeFcmToken(uid, token) {
   }, { merge: true })
 }
 
-/** Clave pública Web Push de Firebase (syng-app). */
+/** Clave pública Web Push — debe coincidir con Firebase Console → Cloud Messaging. */
 const FCM_VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY
   || 'BBCXfEUieJEA9wdUgmDjiqjpKeD2E4_IKrXQNgShgGKBeAt0Y0ty3krLN_aZ4MgDWoaPBWvaE5lY7IxPOyvNanA'
 
-function isIosDevice() {
-  return /iphone|ipad|ipod/i.test(navigator.userAgent)
-}
-
-async function getFcmServiceWorkerRegistration() {
-  await navigator.serviceWorker.ready
-
-  if (isIosDevice()) {
-    // iOS: FCM funciona mejor con firebase-messaging-sw.js dedicado
-    return navigator.serviceWorker.register('/firebase-messaging-sw.js', {
-      scope: '/firebase-cloud-messaging-push-scope',
-    })
-  }
-
-  let reg = await navigator.serviceWorker.getRegistration('/')
-  if (!reg) {
-    reg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
-    await navigator.serviceWorker.ready
-  }
-  return reg
-}
-
 /**
  * Obtiene el token FCM local. Devuelve { ok, token, reason }.
+ * iOS: prueba varias formas de registrar el service worker.
  */
 export async function getLocalFcmTokenResult() {
   if (typeof Notification === 'undefined') return { ok: false, reason: 'unsupported' }
@@ -158,18 +137,38 @@ export async function getLocalFcmTokenResult() {
     const { getMessaging, getToken } = await import('firebase/messaging')
     const { app } = await import('../../firebase')
     const messaging = getMessaging(app)
-    const swReg = await getFcmServiceWorkerRegistration()
 
-    const token = await getToken(messaging, {
-      vapidKey: FCM_VAPID_KEY,
-      serviceWorkerRegistration: swReg,
-    })
-    if (!token) return { ok: false, reason: 'empty' }
-    return { ok: true, token }
+    await navigator.serviceWorker.ready
+
+    const attempts = [
+      // 1. Firebase registra firebase-messaging-sw.js automáticamente (mejor en iOS)
+      () => getToken(messaging, { vapidKey: FCM_VAPID_KEY }),
+      // 2. sw-v2.js — flujo original que funcionaba antes
+      async () => {
+        let reg = await navigator.serviceWorker.getRegistration('/')
+        if (!reg) {
+          reg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
+          await navigator.serviceWorker.ready
+        }
+        return getToken(messaging, { vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg })
+      },
+    ]
+
+    let lastReason = 'empty'
+    for (const attempt of attempts) {
+      try {
+        const token = await attempt()
+        if (token) return { ok: true, token }
+        lastReason = 'empty'
+      } catch (err) {
+        console.warn('[FCM] getToken intento falló:', err?.code || err?.message)
+        lastReason = err?.code || err?.message || 'error'
+      }
+    }
+    return { ok: false, reason: lastReason }
   } catch (error) {
     console.error('[FCM] getToken error:', error)
-    const code = error?.code || error?.message || 'error'
-    return { ok: false, reason: String(code) }
+    return { ok: false, reason: error?.code || error?.message || 'error' }
   }
 }
 
