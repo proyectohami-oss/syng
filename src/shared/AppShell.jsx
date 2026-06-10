@@ -202,7 +202,6 @@ export function AppShell({ children }) {
   return (
     <div style={{
       display: 'flex',
-      paddingTop: 'env(safe-area-inset-top)',
       height: '100%',
       overflow: 'hidden',
       /* Fondo sistema Syng — azul-blanco neutro con luz atmosférica suave */
@@ -337,7 +336,6 @@ export function AppShell({ children }) {
           backdropFilter: 'blur(32px)',
           WebkitBackdropFilter: 'blur(32px)',
           borderTop: '1px solid rgba(255,255,255,0.60)',
-          paddingBottom: 'env(safe-area-inset-bottom)',
           flexShrink: 0,
           boxShadow: '0 -8px 32px rgba(13,18,64,0.07)',
           alignItems: 'center',

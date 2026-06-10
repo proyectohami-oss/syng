@@ -12,26 +12,27 @@ import { auth } from '../firebase'
 
 const googleProvider = new GoogleAuthProvider()
 
-function isStandalonePwa() {
+export function isStandalonePwa() {
   return window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true
 }
 
 /**
  * Inicia Google Sign-In de forma SÍNCRONA (requerido en iOS Safari).
- * NO usar async/await antes de signInWithPopup — iOS bloquea el popup.
- *
- * @returns {Promise<{ redirected: boolean, user? }>}
+ * PWA instalada: popup primero (redirect falla en iOS), luego redirect.
  */
 export function beginGoogleSignIn() {
-  // Solo la app instalada en pantalla de inicio usa redirect
-  if (isStandalonePwa()) {
-    return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
-  }
-  // Safari normal: popup (redirect falla por bloqueo cross-site de Apple)
-  return signInWithPopup(auth, googleProvider).then((result) => {
+  const popup = signInWithPopup(auth, googleProvider).then((result) => {
     sessionStorage.setItem('justLoggedIn', '1')
     return { redirected: false, user: result.user }
+  })
+
+  if (!isStandalonePwa()) return popup
+
+  // App instalada: popup primero; si falla ("Unable to process request"), redirect
+  return popup.catch((err) => {
+    console.warn('[Auth] popup en PWA falló, intentando redirect:', err?.code)
+    return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
   })
 }
 
@@ -58,5 +59,5 @@ export function useAuthActions() {
     await firebaseSignOut(auth)
   }, [])
 
-  return { beginGoogleSignIn, signInWithEmail, signUpWithEmail, signOut }
+  return { beginGoogleSignIn, signInWithEmail, signUpWithEmail, signOut, isStandalonePwa }
 }

@@ -85,7 +85,8 @@ export function AuthGuard({ children }) {
 function LoadingScreen({ message, onRetry }) {
   return (
     <div style={{
-      height: '100%', display: 'flex', flexDirection: 'column',
+      flex: 1, minHeight: 0,
+      display: 'flex', flexDirection: 'column',
       alignItems: 'center', justifyContent: 'center', gap: 16,
       background: [
         'radial-gradient(ellipse at 92% 4%, rgba(255,200,150,0.28) 0%, transparent 48%)',

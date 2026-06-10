@@ -26,13 +26,15 @@ const globalStyles = `
 
   html, body {
     height: 100%;
+    min-height: 100%;
+    min-height: -webkit-fill-available;
     touch-action: manipulation;
     overscroll-behavior: none;
     -webkit-user-select: none;
     user-select: text;
     -webkit-font-smoothing: antialiased;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-    background: transparent;
+    background: #F2F4FB;
     color: #111827;
   }
 
@@ -43,13 +45,16 @@ const globalStyles = `
 
   #root {
     position: fixed;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
-    height: 100svh;
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    padding:
+      env(safe-area-inset-top)
+      env(safe-area-inset-right)
+      env(safe-area-inset-bottom)
+      env(safe-area-inset-left);
   }
 
   button, input, textarea, select { font-family: inherit; }

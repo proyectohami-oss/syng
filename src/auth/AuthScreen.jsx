@@ -2,7 +2,7 @@
  * AuthScreen — login and signup.
  */
 import { useState, useEffect } from 'react'
-import { useAuthActions }  from './useAuthActions'
+import { useAuthActions, isStandalonePwa } from './useAuthActions'
 
 export function AuthScreen() {
   const { beginGoogleSignIn, signInWithEmail, signUpWithEmail } = useAuthActions()
@@ -76,12 +76,19 @@ export function AuthScreen() {
   }
 
   const isLoading = loading !== null
+  const isPwa     = isStandalonePwa()
 
   return (
     <div style={screen}>
       <div style={card}>
 
-        <div style={{ textAlign:'center', marginBottom:36 }}>
+        {isPwa && (
+          <p style={pwaHint}>
+            App instalada: si Google falla, usa <strong>correo y contraseña</strong> abajo.
+          </p>
+        )}
+
+        <div style={{ textAlign:'center', marginBottom: isPwa ? 24 : 36 }}>
           <div style={logoWrap}>
             <div style={logoMark}>
               <img src='/icon-192.png' alt='Syng' style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:18 }} />
@@ -179,13 +186,24 @@ function Spinner({ light }) {
 // ── Estilos ─────────────────────────────────────────────────────────────────
 
 const screen = {
-  minHeight: '100%',
+  flex: 1,
+  minHeight: 0,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   padding: '24px 20px',
-  /* Fondo sistema Syng — azul-blanco neutro, sin púrpura */
   background: 'linear-gradient(158deg, #F7F8FC 0%, #EEF1F8 100%)',
+}
+
+const pwaHint = {
+  margin: '0 0 20px',
+  padding: '10px 14px',
+  background: '#EEF2FF',
+  color: '#2D3A8C',
+  borderRadius: 12,
+  fontSize: 13,
+  lineHeight: 1.5,
+  border: '1px solid rgba(45,58,140,0.12)',
 }
 
 const card = {
