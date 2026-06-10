@@ -120,82 +120,24 @@ export async function removeFcmToken(uid, token) {
   }, { merge: true })
 }
 
-/** Clave pública Web Push — debe coincidir con Firebase Console → Cloud Messaging. */
-const FCM_VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY
-  || 'BBCXfEUieJEA9wdUgmDjiqjpKeD2E4_IKrXQNgShgGKBeAt0Y0ty3krLN_aZ4MgDWoaPBWvaE5lY7IxPOyvNanA'
-
 /**
- * Obtiene el token FCM local. Devuelve { ok, token, reason }.
- * iOS: prueba varias formas de registrar el service worker.
+ * Obtiene el token FCM local (delegado a fcm.service).
+ * @deprecated usar getFcmToken de fcm.service
  */
-export async function getLocalFcmTokenResult() {
-  if (typeof Notification === 'undefined') return { ok: false, reason: 'unsupported' }
-  if (Notification.permission !== 'granted') return { ok: false, reason: 'permission' }
-  if (!('serviceWorker' in navigator)) return { ok: false, reason: 'unsupported' }
-
-  try {
-    const { getMessaging, getToken } = await import('firebase/messaging')
-    const { app } = await import('../../firebase')
-    const messaging = getMessaging(app)
-
-    await navigator.serviceWorker.ready
-
-    const attempts = [
-      // 1. Firebase registra firebase-messaging-sw.js automáticamente (mejor en iOS)
-      () => getToken(messaging, { vapidKey: FCM_VAPID_KEY }),
-      // 2. sw-v2.js — flujo original que funcionaba antes
-      async () => {
-        let reg = await navigator.serviceWorker.getRegistration('/')
-        if (!reg) {
-          reg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
-          await navigator.serviceWorker.ready
-        }
-        return getToken(messaging, { vapidKey: FCM_VAPID_KEY, serviceWorkerRegistration: reg })
-      },
-    ]
-
-    let lastReason = 'empty'
-    for (const attempt of attempts) {
-      try {
-        const token = await attempt()
-        if (token) return { ok: true, token }
-        lastReason = 'empty'
-      } catch (err) {
-        console.warn('[FCM] getToken intento falló:', err?.code || err?.message)
-        lastReason = err?.code || err?.message || 'error'
-      }
-    }
-    return { ok: false, reason: lastReason }
-  } catch (error) {
-    console.error('[FCM] getToken error:', error)
-    return { ok: false, reason: error?.code || error?.message || 'error' }
-  }
-}
-
-/** @deprecated usar getLocalFcmTokenResult */
 export async function getLocalFcmToken() {
-  const result = await getLocalFcmTokenResult()
-  return result.ok ? result.token : null
+  const { getFcmToken } = await import('../notifications/fcm.service')
+  const r = await getFcmToken()
+  return r.ok ? r.token : null
 }
 
-/**
- * Obtiene el token FCM del dispositivo y lo persiste en /users/{uid}.fcmTokens.
- */
+export async function getLocalFcmTokenResult() {
+  const { getFcmToken } = await import('../notifications/fcm.service')
+  return getFcmToken()
+}
+
 export async function syncFcmToken(uid) {
-  if (!uid) return { ok: false, reason: 'no_uid' }
-  const result = await getLocalFcmTokenResult()
-  if (!result.ok) {
-    console.warn('[FCM] syncFcmToken falló:', result.reason)
-    return result
-  }
-  await saveFcmToken(uid, result.token, getDevicePlatform())
-  return { ok: true, token: result.token }
-}
-
-function getDevicePlatform() {
-  if (/iphone|ipad|ipod/i.test(navigator.userAgent)) return 'ios'
-  if (/android/i.test(navigator.userAgent)) return 'android'
-  return 'web'
+  const { syncFcmToken: sync } = await import('../notifications/fcm.service')
+  return sync(uid)
 }
 
 /**

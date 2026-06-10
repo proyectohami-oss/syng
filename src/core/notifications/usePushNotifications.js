@@ -1,138 +1,86 @@
 /**
- * usePushNotifications — FCM token + avisos visibles (incluye iOS PWA).
+ * Hook del ciclo de vida FCM — delega todo a fcm.service.js
  */
 import { useState, useEffect, useCallback } from 'react'
-import { syncFcmToken, removeFcmToken, getLocalFcmTokenResult } from '../services/users.service'
+import {
+  syncFcmToken,
+  unsyncFcmToken,
+  showForegroundNotification,
+  recordatorioPath,
+} from './fcm.service'
 import { useCoreState } from '../hooks/useCoreData'
 
-function recordatorioPath(data) {
-  if (data?.url) {
-    if (data.url.startsWith('http')) {
-      try { return new URL(data.url).pathname } catch { return '/agenda' }
-    }
-    return data.url
-  }
-  if (data?.taskId) return `/recordatorio/${data.taskId}`
-  return '/agenda'
-}
+let listenerReady = false
 
-let foregroundListenerBound = false
+async function bindForegroundListener() {
+  if (listenerReady) return
+  const { getMessaging, onMessage, isSupported } = await import('firebase/messaging')
+  const { app } = await import('../../firebase')
+  if (!(await isSupported())) return
 
-async function showViaServiceWorker(title, body, url, taskId) {
-  if (!('serviceWorker' in navigator)) return false
-  const isIos = /iphone|ipad|ipod/i.test(navigator.userAgent)
-  const reg = isIos
-    ? await navigator.serviceWorker.getRegistration('/firebase-cloud-messaging-push-scope')
-    : await navigator.serviceWorker.getRegistration('/')
-  const active = reg?.active
-  if (!active) return false
-  active.postMessage({ type: 'SHOW_NOTIFICATION', title, body, url, taskId })
-  return true
-}
+  listenerReady = true
+  const messaging = getMessaging(app)
 
-async function bindForegroundListener(onTap) {
-  if (foregroundListenerBound) return
-  const fcm = await getMessaging()
-  if (!fcm) return
-  foregroundListenerBound = true
-  fcm.onMessage(fcm.messaging, async (payload) => {
+  onMessage(messaging, async (payload) => {
     const data = payload.data || {}
     const title = payload.notification?.title || data.title || '⏰ Recordatorio'
     const body  = payload.notification?.body  || data.body  || ''
     const path  = recordatorioPath(data)
     const taskId = data.taskId || ''
 
-    const shown = await showViaServiceWorker(title, body, path, taskId)
-    if (!shown && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-      const n = new Notification(title, {
-        body,
-        icon: '/icon-192.png',
-        tag: taskId ? `syng-reminder-${taskId}` : 'syng-notif',
-        renotify: true,
-      })
-      n.onclick = () => { window.focus(); onTap(path); n.close() }
+    const shown = await showForegroundNotification(title, body, path, taskId)
+    if (!shown && typeof Notification !== 'undefined') {
+      const n = new Notification(title, { body, icon: '/icon-192.png', tag: `syng-${taskId}` })
+      n.onclick = () => { window.focus(); window.location.assign(path); n.close() }
     }
   })
-}
-
-async function getMessaging() {
-  const { getMessaging: getFCMMessaging, onMessage, isSupported } = await import('firebase/messaging')
-  const { app } = await import('../../firebase')
-  if (!(await isSupported())) return null
-  return { messaging: getFCMMessaging(app), onMessage }
 }
 
 export function usePushNotifications() {
-  const state = useCoreState()
-  const uid   = state.auth.user?.uid ?? null
-
+  const uid = useCoreState().auth.user?.uid ?? null
   const isSupported = typeof Notification !== 'undefined' && 'serviceWorker' in navigator
 
-  const [permissionState, setPermissionState] = useState(() => {
-    if (!isSupported) return 'unsupported'
-    return Notification.permission
-  })
+  const [permissionState, setPermissionState] = useState(() =>
+    !isSupported ? 'unsupported' : Notification.permission,
+  )
 
-  useEffect(() => {
-    if (!isSupported) return
-    setPermissionState(Notification.permission)
-  }, [isSupported])
-
-  const persistToken = useCallback(async () => {
+  const persist = useCallback(async () => {
     if (!uid || !isSupported || Notification.permission !== 'granted') {
       return { ok: false, reason: 'permission' }
     }
-    try {
-      const result = await syncFcmToken(uid)
-      if (result.ok) {
-        await bindForegroundListener((path) => {
-          window.location.assign(path)
-        })
-      }
-      return result
-    } catch (error) {
-      console.error('[FCM] persistToken error:', error)
-      return { ok: false, reason: 'error' }
-    }
+    const result = await syncFcmToken(uid)
+    if (result.ok) await bindForegroundListener()
+    return result
   }, [uid, isSupported])
 
-  useEffect(() => {
-    persistToken()
-  }, [persistToken])
+  useEffect(() => { persist() }, [persist])
 
   useEffect(() => {
     if (!uid || !isSupported) return
     const onVisible = () => {
-      if (document.visibilityState === 'visible' && Notification.permission === 'granted') {
-        persistToken()
-      }
+      if (document.visibilityState === 'visible' && Notification.permission === 'granted') persist()
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
-  }, [uid, isSupported, persistToken])
+  }, [uid, isSupported, persist])
 
   const requestPermission = useCallback(async () => {
     if (!uid || !isSupported) return { ok: false, reason: 'unsupported' }
-    try {
-      const permission = await Notification.requestPermission()
-      setPermissionState(permission)
-      if (permission !== 'granted') return { ok: false, reason: permission }
-      return persistToken()
-    } catch (error) {
-      console.error('[FCM] requestPermission error:', error)
-      return { ok: false, reason: 'error' }
-    }
-  }, [uid, isSupported, persistToken])
+    const perm = await Notification.requestPermission()
+    setPermissionState(perm)
+    if (perm !== 'granted') return { ok: false, reason: perm }
+    return persist()
+  }, [uid, isSupported, persist])
 
   const disableNotifications = useCallback(async () => {
-    if (!uid || !isSupported) return
-    try {
-      const result = await getLocalFcmTokenResult()
-      if (result.ok) await removeFcmToken(uid, result.token)
-    } catch (error) {
-      console.error('[FCM] disableNotifications error:', error)
-    }
-  }, [uid, isSupported])
+    if (uid) await unsyncFcmToken(uid)
+  }, [uid])
 
-  return { isSupported, permissionState, requestPermission, disableNotifications, resyncToken: persistToken }
+  return {
+    isSupported,
+    permissionState,
+    requestPermission,
+    disableNotifications,
+    resyncToken: persist,
+  }
 }

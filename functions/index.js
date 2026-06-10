@@ -1,3 +1,10 @@
+/**
+ * Recordatorios Syng — pipeline completo
+ *
+ * Cliente guarda /reminders/{taskId} con scheduledAt (UTC, hora local del usuario)
+ *   → sendReminderTask encola Cloud Task o envía ya
+ *   → sendPushNotification → FCM + aviso in-app en /users/{uid}/notifications
+ */
 const { onDocumentCreated } = require('firebase-functions/v2/firestore')
 const { onRequest }         = require('firebase-functions/v2/https')
 const { initializeApp }     = require('firebase-admin/app')
@@ -6,18 +13,29 @@ const { getMessaging }      = require('firebase-admin/messaging')
 const { CloudTasksClient }  = require('@google-cloud/tasks')
 
 initializeApp()
-const db        = getFirestore()
-const messaging = getMessaging()
-const tasksClient = new CloudTasksClient()
 
-const PROJECT       = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'syng-app'
+const db            = getFirestore()
+const messaging     = getMessaging()
+const tasksClient   = new CloudTasksClient()
+
+const PROJECT       = process.env.GCLOUD_PROJECT || 'syng-app'
 const LOCATION      = 'us-central1'
 const QUEUE         = 'syng-reminders'
 const WEB_APP_URL   = process.env.WEB_APP_URL || 'https://syng-psi.vercel.app'
 const SEND_PUSH_URL = process.env.SEND_PUSH_URL
   || `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendPushNotification`
 const TASKS_SA      = process.env.TASKS_INVOKER_SA
-  || `${process.env.GCLOUD_PROJECT_NUMBER || '751348580546'}-compute@developer.gserviceaccount.com`
+  || '751348580546-compute@developer.gserviceaccount.com'
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+function strData(obj) {
+  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, v == null ? '' : String(v)]))
+}
+
+function recordatorioUrl(taskId) {
+  return `${WEB_APP_URL}/recordatorio/${taskId}`
+}
 
 async function ensureQueue() {
   const name = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
@@ -25,27 +43,11 @@ async function ensureQueue() {
     await tasksClient.getQueue({ name })
   } catch (err) {
     if (err.code !== 5) throw err
-    const parent = tasksClient.locationPath(PROJECT, LOCATION)
     await tasksClient.createQueue({
-      parent,
-      queue: {
-        name,
-        rateLimits: { maxDispatchesPerSecond: 20 },
-        retryConfig: { maxAttempts: 5 },
-      },
+      parent: tasksClient.locationPath(PROJECT, LOCATION),
+      queue: { name, rateLimits: { maxDispatchesPerSecond: 20 }, retryConfig: { maxAttempts: 5 } },
     })
-    console.log(`[ensureQueue] cola creada: ${QUEUE}`)
   }
-}
-
-function stringifyData(obj) {
-  return Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => [k, v == null ? '' : String(v)]),
-  )
-}
-
-function recordatorioUrl(taskId) {
-  return `${WEB_APP_URL}/recordatorio/${taskId}`
 }
 
 async function getUserTokens(uid) {
@@ -54,67 +56,38 @@ async function getUserTokens(uid) {
   return Object.keys(snap.data().fcmTokens || {})
 }
 
-async function pruneInvalidTokens(uid, tokens, result) {
+async function pruneBadTokens(uid, tokens, result) {
   if (!result?.responses) return
-  const removals = {}
-  result.responses.forEach((resp, i) => {
-    if (!resp.success) {
-      const code = resp.error?.code || ''
-      if (code.includes('registration-token-not-registered') || code.includes('invalid-registration-token')) {
-        removals[`fcmTokens.${tokens[i]}`] = FieldValue.delete()
-      }
+  const del = {}
+  result.responses.forEach((r, i) => {
+    const code = r.error?.code || ''
+    if (!r.success && (code.includes('not-registered') || code.includes('invalid-registration'))) {
+      del[`fcmTokens.${tokens[i]}`] = FieldValue.delete()
     }
   })
-  if (Object.keys(removals).length) {
-    await db.doc(`users/${uid}`).set({ ...removals, updatedAt: FieldValue.serverTimestamp() }, { merge: true })
+  if (Object.keys(del).length) {
+    await db.doc(`users/${uid}`).set({ ...del, updatedAt: FieldValue.serverTimestamp() }, { merge: true })
   }
 }
 
-async function saveInAppNotification(uid, { title, body, taskId, url }) {
-  const ref = db.collection(`users/${uid}/notifications`).doc()
-  await ref.set({
-    type: 'reminder',
-    title,
-    body,
-    taskId,
-    url,
-    read: false,
+async function saveInApp(uid, { title, body, taskId, url }) {
+  await db.collection(`users/${uid}/notifications`).add({
+    type: 'reminder', title, body, taskId, url, read: false,
     createdAt: FieldValue.serverTimestamp(),
   })
 }
 
-async function sendPush(uid, tokens, title, body, data = {}) {
+// ── FCM — solo payload web (tokens iOS/Android PWA son web push) ─────────────
+
+async function sendFcm(uid, tokens, title, body, { taskId, url }) {
   if (!tokens.length) return { successCount: 0, failureCount: 0, responses: [] }
 
-  const taskId = data.taskId || ''
-  const url    = data.url || (taskId ? recordatorioUrl(taskId) : WEB_APP_URL)
-  const payload = stringifyData({ ...data, title, body, url, taskId, type: 'reminder' })
+  const data = strData({ type: 'reminder', title, body, taskId, url })
 
   const messages = tokens.map(token => ({
     token,
-    data: payload,
-    android: {
-      priority: 'high',
-      notification: {
-        title,
-        body,
-        channelId: 'syng_reminders',
-        priority: 'max',
-        defaultSound: true,
-        icon: 'ic_notification',
-      },
-    },
-    apns: {
-      headers: { 'apns-priority': '10', 'apns-push-type': 'alert' },
-      payload: {
-        aps: {
-          alert: { title, body },
-          sound: 'default',
-          'mutable-content': 1,
-        },
-      },
-      fcmOptions: { link: url },
-    },
+    data,
+    fcmOptions: { link: url },
     webpush: {
       headers: { Urgency: 'high', TTL: '86400' },
       notification: {
@@ -125,120 +98,94 @@ async function sendPush(uid, tokens, title, body, data = {}) {
         requireInteraction: true,
         tag: taskId ? `syng-reminder-${taskId}` : 'syng-notif',
       },
-      data: payload,
-      fcmOptions: { link: url },
     },
   }))
 
   const result = await messaging.sendEach(messages)
-  await pruneInvalidTokens(uid, tokens, result)
+  await pruneBadTokens(uid, tokens, result)
   return result
 }
 
+// ── Entrega ──────────────────────────────────────────────────────────────────
+
 async function deliverReminderPush({ userId, title, taskId, reminderId }) {
-  const tokens = await getUserTokens(userId)
   const pushTitle = '⏰ Recordatorio'
   const pushBody  = title || 'Es momento de retomarlo'
   const url       = recordatorioUrl(taskId)
 
+  // Siempre guardar en Avisos de Syng
+  await saveInApp(userId, { title: pushTitle, body: pushBody, taskId, url })
+
+  const tokens = await getUserTokens(userId)
   if (!tokens.length) {
-    console.warn('[deliverReminderPush] sin tokens para', userId)
-    return { ok: false, reason: 'no_tokens' }
+    console.warn('[deliver] sin tokens FCM para', userId)
+    return { ok: true, push: false, reason: 'no_tokens' }
   }
 
-  const result = await sendPush(userId, tokens, pushTitle, pushBody, { taskId, url })
+  const result = await sendFcm(userId, tokens, pushTitle, pushBody, { taskId, url })
 
-  if (result.responses) {
-    result.responses.forEach((resp, i) => {
-      if (!resp.success) {
-        console.warn(`[deliverReminderPush] FCM falló token[${i}]:`, resp.error?.code, resp.error?.message)
-      }
-    })
-  }
-  console.log(`[deliverReminderPush] taskId=${taskId} ok=${result.successCount} fail=${result.failureCount}`)
-
-  if (result.successCount > 0) {
-    await saveInAppNotification(userId, { title: pushTitle, body: pushBody, taskId, url }).catch(() => {})
-  }
+  result.responses?.forEach((r, i) => {
+    if (!r.success) console.warn(`[deliver] FCM[${i}]:`, r.error?.code, r.error?.message)
+  })
+  console.log(`[deliver] taskId=${taskId} ok=${result.successCount} fail=${result.failureCount}`)
 
   if (reminderId) {
     await db.doc(`reminders/${reminderId}`).update({
-      status: 'sent',
-      sentAt: FieldValue.serverTimestamp(),
-    }).catch(err => console.warn('[deliverReminderPush] update reminder:', err.message))
+      status: 'sent', sentAt: FieldValue.serverTimestamp(),
+    }).catch(() => {})
   }
 
-  return { ok: true, successCount: result.successCount, failureCount: result.failureCount }
+  return { ok: true, push: result.successCount > 0, successCount: result.successCount }
 }
 
-exports.sendPushNotification = onRequest(
-  { timeoutSeconds: 30, invoker: 'public' },
-  async (req, res) => {
-    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
+// ── Cloud Functions ──────────────────────────────────────────────────────────
 
-    const { userId, title, taskId, reminderId } = req.body
-    if (!userId || !taskId) return res.status(400).json({ error: 'faltan campos' })
-
-    const result = await deliverReminderPush({ userId, title, taskId, reminderId })
-    console.log(`[sendPushNotification] taskId=${taskId}`, result)
-    res.json(result)
-  },
-)
+exports.sendPushNotification = onRequest({ timeoutSeconds: 30, invoker: 'public' }, async (req, res) => {
+  if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
+  const { userId, title, taskId, reminderId } = req.body
+  if (!userId || !taskId) return res.status(400).json({ error: 'faltan campos' })
+  const result = await deliverReminderPush({ userId, title, taskId, reminderId })
+  res.json(result)
+})
 
 exports.sendReminderTask = onDocumentCreated('reminders/{id}', async (event) => {
   const data       = event.data.data()
   const reminderId = event.params.id
-  const taskId     = data.taskId
+  const { userId, taskId, title, scheduledAt } = data
 
-  if (!data.userId || !taskId || !data.scheduledAt) {
-    console.warn('[sendReminderTask] documento incompleto', reminderId)
+  if (!userId || !taskId || !scheduledAt) {
+    console.warn('[sendReminderTask] incompleto', reminderId)
     return
   }
 
-  const scheduledAt = data.scheduledAt.toDate
-    ? data.scheduledAt.toDate()
-    : new Date(data.scheduledAt)
+  const when = scheduledAt.toDate ? scheduledAt.toDate() : new Date(scheduledAt)
+  const delaySec = Math.floor(when.getTime() / 1000) - Math.floor(Date.now() / 1000)
+  const payload = { userId, title: title || '', taskId, reminderId }
 
-  const scheduleSeconds = Math.floor(scheduledAt.getTime() / 1000)
-  const nowSeconds      = Math.floor(Date.now() / 1000)
-  const delaySec        = scheduleSeconds - nowSeconds
-
-  const payload = {
-    userId: data.userId,
-    title:  data.title || '',
-    taskId,
-    reminderId,
-  }
-
-  // Pasado o < 30 s: enviar ya (hora local del usuario ya convertida a UTC en el cliente)
   if (delaySec <= 30) {
-    console.log(`[sendReminderTask] envío inmediato reminder=${reminderId}`)
+    console.log('[sendReminderTask] inmediato', reminderId)
     await deliverReminderPush(payload)
     return
   }
 
   try {
     await ensureQueue()
-    const queuePath = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
     await tasksClient.createTask({
-      parent: queuePath,
+      parent: tasksClient.queuePath(PROJECT, LOCATION, QUEUE),
       task: {
         httpRequest: {
           httpMethod: 'POST',
           url: SEND_PUSH_URL,
           headers: { 'Content-Type': 'application/json' },
           body: Buffer.from(JSON.stringify(payload)).toString('base64'),
-          oidcToken: {
-            serviceAccountEmail: TASKS_SA,
-            audience: SEND_PUSH_URL,
-          },
+          oidcToken: { serviceAccountEmail: TASKS_SA, audience: SEND_PUSH_URL },
         },
-        scheduleTime: { seconds: scheduleSeconds },
+        scheduleTime: { seconds: Math.floor(when.getTime() / 1000) },
       },
     })
-    console.log(`[sendReminderTask] encolado reminder=${reminderId} at=${scheduledAt.toISOString()}`)
+    console.log('[sendReminderTask] encolado', reminderId, when.toISOString())
   } catch (err) {
-    console.error('[sendReminderTask] Cloud Tasks error, fallback inmediato:', err.message)
+    console.error('[sendReminderTask] cola falló, envío directo:', err.message)
     await deliverReminderPush(payload)
   }
 })
