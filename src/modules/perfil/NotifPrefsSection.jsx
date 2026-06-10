@@ -77,18 +77,25 @@ export function NotifPrefsSection() {
     try {
       const result = await requestPermission()
       if (result?.ok) showToast('Notificaciones conectadas', '✓')
-      else if (result?.reason === 'no_token') showToast('No se pudo conectar — cierra y abre Syng', '⚠️')
-      else if (result?.reason === 'denied') showToast('Permiso bloqueado en Ajustes', '⚠️')
+      else showToast(toastForReason(result?.reason), '⚠️')
     } finally { setActivating(false) }
   }
 
   async function handleResync() {
     setActivating(true)
     try {
-      const token = await resyncToken()
-      if (token) showToast('Conexión verificada', '✓')
-      else showToast('Sin conexión — cierra Syng y ábrela de nuevo', '⚠️')
+      const result = await resyncToken()
+      if (result?.ok) showToast('Conexión verificada', '✓')
+      else showToast(toastForReason(result?.reason), '⚠️')
     } finally { setActivating(false) }
+  }
+
+  function toastForReason(reason) {
+    if (reason === 'not_installed') return 'Abre Syng desde el ícono en tu pantalla de inicio'
+    if (reason === 'permission' || reason === 'denied') return 'Permiso bloqueado — ve a Ajustes → Syng'
+    if (reason === 'no_sw') return 'Espera 5 segundos e intenta de nuevo'
+    if (reason === 'unsupported') return 'Notificaciones no disponibles aquí'
+    return 'Sin conexión — abre Syng desde el ícono de inicio'
   }
 
   const ios        = isIOS()

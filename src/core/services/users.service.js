@@ -120,42 +120,80 @@ export async function removeFcmToken(uid, token) {
   }, { merge: true })
 }
 
-/**
- * Obtiene el token FCM local del dispositivo (sin persistir en Firestore).
- */
-export async function getLocalFcmToken() {
-  const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
-  if (!vapidKey || typeof Notification === 'undefined' || Notification.permission !== 'granted') return null
-  if (!('serviceWorker' in navigator)) return null
+/** Clave pública Web Push de Firebase (syng-app). Segura en el cliente. */
+const FCM_VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY
+  || 'BBCXfEUieJEA9wdUgmDjiqjpKeD2E4_IKrXQNgShgGKBeAt0Y0ty3krLN_aZ4MgDWoaPBWvaE5lY7IxPOyvNanA'
 
-  const { getMessaging, getToken } = await import('firebase/messaging')
-  const { app }                    = await import('../../firebase')
-  const messaging                  = getMessaging(app)
+function isIosDevice() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent)
+}
 
-  await navigator.serviceWorker.ready
-  let swReg = await navigator.serviceWorker.getRegistration('/')
-  if (!swReg) {
-    swReg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
+function isStandaloneApp() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+}
+
+async function waitForActiveSw(timeoutMs = 10000) {
+  let reg = await navigator.serviceWorker.getRegistration('/')
+  if (!reg) {
+    reg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/', updateViaCache: 'none' })
   }
-  if (!swReg) return null
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    await navigator.serviceWorker.ready
+    if (reg.active) return reg
+    await new Promise(r => setTimeout(r, 250))
+  }
+  return reg
+}
 
-  return getToken(messaging, { vapidKey, serviceWorkerRegistration: swReg }).catch(() => null)
+/**
+ * Obtiene el token FCM local. Devuelve { ok, token, reason }.
+ */
+export async function getLocalFcmTokenResult() {
+  if (typeof Notification === 'undefined') return { ok: false, reason: 'unsupported' }
+  if (Notification.permission !== 'granted') return { ok: false, reason: 'permission' }
+  if (!('serviceWorker' in navigator)) return { ok: false, reason: 'unsupported' }
+  if (isIosDevice() && !isStandaloneApp()) return { ok: false, reason: 'not_installed' }
+
+  const { getMessaging, getToken, isSupported } = await import('firebase/messaging')
+  if (!(await isSupported())) return { ok: false, reason: 'unsupported' }
+
+  const { app } = await import('../../firebase')
+  const messaging = getMessaging(app)
+  const swReg = await waitForActiveSw()
+  if (!swReg?.active) return { ok: false, reason: 'no_sw' }
+
+  try {
+    const token = await getToken(messaging, {
+      vapidKey: FCM_VAPID_KEY,
+      serviceWorkerRegistration: swReg,
+    })
+    if (!token) return { ok: false, reason: 'empty' }
+    return { ok: true, token }
+  } catch (error) {
+    console.error('[FCM] getToken error:', error)
+    return { ok: false, reason: error?.code || 'error' }
+  }
+}
+
+/** @deprecated usar getLocalFcmTokenResult */
+export async function getLocalFcmToken() {
+  const result = await getLocalFcmTokenResult()
+  return result.ok ? result.token : null
 }
 
 /**
  * Obtiene el token FCM del dispositivo y lo persiste en /users/{uid}.fcmTokens.
- * Espera al service worker antes de pedir el token (requerido en iOS Safari).
  */
 export async function syncFcmToken(uid) {
-  if (!uid) return null
-  const token = await getLocalFcmToken()
-  if (!token) {
-    console.warn('[FCM] getToken devolvió vacío')
-    return null
+  if (!uid) return { ok: false, reason: 'no_uid' }
+  const result = await getLocalFcmTokenResult()
+  if (!result.ok) {
+    console.warn('[FCM] syncFcmToken falló:', result.reason)
+    return result
   }
-
-  await saveFcmToken(uid, token, getDevicePlatform())
-  return token
+  await saveFcmToken(uid, result.token, getDevicePlatform())
+  return { ok: true, token: result.token }
 }
 
 function getDevicePlatform() {

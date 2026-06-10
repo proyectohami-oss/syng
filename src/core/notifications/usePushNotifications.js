@@ -2,7 +2,7 @@
  * usePushNotifications — FCM token + avisos visibles (incluye iOS PWA).
  */
 import { useState, useEffect, useCallback } from 'react'
-import { syncFcmToken, removeFcmToken, getLocalFcmToken } from '../services/users.service'
+import { syncFcmToken, removeFcmToken, getLocalFcmTokenResult } from '../services/users.service'
 import { useCoreState } from '../hooks/useCoreData'
 
 function recordatorioPath(data) {
@@ -47,9 +47,7 @@ async function bindForegroundListener(onTap) {
         renotify: true,
       })
       n.onclick = () => { window.focus(); onTap(path); n.close() }
-      return
     }
-    // iOS: el tap lo maneja notificationclick del SW
   })
 }
 
@@ -77,22 +75,26 @@ export function usePushNotifications() {
   }, [isSupported])
 
   const persistToken = useCallback(async () => {
-    if (!uid || !isSupported || Notification.permission !== 'granted') return null
+    if (!uid || !isSupported || Notification.permission !== 'granted') {
+      return { ok: false, reason: 'permission' }
+    }
     try {
-      const token = await syncFcmToken(uid)
-      if (token) {
+      const result = await syncFcmToken(uid)
+      if (result.ok) {
         await bindForegroundListener((path) => {
           window.location.assign(path)
         })
       }
-      return token
+      return result
     } catch (error) {
       console.error('[FCM] persistToken error:', error)
-      return null
+      return { ok: false, reason: 'error' }
     }
   }, [uid, isSupported])
 
-  useEffect(() => { persistToken() }, [persistToken])
+  useEffect(() => {
+    persistToken()
+  }, [persistToken])
 
   useEffect(() => {
     if (!uid || !isSupported) return
@@ -111,9 +113,7 @@ export function usePushNotifications() {
       const permission = await Notification.requestPermission()
       setPermissionState(permission)
       if (permission !== 'granted') return { ok: false, reason: permission }
-      const token = await persistToken()
-      if (!token) return { ok: false, reason: 'no_token' }
-      return { ok: true, token }
+      return persistToken()
     } catch (error) {
       console.error('[FCM] requestPermission error:', error)
       return { ok: false, reason: 'error' }
@@ -123,8 +123,8 @@ export function usePushNotifications() {
   const disableNotifications = useCallback(async () => {
     if (!uid || !isSupported) return
     try {
-      const token = await getLocalFcmToken()
-      if (token) await removeFcmToken(uid, token)
+      const result = await getLocalFcmTokenResult()
+      if (result.ok) await removeFcmToken(uid, result.token)
     } catch (error) {
       console.error('[FCM] disableNotifications error:', error)
     }
