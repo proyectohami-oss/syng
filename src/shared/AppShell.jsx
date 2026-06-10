@@ -25,6 +25,7 @@ import { db } from '../firebase'
 import { useCoreAuth, useCoreGroups } from '../core/hooks/useCoreData'
 import { usePushNotifications }    from '../core/notifications/usePushNotifications'
 import { useAuthActions }             from '../auth/useAuthActions'
+import { useShellChrome }             from './ShellChromeContext'
 
 async function shareApp() {
   const data = {
@@ -94,6 +95,7 @@ export function AppShell({ children }) {
   const navigate  = useNavigate()
   const location  = useLocation()
   const { signOut } = useAuthActions()
+  const { hideBottomNav } = useShellChrome()
   const [unreadCount, setUnreadCount] = useState(0)
   useEffect(() => {
     const uid = auth?.user?.uid
@@ -327,8 +329,8 @@ export function AppShell({ children }) {
           {children}
         </main>
 
-        {/* Mobile bottom nav */}
-        <nav className="mobile-bottom-nav" aria-label="Navegación móvil" style={{
+        {/* Mobile bottom nav — oculta en pantallas de foco (ej. recordatorio iOS) */}
+        {!hideBottomNav && <nav className="mobile-bottom-nav" aria-label="Navegación móvil" style={{
           display: 'flex',
           background: 'rgba(255,255,255,0.78)',
           backdropFilter: 'blur(32px)',
@@ -433,7 +435,7 @@ export function AppShell({ children }) {
               }}>{item.label}</span>
             </button>
           ))}
-        </nav>
+        </nav>}
       </div>
     </div>
   )

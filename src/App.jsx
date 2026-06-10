@@ -4,6 +4,7 @@ import { CoreDataProvider }  from './core/CoreDataProvider'
 import { AuthGuard }         from './auth/AuthGuard'
 import { InvitationChecker } from './auth/InvitationChecker'
 import { AppShell }          from './shared/AppShell'
+import { ShellChromeProvider } from './shared/ShellChromeContext'
 import { AgendaModule }      from './modules/agenda/AgendaModule'
 import { NewTaskScreen }    from './modules/agenda/NewTaskScreen'
 import { DayModule }         from './modules/agenda/DayModule'
@@ -87,6 +88,7 @@ function AppWithViewport() {
     <BrowserRouter>
       <AuthGuard>
         <InvitationChecker>
+          <ShellChromeProvider>
           <AppShell>
             <Routes>
               <Route path="/"             element={<Navigate to="/agenda" replace />} />
@@ -108,6 +110,7 @@ function AppWithViewport() {
               <Route path="/unirse"       element={<UnirseScreen />} />
             </Routes>
           </AppShell>
+          </ShellChromeProvider>
         </InvitationChecker>
       </AuthGuard>
     </BrowserRouter>
