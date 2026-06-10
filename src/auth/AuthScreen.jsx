@@ -5,7 +5,7 @@ import { useState, useEffect } from 'react'
 import { useAuthActions }  from './useAuthActions'
 
 export function AuthScreen() {
-  const { signInWithGoogle, signInWithEmail, signUpWithEmail } = useAuthActions()
+  const { beginGoogleSignIn, signInWithEmail, signUpWithEmail } = useAuthActions()
 
   const [mode,        setMode]        = useState('login')
   const [email,       setEmail]       = useState('')
@@ -39,17 +39,27 @@ export function AuthScreen() {
       'auth/too-many-requests':      'Demasiados intentos. Intenta más tarde.',
       'auth/account-exists-with-different-credential': 'Ya tienes cuenta con otro método. Usa correo y contraseña.',
       'auth/web-storage-unsupported': 'Activa cookies/datos del sitio en Ajustes → Safari.',
+      'access_denied':                 'Acceso cancelado. Intenta de nuevo.',
+      'redirect_failed':               'Safari bloqueó el acceso. Ve a Ajustes → Safari → desactiva "Evitar rastreo entre sitios" e intenta otra vez.',
+    }
+    if (code?.includes('Unable to process')) {
+      return 'Safari bloqueó Google. Usa correo y contraseña, o abre syng-psi.vercel.app en una ventana normal de Safari.'
     }
     return map[code] ?? 'Ocurrió un error. Intenta de nuevo.'
   }
 
-  async function handleGoogle() {
-    setLoading('google'); setError(null)
-    try {
-      const result = await signInWithGoogle()
-      if (result?.redirected) return // página navega a Google; mantener spinner
-    } catch (err) { setError(friendlyError(err.code)) }
-    setLoading(null)
+  function handleGoogle() {
+    setLoading('google')
+    setError(null)
+    // Llamada síncrona — iOS Safari bloquea popup si hay await antes
+    beginGoogleSignIn()
+      .then((result) => {
+        if (!result?.redirected) setLoading(null)
+      })
+      .catch((err) => {
+        setError(friendlyError(err.code || err.message))
+        setLoading(null)
+      })
   }
 
   async function handleEmailSubmit(e) {

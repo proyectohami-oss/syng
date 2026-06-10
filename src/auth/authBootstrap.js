@@ -7,18 +7,32 @@ import { auth } from '../firebase'
 
 let redirectPromise = null
 
+function captureAuthUrlError() {
+  try {
+    const hash   = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const search = new URLSearchParams(window.location.search)
+    const error  = hash.get('error') || search.get('error')
+    if (error) {
+      sessionStorage.setItem('authRedirectError', error)
+      window.history.replaceState({}, document.title, window.location.pathname)
+    }
+  } catch (_) {}
+}
+
 export function consumeGoogleRedirect() {
   if (!redirectPromise) {
-    redirectPromise = getRedirectResult(auth)
-      .then((result) => {
+    redirectPromise = (async () => {
+      captureAuthUrlError()
+      try {
+        const result = await getRedirectResult(auth)
         if (result?.user) sessionStorage.setItem('justLoggedIn', '1')
         return result
-      })
-      .catch((err) => {
+      } catch (err) {
         console.error('[Auth] getRedirectResult:', err)
         sessionStorage.setItem('authRedirectError', err?.code || err?.message || 'error')
         return null
-      })
+      }
+    })()
   }
   return redirectPromise
 }

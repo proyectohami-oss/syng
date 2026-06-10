@@ -12,40 +12,30 @@ import { auth } from '../firebase'
 
 const googleProvider = new GoogleAuthProvider()
 
-function isIOS() {
-  return /iPhone|iPad|iPod/i.test(navigator.userAgent)
-}
-
 function isStandalonePwa() {
   return window.matchMedia('(display-mode: standalone)').matches
     || window.navigator.standalone === true
 }
 
-/** iOS (Safari o app instalada) necesita redirect; popup falla o no persiste sesión. */
-function needsGoogleRedirect() {
-  return isIOS() || isStandalonePwa()
+/**
+ * Inicia Google Sign-In de forma SÍNCRONA (requerido en iOS Safari).
+ * NO usar async/await antes de signInWithPopup — iOS bloquea el popup.
+ *
+ * @returns {Promise<{ redirected: boolean, user? }>}
+ */
+export function beginGoogleSignIn() {
+  // Solo la app instalada en pantalla de inicio usa redirect
+  if (isStandalonePwa()) {
+    return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
+  }
+  // Safari normal: popup (redirect falla por bloqueo cross-site de Apple)
+  return signInWithPopup(auth, googleProvider).then((result) => {
+    sessionStorage.setItem('justLoggedIn', '1')
+    return { redirected: false, user: result.user }
+  })
 }
 
 export function useAuthActions() {
-
-  /** @returns {{ redirected: true } | { redirected: false, user }} */
-  const signInWithGoogle = useCallback(async () => {
-    if (needsGoogleRedirect()) {
-      await signInWithRedirect(auth, googleProvider)
-      return { redirected: true }
-    }
-    try {
-      const result = await signInWithPopup(auth, googleProvider)
-      sessionStorage.setItem('justLoggedIn', '1')
-      return { redirected: false, user: result.user }
-    } catch (err) {
-      if (err?.code === 'auth/popup-blocked' || err?.code === 'auth/popup-closed-by-user') {
-        await signInWithRedirect(auth, googleProvider)
-        return { redirected: true }
-      }
-      throw err
-    }
-  }, [])
 
   const signInWithEmail = useCallback(async (email, password) => {
     const result = await signInWithEmailAndPassword(auth, email, password)
@@ -68,5 +58,5 @@ export function useAuthActions() {
     await firebaseSignOut(auth)
   }, [])
 
-  return { signInWithGoogle, signInWithEmail, signUpWithEmail, signOut }
+  return { beginGoogleSignIn, signInWithEmail, signUpWithEmail, signOut }
 }
