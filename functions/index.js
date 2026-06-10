@@ -1,12 +1,26 @@
-const { onDocumentCreated, onDocumentUpdated } = require('firebase-functions/v2/firestore')
-const { onSchedule }                           = require('firebase-functions/v2/scheduler')
-const { initializeApp }                        = require('firebase-admin/app')
-const { getFirestore, Timestamp }              = require('firebase-admin/firestore')
-const { getMessaging }                         = require('firebase-admin/messaging')
+const { onDocumentCreated } = require('firebase-functions/v2/firestore')
+const { onRequest }         = require('firebase-functions/v2/https')
+const { initializeApp }     = require('firebase-admin/app')
+const { getFirestore, FieldValue } = require('firebase-admin/firestore')
+const { getMessaging }      = require('firebase-admin/messaging')
+const { CloudTasksClient }  = require('@google-cloud/tasks')
 
 initializeApp()
 const db        = getFirestore()
 const messaging = getMessaging()
+const tasksClient = new CloudTasksClient()
+
+const PROJECT       = 'syng-app'
+const LOCATION      = 'us-central1'
+const QUEUE         = 'reminders'
+const SEND_PUSH_URL = process.env.SEND_PUSH_URL
+  || `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendPushNotification`
+
+function stringifyData(obj) {
+  return Object.fromEntries(
+    Object.entries(obj).map(([k, v]) => [k, v == null ? '' : String(v)]),
+  )
+}
 
 async function getUserTokens(uid) {
   const snap = await db.doc(`users/${uid}`).get()
@@ -14,557 +28,117 @@ async function getUserTokens(uid) {
   return Object.keys(snap.data().fcmTokens || {})
 }
 
-async function getTokensForUsers(uids) {
-  const arrays = await Promise.all(uids.map(getUserTokens))
-  return arrays.flat()
-}
-
-function stringifyData(obj) {
-  return Object.fromEntries(
-    Object.entries(obj).map(([k, v]) => [k, v == null ? '' : String(v)])
-  )
-}
-
 async function sendPush(tokens, title, body, data = {}) {
-  if (!tokens.length) return
+  if (!tokens.length) return { successCount: 0, failureCount: 0 }
+  const link = data.url || '/'
   const messages = tokens.map(token => ({
     token,
     notification: { title, body },
     data: stringifyData({ ...data, title, body }),
+    android: {
+      priority: 'high',
+      notification: { channelId: 'syng_reminders', priority: 'max', defaultSound: true },
+    },
+    apns: {
+      headers: { 'apns-priority': '10', 'apns-push-type': 'alert' },
+      payload: { aps: { alert: { title, body }, sound: 'default' } },
+    },
     webpush: {
-      notification: { icon: '/icon-192.png', badge: '/icon-192.png', vibrate: [200, 100, 200] },
-      fcmOptions: { link: data.url || '/' },
+      headers: { Urgency: 'high', TTL: '86400' },
+      notification: {
+        icon: '/icon-192.png', badge: '/icon-192.png',
+        vibrate: [200, 100, 200], requireInteraction: true,
+      },
+      fcmOptions: { link },
     },
   }))
-  try {
-    const result = await messaging.sendEach(messages)
-    console.log(`[sendPush] ok:${result.successCount} fail:${result.failureCount}`)
-  } catch (err) {
-    console.error('[sendPush] error:', err)
-  }
+  return messaging.sendEach(messages)
 }
 
-exports.sendReminders = onSchedule(
-  { schedule: 'every 60 minutes', timeZone: 'America/Mexico_City' },
-  async () => {
-    const now  = new Date()
-    const from = Timestamp.fromDate(new Date(now.getTime() - 60_000))
-    const to   = Timestamp.fromDate(now)
+/**
+ * HTTP target de Cloud Tasks — envía el push FCM en el segundo exacto.
+ * Body: { userId, title, taskId, reminderId }
+ */
+exports.sendPushNotification = onRequest(
+  { timeoutSeconds: 30 },
+  async (req, res) => {
+    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
 
-    console.log('[sendReminders] now UTC:', now.toISOString())
-    console.log('[sendReminders] buscando scheduledAt entre:', from.toDate().toISOString(), 'y', to.toDate().toISOString())
+    const { userId, title, taskId, reminderId } = req.body
+    if (!userId || !taskId) return res.status(400).json({ error: 'faltan campos' })
 
-    const snap = await db.collection('tasks')
-      .where('status',               '==', 'pending')
-      .where('isDeleted',            '==', false)
-      .where('reminder.scheduledAt', '>=', from)
-      .where('reminder.scheduledAt', '<=', to)
-      .get()
+    const tokens = await getUserTokens(userId)
+    if (!tokens.length) {
+      console.warn('[sendPushNotification] sin tokens para', userId)
+      return res.json({ ok: false, reason: 'no_tokens' })
+    }
 
-    console.log('[sendReminders] tareas encontradas:', snap.size)
+    const pushTitle = '⏰ Recordatorio'
+    const pushBody  = title || 'Es momento de retomarlo'
+    const url       = `/recordatorio/${taskId}`
 
-    if (snap.empty) return
+    const result = await sendPush(tokens, pushTitle, pushBody, {
+      type: 'reminder',
+      taskId,
+      url,
+    })
 
-    await Promise.all(snap.docs.map(async taskDoc => {
-      const task   = taskDoc.data()
-      console.log('[sendReminders] procesando tarea:', task.title, 'scheduledAt:', task.reminder?.scheduledAt?.toDate?.()?.toISOString())
-      const tokens = await getUserTokens(task.ownerId)
-      console.log('[sendReminders] tokens del usuario:', tokens.length)
-      if (!tokens.length) return
-      await sendPush(tokens, '⏰ Recordatorio', task.title, {
-        type: 'reminder', taskId: taskDoc.id, url: `/recordatorio/${taskDoc.id}`,
-      })
-    }))
-  }
+    if (reminderId) {
+      await db.doc(`reminders/${reminderId}`).update({
+        status:  'sent',
+        sentAt:  FieldValue.serverTimestamp(),
+      }).catch(err => console.warn('[sendPushNotification] update reminder:', err.message))
+    }
+
+    console.log(`[sendPushNotification] taskId=${taskId} ok=${result.successCount} fail=${result.failureCount}`)
+    res.json({ ok: true, taskId, successCount: result.successCount })
+  },
 )
 
-exports.onGroupTaskCreated = onDocumentCreated('tasks/{taskId}', async event => {
-  const task = event.data.data()
-  if (!task.groupId || task.type !== 'group' || task.isDeleted) return
-  const [groupSnap, actorSnap] = await Promise.all([
-    db.doc(`groups/${task.groupId}`).get(),
-    db.doc(`users/${task.ownerId}`).get(),
-  ])
-  if (!groupSnap.exists) return
-  const group     = groupSnap.data()
-  const actorName = actorSnap.data()?.displayName || 'Alguien'
-  const otherUids = (group.memberIds || []).filter(u => u !== task.ownerId)
-  const tokens    = await getTokensForUsers(otherUids)
-  await sendPush(tokens, group.name, `${actorName} agregó: ${task.title}`, {
-    type: 'group_task_created', groupId: task.groupId, taskId: event.params.taskId, url: `/pizarron/${task.groupId}`,
-  })
-})
+/**
+ * Al crear /reminders/{id}, encola Cloud Task para el segundo exacto de scheduledAt.
+ */
+exports.sendReminderTask = onDocumentCreated('reminders/{id}', async (event) => {
+  const data       = event.data.data()
+  const reminderId = event.params.id
+  const taskId     = data.taskId
 
-exports.onGroupTaskUpdated = onDocumentUpdated('tasks/{taskId}', async event => {
-  const before = event.data.before.data()
-  const after  = event.data.after.data()
-  if (!after.groupId || after.type !== 'group') return
-  if (before.isDeleted && after.isDeleted) return
-  let actorUid = after.ownerId
-  let accion   = ''
-  if (!before.isDeleted && after.isDeleted) {
-    accion = `eliminó: ${after.title}`
-  } else if (before.status === 'pending' && after.status === 'completed') {
-    actorUid = after.completedBy || after.ownerId
-    accion   = `completó: ${after.title}`
-  } else if (before.status === 'completed' && after.status === 'pending') {
-    accion = `reabrió: ${after.title}`
-  } else if (before.title !== after.title || before.description !== after.description) {
-    accion = `editó: ${after.title}`
-  } else {
+  if (!data.userId || !taskId || !data.scheduledAt) {
+    console.warn('[sendReminderTask] documento incompleto', reminderId)
     return
   }
-  const [groupSnap, actorSnap] = await Promise.all([
-    db.doc(`groups/${after.groupId}`).get(),
-    db.doc(`users/${actorUid}`).get(),
-  ])
-  if (!groupSnap.exists) return
-  const group     = groupSnap.data()
-  const actorName = actorSnap.data()?.displayName || 'Alguien'
-  const otherUids = (group.memberIds || []).filter(u => u !== actorUid)
-  const tokens    = await getTokensForUsers(otherUids)
-  await sendPush(tokens, group.name, `${actorName} ${accion}`, {
-    type: 'group_task_updated', groupId: after.groupId, taskId: event.params.taskId, url: `/pizarron/${after.groupId}`,
+
+  const scheduledAt = data.scheduledAt.toDate
+    ? data.scheduledAt.toDate()
+    : new Date(data.scheduledAt)
+
+  const scheduleSeconds = Math.floor(scheduledAt.getTime() / 1000)
+  const nowSeconds      = Math.floor(Date.now() / 1000)
+
+  if (scheduleSeconds <= nowSeconds) {
+    console.warn('[sendReminderTask] scheduledAt en el pasado, enviando de inmediato', reminderId)
+  }
+
+  const queuePath = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
+  const url       = SEND_PUSH_URL
+
+  const payload = JSON.stringify({
+    userId:     data.userId,
+    title:      data.title || '',
+    taskId,
+    reminderId,
   })
+
+  const cloudTask = {
+    httpRequest: {
+      httpMethod: 'POST',
+      url,
+      headers: { 'Content-Type': 'application/json' },
+      body: Buffer.from(payload).toString('base64'),
+    },
+    scheduleTime: { seconds: Math.max(scheduleSeconds, nowSeconds) },
+  }
+
+  await tasksClient.createTask({ parent: queuePath, task: cloudTask })
+  console.log(`[sendReminderTask] encolado reminder=${reminderId} taskId=${taskId} at=${scheduledAt.toISOString()}`)
 })
-
-exports.onGroupMembershipChanged = onDocumentUpdated('groups/{groupId}', async event => {
-  const before = event.data.before.data()
-  const after  = event.data.after.data()
-  if (!before.memberIds || !after.memberIds) return
-  const removedUids = before.memberIds.filter(uid => !after.memberIds.includes(uid))
-  if (!removedUids.length) return
-  await Promise.all(removedUids.map(async uid => {
-    const tokens = await getUserTokens(uid)
-    if (!tokens.length) return
-    await sendPush(tokens, after.name, 'Ya no formas parte de este grupo', {
-      type: 'group_removed', groupId: event.params.groupId, url: '/pizarrones',
-    })
-  }))
-})
-
-exports.dailySummary = onSchedule(
-  { schedule: 'every 1 minutes', timeZone: 'America/Mexico_City' },
-  async () => {
-    const mxNow   = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
-    const hh      = String(mxNow.getHours()).padStart(2, '0')
-    const mm      = String(mxNow.getMinutes()).padStart(2, '0')
-    const timeNow = `${hh}:${mm}`
-    const usersSnap = await db.collection('users').where('notifPrefs.dailyTime', '==', timeNow).get()
-    if (usersSnap.empty) return
-    const dayStart = new Date(mxNow); dayStart.setHours(0, 0, 0, 0)
-    const dayEnd   = new Date(mxNow); dayEnd.setHours(23, 59, 59, 999)
-    await Promise.all(usersSnap.docs.map(async userDoc => {
-      const user   = userDoc.data()
-      const tokens = Object.keys(user.fcmTokens || {})
-      if (!tokens.length) return
-      const tasksSnap = await db.collection('tasks')
-        .where('ownerId',   '==', userDoc.id)
-        .where('type',      '==', 'personal')
-        .where('status',    '==', 'pending')
-        .where('isDeleted', '==', false)
-        .where('dueDate',   '>=', Timestamp.fromDate(dayStart))
-        .where('dueDate',   '<=', Timestamp.fromDate(dayEnd))
-        .get()
-      if (!tasksSnap.size) return
-      const n = tasksSnap.size
-      await sendPush(tokens, '📋 Tu día en Syng', `${n} tarea${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''} hoy`, {
-        type: 'daily_summary', url: '/agenda',
-      })
-    }))
-  }
-)
-
-exports.rolloverPendingTasks = onSchedule(
-  { schedule: 'every day 00:05', timeZone: 'America/Mexico_City' },
-  async () => {
-    const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
-    const todayStart = new Date(mxNow)
-    todayStart.setHours(0, 0, 0, 0)
-    const todayEnd = new Date(mxNow)
-    todayEnd.setHours(23, 59, 59, 999)
-    const cutoff = Timestamp.fromDate(todayStart)
-    const newDue = Timestamp.fromDate(todayEnd)
-    console.log('[rollover] moviendo tareas con dueDate <', cutoff.toDate().toISOString())
-    const snap = await db.collection('tasks')
-      .where('status',    '==', 'pending')
-      .where('isDeleted', '==', false)
-      .where('dueDate',   '<',  cutoff)
-      .get()
-    console.log('[rollover] tareas a mover:', snap.size)
-    if (snap.empty) return
-    const BATCH_SIZE = 499
-    const docs = snap.docs
-    for (let i = 0; i < docs.length; i += BATCH_SIZE) {
-      const batch = db.batch()
-      docs.slice(i, i + BATCH_SIZE).forEach(doc => batch.update(doc.ref, { dueDate: newDue }))
-      await batch.commit()
-      console.log('[rollover] batch committed:', Math.floor(i/BATCH_SIZE)+1)
-    }
-    console.log('[rollover] done:', docs.length)
-  }
-)
-
-const { onRequest } = require('firebase-functions/v2/https')
-
-exports.rolloverPendingTasksNow = onRequest(
-  { timeoutSeconds: 60 },
-  async (req, res) => {
-    const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
-    const todayStart = new Date(mxNow)
-    todayStart.setHours(0, 0, 0, 0)
-    const todayEnd = new Date(mxNow)
-    todayEnd.setHours(23, 59, 59, 999)
-    const cutoff = Timestamp.fromDate(todayStart)
-    const newDue = Timestamp.fromDate(todayEnd)
-    const snap = await db.collection('tasks')
-      .where('status',    '==', 'pending')
-      .where('isDeleted', '==', false)
-      .where('dueDate',   '<',  cutoff)
-      .get()
-    if (snap.empty) return res.json({ moved: 0, message: 'No hay tareas para mover' })
-    const BATCH_SIZE = 499
-    const docs = snap.docs
-    for (let i = 0; i < docs.length; i += BATCH_SIZE) {
-      const batch = db.batch()
-      docs.slice(i, i + BATCH_SIZE).forEach(doc => batch.update(doc.ref, { dueDate: newDue }))
-      await batch.commit()
-    }
-    res.json({ moved: docs.length, newDueDate: todayEnd.toISOString() })
-  }
-)
-
-exports.inspectTask = onRequest(
-  { timeoutSeconds: 60 },
-  async (req, res) => {
-    const snap = await db.collection('tasks')
-      .where('title', '==', 'Comprar regadera de Fergie')
-      .get()
-    const results = snap.docs.map(d => ({ id: d.id, ...d.data() }))
-    res.json(results)
-  }
-)
-
-exports.inspectReminders = onRequest(
-  { timeoutSeconds: 60 },
-  async (req, res) => {
-    const snap = await db.collection('tasks')
-      .where('status',    '==', 'pending')
-      .where('isDeleted', '==', false)
-      .get()
-
-    const withReminder = snap.docs
-      .map(d => d.data())
-      .filter(t => t.reminder)
-      .map(t => ({
-        title: t.title,
-        reminder: t.reminder,
-        reminderType: typeof t.reminder,
-        scheduledAt: t.reminder?.scheduledAt,
-        scheduledAtType: typeof t.reminder?.scheduledAt,
-        hasToDate: typeof t.reminder?.scheduledAt?.toDate === 'function',
-      }))
-
-    res.json({ total: withReminder.length, tasks: withReminder.slice(0, 5) })
-  }
-)
-
-exports.inspectUserTokens = onRequest(
-  { timeoutSeconds: 30 },
-  async (req, res) => {
-    const uid = req.query.uid
-    if (!uid) return res.json({ error: 'falta uid' })
-    const snap = await db.doc(`users/${uid}`).get()
-    const tokens = snap.data()?.fcmTokens || {}
-    res.json({ tokenCount: Object.keys(tokens).length, tokens: Object.keys(tokens) })
-  }
-)
-
-// ─── Centro de Notificaciones ─────────────────────────────────────────────────
-
-exports.onActivityLogCreated = onDocumentCreated('activity_log/{logId}', async event => {
-  const log = event.data.data()
-  const { event_action, actor_id, group_id, entity_id, metadata } = log
-
-  // Solo procesar eventos de grupo
-  if (!group_id) return
-
-  // Obtener grupo y actor
-  const [groupSnap, actorSnap] = await Promise.all([
-    db.doc(`groups/${group_id}`).get(),
-    db.doc(`users/${actor_id}`).get(),
-  ])
-  if (!groupSnap.exists) return
-
-  const group     = groupSnap.data()
-  const actorName = actorSnap.data()?.displayName || 'Alguien'
-  const otherUids = (group.memberIds || []).filter(u => u !== actor_id)
-  if (!otherUids.length) return
-
-  // Construir mensaje humano
-  const messages = {
-    'task.completed': `${actorName} completó: ${metadata?.task_title || ''}`,
-    'task.created':   `${actorName} agregó: ${metadata?.task_title || ''}`,
-    'task.deleted':   `${actorName} eliminó: ${metadata?.task_title || ''}`,
-    'member.joined':  `${actorName} se unió al grupo`,
-    'member.left':    `${actorName} salió del grupo`,
-  }
-  const body = messages[event_action] || `${actorName} hizo algo en ${group.name}`
-  const title = group.name
-  const url   = `/pizarron/${group_id}`
-
-  // Escribir notificación en inbox de cada miembro
-  const { Timestamp: FTimestamp } = require('firebase-admin/firestore')
-  const notifData = {
-    type:      event_action,
-    title,
-    body,
-    read:      false,
-    createdAt: FTimestamp.now(),
-    actorId:   actor_id,
-    actorName,
-    groupId:   group_id,
-    taskId:    entity_id || null,
-    actionUrl: url,
-  }
-
-  await Promise.all(otherUids.map(uid =>
-    db.collection(`users/${uid}/notifications`).add({ ...notifData, userId: uid })
-  ))
-
-  // Mandar push FCM
-  const tokens = await getTokensForUsers(otherUids)
-  await sendPush(tokens, title, body, { type: event_action, groupId: group_id, url })
-
-  console.log(`[onActivityLogCreated] ${event_action} → ${otherUids.length} miembros notificados`)
-})
-
-// ─── Recordatorios con Cloud Tasks ───────────────────────────────────────────
-
-const { CloudTasksClient } = require('@google-cloud/tasks')
-const tasksClient = new CloudTasksClient()
-
-const PROJECT    = 'syng-app'
-const LOCATION   = 'us-central1'
-const QUEUE      = 'syng-reminders'
-const FUNC_URL   = `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendReminderTask`
-
-exports.scheduleReminder = onRequest(
-  { timeoutSeconds: 30 },
-  async (req, res) => {
-    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
-    const { taskId, scheduledAt } = req.body
-    if (!taskId || !scheduledAt) return res.status(400).json({ error: 'faltan campos' })
-
-    const scheduleTime = new Date(scheduledAt)
-    if (isNaN(scheduleTime.getTime())) return res.status(400).json({ error: 'scheduledAt inválido' })
-
-    const queue = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
-    const task = {
-      httpRequest: {
-        httpMethod: 'POST',
-        url: FUNC_URL,
-        headers: { 'Content-Type': 'application/json' },
-        body: Buffer.from(JSON.stringify({ taskId })).toString('base64'),
-      },
-      scheduleTime: {
-        seconds: Math.floor(scheduleTime.getTime() / 1000),
-      },
-    }
-
-    try {
-      await tasksClient.createTask({ parent: queue, task })
-      res.json({ ok: true, scheduledAt: scheduleTime.toISOString() })
-    } catch (err) {
-      console.error('[scheduleReminder] error:', err)
-      res.status(500).json({ error: err.message })
-    }
-  }
-)
-
-exports.sendReminderTask = onRequest(
-  { timeoutSeconds: 30 },
-  async (req, res) => {
-    const { taskId } = req.body
-    if (!taskId) return res.status(400).send('falta taskId')
-
-    const taskDoc = await db.doc(`tasks/${taskId}`).get()
-    if (!taskDoc.exists) return res.status(404).send('tarea no encontrada')
-
-    const task = taskDoc.data()
-    if (task.status !== 'pending' || task.isDeleted) return res.status(200).send('skip')
-
-    const tokens = await getUserTokens(task.ownerId)
-    if (tokens.length) {
-      await sendPush(tokens, '⏰ Recordatorio', task.title, {
-        type: 'reminder', taskId, url: `/recordatorio/${taskId}`,
-      })
-    }
-
-    await db.doc(`tasks/${taskId}`).update({ 'reminder.notification_sent': true })
-    res.json({ ok: true })
-  }
-)
-
-// ─── Resumen Diario con Cloud Tasks ──────────────────────────────────────────
-
-exports.scheduleDailySummary = onRequest(
-  { timeoutSeconds: 30 },
-  async (req, res) => {
-    if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
-    const { uid, dailyTime } = req.body
-    if (!uid || !dailyTime) return res.status(400).json({ error: 'faltan campos' })
-
-    const [hh, mm] = dailyTime.split(':').map(Number)
-    const now = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
-    const scheduled = new Date(now)
-    scheduled.setHours(hh, mm, 0, 0)
-    if (scheduled <= now) scheduled.setDate(scheduled.getDate() + 1)
-
-    const queue = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
-    const task = {
-      httpRequest: {
-        httpMethod: 'POST',
-        url: `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendDailySummaryTask`,
-        headers: { 'Content-Type': 'application/json' },
-        body: Buffer.from(JSON.stringify({ uid, dailyTime })).toString('base64'),
-      },
-      scheduleTime: { seconds: Math.floor(scheduled.getTime() / 1000) },
-    }
-
-    try {
-      await tasksClient.createTask({ parent: queue, task })
-      res.json({ ok: true, scheduledAt: scheduled.toISOString() })
-    } catch (err) {
-      console.error('[scheduleDailySummary] error:', err)
-      res.status(500).json({ error: err.message })
-    }
-  }
-)
-
-exports.sendDailySummaryTask = onRequest(
-  { timeoutSeconds: 30 },
-  async (req, res) => {
-    const { uid, dailyTime } = req.body
-    if (!uid) return res.status(400).send('falta uid')
-
-    const userDoc = await db.doc(`users/${uid}`).get()
-    if (!userDoc.exists) return res.status(404).send('usuario no encontrado')
-
-    const user   = userDoc.data()
-    const tokens = Object.keys(user.fcmTokens || {})
-
-    if (tokens.length) {
-      const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
-      const dayStart = new Date(mxNow); dayStart.setHours(0, 0, 0, 0)
-      const dayEnd   = new Date(mxNow); dayEnd.setHours(23, 59, 59, 999)
-
-      const tasksSnap = await db.collection('tasks')
-        .where('ownerId',   '==', uid)
-        .where('status',    '==', 'pending')
-        .where('isDeleted', '==', false)
-        .where('dueDate',   '>=', Timestamp.fromDate(dayStart))
-        .where('dueDate',   '<=', Timestamp.fromDate(dayEnd))
-        .get()
-
-      if (tasksSnap.size > 0) {
-        const n = tasksSnap.size
-        await sendPush(tokens, '📋 Tu día en Syng', `${n} tarea${n !== 1 ? 's' : ''} pendiente${n !== 1 ? 's' : ''} hoy`, {
-          type: 'daily_summary', url: '/agenda',
-        })
-      }
-    }
-
-    // Reprogramar para mañana a la misma hora
-    const [hh, mm] = (dailyTime || '08:00').split(':').map(Number)
-    const manana = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
-    manana.setDate(manana.getDate() + 1)
-    manana.setHours(hh, mm, 0, 0)
-
-    const queue = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
-    const task = {
-      httpRequest: {
-        httpMethod: 'POST',
-        url: `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendDailySummaryTask`,
-        headers: { 'Content-Type': 'application/json' },
-        body: Buffer.from(JSON.stringify({ uid, dailyTime })).toString('base64'),
-      },
-      scheduleTime: { seconds: Math.floor(manana.getTime() / 1000) },
-    }
-
-    try {
-      await tasksClient.createTask({ parent: queue, task })
-    } catch (err) {
-      console.error('[sendDailySummaryTask] error al reprogramar:', err)
-    }
-
-    res.json({ ok: true })
-  }
-)
-
-// ─── Reenganche ───────────────────────────────────────────────────────────────
-
-exports.checkReenganche = onSchedule(
-  { schedule: 'every 24 hours', timeZone: 'America/Mexico_City' },
-  async () => {
-    const mxNow = new Date(new Date().toLocaleString('en-US', { timeZone: 'America/Mexico_City' }))
-
-    // Buscar usuarios con notifPrefs.dailyTime — tienen notificaciones activas
-    const usersSnap = await db.collection('users')
-      .where('notifPrefs.dailyTime', '!=', null)
-      .get()
-
-    if (usersSnap.empty) return
-
-    const hace5dias = new Date(mxNow)
-    hace5dias.setDate(hace5dias.getDate() - 5)
-    const hace3dias = new Date(mxNow)
-    hace3dias.setDate(hace3dias.getDate() - 3)
-
-    await Promise.all(usersSnap.docs.map(async userDoc => {
-      const user   = userDoc.data()
-      const tokens = Object.keys(user.fcmTokens || {})
-      if (!tokens.length) return
-
-      // Verificar si ya mandamos reenganche recientemente
-      const ultimoReenganche = user.notifPrefs?.lastReenganche?.toDate?.()
-      if (ultimoReenganche) {
-        const diffDias = (mxNow - ultimoReenganche) / (1000 * 60 * 60 * 24)
-        if (diffDias < 3) return // Ya se mandó hace menos de 3 días
-      }
-
-      // Buscar tareas futuras — si tiene, no está en racha seca
-      const tareasSnap = await db.collection('tasks')
-        .where('ownerId',   '==', userDoc.id)
-        .where('type',      '==', 'personal')
-        .where('status',    '==', 'pending')
-        .where('isDeleted', '==', false)
-        .where('dueDate',   '>=', Timestamp.fromDate(hace3dias))
-        .get()
-
-      if (tareasSnap.size > 0) return // Tiene tareas recientes, no reenganchamos
-
-      // Verificar que lleva al menos 3 días sin tareas
-      const todasSnap = await db.collection('tasks')
-        .where('ownerId',   '==', userDoc.id)
-        .where('type',      '==', 'personal')
-        .where('status',    '==', 'pending')
-        .where('isDeleted', '==', false)
-        .get()
-
-      if (todasSnap.size > 0) return // Tiene tareas futuras, no reenganchamos
-
-      // Mandar push de reenganche
-      await sendPush(tokens, '👋 ¿Cómo va todo?', 'Llevas unos días sin organizar nada. Entra un momento.', {
-        type: 'reenganche', url: '/bienvenido-de-vuelta',
-      })
-
-      // Guardar fecha del último reenganche para no repetir
-      await db.doc(`users/${userDoc.id}`).update({
-        'notifPrefs.lastReenganche': Timestamp.now(),
-      })
-
-      console.log('[checkReenganche] reenganche enviado a:', userDoc.id)
-    }))
-  }
-)

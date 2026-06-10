@@ -23,8 +23,11 @@ export function UnirseScreen() {
   const [status, setStatus] = useState('loading')
   const [err,    setErr]    = useState(null)
 
+  // Esperar a que Firebase confirme el estado de autenticación antes de actuar
   useEffect(() => {
     if (!token) { setStatus('notoken'); return }
+    // Si auth todavía está cargando, esperamos
+    if (auth && auth.loading) return
     getInvitationByToken(token)
       .then(inv => {
         if (!inv) { setStatus('error'); setErr('not_found'); return }
@@ -32,10 +35,10 @@ export function UnirseScreen() {
         setStatus('preview')
       })
       .catch(e => { setStatus('error'); setErr(e.message || 'Error al cargar.') })
-  }, [token])
+  }, [token, auth && auth.loading])
 
   async function handleUnirse() {
-    if (!auth || !auth.user) { navigate('/'); return }
+    if (!auth || !auth.user) { navigate('/login?redirect=' + encodeURIComponent('/unirse?inv=' + token)); return }
     setStatus('joining')
     try {
       const user = {

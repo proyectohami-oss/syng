@@ -47,16 +47,10 @@ export function useAuthActions() {
 
   const signOut = useCallback(async () => {
     try {
-      const { removeFcmToken }         = await import('../core/services/users.service')
-      const { getMessaging, getToken } = await import('firebase/messaging')
-      const { app }                    = await import('../firebase')
-      const messaging                  = getMessaging(app)
-      const vapidKey                   = import.meta.env.VITE_FIREBASE_VAPID_KEY
-      if (vapidKey) {
-        const token = await getToken(messaging, { vapidKey }).catch(() => null)
-        if (token && auth.currentUser) {
-          await removeFcmToken(auth.currentUser.uid, token)
-        }
+      const { removeFcmToken, getLocalFcmToken } = await import('../core/services/users.service')
+      if (auth.currentUser) {
+        const token = await getLocalFcmToken()
+        if (token) await removeFcmToken(auth.currentUser.uid, token)
       }
     } catch (_) { /* FCM no configurado aún */ }
     await firebaseSignOut(auth)

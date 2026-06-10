@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react'
-import { doc, updateDoc, getDoc } from 'firebase/firestore'
-import { auth, db } from '../../firebase'
 import { usePushNotifications } from '../../core/notifications/usePushNotifications'
 
 const isIOS        = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
-
-function formatTime(t) {
-  const [h, m] = t.split(':').map(Number)
-  return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${h >= 12 ? 'PM' : 'AM'}`
-}
 
 export function NotifPrefsSection() {
   const { isSupported, permissionState, requestPermission } = usePushNotifications()
@@ -18,8 +11,6 @@ export function NotifPrefsSection() {
   const [showModal,  setShowModal]  = useState(false)
   const [installing, setInstalling] = useState(false)
   const [activating, setActivating] = useState(false)
-  const [dailyTime,  setDailyTime]  = useState('')
-  const [status,     setStatus]     = useState('')
 
   useEffect(() => {
     if (isStandalone()) { setInstalled(true); return }
@@ -32,15 +23,6 @@ export function NotifPrefsSection() {
       window.removeEventListener('beforeinstallprompt', onPrompt)
       window.removeEventListener('appinstalled', onDone)
     }
-  }, [])
-
-  useEffect(() => {
-    const uid = auth.currentUser?.uid
-    if (!uid) return
-    getDoc(doc(db, 'users', uid)).then(snap => {
-      const t = snap.data()?.notifPrefs?.dailyTime
-      if (t) setDailyTime(t)
-    })
   }, [])
 
   async function handleInstall() {
@@ -59,20 +41,7 @@ export function NotifPrefsSection() {
     try { await requestPermission() } finally { setActivating(false) }
   }
 
-  async function handleTimeChange(e) {
-    const time = e.target.value
-    setDailyTime(time)
-    if (!time) return
-    const uid = auth.currentUser?.uid
-    if (!uid) return
-    try {
-      await updateDoc(doc(db, 'users', uid), { 'notifPrefs.dailyTime': time })
-      setStatus('saved')
-      setTimeout(() => setStatus(''), 2500)
-    } catch {}
-  }
-
-  const ios = isIOS()
+  const ios        = isIOS()
   const canInstall = !installed && (!!prompt || ios)
 
   return (
@@ -94,51 +63,27 @@ export function NotifPrefsSection() {
         </div>
       )}
 
-      {/* NOTIFICACIONES */}
-      <div style={card}>
-        <p style={label}>🔔  NOTIFICACIONES</p>
+      {/* Notificaciones — activar si no están activas */}
+      {isSupported && permissionState === 'default' && installed && (
+        <div style={card}>
+          <p style={label}>🔔  NOTIFICACIONES</p>
+          <p style={{ ...muted, marginBottom:12 }}>Activa las notificaciones para recibir recordatorios de tus grupos.</p>
+          <button onClick={handleActivate} disabled={activating} style={btnBlue}>
+            {activating ? 'Activando…' : '🔔 Activar notificaciones'}
+          </button>
+        </div>
+      )}
 
-        {!isSupported && (
-          <p style={muted}>Instala la app primero para activar notificaciones.</p>
-        )}
-
-        {isSupported && permissionState === 'denied' && (
+      {isSupported && permissionState === 'denied' && (
+        <div style={card}>
           <div style={alertBox}>
             <span>⚠️</span>
             <p style={{ margin:0, fontSize:13, color:'#7c2d12', lineHeight:1.5 }}>
               Notificaciones bloqueadas. Ve a Configuración y actívalas para Syng.
             </p>
           </div>
-        )}
-
-        {isSupported && permissionState === 'default' && (
-          <>
-            <p style={{ ...muted, marginBottom:12 }}>Recibe recordatorios de tus tareas y novedades de tus grupos.</p>
-            <button onClick={handleActivate} disabled={activating} style={btnBlue}>
-              {activating ? 'Activando…' : '🔔 Activar notificaciones'}
-            </button>
-          </>
-        )}
-
-        {isSupported && permissionState === 'granted' && (
-          <>
-            <div style={chip}>✓ Notificaciones activas</div>
-            <div style={divider} />
-            <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', gap:12 }}>
-              <div>
-                <p style={{ margin:0, fontSize:15, fontWeight:600, color:'#0D1240' }}>Resumen diario</p>
-                <p style={{ margin:'3px 0 0', fontSize:12, color:'rgba(13,18,64,0.45)' }}>
-                  {dailyTime ? `Te avisamos a las ${formatTime(dailyTime)}` : 'Elige la hora'}
-                </p>
-              </div>
-              <div style={{ display:'flex', alignItems:'center', gap:8 }}>
-                {status === 'saved' && <span style={{ fontSize:12, color:'#2D3A8C', fontWeight:700 }}>✓</span>}
-                <input type="time" value={dailyTime} onChange={handleTimeChange} style={timeInput} />
-              </div>
-            </div>
-          </>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* MODAL iOS */}
       {showModal && (
@@ -177,6 +122,3 @@ const label    = { margin:'0 0 14px', fontSize:11, fontWeight:700, color:'rgba(1
 const btnBlue  = { width:'100%', minHeight:50, borderRadius:14, border:'none', background:'linear-gradient(135deg,#3D4FA8,#2D3A8C)', color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer' }
 const muted    = { margin:0, fontSize:13, color:'rgba(13,18,64,0.5)', lineHeight:1.6 }
 const alertBox = { display:'flex', gap:10, alignItems:'flex-start', background:'rgba(254,226,226,0.8)', borderRadius:12, padding:'12px 14px' }
-const chip     = { display:'inline-flex', alignItems:'center', gap:6, background:'rgba(220,252,231,0.9)', color:'#166534', fontSize:13, fontWeight:700, borderRadius:20, padding:'5px 12px', marginBottom:14 }
-const divider  = { height:1, background:'rgba(13,18,64,0.07)', margin:'0 0 14px' }
-const timeInput= { border:'1.5px solid rgba(45,58,140,0.2)', borderRadius:12, padding:'8px 12px', fontSize:15, color:'#0D1240', background:'rgba(255,255,255,0.95)', outline:'none', minWidth:95, minHeight:44, cursor:'pointer', fontWeight:600 }

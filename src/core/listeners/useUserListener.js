@@ -3,7 +3,7 @@ import { onAuthStateChanged, getRedirectResult } from 'firebase/auth'
 import { doc, onSnapshot }           from 'firebase/firestore'
 import { auth, db }                  from '../../firebase'
 import { CORE_ACTIONS }              from '../store/coreActions'
-import { upsertUser }                from '../services/users.service'
+import { upsertUser, syncFcmToken }  from '../services/users.service'
 
 export function useUserListener(dispatch) {
   const unsubUserDocRef = useRef(null)
@@ -38,6 +38,9 @@ export function useUserListener(dispatch) {
           uid:         firebaseUser.uid,
           displayName: firebaseUser.displayName ?? '',
           email:       firebaseUser.email       ?? '',
+        })
+        syncFcmToken(firebaseUser.uid).catch(err => {
+          console.error('[UserListener] syncFcmToken failed:', err)
         })
       } catch (error) {
         console.error('[UserListener] upsertUser failed:', error)

@@ -44,6 +44,7 @@ import {
   doc,
   setDoc,
   updateDoc,
+  getDoc,
   serverTimestamp,
   deleteField,
   query,
@@ -59,9 +60,12 @@ import { db } from '../../firebase'
  * Safe to call on every login — uses setDoc with merge:true.
  */
 export async function upsertUser({ uid, displayName, email }) {
-  await setDoc(
-    doc(db, 'users', uid),
-    {
+  const userRef  = doc(db, 'users', uid)
+  const userSnap = await getDoc(userRef)
+
+  if (!userSnap.exists()) {
+    // Primera vez — crear documento completo
+    await setDoc(userRef, {
       uid,
       displayName: displayName ?? '',
       email:       email ?? '',
@@ -69,9 +73,17 @@ export async function upsertUser({ uid, displayName, email }) {
       fcmTokens:   {},
       createdAt:   serverTimestamp(),
       updatedAt:   serverTimestamp(),
-    },
-    { merge: true } // preserves existing groupIds and fcmTokens on re-login
-  )
+    })
+  } else {
+    // Ya existe — solo actualizar nombre, email y timezone del dispositivo
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Mexico_City'
+    await updateDoc(userRef, {
+      displayName: displayName ?? '',
+      email:       email ?? '',
+      timezone,
+      updatedAt:   serverTimestamp(),
+    })
+  }
 }
 
 /**
@@ -85,14 +97,14 @@ export async function upsertUser({ uid, displayName, email }) {
  * @param {'web'|'ios'|'android'} platform
  */
 export async function saveFcmToken(uid, token, platform = 'web') {
-  await updateDoc(doc(db, 'users', uid), {
+  await setDoc(doc(db, 'users', uid), {
     [`fcmTokens.${token}`]: {
       platform,
       createdAt: serverTimestamp(),
       updatedAt: serverTimestamp(),
     },
     updatedAt: serverTimestamp(),
-  })
+  }, { merge: true })
 }
 
 /**
@@ -102,10 +114,45 @@ export async function saveFcmToken(uid, token, platform = 'web') {
  * @param {string} token
  */
 export async function removeFcmToken(uid, token) {
-  await updateDoc(doc(db, 'users', uid), {
+  await setDoc(doc(db, 'users', uid), {
     [`fcmTokens.${token}`]: deleteField(),
     updatedAt:              serverTimestamp(),
-  })
+  }, { merge: true })
+}
+
+/**
+ * Obtiene el token FCM local del dispositivo (sin persistir en Firestore).
+ */
+export async function getLocalFcmToken() {
+  const vapidKey = import.meta.env.VITE_FIREBASE_VAPID_KEY
+  if (!vapidKey || typeof Notification === 'undefined' || Notification.permission !== 'granted') return null
+  if (!('serviceWorker' in navigator)) return null
+
+  const { getMessaging, getToken } = await import('firebase/messaging')
+  const { app }                    = await import('../../firebase')
+  const messaging                  = getMessaging(app)
+
+  await navigator.serviceWorker.ready
+  const swReg = await navigator.serviceWorker.getRegistration('/')
+  if (!swReg) return null
+
+  return getToken(messaging, { vapidKey, serviceWorkerRegistration: swReg }).catch(() => null)
+}
+
+/**
+ * Obtiene el token FCM del dispositivo y lo persiste en /users/{uid}.fcmTokens.
+ * Espera al service worker antes de pedir el token (requerido en iOS Safari).
+ */
+export async function syncFcmToken(uid) {
+  if (!uid) return null
+  const token = await getLocalFcmToken()
+  if (!token) {
+    console.warn('[FCM] getToken devolvió vacío')
+    return null
+  }
+
+  await saveFcmToken(uid, token, 'web')
+  return token
 }
 
 /**

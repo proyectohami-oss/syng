@@ -15,7 +15,7 @@ import { UnirseScreen }      from './modules/UnirseScreen'
 import { Toast }             from './shared/Toast'
 import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
 import { NotificacionesModule } from './modules/notificaciones/NotificacionesModule'
-import { RecordatorioScreen } from './modules/recordatorio/RecordatorioScreen'
+import RecordatorioView from './pages/RecordatorioView'
 import { ResumenDiarioScreen } from './modules/resumen/ResumenDiarioScreen'
 import { BienvenidoDeVueltaScreen } from './modules/reenganche/BienvenidoDeVueltaScreen'
 
@@ -101,7 +101,7 @@ function AppWithViewport() {
               <Route path="/super"        element={<Placeholder icon="🛒" label="Lista de Súper" />} />
               <Route path="/compartir"    element={<Placeholder icon="📤" label="Compartir" />} />
               <Route path="/notificaciones" element={<NotificacionesModule />} />
-              <Route path="/recordatorio/:taskId" element={<RecordatorioScreen />} />
+              <Route path="/recordatorio/:taskId" element={<RecordatorioView />} />
               <Route path="/resumen-diario" element={<ResumenDiarioScreen />} />
               <Route path="/bienvenido-de-vuelta" element={<BienvenidoDeVueltaScreen />} />
               <Route path="/perfil"       element={<PerfilModule />} />

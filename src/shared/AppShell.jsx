@@ -19,10 +19,11 @@
  *   └──────────┴──────────────┘
  */
 import { useNavigate, useLocation } from 'react-router-dom'
-import { useState, useEffect }        from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useCoreAuth, useCoreGroups } from '../core/hooks/useCoreData'
+import { usePushNotifications }    from '../core/notifications/usePushNotifications'
 import { useAuthActions }             from '../auth/useAuthActions'
 
 async function shareApp() {
@@ -43,18 +44,53 @@ async function shareApp() {
   }
 }
 
+// Íconos SVG planos para la barra de navegación
+const ICONS = {
+  agenda: (active) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
+    </svg>
+  ),
+  pizarrones: (active) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+    </svg>
+  ),
+  compartir: (active) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+    </svg>
+  ),
+  avisos: (active, badge) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      {badge > 0 && <circle cx="18" cy="5" r="4" fill="#E53E3E" stroke="white" strokeWidth="1.5"/>}
+    </svg>
+  ),
+  perfil: (active) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
+  microfono: (escuchando) => (
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={escuchando ? '#ffffff' : '#2D3A8C'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10a7 7 0 0 1-14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+    </svg>
+  ),
+}
+
 const NAV_ITEMS = [
-  { emoji:'📅', label:'Mi Agenda',  path:'/agenda' },
-  { emoji:'📌', label:'Pizarrones', path:'/pizarrones' },
-  // { emoji:'🛒', label:'Súper',      path:'/super' },
-  { emoji:'📤', label:'Compartir',  path:'/compartir' },
-  { emoji:'🔔', label:'Avisos',     path:'/notificaciones' },
-  { emoji:'👤', label:'Perfil',     path:'/perfil' },
+  { key:'agenda',     label:'Mi Agenda',  path:'/agenda' },
+  { key:'pizarrones', label:'Pizarrones', path:'/pizarrones' },
+  { key:'compartir',  label:'Compartir',  path:'/compartir' },
+  { key:'avisos',     label:'Avisos',     path:'/notificaciones' },
+  { key:'perfil',     label:'Perfil',     path:'/perfil' },
 ]
 
 export function AppShell({ children }) {
   const auth      = useCoreAuth()
   const groupsCtx = useCoreGroups()
+  usePushNotifications()
   const navigate  = useNavigate()
   const location  = useLocation()
   const { signOut } = useAuthActions()
@@ -66,6 +102,86 @@ export function AppShell({ children }) {
     return onSnapshot(q, snap => setUnreadCount(snap.size))
   }, [auth?.user?.uid])
   const [signingOut, setSigningOut] = useState(false)
+  const [syngEscuchando, setSyngEscuchando] = useState(false)
+  const [syngCargando, setSyngCargando]       = useState(false)
+  const [historial, setHistorial]             = useState([])
+  const mediaRecorderRef = useRef(null)
+  const chunksRef        = useRef([])
+  const tieneSyngAI      = false // Pendiente app nativa — oculto en web
+
+  async function toggleSyng() {
+    if (syngCargando) return
+
+    if (syngEscuchando) {
+      // Detener grabación
+      mediaRecorderRef.current?.stop()
+      setSyngEscuchando(false)
+      return
+    }
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true })
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' })
+      mediaRecorderRef.current = mediaRecorder
+      chunksRef.current = []
+
+      mediaRecorder.ondataavailable = e => {
+        if (e.data.size > 0) chunksRef.current.push(e.data)
+      }
+
+      mediaRecorder.onstop = async () => {
+        stream.getTracks().forEach(t => t.stop())
+        setSyngCargando(true)
+
+        try {
+          const blob = new Blob(chunksRef.current, { type: 'audio/webm' })
+          const formData = new FormData()
+          formData.append('file', blob, 'audio.webm')
+          formData.append('uid', auth.user.uid)
+
+          // 1. Whisper — voz a texto
+          const vozRes = await fetch('https://us-central1-syng-app.cloudfunctions.net/syngAiVoz', {
+            method: 'POST',
+            body: formData,
+          })
+          const vozData = await vozRes.json()
+          const texto = vozData.texto
+
+          if (!texto) {
+            setSyngCargando(false)
+            return
+          }
+
+          // 2. Claude — texto a respuesta
+          const chatRes = await fetch('https://syngaichat-nufa4puqvq-uc.a.run.app', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ uid: auth.user.uid, message: texto, history: historial, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone }),
+          })
+          const chatData = await chatRes.json()
+          setHistorial(chatData.history || [])
+
+          // 3. Voz nativa del iPhone — texto a voz
+          const utterance = new SpeechSynthesisUtterance(chatData.reply)
+          utterance.lang = 'es-MX'
+          utterance.rate = 1.0
+          utterance.pitch = 1.0
+          window.speechSynthesis.speak(utterance)
+
+        } catch (err) {
+          console.error('[Syng AI] error:', err)
+        } finally {
+          setSyngCargando(false)
+        }
+      }
+
+      mediaRecorder.start()
+      setSyngEscuchando(true)
+
+    } catch (err) {
+      console.error('[Syng AI] no se pudo acceder al micrófono:', err)
+    }
+  }
 
   const user   = auth.user
   const groups = Array.from(groupsCtx.list.values())
@@ -138,7 +254,7 @@ export function AppShell({ children }) {
             color:      isActive(item.path) ? '#2D3A8C' : '#5B6480',
             transition: 'background 0.15s',
           }}>
-            <span style={{ fontSize:18 }}>{item.emoji}</span>
+            <span style={{ display:'flex', alignItems:'center', justifyContent:'center', width:22 }}>{ICONS[item.key]?.(isActive(item.path))}</span>
             {item.label}
           </button>
         ))}
@@ -221,8 +337,9 @@ export function AppShell({ children }) {
           paddingBottom: 'env(safe-area-inset-bottom)',
           flexShrink: 0,
           boxShadow: '0 -8px 32px rgba(13,18,64,0.07)',
+          alignItems: 'center',
         }}>
-          {NAV_ITEMS.map(item => (
+          {NAV_ITEMS.slice(0,2).map(item => (
             <button
               key={item.label}
               onClick={() => item.path === '/compartir' ? shareApp() : navigate(item.path)}
@@ -234,22 +351,77 @@ export function AppShell({ children }) {
                 WebkitTapHighlightColor: 'transparent',
               }}
             >
-              <span style={{ position:'relative', display:'inline-block' }}>
-                <span style={{
-                  fontSize: 22, lineHeight: 1,
-                  filter: isActive(item.path) ? 'none' : 'grayscale(40%) opacity(0.60)',
-                  transform: isActive(item.path) ? 'scale(1.1)' : 'scale(1)',
-                  transition: 'transform 0.12s ease',
-                  display: 'block',
-                }}>{item.emoji}</span>
-                {item.path === '/notificaciones' && unreadCount > 0 && (
+              <span style={{ position:'relative', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                {ICONS[item.key]?.(isActive(item.path))}
+              </span>
+              <span style={{
+                fontSize: 10, lineHeight: 1,
+                fontWeight: isActive(item.path) ? 600 : 400,
+                color: isActive(item.path) ? '#2D3A8C' : 'rgba(13,18,64,0.38)',
+                transition: 'color 0.12s ease',
+              }}>{item.label}</span>
+            </button>
+          ))}
+
+          {/* Botón Syng AI — micrófono central */}
+          {tieneSyngAI && (
+            <button
+              onClick={toggleSyng}
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 3,
+                border: 'none', background: 'transparent', cursor: 'pointer',
+                padding: '4px 4px 8px', minHeight: 56,
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{
+                width: 42, height: 42,
+                borderRadius: '50%',
+                background: syngCargando
+                  ? 'linear-gradient(145deg, #856404, #A07800)'
+                  : syngEscuchando
+                  ? 'linear-gradient(145deg, #3D4FA8, #2D3A8C)'
+                  : 'linear-gradient(145deg, #EEF1F8, #E4E8F5)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: syngCargando
+                  ? '0 4px 16px rgba(133,100,4,0.45)'
+                  : syngEscuchando
+                  ? '0 4px 16px rgba(45,58,140,0.45)'
+                  : '0 2px 8px rgba(13,18,64,0.12)',
+                transition: 'all 0.2s ease',
+              }}>
+                {ICONS.microfono(syngEscuchando)}
+              </span>
+              <span style={{
+                fontSize: 10, lineHeight: 1, fontWeight: 600,
+                color: syngCargando ? '#856404' : syngEscuchando ? '#2D3A8C' : 'rgba(13,18,64,0.38)',
+              }}>{syngCargando ? '...' : syngEscuchando ? 'Escucha' : 'Syng'}</span>
+            </button>
+          )}
+
+          {NAV_ITEMS.slice(2).map(item => (
+            <button
+              key={item.label}
+              onClick={() => item.path === '/compartir' ? shareApp() : navigate(item.path)}
+              style={{
+                flex: 1, display: 'flex', flexDirection: 'column',
+                alignItems: 'center', justifyContent: 'center', gap: 3,
+                border: 'none', background: 'transparent', cursor: 'pointer',
+                padding: '8px 4px', minHeight: 56,
+                WebkitTapHighlightColor: 'transparent',
+              }}
+            >
+              <span style={{ position:'relative', display:'flex', alignItems:'center', justifyContent:'center' }}>
+                {ICONS[item.key]?.(isActive(item.path), item.key === 'avisos' ? unreadCount : 0)}
+                {item.key === 'avisos' && unreadCount > 0 && (
                   <span style={{
                     position:'absolute', top:-4, right:-6,
                     background:'#E53E3E', color:'#fff',
-                    fontSize:10, fontWeight:700,
-                    borderRadius:10, minWidth:16, height:16,
+                    fontSize:9, fontWeight:700,
+                    borderRadius:10, minWidth:15, height:15,
                     display:'flex', alignItems:'center', justifyContent:'center',
-                    padding:'0 4px', lineHeight:1,
+                    padding:'0 3px', lineHeight:1,
                   }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
                 )}
               </span>
@@ -258,9 +430,7 @@ export function AppShell({ children }) {
                 fontWeight: isActive(item.path) ? 600 : 400,
                 color: isActive(item.path) ? '#2D3A8C' : 'rgba(13,18,64,0.38)',
                 transition: 'color 0.12s ease',
-              }}>
-                {item.label}
-              </span>
+              }}>{item.label}</span>
             </button>
           ))}
         </nav>

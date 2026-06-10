@@ -1,46 +1,74 @@
-import { useContext, useEffect } from 'react'
-import { useNavigate }           from 'react-router-dom'
-import { CoreAuthContext }        from '../core/CoreDataProvider'
-import { AuthScreen }            from './AuthScreen'
-import { PhoneSetupScreen }      from './PhoneSetupScreen'
+import { useContext, useEffect, useState } from 'react'
+import { useNavigate }                     from 'react-router-dom'
+import { CoreAuthContext }                 from '../core/CoreDataProvider'
+import { AuthScreen }                      from './AuthScreen'
+import { PhoneSetupScreen }               from './PhoneSetupScreen'
+import { BienvenidaScreen }               from '../modules/bienvenida/BienvenidaScreen'
+
+function todayKey() {
+  return 'syng_bienvenida_' + new Date().toDateString()
+}
 
 export function AuthGuard({ children }) {
   const auth     = useContext(CoreAuthContext)
   const navigate = useNavigate()
+  const [showBienvenida, setShowBienvenida] = useState(false)
 
   useEffect(() => {
     if (!auth?.user || !auth?.userData) return
-    const path = window.location.pathname
 
-    // Ruta de fecha específica → volver al calendario
+    const path = window.location.pathname
     if (path.match(/\/agenda\/\d{4}-\d{2}-\d{2}/)) {
       navigate('/agenda', { replace: true })
       return
     }
 
-    // Login fresco detectado → ir a agenda y limpiar bandera
     if (sessionStorage.getItem('justLoggedIn') === '1') {
       sessionStorage.removeItem('justLoggedIn')
       const pendingInv = sessionStorage.getItem('pendingInvToken')
+      const pendingUrl = sessionStorage.getItem('pendingUrl')
       if (pendingInv) {
         sessionStorage.removeItem('pendingInvToken')
         navigate(`/unirse?inv=${pendingInv}`, { replace: true })
-      } else {
-        navigate('/agenda', { replace: true })
+        return
       }
+      if (pendingUrl) {
+        sessionStorage.removeItem('pendingUrl')
+        navigate(pendingUrl, { replace: true })
+        return
+      }
+    }
+
+    // Mostrar bienvenida si no se ha mostrado hoy
+    const key = todayKey()
+    if (!localStorage.getItem(key)) {
+      localStorage.setItem(key, '1')
+      setShowBienvenida(true)
     }
   }, [auth?.user, auth?.userData])
 
   if (!auth || auth.loading) return <LoadingScreen />
+
   if (!auth.user) {
-    // Guardar token de invitación antes de ir al login
     const params = new URLSearchParams(window.location.search)
     const inv = params.get('inv')
     if (inv) sessionStorage.setItem('pendingInvToken', inv)
+    const redirect = params.get('redirect')
+    if (redirect) sessionStorage.setItem('pendingUrl', redirect)
     return <AuthScreen />
   }
+
   if (auth.userData && !auth.userData.phoneNumber) return <PhoneSetupScreen />
   if (!auth.userData) return <LoadingScreen />
+
+  if (showBienvenida) {
+    return <BienvenidaScreen
+      userData={auth.userData}
+      tareasHoy={[]}
+      tareasAyer={[]}
+      onDone={() => setShowBienvenida(false)}
+    />
+  }
 
   return children
 }

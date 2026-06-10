@@ -27,7 +27,7 @@ export function useTasks() {
     const uid = state.auth.user?.uid
     if (!uid) throw new Error('Not authenticated')
 
-    const id  = generateTaskId()
+    const id  = data.id ?? generateTaskId()
     const now = Timestamp.now()
 
     const optimistic = {
@@ -43,6 +43,7 @@ export function useTasks() {
       completedAt: null,
       completedBy: null,
       reminder:    data.reminder ?? null,
+      reminderTime: data.reminderTime ?? null,
       isDeleted:   false,
       createdAt:   now,
       updatedAt:   now,

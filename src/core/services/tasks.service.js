@@ -26,7 +26,7 @@ async function programarRecordatorio(taskId, reminder) {
   }
 }
 
-export async function createTask({ id, title, description, type, ownerId, groupId, dueDate, actorName = '', reminder = null }) {
+export async function createTask({ id, title, description, type, ownerId, groupId, dueDate, actorName = '', reminder = null, reminderTime = null }) {
   await setDoc(doc(db, 'tasks', id), {
     id,
     title:       title.trim(),
@@ -39,7 +39,8 @@ export async function createTask({ id, title, description, type, ownerId, groupI
     dueDate:     dueDate ?? null,
     completedAt: null,
     completedBy: null,
-    reminder:    reminder,
+    reminder:    reminder ?? null,
+    reminderTime: reminderTime ?? reminder?.scheduledAt ?? null,
     isDeleted:   false,
     createdAt:   serverTimestamp(),
     updatedAt:   serverTimestamp(),

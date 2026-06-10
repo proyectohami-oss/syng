@@ -24,17 +24,24 @@ self.addEventListener('message', event => {
 
 self.addEventListener('push', event => {
   if (!event.data) return
-  let data = {}
-  try { data = event.data.json() } catch { data = { title: 'Syng', body: event.data.text() } }
+  let payload = {}
+  try { payload = event.data.json() } catch { payload = { data: { body: event.data.text() } } }
+
+  const title  = payload.notification?.title || payload.data?.title || 'Syng'
+  const body   = payload.notification?.body  || payload.data?.body  || ''
+  const url    = payload.data?.url || payload.fcmOptions?.link || '/'
+  const taskId = payload.data?.taskId || ''
+
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Syng', {
-      body:     data.body || '',
-      icon:     data.icon || '/icon-192.png',
+    self.registration.showNotification(title, {
+      body,
+      icon:     payload.notification?.icon || '/icon-192.png',
       badge:    '/icon-192.png',
       vibrate:  [200, 100, 200],
-      tag:      'syng-notif',
+      tag:      taskId ? `syng-reminder-${taskId}` : 'syng-notif',
       renotify: true,
-      data:     { url: data.url || '/' }
+      requireInteraction: true,
+      data:     { url, taskId },
     })
   )
 })
@@ -50,7 +57,7 @@ self.addEventListener('notificationclick', event => {
           return client.navigate(url)
         }
       }
-      if (clients.openWindow) return clients.openWindow(url)
+      if (clients.openWindow) return clients.openWindow('/?redirect=' + encodeURIComponent(url))
     })
   )
 })
