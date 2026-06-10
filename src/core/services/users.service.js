@@ -154,8 +154,14 @@ export async function syncFcmToken(uid) {
     return null
   }
 
-  await saveFcmToken(uid, token, 'web')
+  await saveFcmToken(uid, token, getDevicePlatform())
   return token
+}
+
+function getDevicePlatform() {
+  if (/iphone|ipad|ipod/i.test(navigator.userAgent)) return 'ios'
+  if (/android/i.test(navigator.userAgent)) return 'android'
+  return 'web'
 }
 
 /**

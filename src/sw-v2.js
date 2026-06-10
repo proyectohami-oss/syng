@@ -20,6 +20,23 @@ registerRoute(
 
 self.addEventListener('message', event => {
   if (event.data?.type === 'SKIP_WAITING') self.skipWaiting()
+
+  if (event.data?.type === 'SHOW_NOTIFICATION') {
+    const { title, body, url, taskId } = event.data
+    event.waitUntil(
+      self.registration.showNotification(title || '⏰ Recordatorio', {
+        body: body || '',
+        icon: '/icon-192.png',
+        badge: '/icon-192.png',
+        vibrate: [200, 100, 200],
+        tag: taskId ? `syng-reminder-${taskId}` : 'syng-notif',
+        renotify: true,
+        requireInteraction: true,
+        silent: false,
+        data: { url: url || '/agenda', taskId: taskId || '' },
+      })
+    )
+  }
 })
 
 self.addEventListener('push', event => {
@@ -27,13 +44,14 @@ self.addEventListener('push', event => {
   let payload = {}
   try { payload = event.data.json() } catch { payload = { data: { body: event.data.text() } } }
 
-  // FCM ya muestra la notificación si trae payload.notification + fcmOptions.link
-  if (payload.notification?.title) return
-
-  const title  = payload.data?.title || '⏰ Recordatorio'
-  const body   = payload.data?.body  || ''
-  const taskId = payload.data?.taskId || ''
-  const url    = payload.data?.url || (taskId ? `/recordatorio/${taskId}` : '/agenda')
+  const data   = payload.data || {}
+  const title  = data.title || payload.notification?.title || '⏰ Recordatorio'
+  const body   = data.body  || payload.notification?.body  || ''
+  const taskId = data.taskId || ''
+  let url      = data.url || (taskId ? `/recordatorio/${taskId}` : '/agenda')
+  if (url.startsWith('http')) {
+    try { url = new URL(url).pathname } catch { url = '/agenda' }
+  }
 
   event.waitUntil(
     self.registration.showNotification(title, {

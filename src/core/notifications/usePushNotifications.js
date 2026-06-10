@@ -1,5 +1,5 @@
 /**
- * usePushNotifications — FCM token + avisos visibles en primer plano.
+ * usePushNotifications — FCM token + avisos visibles (incluye iOS PWA).
  */
 import { useState, useEffect, useCallback } from 'react'
 import { syncFcmToken, removeFcmToken, getLocalFcmToken } from '../services/users.service'
@@ -18,33 +18,39 @@ function recordatorioPath(data) {
 
 let foregroundListenerBound = false
 
+async function showViaServiceWorker(title, body, url, taskId) {
+  if (!('serviceWorker' in navigator)) return false
+  const reg = await navigator.serviceWorker.ready
+  if (!reg.active) return false
+  reg.active.postMessage({ type: 'SHOW_NOTIFICATION', title, body, url, taskId })
+  return true
+}
+
 async function bindForegroundListener(onTap) {
   if (foregroundListenerBound) return
   const fcm = await getMessaging()
   if (!fcm) return
   foregroundListenerBound = true
-  fcm.onMessage(fcm.messaging, (payload) => {
-    showForegroundNotification(payload, onTap)
+  fcm.onMessage(fcm.messaging, async (payload) => {
+    const data = payload.data || {}
+    const title = payload.notification?.title || data.title || '⏰ Recordatorio'
+    const body  = payload.notification?.body  || data.body  || ''
+    const path  = recordatorioPath(data)
+    const taskId = data.taskId || ''
+
+    const shown = await showViaServiceWorker(title, body, path, taskId)
+    if (!shown && typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+      const n = new Notification(title, {
+        body,
+        icon: '/icon-192.png',
+        tag: taskId ? `syng-reminder-${taskId}` : 'syng-notif',
+        renotify: true,
+      })
+      n.onclick = () => { window.focus(); onTap(path); n.close() }
+      return
+    }
+    // iOS: el tap lo maneja notificationclick del SW
   })
-}
-
-function showForegroundNotification(payload, onTap) {
-  const data = payload.data || {}
-  const title = payload.notification?.title || data.title || '⏰ Recordatorio'
-  const body  = payload.notification?.body  || data.body  || ''
-  const path  = recordatorioPath(data)
-
-  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
-    const n = new Notification(title, {
-      body,
-      icon: '/icon-192.png',
-      tag: data.taskId ? `syng-reminder-${data.taskId}` : 'syng-notif',
-      renotify: true,
-    })
-    n.onclick = () => { window.focus(); onTap(path); n.close() }
-    return
-  }
-  onTap(path)
 }
 
 async function getMessaging() {
@@ -100,14 +106,17 @@ export function usePushNotifications() {
   }, [uid, isSupported, persistToken])
 
   const requestPermission = useCallback(async () => {
-    if (!uid || !isSupported) return
+    if (!uid || !isSupported) return { ok: false, reason: 'unsupported' }
     try {
       const permission = await Notification.requestPermission()
       setPermissionState(permission)
-      if (permission !== 'granted') return
-      await persistToken()
+      if (permission !== 'granted') return { ok: false, reason: permission }
+      const token = await persistToken()
+      if (!token) return { ok: false, reason: 'no_token' }
+      return { ok: true, token }
     } catch (error) {
       console.error('[FCM] requestPermission error:', error)
+      return { ok: false, reason: 'error' }
     }
   }, [uid, isSupported, persistToken])
 
@@ -121,5 +130,5 @@ export function usePushNotifications() {
     }
   }, [uid, isSupported])
 
-  return { isSupported, permissionState, requestPermission, disableNotifications }
+  return { isSupported, permissionState, requestPermission, disableNotifications, resyncToken: persistToken }
 }

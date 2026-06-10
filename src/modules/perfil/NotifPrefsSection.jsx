@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { usePushNotifications } from '../../core/notifications/usePushNotifications'
+import { showToast } from '../../shared/Toast'
 
 const isIOS        = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
@@ -40,7 +41,7 @@ function NotifStatus({ state }) {
 }
 
 export function NotifPrefsSection() {
-  const { isSupported, permissionState, requestPermission } = usePushNotifications()
+  const { isSupported, permissionState, requestPermission, resyncToken } = usePushNotifications()
   const [prompt,     setPrompt]     = useState(null)
   const [installed,  setInstalled]  = useState(false)
   const [showModal,  setShowModal]  = useState(false)
@@ -73,7 +74,21 @@ export function NotifPrefsSection() {
 
   async function handleActivate() {
     setActivating(true)
-    try { await requestPermission() } finally { setActivating(false) }
+    try {
+      const result = await requestPermission()
+      if (result?.ok) showToast('Notificaciones conectadas', '✓')
+      else if (result?.reason === 'no_token') showToast('No se pudo conectar — cierra y abre Syng', '⚠️')
+      else if (result?.reason === 'denied') showToast('Permiso bloqueado en Ajustes', '⚠️')
+    } finally { setActivating(false) }
+  }
+
+  async function handleResync() {
+    setActivating(true)
+    try {
+      const token = await resyncToken()
+      if (token) showToast('Conexión verificada', '✓')
+      else showToast('Sin conexión — cierra Syng y ábrela de nuevo', '⚠️')
+    } finally { setActivating(false) }
   }
 
   const ios        = isIOS()
@@ -94,7 +109,7 @@ export function NotifPrefsSection() {
             </button>
           )}
           {isSupported && permissionState === 'granted' && (
-            <button onClick={handleActivate} disabled={activating} style={{ ...btnOutline, marginTop:14 }}>
+            <button onClick={handleResync} disabled={activating} style={{ ...btnOutline, marginTop:14 }}>
               {activating ? 'Verificando…' : 'Verificar conexión'}
             </button>
           )}

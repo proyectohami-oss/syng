@@ -12,10 +12,31 @@ const tasksClient = new CloudTasksClient()
 
 const PROJECT       = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'syng-app'
 const LOCATION      = 'us-central1'
-const QUEUE         = 'reminders'
+const QUEUE         = 'syng-reminders'
 const WEB_APP_URL   = process.env.WEB_APP_URL || 'https://syng-psi.vercel.app'
 const SEND_PUSH_URL = process.env.SEND_PUSH_URL
   || `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendPushNotification`
+const TASKS_SA      = process.env.TASKS_INVOKER_SA
+  || `${process.env.GCLOUD_PROJECT_NUMBER || '751348580546'}-compute@developer.gserviceaccount.com`
+
+async function ensureQueue() {
+  const name = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
+  try {
+    await tasksClient.getQueue({ name })
+  } catch (err) {
+    if (err.code !== 5) throw err
+    const parent = tasksClient.locationPath(PROJECT, LOCATION)
+    await tasksClient.createQueue({
+      parent,
+      queue: {
+        name,
+        rateLimits: { maxDispatchesPerSecond: 20 },
+        retryConfig: { maxAttempts: 5 },
+      },
+    })
+    console.log(`[ensureQueue] cola creada: ${QUEUE}`)
+  }
+}
 
 function stringifyData(obj) {
   return Object.fromEntries(
@@ -71,11 +92,12 @@ async function sendPush(uid, tokens, title, body, data = {}) {
 
   const messages = tokens.map(token => ({
     token,
-    notification: { title, body },
     data: payload,
     android: {
       priority: 'high',
       notification: {
+        title,
+        body,
         channelId: 'syng_reminders',
         priority: 'max',
         defaultSound: true,
@@ -100,11 +122,10 @@ async function sendPush(uid, tokens, title, body, data = {}) {
         body,
         icon: `${WEB_APP_URL}/icon-192.png`,
         badge: `${WEB_APP_URL}/icon-192.png`,
-        vibrate: [200, 100, 200],
         requireInteraction: true,
         tag: taskId ? `syng-reminder-${taskId}` : 'syng-notif',
-        renotify: true,
       },
+      data: payload,
       fcmOptions: { link: url },
     },
   }))
@@ -127,7 +148,18 @@ async function deliverReminderPush({ userId, title, taskId, reminderId }) {
 
   const result = await sendPush(userId, tokens, pushTitle, pushBody, { taskId, url })
 
-  await saveInAppNotification(userId, { title: pushTitle, body: pushBody, taskId, url }).catch(() => {})
+  if (result.responses) {
+    result.responses.forEach((resp, i) => {
+      if (!resp.success) {
+        console.warn(`[deliverReminderPush] FCM falló token[${i}]:`, resp.error?.code, resp.error?.message)
+      }
+    })
+  }
+  console.log(`[deliverReminderPush] taskId=${taskId} ok=${result.successCount} fail=${result.failureCount}`)
+
+  if (result.successCount > 0) {
+    await saveInAppNotification(userId, { title: pushTitle, body: pushBody, taskId, url }).catch(() => {})
+  }
 
   if (reminderId) {
     await db.doc(`reminders/${reminderId}`).update({
@@ -140,7 +172,7 @@ async function deliverReminderPush({ userId, title, taskId, reminderId }) {
 }
 
 exports.sendPushNotification = onRequest(
-  { timeoutSeconds: 30 },
+  { timeoutSeconds: 30, invoker: 'public' },
   async (req, res) => {
     if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
 
@@ -186,6 +218,7 @@ exports.sendReminderTask = onDocumentCreated('reminders/{id}', async (event) => 
   }
 
   try {
+    await ensureQueue()
     const queuePath = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
     await tasksClient.createTask({
       parent: queuePath,
@@ -195,6 +228,10 @@ exports.sendReminderTask = onDocumentCreated('reminders/{id}', async (event) => 
           url: SEND_PUSH_URL,
           headers: { 'Content-Type': 'application/json' },
           body: Buffer.from(JSON.stringify(payload)).toString('base64'),
+          oidcToken: {
+            serviceAccountEmail: TASKS_SA,
+            audience: SEND_PUSH_URL,
+          },
         },
         scheduleTime: { seconds: scheduleSeconds },
       },
