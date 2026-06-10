@@ -18,6 +18,16 @@ export function AuthGuard({ children }) {
     if (!auth?.user || !auth?.userData) return
 
     const path = window.location.pathname
+
+    const pendingUrl = sessionStorage.getItem('pendingUrl')
+    if (pendingUrl && pendingUrl.startsWith('/')) {
+      sessionStorage.removeItem('pendingUrl')
+      navigate(pendingUrl, { replace: true })
+      return
+    }
+
+    if (path.startsWith('/recordatorio/')) return
+
     if (path.match(/\/agenda\/\d{4}-\d{2}-\d{2}/)) {
       navigate('/agenda', { replace: true })
       return
@@ -26,26 +36,19 @@ export function AuthGuard({ children }) {
     if (sessionStorage.getItem('justLoggedIn') === '1') {
       sessionStorage.removeItem('justLoggedIn')
       const pendingInv = sessionStorage.getItem('pendingInvToken')
-      const pendingUrl = sessionStorage.getItem('pendingUrl')
       if (pendingInv) {
         sessionStorage.removeItem('pendingInvToken')
         navigate(`/unirse?inv=${pendingInv}`, { replace: true })
         return
       }
-      if (pendingUrl) {
-        sessionStorage.removeItem('pendingUrl')
-        navigate(pendingUrl, { replace: true })
-        return
-      }
     }
 
-    // Mostrar bienvenida si no se ha mostrado hoy
     const key = todayKey()
     if (!localStorage.getItem(key)) {
       localStorage.setItem(key, '1')
       setShowBienvenida(true)
     }
-  }, [auth?.user, auth?.userData])
+  }, [auth?.user, auth?.userData, navigate])
 
   if (!auth || auth.loading) return <LoadingScreen />
 
@@ -54,7 +57,10 @@ export function AuthGuard({ children }) {
     const inv = params.get('inv')
     if (inv) sessionStorage.setItem('pendingInvToken', inv)
     const redirect = params.get('redirect')
-    if (redirect) sessionStorage.setItem('pendingUrl', redirect)
+    if (redirect?.startsWith('/')) sessionStorage.setItem('pendingUrl', redirect)
+    else if (window.location.pathname.startsWith('/recordatorio/')) {
+      sessionStorage.setItem('pendingUrl', window.location.pathname)
+    }
     return <AuthScreen />
   }
 

@@ -1,13 +1,56 @@
 /**
- * usePushNotifications — client-side FCM token lifecycle management.
+ * usePushNotifications — FCM token + avisos visibles en primer plano.
  */
 import { useState, useEffect, useCallback } from 'react'
 import { syncFcmToken, removeFcmToken, getLocalFcmToken } from '../services/users.service'
-import { useCoreState }                   from '../hooks/useCoreData'
+import { useCoreState } from '../hooks/useCoreData'
+
+function recordatorioPath(data) {
+  if (data?.url) {
+    if (data.url.startsWith('http')) {
+      try { return new URL(data.url).pathname } catch { return '/agenda' }
+    }
+    return data.url
+  }
+  if (data?.taskId) return `/recordatorio/${data.taskId}`
+  return '/agenda'
+}
+
+let foregroundListenerBound = false
+
+async function bindForegroundListener(onTap) {
+  if (foregroundListenerBound) return
+  const fcm = await getMessaging()
+  if (!fcm) return
+  foregroundListenerBound = true
+  fcm.onMessage(fcm.messaging, (payload) => {
+    showForegroundNotification(payload, onTap)
+  })
+}
+
+function showForegroundNotification(payload, onTap) {
+  const data = payload.data || {}
+  const title = payload.notification?.title || data.title || '⏰ Recordatorio'
+  const body  = payload.notification?.body  || data.body  || ''
+  const path  = recordatorioPath(data)
+
+  if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    const n = new Notification(title, {
+      body,
+      icon: '/icon-192.png',
+      tag: data.taskId ? `syng-reminder-${data.taskId}` : 'syng-notif',
+      renotify: true,
+    })
+    n.onclick = () => { window.focus(); onTap(path); n.close() }
+    return
+  }
+  onTap(path)
+}
 
 async function getMessaging() {
-  const { getMessaging: getFCMMessaging, onMessage } = await import('firebase/messaging')
+  const { getMessaging: getFCMMessaging, onMessage, isSupported } = await import('firebase/messaging')
   const { app } = await import('../../firebase')
+  if (!(await isSupported())) return null
   return { messaging: getFCMMessaging(app), onMessage }
 }
 
@@ -32,10 +75,8 @@ export function usePushNotifications() {
     try {
       const token = await syncFcmToken(uid)
       if (token) {
-        console.log('[FCM] token guardado en Firestore')
-        const { messaging, onMessage } = await getMessaging()
-        onMessage(messaging, (payload) => {
-          console.debug('[FCM] Foreground message:', payload)
+        await bindForegroundListener((path) => {
+          window.location.assign(path)
         })
       }
       return token
@@ -45,12 +86,8 @@ export function usePushNotifications() {
     }
   }, [uid, isSupported])
 
-  // Sincroniza token al iniciar sesión o cuando el permiso ya está otorgado
-  useEffect(() => {
-    persistToken()
-  }, [persistToken])
+  useEffect(() => { persistToken() }, [persistToken])
 
-  // Re-sincroniza si el token rota mientras la app está en background
   useEffect(() => {
     if (!uid || !isSupported) return
     const onVisible = () => {
@@ -64,7 +101,6 @@ export function usePushNotifications() {
 
   const requestPermission = useCallback(async () => {
     if (!uid || !isSupported) return
-
     try {
       const permission = await Notification.requestPermission()
       setPermissionState(permission)
@@ -85,10 +121,5 @@ export function usePushNotifications() {
     }
   }, [uid, isSupported])
 
-  return {
-    isSupported,
-    permissionState,
-    requestPermission,
-    disableNotifications,
-  }
+  return { isSupported, permissionState, requestPermission, disableNotifications }
 }

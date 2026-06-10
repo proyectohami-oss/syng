@@ -133,7 +133,10 @@ export async function getLocalFcmToken() {
   const messaging                  = getMessaging(app)
 
   await navigator.serviceWorker.ready
-  const swReg = await navigator.serviceWorker.getRegistration('/')
+  let swReg = await navigator.serviceWorker.getRegistration('/')
+  if (!swReg) {
+    swReg = await navigator.serviceWorker.register('/sw-v2.js', { scope: '/' })
+  }
   if (!swReg) return null
 
   return getToken(messaging, { vapidKey, serviceWorkerRegistration: swReg }).catch(() => null)

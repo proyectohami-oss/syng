@@ -96,6 +96,7 @@ export function AppShell({ children }) {
   const location  = useLocation()
   const { signOut } = useAuthActions()
   const { hideBottomNav } = useShellChrome()
+  const hideNav = hideBottomNav || location.pathname.startsWith('/recordatorio/')
   const [unreadCount, setUnreadCount] = useState(0)
   useEffect(() => {
     const uid = auth?.user?.uid
@@ -330,7 +331,7 @@ export function AppShell({ children }) {
         </main>
 
         {/* Mobile bottom nav — oculta en pantallas de foco (ej. recordatorio iOS) */}
-        {!hideBottomNav && <nav className="mobile-bottom-nav" aria-label="Navegación móvil" style={{
+        {!hideNav && <nav className="mobile-bottom-nav" aria-label="Navegación móvil" style={{
           display: 'flex',
           background: 'rgba(255,255,255,0.78)',
           backdropFilter: 'blur(32px)',

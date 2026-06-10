@@ -19,6 +19,7 @@ import { NotificacionesModule } from './modules/notificaciones/NotificacionesMod
 import RecordatorioView from './pages/RecordatorioView'
 import { ResumenDiarioScreen } from './modules/resumen/ResumenDiarioScreen'
 import { BienvenidoDeVueltaScreen } from './modules/reenganche/BienvenidoDeVueltaScreen'
+import { DeepLinkHandler } from './shared/DeepLinkHandler'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -86,6 +87,7 @@ function Placeholder({ icon, label }) {
 function AppWithViewport() {
   return (
     <BrowserRouter>
+      <DeepLinkHandler />
       <AuthGuard>
         <InvitationChecker>
           <ShellChromeProvider>

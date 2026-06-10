@@ -10,9 +10,10 @@ const db        = getFirestore()
 const messaging = getMessaging()
 const tasksClient = new CloudTasksClient()
 
-const PROJECT       = 'syng-app'
+const PROJECT       = process.env.GCLOUD_PROJECT || process.env.GCP_PROJECT || 'syng-app'
 const LOCATION      = 'us-central1'
 const QUEUE         = 'reminders'
+const WEB_APP_URL   = process.env.WEB_APP_URL || 'https://syng-psi.vercel.app'
 const SEND_PUSH_URL = process.env.SEND_PUSH_URL
   || `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendPushNotification`
 
@@ -22,43 +23,122 @@ function stringifyData(obj) {
   )
 }
 
+function recordatorioUrl(taskId) {
+  return `${WEB_APP_URL}/recordatorio/${taskId}`
+}
+
 async function getUserTokens(uid) {
   const snap = await db.doc(`users/${uid}`).get()
   if (!snap.exists) return []
   return Object.keys(snap.data().fcmTokens || {})
 }
 
-async function sendPush(tokens, title, body, data = {}) {
-  if (!tokens.length) return { successCount: 0, failureCount: 0 }
-  const link = data.url || '/'
+async function pruneInvalidTokens(uid, tokens, result) {
+  if (!result?.responses) return
+  const removals = {}
+  result.responses.forEach((resp, i) => {
+    if (!resp.success) {
+      const code = resp.error?.code || ''
+      if (code.includes('registration-token-not-registered') || code.includes('invalid-registration-token')) {
+        removals[`fcmTokens.${tokens[i]}`] = FieldValue.delete()
+      }
+    }
+  })
+  if (Object.keys(removals).length) {
+    await db.doc(`users/${uid}`).set({ ...removals, updatedAt: FieldValue.serverTimestamp() }, { merge: true })
+  }
+}
+
+async function saveInAppNotification(uid, { title, body, taskId, url }) {
+  const ref = db.collection(`users/${uid}/notifications`).doc()
+  await ref.set({
+    type: 'reminder',
+    title,
+    body,
+    taskId,
+    url,
+    read: false,
+    createdAt: FieldValue.serverTimestamp(),
+  })
+}
+
+async function sendPush(uid, tokens, title, body, data = {}) {
+  if (!tokens.length) return { successCount: 0, failureCount: 0, responses: [] }
+
+  const taskId = data.taskId || ''
+  const url    = data.url || (taskId ? recordatorioUrl(taskId) : WEB_APP_URL)
+  const payload = stringifyData({ ...data, title, body, url, taskId, type: 'reminder' })
+
   const messages = tokens.map(token => ({
     token,
     notification: { title, body },
-    data: stringifyData({ ...data, title, body }),
+    data: payload,
     android: {
       priority: 'high',
-      notification: { channelId: 'syng_reminders', priority: 'max', defaultSound: true },
+      notification: {
+        channelId: 'syng_reminders',
+        priority: 'max',
+        defaultSound: true,
+        icon: 'ic_notification',
+      },
     },
     apns: {
       headers: { 'apns-priority': '10', 'apns-push-type': 'alert' },
-      payload: { aps: { alert: { title, body }, sound: 'default' } },
+      payload: {
+        aps: {
+          alert: { title, body },
+          sound: 'default',
+          'mutable-content': 1,
+        },
+      },
+      fcmOptions: { link: url },
     },
     webpush: {
       headers: { Urgency: 'high', TTL: '86400' },
       notification: {
-        icon: '/icon-192.png', badge: '/icon-192.png',
-        vibrate: [200, 100, 200], requireInteraction: true,
+        title,
+        body,
+        icon: `${WEB_APP_URL}/icon-192.png`,
+        badge: `${WEB_APP_URL}/icon-192.png`,
+        vibrate: [200, 100, 200],
+        requireInteraction: true,
+        tag: taskId ? `syng-reminder-${taskId}` : 'syng-notif',
+        renotify: true,
       },
-      fcmOptions: { link },
+      fcmOptions: { link: url },
     },
   }))
-  return messaging.sendEach(messages)
+
+  const result = await messaging.sendEach(messages)
+  await pruneInvalidTokens(uid, tokens, result)
+  return result
 }
 
-/**
- * HTTP target de Cloud Tasks — envía el push FCM en el segundo exacto.
- * Body: { userId, title, taskId, reminderId }
- */
+async function deliverReminderPush({ userId, title, taskId, reminderId }) {
+  const tokens = await getUserTokens(userId)
+  const pushTitle = '⏰ Recordatorio'
+  const pushBody  = title || 'Es momento de retomarlo'
+  const url       = recordatorioUrl(taskId)
+
+  if (!tokens.length) {
+    console.warn('[deliverReminderPush] sin tokens para', userId)
+    return { ok: false, reason: 'no_tokens' }
+  }
+
+  const result = await sendPush(userId, tokens, pushTitle, pushBody, { taskId, url })
+
+  await saveInAppNotification(userId, { title: pushTitle, body: pushBody, taskId, url }).catch(() => {})
+
+  if (reminderId) {
+    await db.doc(`reminders/${reminderId}`).update({
+      status: 'sent',
+      sentAt: FieldValue.serverTimestamp(),
+    }).catch(err => console.warn('[deliverReminderPush] update reminder:', err.message))
+  }
+
+  return { ok: true, successCount: result.successCount, failureCount: result.failureCount }
+}
+
 exports.sendPushNotification = onRequest(
   { timeoutSeconds: 30 },
   async (req, res) => {
@@ -67,37 +147,12 @@ exports.sendPushNotification = onRequest(
     const { userId, title, taskId, reminderId } = req.body
     if (!userId || !taskId) return res.status(400).json({ error: 'faltan campos' })
 
-    const tokens = await getUserTokens(userId)
-    if (!tokens.length) {
-      console.warn('[sendPushNotification] sin tokens para', userId)
-      return res.json({ ok: false, reason: 'no_tokens' })
-    }
-
-    const pushTitle = '⏰ Recordatorio'
-    const pushBody  = title || 'Es momento de retomarlo'
-    const url       = `/recordatorio/${taskId}`
-
-    const result = await sendPush(tokens, pushTitle, pushBody, {
-      type: 'reminder',
-      taskId,
-      url,
-    })
-
-    if (reminderId) {
-      await db.doc(`reminders/${reminderId}`).update({
-        status:  'sent',
-        sentAt:  FieldValue.serverTimestamp(),
-      }).catch(err => console.warn('[sendPushNotification] update reminder:', err.message))
-    }
-
-    console.log(`[sendPushNotification] taskId=${taskId} ok=${result.successCount} fail=${result.failureCount}`)
-    res.json({ ok: true, taskId, successCount: result.successCount })
+    const result = await deliverReminderPush({ userId, title, taskId, reminderId })
+    console.log(`[sendPushNotification] taskId=${taskId}`, result)
+    res.json(result)
   },
 )
 
-/**
- * Al crear /reminders/{id}, encola Cloud Task para el segundo exacto de scheduledAt.
- */
 exports.sendReminderTask = onDocumentCreated('reminders/{id}', async (event) => {
   const data       = event.data.data()
   const reminderId = event.params.id
@@ -114,31 +169,39 @@ exports.sendReminderTask = onDocumentCreated('reminders/{id}', async (event) => 
 
   const scheduleSeconds = Math.floor(scheduledAt.getTime() / 1000)
   const nowSeconds      = Math.floor(Date.now() / 1000)
+  const delaySec        = scheduleSeconds - nowSeconds
 
-  if (scheduleSeconds <= nowSeconds) {
-    console.warn('[sendReminderTask] scheduledAt en el pasado, enviando de inmediato', reminderId)
-  }
-
-  const queuePath = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
-  const url       = SEND_PUSH_URL
-
-  const payload = JSON.stringify({
-    userId:     data.userId,
-    title:      data.title || '',
+  const payload = {
+    userId: data.userId,
+    title:  data.title || '',
     taskId,
     reminderId,
-  })
-
-  const cloudTask = {
-    httpRequest: {
-      httpMethod: 'POST',
-      url,
-      headers: { 'Content-Type': 'application/json' },
-      body: Buffer.from(payload).toString('base64'),
-    },
-    scheduleTime: { seconds: Math.max(scheduleSeconds, nowSeconds) },
   }
 
-  await tasksClient.createTask({ parent: queuePath, task: cloudTask })
-  console.log(`[sendReminderTask] encolado reminder=${reminderId} taskId=${taskId} at=${scheduledAt.toISOString()}`)
+  // Pasado o < 30 s: enviar ya (hora local del usuario ya convertida a UTC en el cliente)
+  if (delaySec <= 30) {
+    console.log(`[sendReminderTask] envío inmediato reminder=${reminderId}`)
+    await deliverReminderPush(payload)
+    return
+  }
+
+  try {
+    const queuePath = tasksClient.queuePath(PROJECT, LOCATION, QUEUE)
+    await tasksClient.createTask({
+      parent: queuePath,
+      task: {
+        httpRequest: {
+          httpMethod: 'POST',
+          url: SEND_PUSH_URL,
+          headers: { 'Content-Type': 'application/json' },
+          body: Buffer.from(JSON.stringify(payload)).toString('base64'),
+        },
+        scheduleTime: { seconds: scheduleSeconds },
+      },
+    })
+    console.log(`[sendReminderTask] encolado reminder=${reminderId} at=${scheduledAt.toISOString()}`)
+  } catch (err) {
+    console.error('[sendReminderTask] Cloud Tasks error, fallback inmediato:', err.message)
+    await deliverReminderPush(payload)
+  }
 })
