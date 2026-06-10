@@ -28,11 +28,6 @@ export function AuthGuard({ children }) {
 
     if (path.startsWith('/recordatorio/')) return
 
-    if (path.match(/\/agenda\/\d{4}-\d{2}-\d{2}/)) {
-      navigate('/agenda', { replace: true })
-      return
-    }
-
     if (sessionStorage.getItem('justLoggedIn') === '1') {
       sessionStorage.removeItem('justLoggedIn')
       const pendingInv = sessionStorage.getItem('pendingInvToken')
