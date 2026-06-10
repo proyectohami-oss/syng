@@ -4,6 +4,41 @@ import { usePushNotifications } from '../../core/notifications/usePushNotificati
 const isIOS        = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
 
+function NotifStatus({ state }) {
+  if (state === 'granted') {
+    return (
+      <div style={statusRow}>
+        <span style={dot('#22C55E')} />
+        <span style={statusText}>Activas — recibirás recordatorios en este dispositivo</span>
+      </div>
+    )
+  }
+  if (state === 'denied') {
+    return (
+      <div style={statusRow}>
+        <span style={dot('#E05252')} />
+        <span style={{ ...statusText, color: '#7c2d12' }}>
+          Bloqueadas — ve a Ajustes → Notificaciones → Syng y actívalas
+        </span>
+      </div>
+    )
+  }
+  if (state === 'unsupported') {
+    return (
+      <div style={statusRow}>
+        <span style={dot('#94a3b8')} />
+        <span style={statusText}>No disponibles en este navegador</span>
+      </div>
+    )
+  }
+  return (
+    <div style={statusRow}>
+      <span style={dot('#f59e0b')} />
+      <span style={statusText}>Sin activar — toca el botón de abajo</span>
+    </div>
+  )
+}
+
 export function NotifPrefsSection() {
   const { isSupported, permissionState, requestPermission } = usePushNotifications()
   const [prompt,     setPrompt]     = useState(null)
@@ -43,49 +78,49 @@ export function NotifPrefsSection() {
 
   const ios        = isIOS()
   const canInstall = !installed && (!!prompt || ios)
+  const notifState = !isSupported ? 'unsupported' : permissionState
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', gap:12, padding:'0 16px' }}>
+    <div style={{ display:'flex', flexDirection:'column', gap:12, marginTop:12 }}>
+
+      {/* NOTIFICACIONES — siempre visible */}
+      <div style={section}>
+        <p style={sectionLabel}>NOTIFICACIONES</p>
+        <div style={{ padding:'12px 16px 14px' }}>
+          <NotifStatus state={notifState} />
+          {isSupported && permissionState === 'default' && (
+            <button onClick={handleActivate} disabled={activating} style={{ ...btnBlue, marginTop:14 }}>
+              {activating ? 'Activando…' : '🔔 Activar notificaciones'}
+            </button>
+          )}
+          {isSupported && permissionState === 'granted' && (
+            <button onClick={handleActivate} disabled={activating} style={{ ...btnOutline, marginTop:14 }}>
+              {activating ? 'Verificando…' : 'Verificar conexión'}
+            </button>
+          )}
+        </div>
+      </div>
 
       {/* INSTALAR */}
       {canInstall && (
-        <div style={card}>
-          <p style={label}>📲  INSTALAR APP</p>
-          <button onClick={handleInstall} disabled={installing} style={btnBlue}>
-            {installing ? 'Instalando…' : ios ? 'Cómo instalar Syng en iPhone' : 'Instalar Syng — Gratis'}
-          </button>
-        </div>
-      )}
-
-      {installed && (
-        <div style={{ ...card, background:'rgba(220,252,231,0.9)', border:'1.5px solid rgba(34,197,94,0.3)' }}>
-          <p style={{ margin:0, fontSize:14, fontWeight:700, color:'#1a5c38' }}>✓ App instalada en este dispositivo</p>
-        </div>
-      )}
-
-      {/* Notificaciones — activar si no están activas */}
-      {isSupported && permissionState === 'default' && installed && (
-        <div style={card}>
-          <p style={label}>🔔  NOTIFICACIONES</p>
-          <p style={{ ...muted, marginBottom:12 }}>Activa las notificaciones para recibir recordatorios de tus grupos.</p>
-          <button onClick={handleActivate} disabled={activating} style={btnBlue}>
-            {activating ? 'Activando…' : '🔔 Activar notificaciones'}
-          </button>
-        </div>
-      )}
-
-      {isSupported && permissionState === 'denied' && (
-        <div style={card}>
-          <div style={alertBox}>
-            <span>⚠️</span>
-            <p style={{ margin:0, fontSize:13, color:'#7c2d12', lineHeight:1.5 }}>
-              Notificaciones bloqueadas. Ve a Configuración y actívalas para Syng.
-            </p>
+        <div style={section}>
+          <p style={sectionLabel}>INSTALAR APP</p>
+          <div style={{ padding:'12px 16px 14px' }}>
+            <button onClick={handleInstall} disabled={installing} style={btnBlue}>
+              {installing ? 'Instalando…' : ios ? 'Cómo instalar Syng en iPhone' : 'Instalar Syng — Gratis'}
+            </button>
           </div>
         </div>
       )}
 
-      {/* MODAL iOS */}
+      {installed && (
+        <div style={{ ...section, background:'rgba(220,252,231,0.85)', border:'1.5px solid rgba(34,197,94,0.25)' }}>
+          <p style={{ margin:0, padding:'14px 16px', fontSize:14, fontWeight:600, color:'#1a5c38' }}>
+            ✓ App instalada en este dispositivo
+          </p>
+        </div>
+      )}
+
       {showModal && (
         <>
           <div onClick={() => setShowModal(false)} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.5)', zIndex:1000 }} />
@@ -112,13 +147,39 @@ export function NotifPrefsSection() {
           </div>
         </>
       )}
-
     </div>
   )
 }
 
-const card     = { background:'rgba(255,255,255,0.88)', borderRadius:18, padding:'18px 20px', boxShadow:'0 2px 12px rgba(13,18,64,0.07)' }
-const label    = { margin:'0 0 14px', fontSize:11, fontWeight:700, color:'rgba(13,18,64,0.35)', letterSpacing:'0.09em' }
-const btnBlue  = { width:'100%', minHeight:50, borderRadius:14, border:'none', background:'linear-gradient(135deg,#3D4FA8,#2D3A8C)', color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer' }
-const muted    = { margin:0, fontSize:13, color:'rgba(13,18,64,0.5)', lineHeight:1.6 }
-const alertBox = { display:'flex', gap:10, alignItems:'flex-start', background:'rgba(254,226,226,0.8)', borderRadius:12, padding:'12px 14px' }
+const section = {
+  background:'rgba(255,255,255,0.82)',
+  backdropFilter:'blur(20px)',
+  WebkitBackdropFilter:'blur(20px)',
+  borderRadius:16,
+  margin:'0 16px',
+  overflow:'hidden',
+  border:'1px solid rgba(255,255,255,0.65)',
+  boxShadow:'0 4px 16px rgba(13,18,64,0.05), inset 0 1px 0 rgba(255,255,255,0.90)',
+}
+const sectionLabel = {
+  margin:0, fontSize:11, fontWeight:600,
+  color:'rgba(13,18,64,0.32)',
+  letterSpacing:'0.08em',
+  padding:'10px 16px 4px',
+}
+const btnBlue = {
+  width:'100%', minHeight:48, borderRadius:14, border:'none',
+  background:'linear-gradient(135deg,#3D4FA8,#2D3A8C)',
+  color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer',
+}
+const btnOutline = {
+  width:'100%', minHeight:44, borderRadius:14,
+  border:'1.5px solid rgba(45,58,140,0.25)',
+  background:'rgba(255,255,255,0.6)',
+  color:'#2D3A8C', fontSize:14, fontWeight:600, cursor:'pointer',
+}
+const dot = (color) => ({
+  width:10, height:10, borderRadius:'50%', background:color, flexShrink:0, marginTop:4,
+})
+const statusRow = { display:'flex', gap:10, alignItems:'flex-start' }
+const statusText = { margin:0, fontSize:14, color:'#0D1240', lineHeight:1.5 }

@@ -153,9 +153,11 @@ export function PerfilModule() {
           </p>
         )}
 
-        {/* Cerrar sesión */}
+        {/* Notificaciones e instalación */}
         <NotifPrefsSection />
-        <div style={{ padding:'32px 16px 0' }}>
+
+        {/* Cerrar sesión */}
+        <div style={{ padding:'24px 16px 0' }}>
           <button
             onClick={handleSignOut}
             disabled={signingOut}
