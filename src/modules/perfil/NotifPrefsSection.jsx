@@ -1,16 +1,27 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { usePushNotifications } from '../../core/notifications/usePushNotifications'
+import { getPushDiagnostics, sendTestPush } from '../../core/notifications/fcm.service'
+import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { showToast } from '../../shared/Toast'
 
 const isIOS        = () => /iphone|ipad|ipod/i.test(navigator.userAgent)
 const isStandalone = () => window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true
+
+function Check({ ok, label }) {
+  return (
+    <div style={checkRow}>
+      <span style={{ color: ok ? '#22C55E' : '#E05252', fontSize: 14, width: 18 }}>{ok ? '✓' : '✗'}</span>
+      <span style={{ fontSize: 13, color: '#0D1240' }}>{label}</span>
+    </div>
+  )
+}
 
 function NotifStatus({ state }) {
   if (state === 'granted') {
     return (
       <div style={statusRow}>
         <span style={dot('#22C55E')} />
-        <span style={statusText}>Activas — recibirás recordatorios en este dispositivo</span>
+        <span style={statusText}>Activas en este dispositivo</span>
       </div>
     )
   }
@@ -19,7 +30,7 @@ function NotifStatus({ state }) {
       <div style={statusRow}>
         <span style={dot('#E05252')} />
         <span style={{ ...statusText, color: '#7c2d12' }}>
-          Bloqueadas — ve a Ajustes → Notificaciones → Syng y actívalas
+          Bloqueadas — Ajustes → Notificaciones → Syng
         </span>
       </div>
     )
@@ -28,25 +39,35 @@ function NotifStatus({ state }) {
     return (
       <div style={statusRow}>
         <span style={dot('#94a3b8')} />
-        <span style={statusText}>No disponibles en este navegador</span>
+        <span style={statusText}>No disponibles aquí</span>
       </div>
     )
   }
   return (
     <div style={statusRow}>
       <span style={dot('#f59e0b')} />
-      <span style={statusText}>Sin activar — toca el botón de abajo</span>
+      <span style={statusText}>Sin activar</span>
     </div>
   )
 }
 
 export function NotifPrefsSection() {
+  const auth = useCoreAuth()
+  const uid  = auth.user?.uid
   const { isSupported, permissionState, requestPermission, resyncToken } = usePushNotifications()
-  const [prompt,     setPrompt]     = useState(null)
-  const [installed,  setInstalled]  = useState(false)
-  const [showModal,  setShowModal]  = useState(false)
-  const [installing, setInstalling] = useState(false)
-  const [activating, setActivating] = useState(false)
+
+  const [prompt,      setPrompt]      = useState(null)
+  const [installed,   setInstalled]   = useState(false)
+  const [showModal,   setShowModal]   = useState(false)
+  const [installing,  setInstalling]  = useState(false)
+  const [activating,  setActivating]  = useState(false)
+  const [testing,     setTesting]     = useState(false)
+  const [diag,        setDiag]        = useState(null)
+  const [lastTest,    setLastTest]    = useState(null)
+
+  const refreshDiag = useCallback(async () => {
+    setDiag(await getPushDiagnostics(auth.userData))
+  }, [auth.userData])
 
   useEffect(() => {
     if (isStandalone()) { setInstalled(true); return }
@@ -60,6 +81,8 @@ export function NotifPrefsSection() {
       window.removeEventListener('appinstalled', onDone)
     }
   }, [])
+
+  useEffect(() => { refreshDiag() }, [refreshDiag])
 
   async function handleInstall() {
     if (isIOS()) { setShowModal(true); return }
@@ -78,6 +101,7 @@ export function NotifPrefsSection() {
       const result = await requestPermission()
       if (result?.ok) showToast('Notificaciones conectadas', '✓')
       else showToast(toastForReason(result?.reason), '⚠️')
+      await refreshDiag()
     } finally { setActivating(false) }
   }
 
@@ -87,7 +111,27 @@ export function NotifPrefsSection() {
       const result = await resyncToken()
       if (result?.ok) showToast('Conexión verificada', '✓')
       else showToast(toastForReason(result?.reason), '⚠️')
+      await refreshDiag()
     } finally { setActivating(false) }
+  }
+
+  async function handleTestPush() {
+    setTesting(true)
+    setLastTest(null)
+    try {
+      const result = await sendTestPush(uid)
+      setLastTest(result)
+      if (result.ok) {
+        showToast('Push enviado — revisa tu iPhone', '✓')
+      } else if (result.phase === 'sync') {
+        showToast(toastForReason(result.reason), '⚠️')
+      } else if (result.reason === 'no_tokens') {
+        showToast('Sin token — toca Verificar conexión primero', '⚠️')
+      } else {
+        showToast(`Servidor: ${result.successCount ?? 0}/${result.tokenCount ?? '?'} dispositivos`, '⚠️')
+      }
+      await refreshDiag()
+    } finally { setTesting(false) }
   }
 
   function toastForReason(reason) {
@@ -96,40 +140,72 @@ export function NotifPrefsSection() {
     if (reason === 'no_sw') return 'Espera 5 segundos e intenta de nuevo'
     if (reason === 'unsupported') return 'Notificaciones no disponibles aquí'
     if (reason === 'empty') return 'No se obtuvo token — intenta de nuevo'
-    if (reason?.includes('token-subscribe')) {
-      return 'Clave VAPID incorrecta — hay que configurarla en Vercel (te explico abajo)'
-    }
-    if (reason?.includes('failed-service-worker')) return 'Actualiza Syng: cierra y abre desde el ícono'
+    if (reason?.includes('token-subscribe')) return 'Clave VAPID incorrecta en Vercel'
+    if (reason?.includes('failed-service-worker')) return 'Cierra y abre Syng desde el ícono'
     if (reason) return `Error: ${reason}`
-    return 'Sin conexión — abre Syng desde el ícono de inicio'
+    return 'Abre Syng desde el ícono de inicio'
   }
 
   const ios        = isIOS()
   const canInstall = !installed && (!!prompt || ios)
   const notifState = !isSupported ? 'unsupported' : permissionState
+  const allOk      = diag && diag.permission === 'granted' && diag.standalone && diag.swOk && diag.tokenCount > 0
 
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:12, marginTop:12 }}>
 
-      {/* NOTIFICACIONES — siempre visible */}
       <div style={section}>
-        <p style={sectionLabel}>NOTIFICACIONES</p>
+        <p style={sectionLabel}>RECORDATORIOS</p>
         <div style={{ padding:'12px 16px 14px' }}>
           <NotifStatus state={notifState} />
+
+          {diag && permissionState === 'granted' && (
+            <div style={{ marginTop:14, display:'flex', flexDirection:'column', gap:6 }}>
+              <Check ok={diag.permission === 'granted'} label="Permiso del iPhone" />
+              <Check ok={diag.standalone} label="App instalada en inicio" />
+              <Check ok={diag.swOk} label="Canal de push activo" />
+              <Check ok={diag.tokenCount > 0} label={`Token en servidor (${diag.tokenCount})`} />
+            </div>
+          )}
+
+          {lastTest && (
+            <p style={{
+              margin:'12px 0 0', fontSize:12, lineHeight:1.5,
+              color: lastTest.ok ? '#1a5c38' : '#7c2d12',
+              background: lastTest.ok ? 'rgba(220,252,231,0.6)' : 'rgba(254,226,226,0.6)',
+              padding:'8px 10px', borderRadius:10,
+            }}>
+              {lastTest.ok
+                ? `Última prueba: OK (${lastTest.successCount} dispositivo(s))`
+                : `Última prueba: falló${lastTest.reason ? ` — ${lastTest.reason}` : ''}`}
+            </p>
+          )}
+
           {isSupported && permissionState === 'default' && (
             <button onClick={handleActivate} disabled={activating} style={{ ...btnBlue, marginTop:14 }}>
-              {activating ? 'Activando…' : '🔔 Activar notificaciones'}
+              {activating ? 'Activando…' : 'Activar recordatorios'}
             </button>
           )}
+
           {isSupported && permissionState === 'granted' && (
-            <button onClick={handleResync} disabled={activating} style={{ ...btnOutline, marginTop:14 }}>
-              {activating ? 'Verificando…' : 'Verificar conexión'}
-            </button>
+            <div style={{ display:'flex', flexDirection:'column', gap:8, marginTop:14 }}>
+              <button onClick={handleTestPush} disabled={testing || activating} style={btnBlue}>
+                {testing ? 'Enviando prueba…' : 'Enviar prueba ahora'}
+              </button>
+              <button onClick={handleResync} disabled={activating || testing} style={btnOutline}>
+                {activating ? 'Verificando…' : 'Verificar conexión'}
+              </button>
+            </div>
+          )}
+
+          {allOk && (
+            <p style={{ margin:'12px 0 0', fontSize:12, color:'rgba(13,18,64,0.45)', lineHeight:1.5 }}>
+              Syng te avisará cuando toque una tarea — aunque cierres la app.
+            </p>
           )}
         </div>
       </div>
 
-      {/* INSTALAR */}
       {canInstall && (
         <div style={section}>
           <p style={sectionLabel}>INSTALAR APP</p>
@@ -211,3 +287,4 @@ const dot = (color) => ({
 })
 const statusRow = { display:'flex', gap:10, alignItems:'flex-start' }
 const statusText = { margin:0, fontSize:14, color:'#0D1240', lineHeight:1.5 }
+const checkRow = { display:'flex', gap:8, alignItems:'center' }

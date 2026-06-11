@@ -105,3 +105,47 @@ export async function showForegroundNotification(title, body, url, taskId) {
   reg.active.postMessage({ type: 'SHOW_NOTIFICATION', title, body, url, taskId })
   return true
 }
+
+export function isStandalonePwa() {
+  return window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true
+}
+
+const PUSH_API = 'https://us-central1-syng-app.cloudfunctions.net/sendPushNotification'
+
+/** Diagnóstico local — sin red. */
+export async function getPushDiagnostics(userData) {
+  const permission = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
+  const tokenCount = userData?.fcmTokens ? Object.keys(userData.fcmTokens).length : 0
+  let swOk = false
+  if ('serviceWorker' in navigator) {
+    const reg = await navigator.serviceWorker.getRegistration(FCM_SW_SCOPE)
+    swOk = !!reg?.active
+  }
+  return {
+    permission,
+    standalone: isStandalonePwa(),
+    swOk,
+    tokenCount,
+    ios: /iphone|ipad|ipod/i.test(navigator.userAgent),
+  }
+}
+
+/** Registra token y pide al servidor un push de prueba. Devuelve resultado real. */
+export async function sendTestPush(uid) {
+  if (!uid) return { ok: false, reason: 'no_uid' }
+  const sync = await syncFcmToken(uid)
+  if (!sync.ok) return { ok: false, phase: 'sync', reason: sync.reason }
+
+  try {
+    const res = await fetch(PUSH_API, {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body:    JSON.stringify({ userId: uid, test: true }),
+    })
+    const data = await res.json()
+    return { ok: !!data.push, phase: 'server', ...data }
+  } catch (err) {
+    return { ok: false, phase: 'server', reason: err.message }
+  }
+}
