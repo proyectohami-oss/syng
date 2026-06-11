@@ -10,6 +10,11 @@ const FCM_SW_URL    = '/sw-v2.js'
 const FCM_SW_SCOPE  = '/'
 const STALE_SCOPE   = '/firebase-cloud-messaging-push-scope'
 
+let swRegCache     = null
+let staleCleaned   = false
+let lastSync       = { token: null, at: 0 }
+const SYNC_TTL_MS  = 120_000
+
 function platform() {
   if (/iphone|ipad|ipod/i.test(navigator.userAgent)) return 'ios'
   if (/android/i.test(navigator.userAgent)) return 'android'
@@ -17,50 +22,55 @@ function platform() {
 }
 
 async function unregisterStaleFcmSw() {
+  if (staleCleaned) return
+  staleCleaned = true
   try {
     const stale = await navigator.serviceWorker.getRegistration(STALE_SCOPE)
     if (stale) await stale.unregister()
   } catch { /* ignore */ }
 }
 
-async function waitForSwControl(timeoutMs = 12000) {
-  if (navigator.serviceWorker.controller) return true
-  return new Promise((resolve) => {
-    const t = setTimeout(() => resolve(!!navigator.serviceWorker.controller), timeoutMs)
-    navigator.serviceWorker.addEventListener('controllerchange', () => {
-      clearTimeout(t)
-      resolve(!!navigator.serviceWorker.controller)
-    }, { once: true })
-  })
+async function waitForActiveWorker(reg, timeoutMs = 2500) {
+  if (reg?.active) return reg
+  const sw = reg?.installing || reg?.waiting
+  if (!sw) return reg
+  await Promise.race([
+    new Promise((resolve) => {
+      sw.addEventListener('statechange', (e) => {
+        if (e.target.state === 'activated') resolve()
+      }, { once: true })
+    }),
+    new Promise((resolve) => setTimeout(resolve, timeoutMs)),
+  ])
+  return reg
 }
 
 export async function getFcmSwRegistration() {
   if (!('serviceWorker' in navigator)) return null
+  if (swRegCache?.active) return swRegCache
 
   await unregisterStaleFcmSw()
-  await navigator.serviceWorker.ready
 
   let reg = await navigator.serviceWorker.getRegistration(FCM_SW_SCOPE)
+  if (reg?.active) {
+    swRegCache = reg
+    return reg
+  }
+
+  await navigator.serviceWorker.ready
+  reg = await navigator.serviceWorker.getRegistration(FCM_SW_SCOPE)
+
   if (!reg?.active) {
     try {
-      reg = await navigator.serviceWorker.register(FCM_SW_URL, { scope: FCM_SW_SCOPE })
+      reg = reg || await navigator.serviceWorker.register(FCM_SW_URL, { scope: FCM_SW_SCOPE })
     } catch (err) {
       console.error('[FCM] register failed:', err)
       return null
     }
   }
 
-  const sw = reg.installing || reg.waiting
-  if (sw && !reg.active) {
-    await new Promise((resolve) => {
-      const t = setTimeout(resolve, 8000)
-      sw.addEventListener('statechange', (e) => {
-        if (e.target.state === 'activated') { clearTimeout(t); resolve() }
-      })
-    })
-  }
-
-  await waitForSwControl()
+  reg = await waitForActiveWorker(reg)
+  if (reg?.active) swRegCache = reg
   return reg
 }
 
@@ -90,11 +100,15 @@ export async function getFcmToken() {
   }
 }
 
-export async function syncFcmToken(uid) {
+export async function syncFcmToken(uid, { force = false } = {}) {
   if (!uid) return { ok: false, reason: 'no_uid' }
+  if (!force && lastSync.token && Date.now() - lastSync.at < SYNC_TTL_MS) {
+    return { ok: true, token: lastSync.token, cached: true }
+  }
   const result = await getFcmToken()
   if (!result.ok) return result
   await replaceFcmToken(uid, result.token, platform())
+  lastSync = { token: result.token, at: Date.now() }
   return result
 }
 

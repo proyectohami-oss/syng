@@ -110,6 +110,8 @@ export async function replaceFcmToken(uid, token, platform = 'web') {
   const userRef = doc(db, 'users', uid)
   const snap    = await getDoc(userRef)
   const old     = snap.data()?.fcmTokens || {}
+  const keys    = Object.keys(old)
+  if (keys.length === 1 && keys[0] === token) return
   const patch   = {
     updatedAt: serverTimestamp(),
     [`fcmTokens.${token}`]: {

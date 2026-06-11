@@ -44,11 +44,11 @@ export function usePushNotifications() {
     !isSupported ? 'unsupported' : Notification.permission,
   )
 
-  const persist = useCallback(async () => {
+  const persist = useCallback(async (force = false) => {
     if (!uid || !isSupported || Notification.permission !== 'granted') {
       return { ok: false, reason: 'permission' }
     }
-    const result = await syncFcmToken(uid)
+    const result = await syncFcmToken(uid, { force })
     if (result.ok) await bindForegroundListener()
     return result
   }, [uid, isSupported])
@@ -58,11 +58,15 @@ export function usePushNotifications() {
   useEffect(() => {
     if (!uid || !isSupported) return
     const onVisible = () => {
-      if (document.visibilityState === 'visible' && Notification.permission === 'granted') persist()
+      if (document.visibilityState === 'visible' && Notification.permission === 'granted') {
+        persist(false)
+      }
     }
     document.addEventListener('visibilitychange', onVisible)
     return () => document.removeEventListener('visibilitychange', onVisible)
   }, [uid, isSupported, persist])
+
+  const resyncToken = useCallback(() => persist(true), [persist])
 
   const requestPermission = useCallback(async () => {
     if (!uid || !isSupported) return { ok: false, reason: 'unsupported' }
@@ -81,6 +85,6 @@ export function usePushNotifications() {
     permissionState,
     requestPermission,
     disableNotifications,
-    resyncToken: persist,
+    resyncToken,
   }
 }
