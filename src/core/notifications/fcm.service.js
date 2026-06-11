@@ -1,18 +1,14 @@
 /**
- * FCM — registro de token y service worker (única fuente de verdad).
- *
- * sw-v2.js = caché PWA (scope /)
- * firebase-messaging-sw.js = push (scope /firebase-cloud-messaging-push-scope)
- * Hay que registrar explícitamente el SW de FCM; si no, getToken usa sw-v2 y
- * el iPhone nunca recibe push (solo Avisos in-app).
+ * FCM — Universo B: sw-v2.js (scope /) recibe push en iOS PWA.
  */
-import { saveFcmToken, removeFcmToken } from '../services/users.service'
+import { removeFcmToken, replaceFcmToken } from '../services/users.service'
 
 export const FCM_VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY
   || 'BBCXfEUieJEA9wdUgmDjiqjpKeD2E4_IKrXQNgShgGKBeAt0Y0ty3krLN_aZ4MgDWoaPBWvaE5lY7IxPOyvNanA'
 
-const FCM_SW_URL   = '/firebase-messaging-sw.js'
-const FCM_SW_SCOPE = '/firebase-cloud-messaging-push-scope'
+const FCM_SW_URL    = '/sw-v2.js'
+const FCM_SW_SCOPE  = '/'
+const STALE_SCOPE   = '/firebase-cloud-messaging-push-scope'
 
 function platform() {
   if (/iphone|ipad|ipod/i.test(navigator.userAgent)) return 'ios'
@@ -20,18 +16,38 @@ function platform() {
   return 'web'
 }
 
-/** Registra el SW dedicado de FCM (separado del sw-v2.js de caché). */
+async function unregisterStaleFcmSw() {
+  try {
+    const stale = await navigator.serviceWorker.getRegistration(STALE_SCOPE)
+    if (stale) await stale.unregister()
+  } catch { /* ignore */ }
+}
+
+async function waitForSwControl(timeoutMs = 12000) {
+  if (navigator.serviceWorker.controller) return true
+  return new Promise((resolve) => {
+    const t = setTimeout(() => resolve(!!navigator.serviceWorker.controller), timeoutMs)
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      clearTimeout(t)
+      resolve(!!navigator.serviceWorker.controller)
+    }, { once: true })
+  })
+}
+
 export async function getFcmSwRegistration() {
   if (!('serviceWorker' in navigator)) return null
 
-  let reg = await navigator.serviceWorker.getRegistration(FCM_SW_SCOPE)
-  if (reg?.active) return reg
+  await unregisterStaleFcmSw()
+  await navigator.serviceWorker.ready
 
-  try {
-    reg = await navigator.serviceWorker.register(FCM_SW_URL, { scope: FCM_SW_SCOPE })
-  } catch (err) {
-    console.error('[FCM] register failed:', err)
-    return null
+  let reg = await navigator.serviceWorker.getRegistration(FCM_SW_SCOPE)
+  if (!reg?.active) {
+    try {
+      reg = await navigator.serviceWorker.register(FCM_SW_URL, { scope: FCM_SW_SCOPE })
+    } catch (err) {
+      console.error('[FCM] register failed:', err)
+      return null
+    }
   }
 
   const sw = reg.installing || reg.waiting
@@ -44,6 +60,7 @@ export async function getFcmSwRegistration() {
     })
   }
 
+  await waitForSwControl()
   return reg
 }
 
@@ -54,7 +71,7 @@ export async function getFcmToken() {
 
   try {
     const swReg = await getFcmSwRegistration()
-    if (!swReg) return { ok: false, reason: 'no_sw' }
+    if (!swReg?.active) return { ok: false, reason: 'no_sw' }
 
     const { getMessaging, getToken } = await import('firebase/messaging')
     const { app } = await import('../../firebase')
@@ -77,24 +94,8 @@ export async function syncFcmToken(uid) {
   if (!uid) return { ok: false, reason: 'no_uid' }
   const result = await getFcmToken()
   if (!result.ok) return result
-  await saveFcmToken(uid, result.token, platform())
-  await pruneOtherTokens(uid, result.token)
+  await replaceFcmToken(uid, result.token, platform())
   return result
-}
-
-/** Solo el token de este dispositivo (prueba Universo A). */
-async function pruneOtherTokens(uid, keepToken) {
-  const { doc, getDoc, setDoc, deleteField, serverTimestamp } = await import('firebase/firestore')
-  const { db } = await import('../../firebase')
-  const snap = await getDoc(doc(db, 'users', uid))
-  const old  = snap.data()?.fcmTokens || {}
-  const patch = { updatedAt: serverTimestamp() }
-  for (const t of Object.keys(old)) {
-    if (t !== keepToken) patch[`fcmTokens.${t}`] = deleteField()
-  }
-  if (Object.keys(patch).length > 1) {
-    await setDoc(doc(db, 'users', uid), patch, { merge: true })
-  }
 }
 
 export async function unsyncFcmToken(uid) {
@@ -114,7 +115,6 @@ export function recordatorioPath(data) {
   return '/agenda'
 }
 
-/** Muestra notificación en primer plano vía firebase-messaging-sw.js (requerido en iOS). */
 export async function showForegroundNotification(title, body, url, taskId) {
   const reg = await getFcmSwRegistration()
   if (!reg?.active) return false
@@ -129,7 +129,6 @@ export function isStandalonePwa() {
 
 const PUSH_API = '/api/test-push'
 
-/** Diagnóstico local — sin red. */
 export async function getPushDiagnostics(userData) {
   const permission = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
   const tokenCount = userData?.fcmTokens ? Object.keys(userData.fcmTokens).length : 0
@@ -142,12 +141,13 @@ export async function getPushDiagnostics(userData) {
     permission,
     standalone: isStandalonePwa(),
     swOk,
+    swControlled: !!navigator.serviceWorker.controller,
     tokenCount,
     ios: /iphone|ipad|ipod/i.test(navigator.userAgent),
+    universe: 'B',
   }
 }
 
-/** Registra token y pide al servidor un push de prueba. Devuelve resultado real. */
 export async function sendTestPush(uid) {
   if (!uid) return { ok: false, reason: 'no_uid' }
   const sync = await syncFcmToken(uid)

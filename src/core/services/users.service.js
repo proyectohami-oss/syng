@@ -105,6 +105,25 @@ export async function saveFcmToken(uid, token, platform = 'web') {
   }, { merge: true })
 }
 
+/** Un solo token activo — evita tokens viejos en pruebas. */
+export async function replaceFcmToken(uid, token, platform = 'web') {
+  const userRef = doc(db, 'users', uid)
+  const snap    = await getDoc(userRef)
+  const old     = snap.data()?.fcmTokens || {}
+  const patch   = {
+    updatedAt: serverTimestamp(),
+    [`fcmTokens.${token}`]: {
+      platform,
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    },
+  }
+  for (const t of Object.keys(old)) {
+    if (t !== token) patch[`fcmTokens.${t}`] = deleteField()
+  }
+  await setDoc(userRef, patch, { merge: true })
+}
+
 /**
  * Remove a specific FCM token (on logout or token invalidation).
  *

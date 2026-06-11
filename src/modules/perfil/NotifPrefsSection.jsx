@@ -122,13 +122,13 @@ export function NotifPrefsSection() {
       const result = await sendTestPush(uid)
       setLastTest(result)
       if (result.ok) {
-        showToast('Push enviado — revisa tu iPhone', '✓')
+        showToast('Servidor envió — cierra Syng y revisa si sonó', '✓')
       } else if (result.phase === 'sync') {
         showToast(toastForReason(result.reason), '⚠️')
       } else if (result.reason === 'no_tokens') {
         showToast('Sin token — toca Verificar conexión primero', '⚠️')
       } else {
-        showToast(`Servidor: ${result.successCount ?? 0}/${result.tokenCount ?? '?'} dispositivos`, '⚠️')
+        showToast(`Servidor: ${result.reason || 'error'} (${result.successCount ?? 0}/${result.tokenCount ?? '?'})`, '⚠️')
       }
       await refreshDiag()
     } finally { setTesting(false) }
@@ -157,7 +157,7 @@ export function NotifPrefsSection() {
     <div style={{ display:'flex', flexDirection:'column', gap:12, marginTop:12 }}>
 
       <div style={section}>
-        <p style={sectionLabel}>RECORDATORIOS</p>
+        <p style={sectionLabel}>UNIVERSO B — RECORDATORIOS</p>
         <div style={{ padding:'12px 16px 14px' }}>
           <NotifStatus state={notifState} />
 
@@ -166,6 +166,9 @@ export function NotifPrefsSection() {
               <Check ok={diag.permission === 'granted'} label="Permiso del iPhone" />
               <Check ok={diag.standalone} label="App instalada en inicio" />
               <Check ok={diag.swOk} label="Canal de push activo" />
+              {diag.swControlled != null && (
+                <Check ok={diag.swControlled} label="SW controla la app" />
+              )}
               <Check ok={diag.tokenCount > 0} label={`Token en servidor (${diag.tokenCount})`} />
             </div>
           )}
@@ -208,7 +211,7 @@ export function NotifPrefsSection() {
         </div>
       </div>
 
-      {canInstall && (
+      {canInstall && !installed && (
         <div style={section}>
           <p style={sectionLabel}>INSTALAR APP</p>
           <div style={{ padding:'12px 16px 14px' }}>
@@ -216,14 +219,6 @@ export function NotifPrefsSection() {
               {installing ? 'Instalando…' : ios ? 'Cómo instalar Syng en iPhone' : 'Instalar Syng — Gratis'}
             </button>
           </div>
-        </div>
-      )}
-
-      {installed && (
-        <div style={{ ...section, background:'rgba(220,252,231,0.85)', border:'1.5px solid rgba(34,197,94,0.25)' }}>
-          <p style={{ margin:0, padding:'14px 16px', fontSize:14, fontWeight:600, color:'#1a5c38' }}>
-            ✓ App instalada en este dispositivo
-          </p>
         </div>
       )}
 

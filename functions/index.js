@@ -72,7 +72,7 @@ async function saveInApp(uid, { title, body, taskId, url }) {
 }
 
 /** Payload congelado v4 — ver src/core/notifications/PUSH_CONTRACT.js */
-const PUSH_PIPELINE_VERSION = 'universe-a'
+const PUSH_PIPELINE_VERSION = 'universe-b'
 
 async function sendFcm(uid, tokens, title, body, { taskId, url }) {
   if (!tokens.length) return { successCount: 0, failureCount: 0, responses: [] }
@@ -97,7 +97,11 @@ async function deliverReminderPush({ userId, title, taskId, reminderId, test, to
   }
 
   let tokens = await getUserTokens(userId)
-  if (tokenOnly) tokens = tokens.filter(t => t === tokenOnly)
+  if (test && tokenOnly) {
+    tokens = [tokenOnly]
+  } else if (tokenOnly) {
+    tokens = tokens.filter(t => t === tokenOnly)
+  }
   console.log(`[deliver] ${PUSH_PIPELINE_VERSION} uid=${userId} tokens=${tokens.length} test=${!!test}`)
 
   if (!tokens.length) {
