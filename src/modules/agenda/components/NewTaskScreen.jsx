@@ -9,6 +9,7 @@ import { useShellChrome } from '../../../shared/ShellChromeContext'
 import { RepeatCinemaPicker } from './RepeatCinemaPicker'
 import { ReminderPanel } from './ReminderPanel'
 import { SyngAvisoSheet } from '../../../shared/SyngAvisoSheet'
+import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
   'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -100,6 +101,7 @@ export function NewTaskScreen() {
   const [repeatMode, setRepeatMode] = useState('none')
   const [saving, setSaving] = useState(false)
   const [showAviso, setShowAviso] = useState(false)
+  const [showIosHelp, setShowIosHelp] = useState(false)
 
   const actH24 = useMemo(() => to24h(actH12, actAmpm), [actH12, actAmpm])
   const taskTimeStr = `${actH12}:${pad2(actM)} ${actAmpm}`
@@ -205,6 +207,7 @@ export function NewTaskScreen() {
               setShowAviso(false)
               return
             }
+            if (cal?.needsHelp) setShowIosHelp(true)
             firstAviso = false
           }
           await createTask({
@@ -370,6 +373,10 @@ export function NewTaskScreen() {
           onSkip={() => commitSave(false)}
           onClose={() => setShowAviso(false)}
         />
+      )}
+
+      {showIosHelp && (
+        <SyngAvisoIosHelp onDone={() => setShowIosHelp(false)} />
       )}
     </div>
   )

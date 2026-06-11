@@ -52,10 +52,9 @@ export async function syncReminderToCalendar({ taskId, title, alarmAt, taskTime 
 
   if (isIOS()) {
     const blobUrl = URL.createObjectURL(blob)
-    window.location.assign(blobUrl)
+    window.open(blobUrl, '_blank')
     setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
-    showToast('Toca Agregar en la pantalla de iPhone', '📅')
-    return { ok: true, method: 'ios-open' }
+    return { ok: true, method: 'ios-open', needsHelp: true }
   }
 
   const file = new File([blob], filename, { type: 'text/calendar' })
