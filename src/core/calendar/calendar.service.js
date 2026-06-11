@@ -1,11 +1,14 @@
 /**
  * Sincroniza recordatorios Syng → Calendario del dispositivo.
- * El aviso lo manda iOS/Android; el enlace vuelve a Syng (/recordatorio/…).
  */
 import { buildIcsEvent } from './ics'
 import { showToast } from '../../shared/Toast'
 
 const WEB_APP = import.meta.env.VITE_WEB_APP_URL || 'https://syng-psi.vercel.app'
+
+function isIOS() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent)
+}
 
 export function recordatorioUrl(taskId) {
   return `${WEB_APP}/recordatorio/${taskId}`
@@ -30,7 +33,12 @@ export async function syncReminderToCalendar({ taskId, title, alarmAt, taskTime 
   if (!taskId || !alarmAt) return { ok: false, reason: 'missing_fields' }
   const alarm = alarmAt instanceof Date ? alarmAt : new Date(alarmAt)
   if (Number.isNaN(alarm.getTime())) return { ok: false, reason: 'bad_date' }
-  if (alarm.getTime() <= Date.now()) return { ok: false, reason: 'past' }
+
+  const msUntil = alarm.getTime() - Date.now()
+  if (msUntil < 60_000) {
+    showToast('Pon el aviso al menos 2 min en el futuro', '⚠️')
+    return { ok: false, reason: 'too_soon' }
+  }
 
   const ics = buildIcs({
     taskId,
@@ -45,12 +53,23 @@ export async function syncReminderToCalendar({ taskId, title, alarmAt, taskTime 
 
   try {
     if (navigator.canShare?.({ files: [file] })) {
-      await navigator.share({ files: [file], title: 'Syng — recordatorio' })
-  showToast('Aviso Syng listo — confirma en la pantalla siguiente', '📅')
+      await navigator.share({ files: [file], title: 'Syng te avisa' })
+      showToast('Toca Calendario → Agregar evento', '📅')
       return { ok: true, method: 'share' }
     }
   } catch (err) {
-    if (err?.name === 'AbortError') return { ok: false, reason: 'cancelled' }
+    if (err?.name === 'AbortError') {
+      showToast('No se agregó al Calendario — sin aviso en iPhone', '⚠️')
+      return { ok: false, reason: 'cancelled' }
+    }
+  }
+
+  if (isIOS()) {
+    const blobUrl = URL.createObjectURL(blob)
+    window.location.assign(blobUrl)
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
+    showToast('Toca Agregar evento en iPhone', '📅')
+    return { ok: true, method: 'ios-open' }
   }
 
   const url = URL.createObjectURL(blob)

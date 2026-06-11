@@ -197,9 +197,14 @@ export function NewTaskScreen() {
           const reminderTime = Timestamp.fromDate(scheduled)
           if (firstAviso) {
             const { activateSyngAviso } = await import('../../../core/calendar/calendar.service')
-            await activateSyngAviso({
+            const cal = await activateSyngAviso({
               taskId, title: trimmed, alarmAt: scheduled, taskTime: activityDate,
             })
+            if (!cal?.ok && cal?.reason === 'too_soon') {
+              setSaving(false)
+              setShowAviso(false)
+              return
+            }
             firstAviso = false
           }
           await createTask({
