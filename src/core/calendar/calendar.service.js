@@ -49,6 +49,15 @@ export async function syncReminderToCalendar({ taskId, title, alarmAt, taskTime 
 
   const filename = `syng-${taskId.slice(0, 8)}.ics`
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
+
+  if (isIOS()) {
+    const blobUrl = URL.createObjectURL(blob)
+    window.location.assign(blobUrl)
+    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
+    showToast('Toca Agregar en la pantalla de iPhone', '📅')
+    return { ok: true, method: 'ios-open' }
+  }
+
   const file = new File([blob], filename, { type: 'text/calendar' })
 
   try {
@@ -62,14 +71,6 @@ export async function syncReminderToCalendar({ taskId, title, alarmAt, taskTime 
       showToast('No se agregó al Calendario — sin aviso en iPhone', '⚠️')
       return { ok: false, reason: 'cancelled' }
     }
-  }
-
-  if (isIOS()) {
-    const blobUrl = URL.createObjectURL(blob)
-    window.location.assign(blobUrl)
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
-    showToast('Toca Agregar evento en iPhone', '📅')
-    return { ok: true, method: 'ios-open' }
   }
 
   const url = URL.createObjectURL(blob)
