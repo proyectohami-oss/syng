@@ -142,6 +142,8 @@ export function NotifPrefsSection() {
     if (reason === 'empty') return 'No se obtuvo token — intenta de nuevo'
     if (reason?.includes('token-subscribe')) return 'Clave VAPID incorrecta en Vercel'
     if (reason?.includes('failed-service-worker')) return 'Cierra y abre Syng desde el ícono'
+    if (reason === 'Load failed' || reason === 'network_error') return 'Sin conexión — cierra y abre Syng desde el ícono'
+    if (reason === 'proxy_error') return 'Error del servidor — intenta en unos segundos'
     if (reason) return `Error: ${reason}`
     return 'Abre Syng desde el ícono de inicio'
   }

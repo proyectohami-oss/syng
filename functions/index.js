@@ -125,7 +125,18 @@ async function deliverReminderPush({ userId, title, taskId, reminderId, test }) 
   }
 }
 
+function setCors(req, res) {
+  const origin = req.get('Origin') || ''
+  if (origin === WEB_APP_URL || origin.endsWith('.vercel.app') || origin.includes('localhost')) {
+    res.set('Access-Control-Allow-Origin', origin)
+  }
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS')
+  res.set('Access-Control-Allow-Headers', 'Content-Type')
+}
+
 exports.sendPushNotification = onRequest({ timeoutSeconds: 30, invoker: 'public' }, async (req, res) => {
+  setCors(req, res)
+  if (req.method === 'OPTIONS') return res.status(204).send('')
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
   const { userId, title, taskId, reminderId, test } = req.body
   if (!userId) return res.status(400).json({ error: 'faltan campos' })

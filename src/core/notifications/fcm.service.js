@@ -111,7 +111,7 @@ export function isStandalonePwa() {
     || window.navigator.standalone === true
 }
 
-const PUSH_API = 'https://us-central1-syng-app.cloudfunctions.net/sendPushNotification'
+const PUSH_API = '/api/test-push'
 
 /** Diagnóstico local — sin red. */
 export async function getPushDiagnostics(userData) {
@@ -141,11 +141,14 @@ export async function sendTestPush(uid) {
     const res = await fetch(PUSH_API, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ userId: uid, test: true }),
+      body:    JSON.stringify({ userId: uid }),
     })
-    const data = await res.json()
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      return { ok: false, phase: 'server', reason: data.reason || data.error || `http_${res.status}` }
+    }
     return { ok: !!data.push, phase: 'server', ...data }
   } catch (err) {
-    return { ok: false, phase: 'server', reason: err.message }
+    return { ok: false, phase: 'server', reason: err.message || 'network_error' }
   }
 }
