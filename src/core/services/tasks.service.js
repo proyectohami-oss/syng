@@ -7,13 +7,10 @@ import {
 } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { logActivity } from './activity.service'
+import { applyReminderForTask } from './reminders.service'
 
 export function generateTaskId() {
   return doc(collection(db, 'tasks')).id
-}
-
-async function programarRecordatorio() {
-  /* Recordatorios vía colección /reminders + Cloud Functions (scheduleReminder). */
 }
 
 export async function createTask({ id, title, description, type, ownerId, groupId, dueDate, actorName = '', reminder = null, reminderTime = null }) {
@@ -35,7 +32,9 @@ export async function createTask({ id, title, description, type, ownerId, groupI
     createdAt:   serverTimestamp(),
     updatedAt:   serverTimestamp(),
   })
-  if (reminder) await programarRecordatorio()
+  if (reminder?.scheduledAt && ownerId) {
+    await applyReminderForTask({ taskId: id, userId: ownerId, title, reminder, dueDate })
+  }
   if (groupId) {
     await logActivity({ groupId, type: 'task_created', actorUid: ownerId, actorName, targetName: title.trim() })
     await logActivityEvent({ eventAction: 'task.created', actorId: ownerId, groupId, entityType: 'task', metadata: { task_title: title.trim() } })
@@ -54,7 +53,15 @@ export async function updateTask(taskId, updates) {
     ...updates,
     updatedAt: serverTimestamp(),
   })
-  if (updates.reminder) await programarRecordatorio()
+  if (updates.reminder?.scheduledAt && updates.ownerId) {
+    await applyReminderForTask({
+      taskId,
+      userId: updates.ownerId,
+      title: updates.title || updates.reminder.title || 'Recordatorio',
+      reminder: updates.reminder,
+      dueDate: updates.dueDate,
+    })
+  }
 }
 
 export async function toggleTaskStatus(taskId, currentStatus, uid, groupId = null, actorName = '', taskTitle = '') {

@@ -54,7 +54,7 @@ function NotifStatus({ state }) {
 export function NotifPrefsSection() {
   const auth = useCoreAuth()
   const uid  = auth.user?.uid
-  const { isSupported, permissionState, requestPermission, resyncToken } = usePushNotifications()
+  const { isSupported, permissionState, requestPermission, resyncToken, isNative } = usePushNotifications()
 
   const [prompt,      setPrompt]      = useState(null)
   const [installed,   setInstalled]   = useState(false)
@@ -157,7 +157,9 @@ export function NotifPrefsSection() {
     <div style={{ display:'flex', flexDirection:'column', gap:12, marginTop:12 }}>
 
       <div style={section}>
-        <p style={sectionLabel}>UNIVERSO B — RECORDATORIOS</p>
+        <p style={sectionLabel}>
+          {isNative ? 'APP NATIVA — RECORDATORIOS' : 'UNIVERSO B — RECORDATORIOS'}
+        </p>
         <div style={{ padding:'12px 16px 14px' }}>
           <NotifStatus state={notifState} />
 
@@ -166,8 +168,11 @@ export function NotifPrefsSection() {
               <Check ok={diag.permission === 'granted'} label="Permiso del iPhone" />
               <Check ok={diag.standalone} label="App instalada en inicio" />
               <Check ok={diag.swOk} label="Canal de push activo" />
-              {diag.swControlled != null && (
+              {diag.swControlled != null && !isNative && (
                 <Check ok={diag.swControlled} label="SW controla la app" />
+              )}
+              {isNative && diag.platform && (
+                <Check ok label={`Plataforma: ${diag.platform}`} />
               )}
               <Check ok={diag.tokenCount > 0} label={`Token en servidor (${diag.tokenCount})`} />
             </div>

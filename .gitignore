@@ -23,4 +23,6 @@ dist-ssr
 *.sln
 *.sw?
 .vercel
+android/app/google-services.json
+android/local.properties
 .env

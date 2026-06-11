@@ -1,0 +1,14 @@
+{
+  "appId": "app.syng.mobile",
+  "appName": "Syng",
+  "webDir": "dist",
+  "server": {
+    "androidScheme": "https",
+    "hostname": "localhost"
+  },
+  "plugins": {
+    "PushNotifications": {
+      "presentationOptions": ["badge", "sound", "alert"]
+    }
+  }
+}

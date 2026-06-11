@@ -1,4 +1,5 @@
 import { initializeApp } from 'firebase/app'
+import { Capacitor } from '@capacitor/core'
 import {
   getAuth,
   initializeAuth,
@@ -13,9 +14,15 @@ import {
   CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore'
 
+/** En app nativa el authDomain debe ser firebaseapp.com, no la URL de Vercel. */
+function authDomainForApp() {
+  if (Capacitor.isNativePlatform()) return 'syng-app.firebaseapp.com'
+  return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'syng-app.firebaseapp.com'
+}
+
 const firebaseConfig = {
   apiKey:            import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain:        import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  authDomain:        authDomainForApp(),
   projectId:         import.meta.env.VITE_FIREBASE_PROJECT_ID,
   storageBucket:     import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,

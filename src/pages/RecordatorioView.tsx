@@ -88,8 +88,8 @@ export default function RecordatorioView() {
       </div>
 
       <div style={s.footer}>
-        <button type="button" style={s.btnPrimary} onClick={completar}>Abrir tarea</button>
-        <button type="button" style={s.btnSecondary} onClick={() => navigate('/agenda')}>Posponer</button>
+        <button type="button" style={s.btnPrimary} onClick={completar}>Completar</button>
+        <button type="button" style={s.btnSecondary} onClick={() => navigate('/agenda')}>Ver en agenda</button>
       </div>
     </div>
   )

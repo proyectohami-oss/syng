@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
 import { useAuthActions } from '../../auth/useAuthActions'
@@ -62,6 +63,15 @@ export function PerfilModule() {
       {/* Header */}
       <div style={header}>
         <span style={{ fontSize:17, fontWeight:600, color:'#0D1240', letterSpacing:'-0.01em' }}>Perfil</span>
+        {Capacitor.isNativePlatform() && (
+          <span style={{
+            marginLeft: 8, fontSize: 11, fontWeight: 700,
+            color: '#1a5c38', background: 'rgba(220,252,231,0.9)',
+            padding: '3px 8px', borderRadius: 8,
+          }}>
+            APP NATIVA
+          </span>
+        )}
       </div>
 
       <div style={body}>

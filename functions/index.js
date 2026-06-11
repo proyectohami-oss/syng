@@ -47,7 +47,15 @@ async function ensureQueue() {
 async function getUserTokens(uid) {
   const snap = await db.doc(`users/${uid}`).get()
   if (!snap.exists) return []
-  return Object.keys(snap.data().fcmTokens || {})
+  const map = snap.data().fcmTokens || {}
+  return Object.entries(map).map(([token, meta]) => ({
+    token,
+    platform: meta?.platform || 'web',
+  }))
+}
+
+function platformForToken(entries, token) {
+  return entries.find(e => e.token === token)?.platform || 'web'
 }
 
 async function pruneBadTokens(uid, tokens, result) {
@@ -72,21 +80,29 @@ async function saveInApp(uid, { title, body, taskId, url }) {
 }
 
 /** Payload congelado v4 — ver src/core/notifications/PUSH_CONTRACT.js */
-const PUSH_PIPELINE_VERSION = 'universe-b'
+const PUSH_PIPELINE_VERSION = 'native-v1'
 
-async function sendFcm(uid, tokens, title, body, { taskId, url }) {
-  if (!tokens.length) return { successCount: 0, failureCount: 0, responses: [] }
+async function sendFcm(uid, entries, title, body, { taskId, url }) {
+  if (!entries.length) return { successCount: 0, failureCount: 0, responses: [] }
 
   const data = strData({ type: 'reminder', title, body, taskId, url })
+  const tokens = entries.map(e => e.token)
 
-  const messages = tokens.map(token => ({ token, data }))
+  const messages = entries.map(({ token, platform }) => {
+    const msg = { token, data }
+    if (platform === 'android' || platform === 'ios') {
+      msg.notification = { title, body }
+      msg.android = { priority: 'high' }
+    }
+    return msg
+  })
 
   const result = await messaging.sendEach(messages)
   await pruneBadTokens(uid, tokens, result)
   return result
 }
 
-async function deliverReminderPush({ userId, title, taskId, reminderId, test, tokenOnly }) {
+async function deliverReminderPush({ userId, title, taskId, reminderId, test, tokenOnly, tokenPlatform }) {
   const testTaskId = 'universe-a-test'
   const pushTitle = test ? '✓ Syng' : '⏰ Recordatorio'
   const pushBody  = test ? 'Toca para abrir el recordatorio de prueba' : (title || 'Es momento de retomarlo')
@@ -96,19 +112,20 @@ async function deliverReminderPush({ userId, title, taskId, reminderId, test, to
     await saveInApp(userId, { title: pushTitle, body: pushBody, taskId, url })
   }
 
-  let tokens = await getUserTokens(userId)
+  let entries = await getUserTokens(userId)
   if (test && tokenOnly) {
-    tokens = [tokenOnly]
+    const plat = tokenPlatform || platformForToken(entries, tokenOnly) || 'web'
+    entries = [{ token: tokenOnly, platform: plat }]
   } else if (tokenOnly) {
-    tokens = tokens.filter(t => t === tokenOnly)
+    entries = entries.filter(e => e.token === tokenOnly)
   }
-  console.log(`[deliver] ${PUSH_PIPELINE_VERSION} uid=${userId} tokens=${tokens.length} test=${!!test}`)
+  console.log(`[deliver] ${PUSH_PIPELINE_VERSION} uid=${userId} tokens=${entries.length} test=${!!test}`)
 
-  if (!tokens.length) {
+  if (!entries.length) {
     return { ok: false, push: false, reason: 'no_tokens', tokenCount: 0, pipeline: PUSH_PIPELINE_VERSION }
   }
 
-  const result = await sendFcm(userId, tokens, pushTitle, pushBody, {
+  const result = await sendFcm(userId, entries, pushTitle, pushBody, {
     taskId: test ? testTaskId : (taskId || 'test'),
     url,
   })
@@ -129,7 +146,7 @@ async function deliverReminderPush({ userId, title, taskId, reminderId, test, to
     push:         result.successCount > 0,
     successCount: result.successCount,
     failureCount: result.failureCount,
-    tokenCount:   tokens.length,
+    tokenCount:   entries.length,
     pipeline:     PUSH_PIPELINE_VERSION,
   }
 }
@@ -147,12 +164,13 @@ exports.sendPushNotification = onRequest({ timeoutSeconds: 30, invoker: 'public'
   setCors(req, res)
   if (req.method === 'OPTIONS') return res.status(204).send('')
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')
-  const { userId, title, taskId, reminderId, test, token } = req.body
+  const { userId, title, taskId, reminderId, test, token, platform } = req.body
   if (!userId) return res.status(400).json({ error: 'faltan campos' })
   if (!test && !taskId) return res.status(400).json({ error: 'faltan campos' })
   const result = await deliverReminderPush({
     userId, title, taskId: taskId || `test-${Date.now()}`, reminderId, test: !!test,
     tokenOnly: test && token ? token : null,
+    tokenPlatform: platform || null,
   })
   res.json(result)
 })

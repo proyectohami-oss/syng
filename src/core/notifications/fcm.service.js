@@ -2,6 +2,8 @@
  * FCM — Universo B: sw-v2.js (scope /) recibe push en iOS PWA.
  */
 import { removeFcmToken, replaceFcmToken } from '../services/users.service'
+import { isNativeApp, getNativePushDiagnostics, syncNativeFcmToken, nativePlatform } from './native-push.service'
+import { recordatorioPath } from './push-utils'
 
 export const FCM_VAPID_KEY = import.meta.env.VITE_FIREBASE_VAPID_KEY
   || 'BBCXfEUieJEA9wdUgmDjiqjpKeD2E4_IKrXQNgShgGKBeAt0Y0ty3krLN_aZ4MgDWoaPBWvaE5lY7IxPOyvNanA'
@@ -118,16 +120,8 @@ export async function unsyncFcmToken(uid) {
   if (result.ok) await removeFcmToken(uid, result.token)
 }
 
-export function recordatorioPath(data) {
-  if (data?.url) {
-    if (data.url.startsWith('http')) {
-      try { return new URL(data.url).pathname } catch { return '/agenda' }
-    }
-    return data.url
-  }
-  if (data?.taskId) return `/recordatorio/${data.taskId}`
-  return '/agenda'
-}
+
+export { recordatorioPath } from './push-utils'
 
 export async function showForegroundNotification(title, body, url, taskId) {
   const reg = await getFcmSwRegistration()
@@ -141,9 +135,12 @@ export function isStandalonePwa() {
     || window.navigator.standalone === true
 }
 
-const PUSH_API = '/api/test-push'
+const PUSH_API = isNativeApp()
+  ? 'https://syng-psi.vercel.app/api/test-push'
+  : '/api/test-push'
 
 export async function getPushDiagnostics(userData) {
+  if (isNativeApp()) return getNativePushDiagnostics(userData)
   const permission = typeof Notification !== 'undefined' ? Notification.permission : 'unsupported'
   const tokenCount = userData?.fcmTokens ? Object.keys(userData.fcmTokens).length : 0
   let swOk = false
@@ -164,14 +161,18 @@ export async function getPushDiagnostics(userData) {
 
 export async function sendTestPush(uid) {
   if (!uid) return { ok: false, reason: 'no_uid' }
-  const sync = await syncFcmToken(uid)
+  const sync = isNativeApp()
+    ? await syncNativeFcmToken(uid)
+    : await syncFcmToken(uid, { force: true })
   if (!sync.ok) return { ok: false, phase: 'sync', reason: sync.reason }
+
+  const platform = isNativeApp() ? nativePlatform() : 'web'
 
   try {
     const res = await fetch(PUSH_API, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ userId: uid, token: sync.token }),
+      body:    JSON.stringify({ userId: uid, token: sync.token, platform }),
     })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {

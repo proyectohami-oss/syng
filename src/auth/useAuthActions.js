@@ -9,8 +9,10 @@ import {
   updateProfile,
 } from 'firebase/auth'
 import { auth } from '../firebase'
+import { isNativeApp } from '../core/notifications/native-push.service'
 
 const googleProvider = new GoogleAuthProvider()
+googleProvider.setCustomParameters({ prompt: 'select_account' })
 
 export function isStandalonePwa() {
   return window.matchMedia('(display-mode: standalone)').matches
@@ -18,10 +20,13 @@ export function isStandalonePwa() {
 }
 
 /**
- * Inicia Google Sign-In de forma SÍNCRONA (requerido en iOS Safari).
- * PWA instalada: popup primero (redirect falla en iOS), luego redirect.
+ * Web/PWA: popup primero. App nativa: redirect (popup abre Chrome y te saca a Vercel).
  */
 export function beginGoogleSignIn() {
+  if (isNativeApp()) {
+    return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
+  }
+
   const popup = signInWithPopup(auth, googleProvider).then((result) => {
     sessionStorage.setItem('justLoggedIn', '1')
     return { redirected: false, user: result.user }
@@ -53,8 +58,13 @@ export function useAuthActions() {
 
   const signOut = useCallback(async () => {
     try {
-      const { unsyncFcmToken } = await import('../core/notifications/fcm.service')
-      if (auth.currentUser) await unsyncFcmToken(auth.currentUser.uid)
+      const { isNativeApp, unsyncNativeFcmToken } = await import('../core/notifications/native-push.service')
+      if (isNativeApp()) {
+        if (auth.currentUser) await unsyncNativeFcmToken(auth.currentUser.uid)
+      } else {
+        const { unsyncFcmToken } = await import('../core/notifications/fcm.service')
+        if (auth.currentUser) await unsyncFcmToken(auth.currentUser.uid)
+      }
     } catch (_) {}
     await firebaseSignOut(auth)
   }, [])

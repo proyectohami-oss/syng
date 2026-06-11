@@ -5,10 +5,10 @@ import { T } from '../../../theme'
 import { useTasks } from '../../../core/hooks/useTasks'
 import { useCoreAuth } from '../../../core/hooks/useCoreData'
 import { generateTaskId } from '../../../core/services/tasks.service'
-import { scheduleReminder } from '../../../core/services/reminders.service'
 import { useShellChrome } from '../../../shared/ShellChromeContext'
 import { RepeatCinemaPicker } from './RepeatCinemaPicker'
 import { ReminderPanel } from './ReminderPanel'
+import { SyngAvisoSheet } from '../../../shared/SyngAvisoSheet'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
   'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -99,12 +99,22 @@ export function NewTaskScreen() {
   const [repeatDays, setRepeatDays] = useState(new Set())
   const [repeatMode, setRepeatMode] = useState('none')
   const [saving, setSaving] = useState(false)
+  const [showAviso, setShowAviso] = useState(false)
 
   const actH24 = useMemo(() => to24h(actH12, actAmpm), [actH12, actAmpm])
   const taskTimeStr = `${actH12}:${pad2(actM)} ${actAmpm}`
   const totalOffsetMin = offD * 1440 + offH * 60 + offM
   const offsetSummary = buildOffsetLabel(offD, offH, offM)
   const reminderSummary = reminderOn ? `${taskTimeStr} · ${offsetSummary}` : 'Sin recordatorio'
+
+  const avisoNotifyLabel = useMemo(() => {
+    const activityDate = new Date(`${dateStr}T00:00:00`)
+    activityDate.setHours(actH24, actM, 0, 0)
+    const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
+    return scheduled.toLocaleString('es-MX', {
+      weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
+    })
+  }, [dateStr, actH24, actM, totalOffsetMin])
 
   useEffect(() => {
     const t = setTimeout(() => titleRef.current?.focus(), 80)
@@ -171,20 +181,12 @@ export function NewTaskScreen() {
     setPanel('main')
   }
 
-  async function handleSave() {
-    if (!title.trim()) {
-      setTitleError(true)
-      setPanel('main')
-      titleRef.current?.focus()
-      return
-    }
-    if (!auth?.user?.uid) return
-
-    setSaving(true)
+  async function commitSave(withSyngAviso) {
     const trimmed = title.trim()
     const days = repeatDays.size > 0 ? Array.from(repeatDays).sort() : [dateStr]
-
+    setSaving(true)
     try {
+      let firstAviso = withSyngAviso
       for (const day of days) {
         const taskId = generateTaskId()
         const activityDate = new Date(`${day}T00:00:00`)
@@ -193,6 +195,13 @@ export function NewTaskScreen() {
         if (reminderOn) {
           const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
           const reminderTime = Timestamp.fromDate(scheduled)
+          if (firstAviso) {
+            const { activateSyngAviso } = await import('../../../core/calendar/calendar.service')
+            await activateSyngAviso({
+              taskId, title: trimmed, alarmAt: scheduled, taskTime: activityDate,
+            })
+            firstAviso = false
+          }
           await createTask({
             id: taskId, title: trimmed, type: 'personal', groupId: null,
             dueDate: Timestamp.fromDate(activityDate), reminderTime,
@@ -201,10 +210,6 @@ export function NewTaskScreen() {
               dueTime: `${pad2(actH24)}:${pad2(actM)}`,
               label: offsetSummary,
             },
-          })
-          await scheduleReminder({
-            taskId, userId: auth.user.uid, title: trimmed,
-            taskTime: activityDate, scheduledAt: scheduled, offsetMinutes: totalOffsetMin,
           })
         } else {
           await createTask({
@@ -218,7 +223,24 @@ export function NewTaskScreen() {
       console.error('[NewTaskScreen] save error:', err)
     } finally {
       setSaving(false)
+      setShowAviso(false)
     }
+  }
+
+  async function handleSave() {
+    if (!title.trim()) {
+      setTitleError(true)
+      setPanel('main')
+      titleRef.current?.focus()
+      return
+    }
+    if (!auth?.user?.uid) return
+
+    if (reminderOn) {
+      setShowAviso(true)
+      return
+    }
+    await commitSave(false)
   }
 
   function goBack() {
@@ -331,6 +353,17 @@ export function NewTaskScreen() {
           onConfirm={applyReminderResult}
           onSkip={() => { setReminderOn(false); setPanel('main') }}
           onBack={() => setPanel('main')}
+        />
+      )}
+
+      {showAviso && (
+        <SyngAvisoSheet
+          title={title.trim()}
+          notifyLabel={avisoNotifyLabel}
+          taskTimeLabel={taskTimeStr}
+          onActivate={() => commitSave(true)}
+          onSkip={() => commitSave(false)}
+          onClose={() => setShowAviso(false)}
         />
       )}
     </div>
