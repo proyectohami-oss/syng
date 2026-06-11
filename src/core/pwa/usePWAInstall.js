@@ -14,14 +14,20 @@ function detectStandalone() {
   )
 }
 
+function detectAndroid() {
+  return /android/i.test(navigator.userAgent)
+}
+
 export function usePWAInstall() {
   const [installPrompt, setInstallPrompt] = useState(null)
   const [isInstalled,   setIsInstalled]   = useState(false)
   const [installing,    setInstalling]    = useState(false)
   const [isIOS,         setIsIOS]         = useState(false)
+  const [isAndroid,     setIsAndroid]     = useState(false)
 
   useEffect(() => {
     setIsIOS(detectIOS())
+    setIsAndroid(detectAndroid())
 
     if (detectStandalone()) {
       setIsInstalled(true)
@@ -72,10 +78,12 @@ export function usePWAInstall() {
   }, [installPrompt])
 
   return {
-    canInstall: !isInstalled && (!!installPrompt || isIOS),
+    canInstall: !isInstalled && (!!installPrompt || isIOS || isAndroid),
     isIOS,
+    isAndroid,
     isInstalled,
     installing,
     triggerInstall,
+    hasNativePrompt: !!installPrompt,
   }
 }

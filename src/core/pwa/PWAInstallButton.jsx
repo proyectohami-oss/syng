@@ -6,18 +6,23 @@ import { useState } from 'react'
 import { usePWAInstall } from './usePWAInstall'
 
 export function PWAInstallButton() {
-  const { canInstall, isIOS, isInstalled, installing, triggerInstall } = usePWAInstall()
+  const { canInstall, isIOS, isAndroid, isInstalled, installing, triggerInstall, hasNativePrompt } = usePWAInstall()
   const [showModal, setShowModal] = useState(false)
 
   // No mostrar nada si ya está instalada o no se puede instalar
   if (isInstalled || !canInstall) return null
 
-  function handlePress() {
+  async function handlePress() {
     if (isIOS) {
       setShowModal(true)
-    } else {
-      triggerInstall()
+      return
     }
+    if (hasNativePrompt) {
+      const ok = await triggerInstall()
+      if (!ok) setShowModal(true)
+      return
+    }
+    setShowModal(true)
   }
 
   return (
@@ -64,10 +69,44 @@ export function PWAInstallButton() {
         )}
       </button>
 
-      {/* ── Modal iOS ── */}
-      {showModal && (
+      {/* ── Modal instrucciones ── */}
+      {showModal && isIOS && (
         <IOSInstallModal onClose={() => setShowModal(false)} />
       )}
+      {showModal && isAndroid && (
+        <AndroidInstallModal onClose={() => setShowModal(false)} />
+      )}
+    </>
+  )
+}
+
+/* ── Modal de instrucciones para Android ── */
+function AndroidInstallModal({ onClose }) {
+  return (
+    <>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', zIndex:1000 }} />
+      <div style={{
+        position:'fixed', bottom:0, left:0, right:0, zIndex:1001,
+        background:'#fff', borderRadius:'24px 24px 0 0', padding:'28px 24px 48px',
+      }}>
+        <p style={{ margin:'0 0 20px', fontSize:20, fontWeight:700, color:'#0D1240' }}>Instala Syng en Android</p>
+        {[
+          { n:'1', title:'Menú de Chrome', desc:'Toca los 3 puntos arriba a la derecha' },
+          { n:'2', title:'Instalar app', desc:'Toca "Instalar app" o "Agregar a inicio"' },
+          { n:'3', title:'Abre Syng', desc:'Usa el ícono en tu pantalla de inicio' },
+        ].map(step => (
+          <div key={step.n} style={{ display:'flex', gap:14, marginBottom:14, padding:'14px 16px', background:'rgba(61,79,168,0.04)', borderRadius:14 }}>
+            <div style={{ minWidth:36, height:36, borderRadius:'50%', background:'linear-gradient(135deg,#3D4FA8,#2D3A8C)', color:'#fff', fontSize:16, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center' }}>{step.n}</div>
+            <div>
+              <p style={{ margin:'0 0 3px', fontSize:15, fontWeight:700, color:'#0D1240' }}>{step.title}</p>
+              <p style={{ margin:0, fontSize:13, color:'rgba(13,18,64,0.5)' }}>{step.desc}</p>
+            </div>
+          </div>
+        ))}
+        <button onClick={onClose} style={{ width:'100%', minHeight:50, borderRadius:14, border:'none', background:'linear-gradient(135deg,#3D4FA8,#2D3A8C)', color:'#fff', fontSize:15, fontWeight:700, cursor:'pointer' }}>
+          Entendido
+        </button>
+      </div>
     </>
   )
 }
