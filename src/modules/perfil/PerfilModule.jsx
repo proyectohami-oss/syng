@@ -4,6 +4,7 @@ import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.
 import { useAuthActions } from '../../auth/useAuthActions'
 import { PWAInstallButton } from '../../core/pwa/PWAInstallButton'
 import { usePWAInstall } from '../../core/pwa/usePWAInstall'
+import { NotifPrefsSection } from './NotifPrefsSection'
 
 export function PerfilModule() {
   const auth = useCoreAuth()
@@ -177,7 +178,8 @@ export function PerfilModule() {
           </div>
         )}
 
-        {/* Recordatorios — desactivado temporalmente */}
+        {/* Universo A — prueba push */}
+        <NotifPrefsSection />
 
         {/* Cerrar sesión */}
         <div style={{ padding:'24px 16px 0' }}>

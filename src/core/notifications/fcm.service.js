@@ -78,7 +78,23 @@ export async function syncFcmToken(uid) {
   const result = await getFcmToken()
   if (!result.ok) return result
   await saveFcmToken(uid, result.token, platform())
+  await pruneOtherTokens(uid, result.token)
   return result
+}
+
+/** Solo el token de este dispositivo (prueba Universo A). */
+async function pruneOtherTokens(uid, keepToken) {
+  const { doc, getDoc, setDoc, deleteField, serverTimestamp } = await import('firebase/firestore')
+  const { db } = await import('../../firebase')
+  const snap = await getDoc(doc(db, 'users', uid))
+  const old  = snap.data()?.fcmTokens || {}
+  const patch = { updatedAt: serverTimestamp() }
+  for (const t of Object.keys(old)) {
+    if (t !== keepToken) patch[`fcmTokens.${t}`] = deleteField()
+  }
+  if (Object.keys(patch).length > 1) {
+    await setDoc(doc(db, 'users', uid), patch, { merge: true })
+  }
 }
 
 export async function unsyncFcmToken(uid) {
@@ -141,7 +157,7 @@ export async function sendTestPush(uid) {
     const res = await fetch(PUSH_API, {
       method:  'POST',
       headers: { 'Content-Type': 'application/json' },
-      body:    JSON.stringify({ userId: uid }),
+      body:    JSON.stringify({ userId: uid, token: sync.token }),
     })
     const data = await res.json().catch(() => ({}))
     if (!res.ok) {
