@@ -2,10 +2,13 @@ import { useState } from 'react'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
 import { useAuthActions } from '../../auth/useAuthActions'
+import { PWAInstallButton } from '../../core/pwa/PWAInstallButton'
+import { usePWAInstall } from '../../core/pwa/usePWAInstall'
 
 export function PerfilModule() {
   const auth = useCoreAuth()
   const { signOut } = useAuthActions()
+  const { isInstalled, canInstall } = usePWAInstall()
 
   const user     = auth.user
   const userData = auth.userData
@@ -150,6 +153,28 @@ export function PerfilModule() {
           <p style={{ fontSize:13, color:'#15803d', padding:'10px 16px', background:'rgba(34,197,94,0.08)', borderRadius:12, margin:'12px 16px 0', border:'1px solid rgba(34,197,94,0.15)' }}>
             {success}
           </p>
+        )}
+
+        {canInstall && (
+          <div style={{ ...section, marginTop: 12 }}>
+            <p style={sectionLabel}>INSTALAR APP</p>
+            <div style={{ padding: '12px 16px 14px' }}>
+              <PWAInstallButton />
+            </div>
+          </div>
+        )}
+
+        {isInstalled && (
+          <div style={{
+            ...section,
+            marginTop: 12,
+            background: 'rgba(220,252,231,0.85)',
+            border: '1.5px solid rgba(34,197,94,0.25)',
+          }}>
+            <p style={{ margin: 0, padding: '14px 16px', fontSize: 14, fontWeight: 600, color: '#1a5c38' }}>
+              ✓ App instalada en este dispositivo
+            </p>
+          </div>
         )}
 
         {/* Recordatorios — desactivado temporalmente */}
