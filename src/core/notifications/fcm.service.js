@@ -29,8 +29,9 @@ export async function getFcmSwRegistration() {
 
   try {
     reg = await navigator.serviceWorker.register(FCM_SW_URL, { scope: FCM_SW_SCOPE })
-  } catch {
-    reg = await navigator.serviceWorker.register(FCM_SW_URL)
+  } catch (err) {
+    console.error('[FCM] register failed:', err)
+    return null
   }
 
   const sw = reg.installing || reg.waiting

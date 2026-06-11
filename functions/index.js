@@ -1,9 +1,5 @@
 /**
  * Recordatorios Syng — pipeline completo
- *
- * Cliente guarda /reminders/{taskId} con scheduledAt (UTC, hora local del usuario)
- *   → sendReminderTask encola Cloud Task o envía ya
- *   → sendPushNotification → FCM + aviso in-app en /users/{uid}/notifications
  */
 const { onDocumentCreated } = require('firebase-functions/v2/firestore')
 const { onRequest }         = require('firebase-functions/v2/https')
@@ -26,8 +22,6 @@ const SEND_PUSH_URL = process.env.SEND_PUSH_URL
   || `https://${LOCATION}-${PROJECT}.cloudfunctions.net/sendPushNotification`
 const TASKS_SA      = process.env.TASKS_INVOKER_SA
   || '751348580546-compute@developer.gserviceaccount.com'
-
-// ── Helpers ──────────────────────────────────────────────────────────────────
 
 function strData(obj) {
   return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, v == null ? '' : String(v)]))
@@ -77,40 +71,31 @@ async function saveInApp(uid, { title, body, taskId, url }) {
   })
 }
 
-// ── FCM — solo payload web (tokens iOS/Android PWA son web push) ─────────────
-
+/** Payload mínimo — NO usar fcmOptions.link ni notification top-level (rompe iOS web push). */
 async function sendFcm(uid, tokens, title, body, { taskId, url }) {
   if (!tokens.length) return { successCount: 0, failureCount: 0, responses: [] }
 
   const data = strData({ type: 'reminder', title, body, taskId, url })
 
-  // Solo data + webpush — fcmOptions.link rompe el envío (ok=0 fail=N en logs)
-  const messages = tokens.map(token => ({
-    token,
-    data,
-    webpush: {
-      headers: { Urgency: 'high', TTL: '86400' },
-    },
-  }))
+  const messages = tokens.map(token => ({ token, data }))
 
   const result = await messaging.sendEach(messages)
   await pruneBadTokens(uid, tokens, result)
   return result
 }
 
-// ── Entrega ──────────────────────────────────────────────────────────────────
-
 async function deliverReminderPush({ userId, title, taskId, reminderId }) {
   const pushTitle = '⏰ Recordatorio'
   const pushBody  = title || 'Es momento de retomarlo'
   const url       = recordatorioUrl(taskId)
 
-  // Siempre guardar en Avisos de Syng
   await saveInApp(userId, { title: pushTitle, body: pushBody, taskId, url })
 
   const tokens = await getUserTokens(userId)
+  console.log(`[deliver] v4 uid=${userId} tokens=${tokens.length} taskId=${taskId}`)
+
   if (!tokens.length) {
-    console.warn('[deliver] sin tokens FCM para', userId)
+    console.warn('[deliver] sin tokens FCM')
     return { ok: true, push: false, reason: 'no_tokens' }
   }
 
@@ -119,7 +104,7 @@ async function deliverReminderPush({ userId, title, taskId, reminderId }) {
   result.responses?.forEach((r, i) => {
     if (!r.success) console.warn(`[deliver] FCM[${i}]:`, r.error?.code, r.error?.message)
   })
-  console.log(`[deliver] taskId=${taskId} ok=${result.successCount} fail=${result.failureCount}`)
+  console.log(`[deliver] ok=${result.successCount} fail=${result.failureCount}`)
 
   if (reminderId) {
     await db.doc(`reminders/${reminderId}`).update({
@@ -129,8 +114,6 @@ async function deliverReminderPush({ userId, title, taskId, reminderId }) {
 
   return { ok: true, push: result.successCount > 0, successCount: result.successCount }
 }
-
-// ── Cloud Functions ──────────────────────────────────────────────────────────
 
 exports.sendPushNotification = onRequest({ timeoutSeconds: 30, invoker: 'public' }, async (req, res) => {
   if (req.method !== 'POST') return res.status(405).send('Method Not Allowed')

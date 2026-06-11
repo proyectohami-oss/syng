@@ -1,6 +1,5 @@
 /**
- * Service Worker FCM — único responsable de push y taps en Syng.
- * sw-v2.js solo maneja caché PWA (Workbox).
+ * Service Worker FCM — push y taps en Syng (iOS PWA + web).
  */
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js')
 importScripts('https://www.gstatic.com/firebasejs/10.14.1/firebase-messaging-compat.js')
@@ -41,13 +40,23 @@ function show(title, body, data) {
   })
 }
 
-messaging.onBackgroundMessage(function(payload) {
-  const d = payload.data || {}
+function handlePayload(payload) {
+  const d = payload?.data || {}
   return show(
-    d.title || payload.notification?.title || '⏰ Recordatorio',
-    d.body  || payload.notification?.body  || '',
+    d.title || payload?.notification?.title || '⏰ Recordatorio',
+    d.body  || payload?.notification?.body  || '',
     d,
   )
+}
+
+messaging.onBackgroundMessage(handlePayload)
+
+// iOS a veces entrega por push event en lugar de onBackgroundMessage
+self.addEventListener('push', function(event) {
+  if (!event.data) return
+  try {
+    event.waitUntil(handlePayload(event.data.json()))
+  } catch (_) {}
 })
 
 self.addEventListener('message', function(e) {
