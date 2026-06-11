@@ -84,22 +84,12 @@ async function sendFcm(uid, tokens, title, body, { taskId, url }) {
 
   const data = strData({ type: 'reminder', title, body, taskId, url })
 
+  // Solo data + webpush — fcmOptions.link rompe el envío (ok=0 fail=N en logs)
   const messages = tokens.map(token => ({
     token,
-    notification: { title, body },
     data,
-    fcmOptions: { link: url },
     webpush: {
       headers: { Urgency: 'high', TTL: '86400' },
-      notification: {
-        title,
-        body,
-        icon: `${WEB_APP_URL}/icon-192.png`,
-        badge: `${WEB_APP_URL}/icon-192.png`,
-        requireInteraction: true,
-        tag: taskId ? `syng-reminder-${taskId}` : 'syng-notif',
-      },
-      fcmOptions: { link: url },
     },
   }))
 

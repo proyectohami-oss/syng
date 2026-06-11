@@ -64,16 +64,14 @@ export async function upsertUser({ uid, displayName, email }) {
   const userSnap = await getDoc(userRef)
 
   if (!userSnap.exists()) {
-    // Primera vez — crear documento completo
     await setDoc(userRef, {
       uid,
       displayName: displayName ?? '',
       email:       email ?? '',
       groupIds:    [],
-      fcmTokens:   {},
       createdAt:   serverTimestamp(),
       updatedAt:   serverTimestamp(),
-    })
+    }, { merge: true })
   } else {
     // Ya existe — solo actualizar nombre, email y timezone del dispositivo
     const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'America/Mexico_City'
