@@ -41,7 +41,6 @@ export function AuthGuard({ children }) {
     const key = todayKey()
     if (!localStorage.getItem(key)) {
       localStorage.setItem(key, '1')
-      setShowBienvenida(true)
     }
   }, [auth?.user, auth?.userData, navigate])
 

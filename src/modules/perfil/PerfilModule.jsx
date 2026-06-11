@@ -2,7 +2,6 @@ import { useState } from 'react'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
 import { useAuthActions } from '../../auth/useAuthActions'
-import { NotifPrefsSection } from './NotifPrefsSection'
 
 export function PerfilModule() {
   const auth = useCoreAuth()
@@ -153,8 +152,7 @@ export function PerfilModule() {
           </p>
         )}
 
-        {/* Notificaciones e instalación */}
-        <NotifPrefsSection />
+        {/* Recordatorios — desactivado temporalmente */}
 
         {/* Cerrar sesión */}
         <div style={{ padding:'24px 16px 0' }}>
