@@ -7,6 +7,7 @@ import { useCoreState } from '../../core/hooks/useCoreData'
 import { ConfirmDialog } from '../../shared/ConfirmDialog'
 import { TaskFormNew } from '../../shared/TaskFormNew'
 import { Timestamp } from 'firebase/firestore'
+import { A, L } from '../../shared/agendaEditorial'
 
 const DIAS  = ['domingo','lunes','martes','miercoles','jueves','viernes','sabado']
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -90,34 +91,25 @@ export function DayModule() {
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      flex: 1,
-      minHeight: 0,
-      overflow: 'hidden',
-      background: 'transparent',
-    }}>
+    <div style={A.screen}>
 
-      {/* Header */}
-      <div style={{ flexShrink:0, padding:'24px 24px 18px', background:'transparent' }}>
+      <div style={{ flexShrink:0, padding:'20px 20px 16px', borderBottom:`1px solid rgba(196,169,98,0.2)` }}>
         <div style={{ display:'flex', alignItems:'flex-start' }}>
-          <button onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:'rgba(15,23,42,0.22)', cursor:'pointer', padding:'0 12px 0 0', lineHeight:1.3, marginTop:8 }}>‹</button>
+          <button type="button" onClick={() => navigate('/agenda')} style={{ background:'none', border:'none', fontSize:28, color:L.champagne, cursor:'pointer', padding:'0 12px 0 0', lineHeight:1.3, marginTop:4 }}>‹</button>
           <div style={{ flex:1 }}>
-            <p style={{ margin:'0 0 6px', fontSize:12, color:'rgba(15,23,42,0.36)', fontWeight:500, letterSpacing:'0.07em', textTransform:'uppercase' }}>{labelDia(date)}</p>
-            <p style={{ margin:'0 0 10px', fontSize:38, fontWeight:800, color:'#0F172A', letterSpacing:'-0.04em', lineHeight:1 }}>Syng</p>
-            <p style={{ margin:'0 0 3px', fontSize:22, fontWeight:700, color:'#0F172A', letterSpacing:'-0.02em' }}>Pendientes</p>
-            <p style={{ margin:0, fontSize:13, color:'rgba(15,23,42,0.30)', fontWeight:400 }}>{orderedPending.length} tarea{orderedPending.length!==1?'s':''} pendiente{orderedPending.length!==1?'s':''}</p>
+            <p style={{ margin:'0 0 8px', ...A.badge }}>{labelDia(date)}</p>
+            <p style={{ ...A.sectionTitle, fontSize:28, marginBottom:6 }}>Pendientes</p>
+            <p style={{ margin:0, fontSize:13, color:L.ivoryMuted }}>{orderedPending.length} tarea{orderedPending.length!==1?'s':''}</p>
           </div>
         </div>
       </div>
 
-      {/* Scroll */}
-      <div style={{ flex:1, overflowY:'auto', padding:'4px 16px 140px', WebkitOverflowScrolling:'touch' }}>
+      <div style={{ flex:1, overflowY:'auto', padding:'8px 16px 140px', WebkitOverflowScrolling:'touch' }}>
 
-        {/* Tareas pendientes */}
         {orderedPending.length === 0 && (
-          <p style={{ fontSize:14, color:'rgba(15,23,42,0.28)', margin:'16px 0', textAlign:'center' }}>Sin tareas pendientes ✨</p>
+          <p style={{ fontSize:14, color:L.ivoryFaint, margin:'24px 0', textAlign:'center', fontFamily:L.serif }}>
+            Sin tareas pendientes
+          </p>
         )}
         {orderedPending.map(task => (
           <DayTaskItem
@@ -138,29 +130,25 @@ export function DayModule() {
         {haySeleccion && (
           <div style={{ position:'sticky', bottom:12, zIndex:500, margin:'12px 0' }}>
             <div style={{
-              height: 84,
-              background: 'rgba(246,250,255,0.88)',
-              backdropFilter: 'blur(40px) saturate(200%)',
-              WebkitBackdropFilter: 'blur(40px) saturate(200%)',
-              borderRadius: 28,
-              border: '1px solid rgba(120,215,255,0.28)',
-              boxShadow: '0 16px 48px rgba(15,23,42,0.12), 0 3px 12px rgba(15,23,42,0.06), 0 -2px 18px rgba(56,189,248,0.10), inset 0 1px 0 rgba(255,255,255,0.95)',
+              height: 72,
+              background: L.inkSoft,
+              borderRadius: 2,
+              border: `1px solid ${L.champagneBorder}`,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-around',
               padding: '0 16px',
             }}>
-              <span style={{ fontSize:12, fontWeight:600, color:'rgba(15,23,42,0.28)', letterSpacing:'0.03em' }}>{selectedIds.size} sel.</span>
-              <button onClick={() => {
+              <span style={{ fontSize:12, fontWeight:500, color:L.ivoryMuted }}>{selectedIds.size} sel.</span>
+              <button type="button" onClick={() => {
                 const t = [...pending,...completed].find(t => selectedIds.has(t.id))
                 if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
-              }} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', padding:'4px 24px', WebkitTapHighlightColor:'transparent' }}>
-                <span style={{ fontSize:36, lineHeight:1, filter:'drop-shadow(0 2px 6px rgba(59,130,246,0.30))' }}>✏️</span>
-                <span style={{ fontSize:11, fontWeight:700, color:'#2563EB', letterSpacing:'0.02em' }}>Editar</span>
+              }} style={{ background:'none', border:'none', cursor:'pointer', padding:'4px 16px', color:L.champagne, fontSize:12, fontWeight:600, letterSpacing:'0.08em' }}>
+                EDITAR
               </button>
-              <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4, background:'none', border:'none', cursor:'pointer', padding:'4px 24px', WebkitTapHighlightColor:'transparent' }}>
-                <span style={{ fontSize:36, lineHeight:1, filter:'drop-shadow(0 2px 6px rgba(239,68,68,0.30))' }}>🗑️</span>
-                <span style={{ fontSize:11, fontWeight:700, color:'#DC2626', letterSpacing:'0.02em' }}>Eliminar</span>
+              <button type="button" onClick={() => setModal({ tipo:'borrarVarias' })} style={{ background:'none', border:'none', cursor:'pointer', padding:'4px 16px', color:'#fca5a5', fontSize:12, fontWeight:600, letterSpacing:'0.08em' }}>
+                ELIMINAR
               </button>
             </div>
           </div>
@@ -169,9 +157,9 @@ export function DayModule() {
         {/* Completadas */}
         {completedVisible.length > 0 && (
           <>
-            <div style={{ padding:'8px 4px 10px' }}>
-              <p style={{ margin:0, fontSize:22, fontWeight:700, color:'#0F172A', letterSpacing:'-0.02em' }}>Completadas</p>
-              <p style={{ margin:'2px 0 0', fontSize:13, color:'rgba(15,23,42,0.30)', fontWeight:400 }}>{completedVisible.length} tarea{completedVisible.length!==1?'s':''} completada{completedVisible.length!==1?'s':''}</p>
+            <div style={{ padding:'12px 4px 10px' }}>
+              <p style={A.sectionTitle}>Completadas</p>
+              <p style={{ margin:'4px 0 0', fontSize:13, color:L.ivoryMuted }}>{completedVisible.length} tarea{completedVisible.length!==1?'s':''}</p>
             </div>
             {completedVisible.map(task => (
               <DayTaskItem
@@ -194,27 +182,11 @@ export function DayModule() {
       {/* ── FAB: Nueva tarea — esquina inferior derecha ── */}
       {!haySeleccion && (
         <button
+          type="button"
           onClick={() => navigate(`/agenda/${date}/nueva`)}
-          style={{
-            position: 'fixed',
-            bottom: 'calc(76px + env(safe-area-inset-bottom))',
-            right: 20,
-            zIndex: 400,
-            width: 56,
-            height: 56,
-            borderRadius: '50%',
-            background: 'linear-gradient(145deg, #5B9BF6 0%, #3B82F6 50%, #2563EB 100%)',
-            border: 'none',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            boxShadow: '0 4px 20px rgba(59,130,246,0.50), 0 2px 8px rgba(59,130,246,0.30), inset 0 1px 1px rgba(255,255,255,0.25)',
-            WebkitTapHighlightColor: 'transparent',
-            transition: 'transform 0.15s ease',
-          }}
+          style={A.fab}
         >
-          <span style={{ fontSize: 28, color: '#fff', lineHeight: 1, marginTop: -2, fontWeight: 300 }}>+</span>
+          <span style={{ fontSize: 28, lineHeight: 1, marginTop: -2, fontWeight: 300 }}>+</span>
         </button>
       )}
 

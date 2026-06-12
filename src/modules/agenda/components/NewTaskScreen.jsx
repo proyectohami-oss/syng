@@ -1,7 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { Timestamp } from 'firebase/firestore'
-import { T } from '../../../theme'
 import { useTasks } from '../../../core/hooks/useTasks'
 import { useCoreAuth } from '../../../core/hooks/useCoreData'
 import { generateTaskId } from '../../../core/services/tasks.service'
@@ -12,6 +11,7 @@ import { SyngAvisoSheet } from '../../../shared/SyngAvisoSheet'
 import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
 import { showToast } from '../../../shared/Toast'
 import { calendarIcsUrl } from '../../../core/calendar/icsToken'
+import { L } from '../../../shared/agendaEditorial'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
   'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -70,7 +70,7 @@ function dKey(y, m, d) { return `${y}-${pad2(m + 1)}-${pad2(d)}` }
 
 function IconChevron() {
   return (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={T.textDisabled} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={L.ivoryFaint} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <path d="m9 18 6-6-6-6" />
     </svg>
   )
@@ -312,7 +312,7 @@ export function NewTaskScreen() {
               type="button"
               onClick={handleSave}
               disabled={!puedeGuardar}
-              style={{ ...s.btnCreate, color: puedeGuardar ? T.primary : T.textDisabled }}
+              style={{ ...s.btnCreate, color: puedeGuardar ? L.champagne : L.ivoryFaint }}
             >
               {saving ? '…' : 'Crear'}
             </button>
@@ -323,8 +323,7 @@ export function NewTaskScreen() {
               <>
                 <div style={{
                   ...s.titleCard,
-                  borderColor: titleError ? T.danger : 'transparent',
-                  boxShadow: titleError ? `0 0 0 2px ${T.dangerLight}` : T.shadowCard,
+                  borderColor: titleError ? '#fca5a5' : L.champagneBorder,
                 }}>
                   <textarea
                     ref={titleRef}
@@ -369,7 +368,7 @@ export function NewTaskScreen() {
                       <button key={c.id} type="button" style={{ ...s.chip, ...(repeatMode === c.id ? s.chipOn : {}) }}
                         onClick={() => applyRepeatPreset(c.id)}>{c.label}</button>
                     ))}
-                    <button type="button" style={{ ...s.chip, color: T.danger }} onClick={() => applyRepeatPreset('none')}>
+                    <button type="button" style={{ ...s.chip, color: '#fca5a5' }} onClick={() => applyRepeatPreset('none')}>
                       Limpiar
                     </button>
                   </div>
@@ -432,7 +431,7 @@ function OptionRow({ icon, label, value, onClick, accent }) {
     <button type="button" onClick={onClick} style={s.optionRow}>
       <span style={s.optionIcon}>{icon}</span>
       <span style={s.optionLabel}>{label}</span>
-      <span style={{ ...s.optionValue, color: accent ? T.primary : T.textTertiary }}>{value}</span>
+      <span style={{ ...s.optionValue, color: accent ? L.champagne : L.ivoryMuted }}>{value}</span>
       <IconChevron />
     </button>
   )
@@ -441,65 +440,67 @@ function OptionRow({ icon, label, value, onClick, accent }) {
 const s = {
   screen: {
     display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0,
-    overflow: 'hidden', background: 'transparent', position: 'relative',
+    overflow: 'hidden', background: L.ink, color: L.ivory, position: 'relative',
     fontFamily: '-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif',
   },
   header: {
     flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr auto 1fr',
     alignItems: 'center', padding: '12px 16px',
-    borderBottom: '1px solid rgba(13,18,64,0.07)',
+    borderBottom: `1px solid rgba(196,169,98,0.2)`,
   },
-  btnCancel: { background: 'none', border: 'none', fontSize: T.fontMD, color: T.textSecondary, cursor: 'pointer', textAlign: 'left' },
-  headerTitle: { margin: 0, fontSize: T.fontMD, fontWeight: 600, color: T.textPrimary, textAlign: 'center' },
-  btnCreate: { background: 'none', border: 'none', fontSize: T.fontMD, fontWeight: 600, cursor: 'pointer', textAlign: 'right' },
+  btnCancel: { background: 'none', border: 'none', fontSize: 15, color: L.ivoryMuted, cursor: 'pointer', textAlign: 'left' },
+  headerTitle: { margin: 0, fontSize: 15, fontWeight: 500, color: L.ivory, textAlign: 'center', fontFamily: L.serif },
+  btnCreate: { background: 'none', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', textAlign: 'right', color: L.champagne },
   content: { flex: 1, minHeight: 0, overflow: 'hidden', padding: '12px 16px', display: 'flex', flexDirection: 'column' },
   subPanel: { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' },
   titleCard: {
-    background: T.surface, borderRadius: T.radius2XL, marginBottom: 12,
-    boxShadow: T.shadowCard, border: '1px solid transparent',
+    background: L.champagneLight, borderRadius: 2, marginBottom: 12,
+    border: `1px solid ${L.champagneBorder}`,
   },
   titleInput: {
     width: '100%', boxSizing: 'border-box', padding: '18px 20px', border: 'none', outline: 'none',
-    resize: 'none', background: 'transparent', fontSize: T.fontLG, fontWeight: 500,
-    color: T.textPrimary, lineHeight: 1.4, fontFamily: 'inherit',
+    resize: 'none', background: 'transparent', fontSize: 17, fontWeight: 400,
+    color: L.ivory, lineHeight: 1.4, fontFamily: L.serif,
   },
-  errorMsg: { margin: '0 0 8px', fontSize: T.fontSM, color: T.danger },
+  errorMsg: { margin: '0 0 8px', fontSize: 13, color: '#fca5a5' },
   optionsCard: {
-    background: T.surface, borderRadius: T.radius2XL, boxShadow: T.shadowCard, overflow: 'hidden',
+    background: 'rgba(255,255,255,0.04)', borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`, overflow: 'hidden',
   },
   optionRow: {
     display: 'grid', gridTemplateColumns: '28px 1fr auto 20px', alignItems: 'center', gap: 10,
     width: '100%', padding: '14px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left',
   },
   optionIcon: { fontSize: 17 },
-  optionLabel: { fontSize: T.fontMD, fontWeight: 500, color: T.textPrimary },
-  optionValue: { fontSize: T.fontSM, fontWeight: 400, textAlign: 'right', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  divider: { height: 1, background: 'rgba(13,18,64,0.06)', marginLeft: 54 },
+  optionLabel: { fontSize: 15, fontWeight: 500, color: L.ivory },
+  optionValue: { fontSize: 13, fontWeight: 400, textAlign: 'right', maxWidth: 140, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  divider: { height: 1, background: 'rgba(196,169,98,0.12)', marginLeft: 54 },
   card: {
     flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0,
-    background: T.surface, borderRadius: T.radius2XL, boxShadow: T.shadowCard,
+    background: 'rgba(255,255,255,0.04)', borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`,
     padding: '12px 14px 14px', overflow: 'hidden',
   },
   cardLabel: {
-    margin: '0 0 4px', fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
-    textTransform: 'uppercase', color: T.textTertiary, textAlign: 'center',
+    margin: '0 0 4px', fontSize: 9, fontWeight: 500, letterSpacing: '0.2em',
+    textTransform: 'uppercase', color: L.champagne, textAlign: 'center',
   },
   btnPrimary: {
-    width: '100%', padding: 13, borderRadius: T.radiusLG, border: 'none', cursor: 'pointer',
-    background: 'linear-gradient(135deg,#3D4FA8,#2D3A8C)', color: '#fff',
-    fontSize: T.fontMD, fontWeight: 600, boxShadow: T.shadowPrimary,
+    width: '100%', padding: 14, borderRadius: 2, border: `1px solid ${L.ivory}`, cursor: 'pointer',
+    background: L.ivory, color: L.ink,
+    fontSize: 13, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase',
   },
   dateInput: {
-    width: '100%', boxSizing: 'border-box', padding: 14, borderRadius: T.radiusMD,
-    border: `1.5px solid rgba(13,18,64,0.10)`, fontSize: T.fontMD, marginBottom: 12,
-    color: T.textPrimary, background: '#FAFBFE', fontFamily: 'inherit',
+    width: '100%', boxSizing: 'border-box', padding: 14, borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`, fontSize: 15, marginBottom: 12,
+    color: L.ivory, background: L.champagneLight, fontFamily: 'inherit',
   },
   chipRow: { display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', marginBottom: 8, flexShrink: 0 },
   chip: {
-    padding: '7px 11px', borderRadius: T.radiusFull, border: `1px solid rgba(13,18,64,0.10)`,
-    background: T.bgSecondary, color: T.textSecondary, fontSize: 11, fontWeight: 600, cursor: 'pointer',
+    padding: '7px 11px', borderRadius: 2, border: `1px solid ${L.champagneBorder}`,
+    background: 'transparent', color: L.ivoryMuted, fontSize: 11, fontWeight: 500, cursor: 'pointer',
   },
   chipOn: {
-    background: 'linear-gradient(135deg,#3D4FA8,#2D3A8C)', color: '#fff', border: 'none', boxShadow: T.shadowPrimary,
+    background: L.champagne, color: L.ink, border: `1px solid ${L.champagne}`,
   },
 }

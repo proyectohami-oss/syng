@@ -1,3 +1,5 @@
+import { A, L } from '../../../shared/agendaEditorial'
+
 const DAYS_HDR  = ['L','M','M','J','V','S','D']
 const MONTHS_ES = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
                    'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre']
@@ -31,28 +33,24 @@ export function CalendarGrid({ viewMonth, selectedDate, daysWithActivity, onSele
 
   return (
     <div style={{ padding:'0 16px 12px' }}>
-
-      {/* Nav mes */}
       <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:14 }}>
-        <button onClick={onPrevMonth} style={navBtn}>‹</button>
-        <span style={{ fontSize:16, fontWeight:500, color:'#0D1240', letterSpacing:'-0.01em' }}>
+        <button type="button" onClick={onPrevMonth} style={A.navBtn}>‹</button>
+        <span style={{ fontFamily:L.serif, fontSize:18, fontWeight:400, color:L.ivory }}>
           {MONTHS_ES[month]} {year}
         </span>
-        <button onClick={onNextMonth} style={navBtn}>›</button>
+        <button type="button" onClick={onNextMonth} style={A.navBtn}>›</button>
       </div>
 
-      {/* Días encabezado */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:6 }}>
         {DAYS_HDR.map((d,i) => (
           <span key={i} style={{
-            fontSize: 11, color: 'rgba(13,18,64,0.32)',
-            textAlign: 'center', fontWeight: 600,
-            letterSpacing: '0.04em',
+            fontSize: 11, color: L.ivoryFaint,
+            textAlign: 'center', fontWeight: 500,
+            letterSpacing: '0.08em',
           }}>{d}</span>
         ))}
       </div>
 
-      {/* Celdas */}
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)' }}>
         {cells.map((day, i) => {
           if (!day) return <div key={i} style={{ height:48 }} />
@@ -76,37 +74,28 @@ export function CalendarGrid({ viewMonth, selectedDate, daysWithActivity, onSele
                 gap: 2,
               }}
             >
-              {/* Círculo del número — índigo sistema */}
               <div style={{
                 width: 30, height: 30,
-                borderRadius: '50%',
-                background: selD
-                  ? 'linear-gradient(145deg, #3D4FA8, #2D3A8C)'
-                  : 'transparent',
+                borderRadius: 2,
+                background: selD ? L.champagne : 'transparent',
                 border: (!selD && todayD)
-                  ? '2px solid #2D3A8C'
-                  : '2px solid transparent',
+                  ? `1px solid ${L.champagne}`
+                  : '1px solid transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: selD ? '0 2px 8px rgba(45,58,140,0.32)' : 'none',
                 transition: 'all 0.15s ease',
               }}>
                 <span style={{
                   fontSize: 13, lineHeight: 1,
                   fontWeight: (selD || todayD) ? 600 : 400,
-                  color: selD ? '#fff' : todayD ? '#2D3A8C' : '#0D1240',
+                  color: selD ? L.ink : todayD ? L.champagne : L.ivory,
                 }}>
                   {day}
                 </span>
               </div>
 
-              {/* Punto de actividad */}
               <div style={{ height:5, display:'flex', alignItems:'center', justifyContent:'center' }}>
                 {hasDot ? (
-                  <div style={{
-                    width: 4, height: 4, borderRadius: '50%',
-                    background: '#2D3A8C',
-                    opacity: 1,
-                  }} />
+                  <div style={{ width: 4, height: 4, borderRadius: 1, background: L.champagne }} />
                 ) : (
                   <div style={{ width:4, height:4 }} />
                 )}
@@ -117,13 +106,4 @@ export function CalendarGrid({ viewMonth, selectedDate, daysWithActivity, onSele
       </div>
     </div>
   )
-}
-
-const navBtn = {
-  background: 'none', border: 'none', fontSize: 22,
-  color: 'rgba(13,18,64,0.35)',
-  cursor: 'pointer', padding: '4px 12px',
-  minWidth: 44, minHeight: 44,
-  display: 'flex', alignItems: 'center', justifyContent: 'center',
-  WebkitTapHighlightColor: 'transparent',
 }
