@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import { ReminderBell } from './ReminderBell'
+import { taskHasReminder } from '../core/tasks/taskReminder'
 
 export function TaskItem({ task, onToggle, onEdit, onDelete, showGroup, groupName, disabled }) {
   const [toggling, setToggling] = useState(false)
@@ -17,7 +19,7 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, showGroup, groupNam
     ? (() => { const d = task.dueDate.toDate(); return `${d.getDate()} ${['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'][d.getMonth()]}` })()
     : null
   const isOverdue   = hasDueDate && !isDone && task.dueDate.toDate() < new Date()
-  const hasReminder = !!task.reminder
+  const hasReminder = taskHasReminder(task)
 
   return (
     <div style={{ ...row, opacity: isPending ? 0.65 : 1 }} className="task-item">
@@ -43,7 +45,7 @@ export function TaskItem({ task, onToggle, onEdit, onDelete, showGroup, groupNam
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display:'flex', alignItems:'center', gap:4, overflow:'hidden' }}>
           {hasReminder && (
-            <span style={{ fontSize:12, flexShrink:0, lineHeight:1, opacity: isDone ? 0.35 : 0.55 }}>🔔</span>
+            <ReminderBell size={13} color="rgba(13,18,64,0.45)" opacity={isDone ? 0.35 : 0.75} />
           )}
           <p style={{
             margin: 0, fontSize: 14, lineHeight: '20px',

@@ -6,7 +6,8 @@ import { useTasks }                    from '../../core/hooks/useTasks'
 import { useGroups }                   from '../../core/hooks/useGroups'
 import { usePermissions }              from '../../core/hooks/usePermissions'
 import { useCoreState }                from '../../core/hooks/useCoreData'
-import { ConfirmDialog }               from '../../shared/ConfirmDialog'
+import { ReminderBell } from '../../shared/ReminderBell'
+import { taskHasReminder } from '../../core/tasks/taskReminder'
 import { EmptyState }                  from '../../shared/EmptyState'
 import { SyncBadge }                   from '../../shared/SyncBadge'
 import { CalendarSwipe }               from './components/CalendarSwipe'
@@ -435,8 +436,8 @@ export function PizarronModule() {
                 style={{ ...checkBtn, border: selectedIds.has(task.id) ? `2px solid ${L.champagne}` : `2px solid ${L.champagneBorder}`, background: selectedIds.has(task.id) ? L.champagne : 'none' }}
               />
               <div style={{ flex:1, minWidth:0, cursor:'pointer' }} onClick={() => !haySeleccion && toggleStatus(task)}>
-                <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-                  {task.reminder && <span style={{ fontSize:10, color:L.champagne, letterSpacing:'0.08em' }}>●</span>}
+                <div style={{ display:'flex', alignItems:'center', gap:5 }}>
+                  {taskHasReminder(task) && <ReminderBell size={13} />}
                   <p style={{ margin:0, fontSize:14, fontWeight:500, color:L.ivory, lineHeight:1.3 }}>{task.title}</p>
                 </div>
                 {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:L.ivoryFaint }}>{hora}</p>}

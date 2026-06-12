@@ -1,19 +1,48 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { A, L } from '../../../shared/agendaEditorial'
+import { ReminderBell } from '../../../shared/ReminderBell'
+import { taskHasReminder, formatTaskReminderTime } from '../../../core/tasks/taskReminder'
 
 export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selected, onCircleTap, hasSelection, variant }) {
   const [localDone, setLocalDone] = useState(task.status === 'completed')
+  const longPressRef = useRef(null)
+  const suppressTapRef = useRef(false)
   useEffect(() => { setLocalDone(task.status === 'completed') }, [task.status])
 
   const isGroup = !!groupName
   const tag = groupName || 'Personal'
   const isCompleted = variant === 'completed' || localDone
+  const hasReminder = taskHasReminder(task)
+  const reminderLabel = formatTaskReminderTime(task)
 
-  async function handleTextTap() {
-    if (hasSelection) return
+  async function handleToggle() {
     const prev = localDone
     setLocalDone(!prev)
     try { await onToggle(task) } catch { setLocalDone(prev) }
+  }
+
+  function handleBodyTap() {
+    if (hasSelection || suppressTapRef.current) {
+      suppressTapRef.current = false
+      return
+    }
+    onEdit?.(task)
+  }
+
+  function startLongPress() {
+    clearTimeout(longPressRef.current)
+    longPressRef.current = setTimeout(() => {
+      longPressRef.current = null
+      if (!hasSelection) {
+        suppressTapRef.current = true
+        handleToggle()
+      }
+    }, 480)
+  }
+
+  function cancelLongPress() {
+    clearTimeout(longPressRef.current)
+    longPressRef.current = null
   }
 
   const dueLabel = task.dueDate ? (() => {
@@ -71,36 +100,44 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
       </button>
 
       <div
-        onClick={handleTextTap}
+        onClick={handleBodyTap}
+        onTouchStart={startLongPress}
+        onTouchEnd={cancelLongPress}
+        onTouchMove={cancelLongPress}
+        onMouseDown={startLongPress}
+        onMouseUp={cancelLongPress}
+        onMouseLeave={cancelLongPress}
         style={{ flex:1, cursor:hasSelection?'default':'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}
       >
-        <p style={{
-          margin: 0,
-          fontSize: 15,
-          fontWeight: isCompleted ? 400 : 500,
-          lineHeight: 1.4,
-          letterSpacing: '-0.01em',
-          color: isCompleted ? L.ivoryFaint : L.ivory,
-          textDecoration: isCompleted ? 'line-through' : 'none',
-          textDecorationColor: L.ivoryFaint,
-        }}>
-          {task.title}
-        </p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
+          {hasReminder && (
+            <ReminderBell size={14} opacity={isCompleted ? 0.45 : 1} />
+          )}
+          <p style={{
+            margin: 0,
+            flex: 1,
+            minWidth: 0,
+            fontSize: 15,
+            fontWeight: isCompleted ? 400 : 500,
+            lineHeight: 1.4,
+            letterSpacing: '-0.01em',
+            color: isCompleted ? L.ivoryFaint : L.ivory,
+            textDecoration: isCompleted ? 'line-through' : 'none',
+            textDecorationColor: L.ivoryFaint,
+          }}>
+            {task.title}
+          </p>
+        </div>
         <div style={{ display:'flex', alignItems:'center', gap:7, marginTop:6, flexWrap:'wrap' }}>
           <span style={isGroup ? A.tagGroup : A.tagPersonal}>{tag}</span>
           {dueLabel && (
             <span style={{ fontSize:11, color:L.ivoryMuted }}>{dueLabel}</span>
           )}
-          {task.reminder?.dueTime && (() => {
-            const [h, m] = task.reminder.dueTime.split(':').map(Number)
-            const ap  = h >= 12 ? 'PM' : 'AM'
-            const h12 = h % 12 || 12
-            return (
-              <span style={{ fontSize:11, color:L.champagne, opacity: isCompleted ? 0.4 : 1 }}>
-                {h12}:{String(m).padStart(2,'0')} {ap}
-              </span>
-            )
-          })()}
+          {reminderLabel && (
+            <span style={{ fontSize:11, color:L.champagne, opacity: isCompleted ? 0.4 : 1 }}>
+              {reminderLabel}
+            </span>
+          )}
         </div>
       </div>
     </div>

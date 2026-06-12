@@ -247,6 +247,7 @@ export function NewTaskScreen() {
       navigate(dest)
     } catch (err) {
       console.error('[NewTaskScreen] save error:', err)
+      showToast('No se pudo crear la tarea', '⚠️')
     } finally {
       setSaving(false)
       setShowAviso(false)
@@ -280,7 +281,10 @@ export function NewTaskScreen() {
       titleRef.current?.focus()
       return
     }
-    if (!auth?.user?.uid) return
+    if (!auth?.user?.uid) {
+      showToast('Inicia sesión para crear tareas', '⚠️')
+      return
+    }
 
     if (reminderOn) {
       setShowAviso(true)

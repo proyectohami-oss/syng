@@ -9,6 +9,7 @@ import { useCoreState } from '../core/hooks/useCoreData'
 import { RepeatDayPicker } from './RepeatDayPicker'
 import { ReminderPanel } from '../modules/agenda/components/ReminderPanel'
 import { localEndOfDay, buildReminderSchedule } from '../core/calendar/localDate'
+import { taskHasReminder } from '../core/tasks/taskReminder'
 import { L } from './agendaEditorial'
 import { SyngMark } from './SyngLogo'
 import { useShellChrome } from './ShellChromeContext'
@@ -80,10 +81,6 @@ function IconChevron() {
   )
 }
 
-function taskHasReminder(task) {
-  return !!(task?.reminder?.dueTime || task?.reminder?.scheduledAt || task?.reminderTime)
-}
-
 function initReminderFields(task, today, initTime) {
   if (!taskHasReminder(task)) {
     return {
@@ -101,7 +98,7 @@ function initReminderFields(task, today, initTime) {
   let actH24 = today.getHours()
   let actM = today.getMinutes()
 
-  if (task.reminder?.dueTime) {
+  if (task.reminder?.dueTime && typeof task.reminder.dueTime === 'string') {
     ;[actH24, actM] = task.reminder.dueTime.split(':').map(Number)
   } else if (task.dueDate) {
     const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
