@@ -5,6 +5,7 @@ import {
   LuxuryBadge,
   LuxuryDivider,
   LuxuryStep,
+  LuxuryCalPreview,
   LuxuryPortal,
   luxuryFullscreen,
   luxuryBtnPrimary,
@@ -12,7 +13,7 @@ import {
 } from './avisoLuxury'
 
 /** iPhone: pantalla completa editorial — tarea ya guardada */
-export function SyngAvisoIosHelp({ onContinue }) {
+export function SyngAvisoIosHelp({ title, notifyLabel, onContinue }) {
   return (
     <LuxuryPortal>
       <LuxuryKeyframes />
@@ -33,7 +34,7 @@ export function SyngAvisoIosHelp({ onContinue }) {
         </h2>
 
         <p style={{
-          margin: '0 0 20px',
+          margin: '0 0 16px',
           fontSize: 14,
           lineHeight: 1.55,
           color: L.ivoryMuted,
@@ -41,23 +42,17 @@ export function SyngAvisoIosHelp({ onContinue }) {
           Tu tarea ya está guardada. Falta confirmar en Calendario para que suene.
         </p>
 
+        <LuxuryCalPreview title={title} notifyLabel={notifyLabel} />
+
         <LuxuryDivider />
 
         <div style={{ marginBottom: 12 }}>
-          <LuxuryStep
-            n="1"
-            title="Continuar"
-            desc="Toca el botón de abajo. iPhone abrirá la invitación."
-          />
-          <LuxuryStep
-            n="2"
-            title="Permitir"
-            desc="Acepta cuando Safari te lo pida."
-          />
+          <LuxuryStep n="1" title="Continuar" desc="Abre la invitación en iPhone." />
+          <LuxuryStep n="2" title="Permitir" desc="Acepta cuando Safari te lo pida." />
           <LuxuryStep
             n="3"
             title="Agregar al calendario"
-            desc="Toca Agregar al calendario — sin eso no queda guardado."
+            desc="Toca el botón blanco abajo en la pantalla de Apple."
           />
         </div>
 

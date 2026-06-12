@@ -126,6 +126,65 @@ export function LuxuryTimeCard({ notifyLabel, taskTimeLabel }) {
   )
 }
 
+export function LuxuryCalPreview({ title, notifyLabel }) {
+  const sum = title ? `Syng · ${title}` : 'Syng · Recordatorio'
+  return (
+    <div style={{
+      margin: '0 0 20px',
+      padding: '16px 18px',
+      borderRadius: 14,
+      background: 'rgba(255,255,255,0.06)',
+      border: `1px solid ${L.champagneBorder}`,
+    }}>
+      <p style={{
+        margin: '0 0 4px',
+        fontSize: 9,
+        letterSpacing: '0.24em',
+        textTransform: 'uppercase',
+        color: L.champagne,
+      }}>
+        Vista previa · Calendario iPhone
+      </p>
+      <p style={{
+        margin: '0 0 8px',
+        fontFamily: L.serif,
+        fontSize: 18,
+        color: L.ivory,
+        lineHeight: 1.25,
+      }}>
+        {sum}
+      </p>
+      {notifyLabel ? (
+        <p style={{ margin: '0 0 12px', fontSize: 13, color: L.ivoryMuted }}>{notifyLabel}</p>
+      ) : null}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 8,
+        padding: '10px 12px',
+        borderRadius: 10,
+        background: 'rgba(255,255,255,0.08)',
+        marginBottom: 10,
+      }}>
+        <span style={{ fontSize: 12, color: L.ivoryMuted, flex: 1 }}>syng-psi.vercel.app</span>
+        <span style={{
+          fontSize: 11,
+          fontWeight: 600,
+          color: '#fff',
+          background: '#34C759',
+          padding: '4px 10px',
+          borderRadius: 6,
+        }}>
+          Abrir
+        </span>
+      </div>
+      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: L.ivoryFaint }}>
+        iPhone controla esta pantalla. Abajo verás <strong style={{ color: L.ivoryMuted }}>Agregar al calendario</strong>.
+      </p>
+    </div>
+  )
+}
+
 export function LuxuryStep({ n, title, desc }) {
   return (
     <div style={{

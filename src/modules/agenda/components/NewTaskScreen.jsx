@@ -417,7 +417,11 @@ export function NewTaskScreen() {
       )}
 
       {showIosHelp && (
-        <SyngAvisoIosHelp onContinue={continueIosCalendar} />
+        <SyngAvisoIosHelp
+          title={title.trim()}
+          notifyLabel={avisoNotifyLabel}
+          onContinue={continueIosCalendar}
+        />
       )}
     </div>
   )

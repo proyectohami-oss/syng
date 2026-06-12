@@ -4,6 +4,19 @@ function pad(n) {
   return String(n).padStart(2, '0')
 }
 
+function toIcsLocal(date) {
+  const d = date instanceof Date ? date : new Date(date)
+  return (
+    d.getFullYear()
+    + pad(d.getMonth() + 1)
+    + pad(d.getDate())
+    + 'T'
+    + pad(d.getHours())
+    + pad(d.getMinutes())
+    + pad(d.getSeconds())
+  )
+}
+
 function toIcsUtc(date) {
   const d = date instanceof Date ? date : new Date(date)
   return (
@@ -18,14 +31,19 @@ function toIcsUtc(date) {
   )
 }
 
+function icsSummary(title) {
+  const safe = (title || 'Recordatorio').replace(/[,;\\]/g, ' ').trim()
+  const label = safe.length > 48 ? `${safe.slice(0, 45)}…` : safe
+  return `Syng · ${label}`
+}
+
 function buildIcsEvent({ uid, title, alarmAt, taskTime, url }) {
-  const start = toIcsUtc(alarmAt)
+  const start = toIcsLocal(alarmAt)
   const endDate = taskTime || new Date(alarmAt.getTime() + 15 * 60_000)
-  const end = toIcsUtc(endDate)
+  const end = toIcsLocal(endDate)
   const now = toIcsUtc(new Date())
-  const safeTitle = (title || 'Recordatorio').replace(/[,;\\]/g, ' ')
-  const sum = 'Syng · Recordatorio'
-  const desc = `${safeTitle}\\n\\nTu momento. Abre Syng desde Avisos o el ícono.`
+  const sum = icsSummary(title)
+  const desc = 'Tu momento Syng.\\nAbre la app cuando suene.'
 
   return [
     'BEGIN:VCALENDAR',
@@ -44,7 +62,7 @@ function buildIcsEvent({ uid, title, alarmAt, taskTime, url }) {
     'BEGIN:VALARM',
     'TRIGGER:PT0S',
     'ACTION:DISPLAY',
-    `DESCRIPTION:${sum}`,
+    `DESCRIPTION:Syng te avisa`,
     'END:VALARM',
     'END:VEVENT',
     'END:VCALENDAR',
