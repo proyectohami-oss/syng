@@ -3,6 +3,7 @@
  */
 import { buildIcsEvent } from './ics'
 import { calendarIcsUrl } from './icsToken'
+import { getDeviceTimeZone } from './localDate'
 import { showToast } from '../../shared/Toast'
 
 const WEB_APP = import.meta.env.VITE_WEB_APP_URL || 'https://syng-psi.vercel.app'
@@ -47,6 +48,7 @@ function buildIcs({ taskId, title, alarmAt, taskTime }) {
     taskTime,
     url: recordatorioUrl(taskId),
     description: `Tarea en Syng. Toca el enlace para abrirla.`,
+    tzid: getDeviceTimeZone(),
   })
 }
 

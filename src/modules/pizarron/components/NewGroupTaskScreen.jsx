@@ -12,6 +12,7 @@ import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
 import { showToast } from '../../../shared/Toast'
 import { calendarIcsUrl } from '../../../core/calendar/icsToken'
 import { openIosCalendarIcs } from '../../../core/calendar/calendar.service'
+import { localEndOfDay, buildReminderSchedule, formatLocalDateTime } from '../../../core/calendar/localDate'
 import { useShellChrome } from '../../../shared/ShellChromeContext'
 import { L } from '../../../shared/agendaEditorial'
 import { SyngMark } from '../../../shared/SyngLogo'
@@ -69,14 +70,12 @@ function IconChevron() {
 function buildDueAndReminder(dayKey, reminderOn, actH24, actM, totalOffsetMin, offsetSummary) {
   if (!reminderOn) {
     return {
-      dueDate: Timestamp.fromDate(new Date(`${dayKey}T23:59:59`)),
+      dueDate: Timestamp.fromDate(localEndOfDay(dayKey)),
       reminder: null,
       reminderTime: null,
     }
   }
-  const [y, mo, d] = dayKey.split('-').map(Number)
-  const activityDate = new Date(y, mo - 1, d, actH24, actM, 0, 0)
-  const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
+  const { activityDate, scheduled } = buildReminderSchedule(dayKey, actH24, actM, totalOffsetMin)
   const reminderTime = Timestamp.fromDate(scheduled)
   return {
     dueDate: Timestamp.fromDate(activityDate),
@@ -135,12 +134,8 @@ export function NewGroupTaskScreen() {
   const reminderSummary = reminderOn ? `${taskTimeStr} · ${offsetSummary}` : 'Sin recordatorio'
 
   const avisoNotifyLabel = useMemo(() => {
-    const activityDate = new Date(`${dateStr}T00:00:00`)
-    activityDate.setHours(actH24, actM, 0, 0)
-    const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
-    return scheduled.toLocaleString('es-MX', {
-      weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
-    })
+    const { scheduled } = buildReminderSchedule(dateStr, actH24, actM, totalOffsetMin)
+    return formatLocalDateTime(scheduled, { weekday: 'short' })
   }, [dateStr, actH24, actM, totalOffsetMin])
 
   useEffect(() => {
@@ -207,9 +202,7 @@ export function NewGroupTaskScreen() {
         )
 
         if (reminderOn) {
-          const [y, mo, d] = dayKey.split('-').map(Number)
-          const activityDate = new Date(y, mo - 1, d, actH24, actM, 0, 0)
-          const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
+          const { activityDate, scheduled } = buildReminderSchedule(dayKey, actH24, actM, totalOffsetMin)
           if (firstAviso) {
             if (isIOS()) {
               pendingCal = { taskId, title: trimmed, alarmAt: scheduled, taskTime: activityDate }

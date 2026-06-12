@@ -8,7 +8,7 @@ import { useTasks } from '../core/hooks/useTasks'
 import { useCoreState } from '../core/hooks/useCoreData'
 import { RepeatDayPicker } from './RepeatDayPicker'
 import { ReminderPanel } from '../modules/agenda/components/ReminderPanel'
-import { L } from './agendaEditorial'
+import { localEndOfDay, buildReminderSchedule } from '../core/calendar/localDate'
 import { SyngMark } from './SyngLogo'
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
@@ -50,14 +50,12 @@ function buildOffsetLabel(d, h, m) {
 function buildDueAndReminder(dayKey, reminderOn, actH24, actM, totalOffsetMin, offsetSummary) {
   if (!reminderOn) {
     return {
-      dueDate: dayKey ? Timestamp.fromDate(new Date(`${dayKey}T23:59:59`)) : null,
+      dueDate: dayKey ? Timestamp.fromDate(localEndOfDay(dayKey)) : null,
       reminder: null,
       reminderTime: null,
     }
   }
-  const [y, mo, d] = dayKey.split('-').map(Number)
-  const activityDate = new Date(y, mo - 1, d, actH24, actM, 0, 0)
-  const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
+  const { activityDate, scheduled } = buildReminderSchedule(dayKey, actH24, actM, totalOffsetMin)
   const reminderTime = Timestamp.fromDate(scheduled)
   return {
     dueDate: Timestamp.fromDate(activityDate),

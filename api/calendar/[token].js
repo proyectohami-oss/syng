@@ -59,7 +59,18 @@ function addMinutesIcsLocal(icsLocal, minutes) {
   return toIcsLocal(dt)
 }
 
-function buildIcsEvent({ uid, title, startLocal, endLocal, url }) {
+function safeTzid(z) {
+  if (typeof z !== 'string' || !z || z.length > 64) return null
+  if (!/^[A-Za-z0-9_+\/-]+$/.test(z)) return null
+  return z
+}
+
+function dtLine(prop, local, tzid) {
+  const tz = safeTzid(tzid)
+  return tz ? `${prop};TZID=${tz}:${local}` : `${prop}:${local}`
+}
+
+function buildIcsEvent({ uid, title, startLocal, endLocal, url, tzid }) {
   const now = toIcsUtc(new Date())
   const sum = icsSummary(title)
   const desc = 'Tu momento Syng.\\nAbre la app cuando suene.'
@@ -73,8 +84,8 @@ function buildIcsEvent({ uid, title, startLocal, endLocal, url }) {
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTAMP:${now}`,
-    `DTSTART:${startLocal}`,
-    `DTEND:${endLocal}`,
+    dtLine('DTSTART', startLocal, tzid),
+    dtLine('DTEND', endLocal, tzid),
     `SUMMARY:${sum}`,
     `DESCRIPTION:${desc}`,
     url ? `URL:${url}` : null,
@@ -102,7 +113,7 @@ export default async function handler(req) {
   const token = url.pathname.split('/').pop() || ''
 
   try {
-    const { id, t, a, u, k, r } = JSON.parse(b64urlDecode(token))
+    const { id, t, a, u, k, r, z } = JSON.parse(b64urlDecode(token))
     if (!id || !a) return new Response('Datos incompletos', { status: 400 })
 
     const startLocal = normalizeIcsLocal(a)
@@ -122,6 +133,7 @@ export default async function handler(req) {
       startLocal,
       endLocal,
       url: targetUrl,
+      tzid: z,
     })
 
     return new Response(ics, {

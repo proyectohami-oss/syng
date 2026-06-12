@@ -5,18 +5,14 @@ import { doc, setDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { syncReminderToCalendar } from '../calendar/calendar.service'
 
+import { localDateAt, getDeviceTimeZone } from '../calendar/localDate'
+
+/** @deprecated use localDateAt */
 export function localDateTimeToUtc(dateStr, hours24, minutes) {
-  const [y, mo, d] = dateStr.split('-').map(Number)
-  return new Date(y, mo - 1, d, hours24, minutes, 0, 0)
+  return localDateAt(dateStr, hours24, minutes, 0)
 }
 
-export function getDeviceTimezone() {
-  try {
-    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC'
-  } catch {
-    return 'UTC'
-  }
-}
+export { getDeviceTimeZone as getDeviceTimezone }
 
 function toDate(v) {
   if (!v) return null
@@ -37,9 +33,7 @@ function taskTimeFromReminder(reminder, dueDate) {
     const ds = dateStrFromDue(dueDate)
     if (ds) {
       const [hh, mm] = reminder.dueTime.split(':').map(Number)
-      const t = new Date(`${ds}T00:00:00`)
-      t.setHours(hh, mm, 0, 0)
-      return t
+      return localDateAt(ds, hh, mm, 0)
     }
   }
   if (scheduledAt && reminder?.offsetMin) {

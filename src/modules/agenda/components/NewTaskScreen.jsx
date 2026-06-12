@@ -12,6 +12,7 @@ import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
 import { showToast } from '../../../shared/Toast'
 import { calendarIcsUrl } from '../../../core/calendar/icsToken'
 import { openIosCalendarIcs } from '../../../core/calendar/calendar.service'
+import { localDateAt, localEndOfDay, buildReminderSchedule, formatLocalDateTime } from '../../../core/calendar/localDate'
 import { L } from '../../../shared/agendaEditorial'
 import { SyngMark } from '../../../shared/SyngLogo'
 
@@ -116,12 +117,8 @@ export function NewTaskScreen() {
   const reminderSummary = reminderOn ? `${taskTimeStr} · ${offsetSummary}` : 'Sin recordatorio'
 
   const avisoNotifyLabel = useMemo(() => {
-    const activityDate = new Date(`${dateStr}T00:00:00`)
-    activityDate.setHours(actH24, actM, 0, 0)
-    const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
-    return scheduled.toLocaleString('es-MX', {
-      weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
-    })
+    const { scheduled } = buildReminderSchedule(dateStr, actH24, actM, totalOffsetMin)
+    return formatLocalDateTime(scheduled, { weekday: 'short' })
   }, [dateStr, actH24, actM, totalOffsetMin])
 
   useEffect(() => {
@@ -156,7 +153,7 @@ export function NewTaskScreen() {
   const puedeGuardar = title.trim().length > 0 && !saving
 
   function applyRepeatPreset(mode) {
-    const base = new Date(dateStr + 'T12:00:00')
+    const base = localDateAt(dateStr, 12, 0, 0)
     setRepeatMode(mode)
     if (mode === 'none') { setRepeatDays(new Set()); return }
     if (mode === 'daily') setRepeatDays(buildPat(base, [0, 1, 2, 3, 4, 5, 6]))
@@ -201,11 +198,9 @@ export function NewTaskScreen() {
 
       for (const day of days) {
         const taskId = generateTaskId()
-        const activityDate = new Date(`${day}T00:00:00`)
-        activityDate.setHours(actH24, actM, 0, 0)
+        const { activityDate, scheduled } = buildReminderSchedule(day, actH24, actM, totalOffsetMin)
 
         if (reminderOn) {
-          const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
           const reminderTime = Timestamp.fromDate(scheduled)
           if (firstAviso) {
             if (isIOS()) {
@@ -236,7 +231,7 @@ export function NewTaskScreen() {
         } else {
           await createTask({
             id: taskId, title: trimmed, type: 'personal', groupId: null,
-            dueDate: Timestamp.fromDate(new Date(`${day}T23:59:59`)), reminder: null,
+            dueDate: Timestamp.fromDate(localEndOfDay(day)), reminder: null,
           })
         }
       }

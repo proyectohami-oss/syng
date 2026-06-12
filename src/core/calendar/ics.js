@@ -43,6 +43,7 @@ export function buildIcsEvent({
   alarmAt,
   taskTime,
   url,
+  tzid,
 }) {
   const start = toIcsLocal(alarmAt)
   const endDate = taskTime || new Date(alarmAt.getTime() + 15 * 60_000)
@@ -50,6 +51,9 @@ export function buildIcsEvent({
   const now = toIcsUtc(new Date())
   const sum = icsSummary(title)
   const desc = 'Tu momento Syng.\\nAbre la app cuando suene.'
+
+  const dtStart = tzid ? `DTSTART;TZID=${tzid}:${start}` : `DTSTART:${start}`
+  const dtEnd = tzid ? `DTEND;TZID=${tzid}:${end}` : `DTEND:${end}`
 
   return [
     'BEGIN:VCALENDAR',
@@ -60,8 +64,8 @@ export function buildIcsEvent({
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTAMP:${now}`,
-    `DTSTART:${start}`,
-    `DTEND:${end}`,
+    dtStart,
+    dtEnd,
     `SUMMARY:${sum}`,
     `DESCRIPTION:${desc}`,
     url ? `URL:${url}` : null,

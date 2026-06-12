@@ -1,4 +1,5 @@
 import { toIcsLocal } from './ics'
+import { getDeviceTimeZone } from './localDate'
 
 const WEB_APP = import.meta.env.VITE_WEB_APP_URL || 'https://syng-psi.vercel.app'
 
@@ -17,6 +18,8 @@ export function encodeCalendarToken({ taskId, title, alarmAt, taskTime, kind, re
     a: toIcsLocal(new Date(alarmAt)),
   }
   if (taskTime) payload.u = toIcsLocal(new Date(taskTime))
+  const tz = getDeviceTimeZone()
+  if (tz) payload.z = tz
   if (kind) payload.k = kind
   if (redirect) payload.r = redirect
   return `${b64urlEncode(JSON.stringify(payload))}.ics`
