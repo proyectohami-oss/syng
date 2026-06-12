@@ -1,5 +1,5 @@
 import { useEffect, useState, CSSProperties } from 'react'
-import { useParams, useNavigate } from 'react-router-dom'
+import { SyngMark } from '../shared/SyngLogo'
 import { doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
 import { db } from '../firebase'
 
@@ -70,7 +70,7 @@ export default function RecordatorioView() {
       <div style={s.orb1} /><div style={s.orb2} />
 
       <div style={s.top}>
-        <div style={s.logoBox}>S</div>
+        <SyngMark size={64} style={{ margin: '0 auto 12px', boxShadow: '0 8px 32px rgba(196,169,98,0.15)' }} />
         <p style={s.badge}>Recordatorio</p>
       </div>
 
@@ -112,12 +112,6 @@ const s: Record<string, CSSProperties> = {
     background: 'radial-gradient(circle,rgba(127,119,221,0.08) 0%,transparent 70%)', bottom: -40, right: -50,
   },
   top: { textAlign: 'center', position: 'relative', zIndex: 1 },
-  logoBox: {
-    width: 64, height: 64, borderRadius: 2, background: '#FAF8F5', color: '#0A0A0A',
-    fontSize: 26, fontWeight: 900, display: 'flex', alignItems: 'center', justifyContent: 'center',
-    margin: '0 auto 12px', boxShadow: '0 8px 32px rgba(196,169,98,0.15)',
-    border: '1px solid rgba(196,169,98,0.35)',
-  },
   badge: {
     fontSize: 10, fontWeight: 500, letterSpacing: '0.32em', textTransform: 'uppercase',
     color: 'rgba(196,169,98,0.85)', margin: 0,
