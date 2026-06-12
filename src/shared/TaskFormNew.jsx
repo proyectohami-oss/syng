@@ -9,7 +9,10 @@ import { useCoreState } from '../core/hooks/useCoreData'
 import { RepeatDayPicker } from './RepeatDayPicker'
 import { ReminderPanel } from '../modules/agenda/components/ReminderPanel'
 import { localEndOfDay, buildReminderSchedule } from '../core/calendar/localDate'
+import { L } from './agendaEditorial'
 import { SyngMark } from './SyngLogo'
+import { useShellChrome } from './ShellChromeContext'
+import { showToast } from './Toast'
 
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
   'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
@@ -80,9 +83,11 @@ function IconChevron() {
 export function TaskFormNew({ task, defaultDate, onClose }) {
   const { createTask, updateTask } = useTasks()
   const state = useCoreState()
+  const { setHideBottomNav } = useShellChrome()
   const isEdit = !!task
   const inputRef = useRef(null)
   const keyboardOffset = useKeyboardOffset()
+  const [saving, setSaving] = useState(false)
 
   const groups = useMemo(
     () => Array.from(state.groups.list.values()),
@@ -144,7 +149,12 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
     ? 'No repetir'
     : `${repeatDays.size} día${repeatDays.size !== 1 ? 's' : ''}`
 
-  const puedeGuardar = !!title.trim()
+  const puedeGuardar = !!title.trim() && !saving
+
+  useEffect(() => {
+    setHideBottomNav(true)
+    return () => setHideBottomNav(false)
+  }, [setHideBottomNav])
 
   useEffect(() => {
     const t = setTimeout(() => inputRef.current?.focus(), 120)
@@ -172,36 +182,48 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
     setPanel('main')
   }
 
-  function handleSave() {
-    if (!title.trim()) return
+  async function handleSave() {
+    if (!title.trim() || saving) return
     const type = groupId ? 'group' : 'personal'
     const gId = groupId || null
     const trimmed = title.trim()
-    onClose()
-
-    if (isEdit) {
-      const { dueDate, reminder, reminderTime } = buildDueAndReminder(
-        dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
-      )
-      updateTask(task, { title: trimmed, groupId: gId, type, dueDate, reminder, reminderTime })
-        .catch(err => console.error('[TaskFormNew] updateTask error:', err))
-      if (repeatDays.size > 0) {
-        Array.from(repeatDays).sort().filter(d => d !== dateStr).forEach(day => {
-          const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
-          createTask({ title: trimmed, type, groupId: gId, ...extra }).catch(console.error)
-        })
+    setSaving(true)
+    try {
+      if (isEdit) {
+        const { dueDate, reminder, reminderTime } = buildDueAndReminder(
+          dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
+        )
+        await updateTask(task, { title: trimmed, groupId: gId, type, dueDate, reminder, reminderTime })
+        if (repeatDays.size > 0) {
+          await Promise.all(
+            Array.from(repeatDays).sort().filter(d => d !== dateStr).map(day => {
+              const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
+              return createTask({ title: trimmed, type, groupId: gId, ...extra })
+            }),
+          )
+        }
+        showToast('Cambios guardados', '✓')
+      } else if (repeatDays.size > 0) {
+        await Promise.all(
+          Array.from(repeatDays).sort().map(day => {
+            const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
+            return createTask({ title: trimmed, type, groupId: gId, ...extra })
+          }),
+        )
+        showToast('Tareas creadas', '✓')
+      } else {
+        const { dueDate, reminder, reminderTime } = buildDueAndReminder(
+          dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
+        )
+        await createTask({ title: trimmed, type, groupId: gId, dueDate, reminder, reminderTime })
+        showToast('Tarea creada', '✓')
       }
-    } else if (repeatDays.size > 0) {
-      Array.from(repeatDays).sort().forEach(day => {
-        const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
-        createTask({ title: trimmed, type, groupId: gId, ...extra }).catch(console.error)
-      })
-    } else {
-      const { dueDate, reminder, reminderTime } = buildDueAndReminder(
-        dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
-      )
-      createTask({ title: trimmed, type, groupId: gId, dueDate, reminder, reminderTime })
-        .catch(err => console.error('[TaskFormNew] createTask error:', err))
+      onClose()
+    } catch (err) {
+      console.error('[TaskFormNew] save error:', err)
+      showToast('No se pudo guardar', '⚠️')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -233,7 +255,14 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
                   <SyngMark size={24} bordered={false} />
                   <p style={s.headerTitle}>{isEdit ? 'Editar tarea' : 'Nueva tarea'}</p>
                 </div>
-                <div style={{ width: 64 }} />
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={!puedeGuardar}
+                  style={s.btnHeaderSave(puedeGuardar)}
+                >
+                  {saving ? '…' : isEdit ? 'Guardar' : 'Crear'}
+                </button>
               </div>
 
               <div style={s.content}>
@@ -361,7 +390,7 @@ function OptionRow({ icon, label, value, onClick, accent }) {
 
 const s = {
   overlay: {
-    position: 'fixed', inset: 0, zIndex: 1000,
+    position: 'fixed', inset: 0, zIndex: 5000,
     background: L.ink,
   },
   screen: {
@@ -432,6 +461,20 @@ const s = {
     width: '100%', padding: 14, borderRadius: 2, border: `1px solid ${L.ivory}`, cursor: 'pointer',
     background: L.ivory, color: L.ink, fontSize: 13, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase',
   },
+  btnHeaderSave: active => ({
+    justifySelf: 'end',
+    padding: '8px 14px',
+    minHeight: 36,
+    borderRadius: 2,
+    border: `1px solid ${active ? L.ivory : 'rgba(196,169,98,0.2)'}`,
+    background: active ? L.ivory : 'rgba(255,255,255,0.06)',
+    color: active ? L.ink : L.ivoryFaint,
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: '0.08em',
+    textTransform: 'uppercase',
+    cursor: active ? 'pointer' : 'default',
+  }),
   btnSave: {
     width: '100%', padding: 14, borderRadius: 2, border: `1px solid ${L.ivory}`,
     background: L.ivory, color: L.ink, fontSize: 13, fontWeight: 600,
