@@ -3,6 +3,7 @@
  */
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { Timestamp } from 'firebase/firestore'
+import { useKeyboardOffset } from '../pwa/useKeyboardOffset'
 import { useTasks } from '../core/hooks/useTasks'
 import { useCoreState } from '../core/hooks/useCoreData'
 import { RepeatDayPicker } from './RepeatDayPicker'
@@ -79,12 +80,62 @@ function IconChevron() {
   )
 }
 
+function taskHasReminder(task) {
+  return !!(task?.reminder?.dueTime || task?.reminder?.scheduledAt || task?.reminderTime)
+}
+
+function initReminderFields(task, today, initTime) {
+  if (!taskHasReminder(task)) {
+    return {
+      reminderOn: false,
+      actH12: initTime.h12,
+      actAmpm: initTime.ampm,
+      actM: today.getMinutes(),
+      offD: 0,
+      offH: 0,
+      offM: 10,
+    }
+  }
+
+  const offsetMin = task.reminder?.offsetMin ?? 10
+  let actH24 = today.getHours()
+  let actM = today.getMinutes()
+
+  if (task.reminder?.dueTime) {
+    ;[actH24, actM] = task.reminder.dueTime.split(':').map(Number)
+  } else if (task.dueDate) {
+    const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
+    actH24 = d.getHours()
+    actM = d.getMinutes()
+  } else if (task.reminder?.scheduledAt) {
+    const sched = task.reminder.scheduledAt.toDate
+      ? task.reminder.scheduledAt.toDate()
+      : new Date(task.reminder.scheduledAt)
+    const activity = new Date(sched.getTime() + offsetMin * 60_000)
+    actH24 = activity.getHours()
+    actM = activity.getMinutes()
+  }
+
+  const t = from24h(actH24)
+  const o = parseOffsetMin(offsetMin)
+  return {
+    reminderOn: true,
+    actH12: t.h12,
+    actAmpm: t.ampm,
+    actM,
+    offD: o.d,
+    offH: o.h,
+    offM: o.m,
+  }
+}
+
 export function TaskFormNew({ task, defaultDate, onClose }) {
   const { createTask, updateTask } = useTasks()
   const state = useCoreState()
   const { setHideBottomNav } = useShellChrome()
   const isEdit = !!task
   const inputRef = useRef(null)
+  const keyboardOffset = useKeyboardOffset()
   const [saving, setSaving] = useState(false)
 
   const groups = useMemo(
@@ -92,8 +143,12 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
     [state.groups.list],
   )
 
-  const today = new Date()
-  const initTime = useMemo(() => from24h(today.getHours()), [])
+  const today = useMemo(() => new Date(), [])
+  const initTime = useMemo(() => from24h(today.getHours()), [today])
+  const initReminder = useMemo(
+    () => initReminderFields(task, today, initTime),
+    [task, today, initTime],
+  )
 
   const [panel, setPanel] = useState('main')
   const [title, setTitle] = useState(task?.title ?? '')
@@ -108,31 +163,13 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
   const [repeatDays, setRepeatDays] = useState(new Set())
   const [showGroup, setShowGroup] = useState(false)
   const [showRepeat, setShowRepeat] = useState(false)
-  const [reminderOn, setReminderOn] = useState(!!task?.reminder?.dueTime)
-  const [actH12, setActH12] = useState(() => {
-    if (task?.reminder?.dueTime) {
-      const [hh] = task.reminder.dueTime.split(':').map(Number)
-      return from24h(hh).h12
-    }
-    return initTime.h12
-  })
-  const [actAmpm, setActAmpm] = useState(() => {
-    if (task?.reminder?.dueTime) {
-      const [hh] = task.reminder.dueTime.split(':').map(Number)
-      return from24h(hh).ampm
-    }
-    return initTime.ampm
-  })
-  const [actM, setActM] = useState(() => {
-    if (task?.reminder?.dueTime) {
-      const [, mm] = task.reminder.dueTime.split(':').map(Number)
-      return mm
-    }
-    return today.getMinutes()
-  })
-  const [offD, setOffD] = useState(() => parseOffsetMin(task?.reminder?.offsetMin ?? 10).d)
-  const [offH, setOffH] = useState(() => parseOffsetMin(task?.reminder?.offsetMin ?? 10).h)
-  const [offM, setOffM] = useState(() => parseOffsetMin(task?.reminder?.offsetMin ?? 10).m)
+  const [reminderOn, setReminderOn] = useState(initReminder.reminderOn)
+  const [actH12, setActH12] = useState(initReminder.actH12)
+  const [actAmpm, setActAmpm] = useState(initReminder.actAmpm)
+  const [actM, setActM] = useState(initReminder.actM)
+  const [offD, setOffD] = useState(initReminder.offD)
+  const [offH, setOffH] = useState(initReminder.offH)
+  const [offM, setOffM] = useState(initReminder.offM)
 
   const actH24 = useMemo(() => to24h(actH12, actAmpm), [actH12, actAmpm])
   const totalOffsetMin = offD * 1440 + offH * 60 + offM
@@ -254,7 +291,10 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
                 </button>
               </div>
 
-              <div style={s.content}>
+              <div style={{
+                ...s.content,
+                paddingBottom: `calc(12px + ${keyboardOffset}px + env(safe-area-inset-bottom))`,
+              }}>
                 {panel === 'main' && (
                   <>
                     <div style={s.titleCard}>
@@ -383,7 +423,6 @@ const s = {
   content: {
     flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     padding: '12px 16px',
-    paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
   },
   titleCard: {
     background: L.champagneLight, borderRadius: 2, marginBottom: 12,

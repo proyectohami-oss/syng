@@ -87,13 +87,19 @@ export function useTasks() {
     dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task: patched })
 
     try {
-      await svcUpdate(task.id, {
+      const fsUpdates = {
         ...updates,
-        reminder: updates.reminder ?? null,
         ownerId: task.ownerId,
         title: updates.title ?? task.title,
         dueDate: updates.dueDate ?? task.dueDate,
-      })
+      }
+      // Solo tocar recordatorio si el formulario lo envió explícitamente.
+      // Evita borrar avisos al mover fecha, cambiar grupo, etc.
+      if (!('reminder' in updates)) {
+        delete fsUpdates.reminder
+        delete fsUpdates.reminderTime
+      }
+      await svcUpdate(task.id, fsUpdates)
     } catch (error) {
       console.error('[useTasks] updateTask error:', error)
       // Rollback: restaura la tarea original

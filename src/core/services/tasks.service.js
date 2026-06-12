@@ -50,25 +50,29 @@ export async function createTask({ id, title, description, type, ownerId, groupI
 export async function updateTask(taskId, updates) {
   const ref = doc(db, 'tasks', taskId)
   const ownerId = updates.ownerId
-  const { ownerId: _owner, updatedAt: _ts, ...taskFields } = updates
+  const { ownerId: _owner, updatedAt: _ts, ...raw } = updates
 
-  const payload = { ...taskFields, updatedAt: serverTimestamp() }
-  if (taskFields.reminder === null) {
+  const payload = { updatedAt: serverTimestamp() }
+  for (const [key, val] of Object.entries(raw)) {
+    if (val !== undefined) payload[key] = val
+  }
+  if (Object.prototype.hasOwnProperty.call(raw, 'reminder') && raw.reminder === null) {
+    payload.reminder = null
     payload.reminderTime = deleteField()
   }
 
   await updateDoc(ref, payload)
 
   try {
-    if (taskFields.reminder?.scheduledAt && ownerId) {
+    if (raw.reminder?.scheduledAt && ownerId) {
       await applyReminderForTask({
         taskId,
         userId: ownerId,
-        title: taskFields.title || taskFields.reminder.title || 'Recordatorio',
-        reminder: taskFields.reminder,
-        dueDate: taskFields.dueDate,
+        title: raw.title || raw.reminder.title || 'Recordatorio',
+        reminder: raw.reminder,
+        dueDate: raw.dueDate,
       })
-    } else if (taskFields.reminder === null && ownerId) {
+    } else if (Object.prototype.hasOwnProperty.call(raw, 'reminder') && raw.reminder === null && ownerId) {
       await deleteDoc(doc(db, 'reminders', taskId)).catch(() => {})
     }
   } catch (remErr) {
