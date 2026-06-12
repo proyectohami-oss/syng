@@ -102,6 +102,8 @@ export function AppShell({ children }) {
   const { signOut } = useAuthActions()
   const { hideBottomNav } = useShellChrome()
   const hideNav = hideBottomNav
+    || location.pathname.includes('/nueva')
+    || location.pathname.includes('/editar')
     || location.pathname.startsWith('/recordatorio/')
     || location.pathname.startsWith('/resumen-diario')
   const [unreadCount, setUnreadCount] = useState(0)

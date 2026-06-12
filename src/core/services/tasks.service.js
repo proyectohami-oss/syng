@@ -33,7 +33,11 @@ export async function createTask({ id, title, description, type, ownerId, groupI
     updatedAt:   serverTimestamp(),
   })
   if (reminder?.scheduledAt && ownerId) {
-    await applyReminderForTask({ taskId: id, userId: ownerId, title, reminder, dueDate })
+    try {
+      await applyReminderForTask({ taskId: id, userId: ownerId, title, reminder, dueDate })
+    } catch (remErr) {
+      console.warn('[tasks.service] reminder sync failed on create:', remErr)
+    }
   }
   if (groupId) {
     await logActivity({ groupId, type: 'task_created', actorUid: ownerId, actorName, targetName: title.trim() })

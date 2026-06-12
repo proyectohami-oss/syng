@@ -216,6 +216,11 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
 
   async function handleSave() {
     if (!title.trim() || saving) return
+    if (!dateStr && !isEdit) {
+      showToast('Elige una fecha', '⚠️')
+      setPanel('date')
+      return
+    }
     const type = groupId ? 'group' : 'personal'
     const gId = groupId || null
     const trimmed = title.trim()

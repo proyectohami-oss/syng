@@ -183,13 +183,16 @@ export function DayModule() {
       {!haySeleccion && (
         <button
           type="button"
-          onClick={() => navigate(`/agenda/${date}/nueva`)}
+          onClick={() => setModal({ tipo: 'nueva' })}
           style={A.fab}
         >
           <span style={{ fontSize: 28, lineHeight: 1, marginTop: -2, fontWeight: 300 }}>+</span>
         </button>
       )}
 
+      {modal?.tipo === 'nueva' && (
+        <TaskFormNew defaultDate={date} onClose={() => setModal(null)} />
+      )}
       {modal?.tipo==='editar' && <TaskFormNew task={modal.task} defaultDate={date} onClose={() => setModal(null)} />}
       {modal?.tipo==='borrar' && <ConfirmDialog title="Eliminar tarea" message={`¿Eliminar "${modal.task.title}"?`} confirmLabel="Eliminar" danger onConfirm={async () => { await deleteTask(modal.task); setModal(null) }} onCancel={() => { setHiddenIds(prev => { const n=new Set(prev); n.delete(modal.task.id); return n }); setModal(null) }} />}
       {modal?.tipo==='borrarVarias' && <ConfirmDialog title="Eliminar tareas" message={`¿Eliminar ${selectedIds.size} tarea${selectedIds.size!==1?'s':''}?`} confirmLabel={`Eliminar ${selectedIds.size}`} danger onConfirm={eliminarSeleccionadas} onCancel={() => setModal(null)} />}

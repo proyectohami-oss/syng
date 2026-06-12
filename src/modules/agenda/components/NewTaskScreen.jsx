@@ -127,9 +127,9 @@ export function NewTaskScreen() {
   }, [])
 
   useEffect(() => {
-    setHideBottomNav(panel === 'reminder' || showAviso || showIosHelp)
+    setHideBottomNav(true)
     return () => setHideBottomNav(false)
-  }, [panel, showAviso, showIosHelp, setHideBottomNav])
+  }, [setHideBottomNav])
 
   const repeatSummary = useMemo(() => {
     if (repeatMode === 'daily') return 'Diario'
@@ -189,7 +189,8 @@ export function NewTaskScreen() {
   async function commitSave(withSyngAviso) {
     const trimmed = title.trim()
     const days = repeatDays.size > 0 ? Array.from(repeatDays).sort() : [dateStr]
-    const dest = dateParam ? `/agenda/${dateParam}` : '/agenda'
+    const destDay = days[0] || dateStr || todayKey()
+    const dest = `/agenda/${destDay}`
     setSaving(true)
     try {
       const { activateSyngAviso, isIOS } = await import('../../../core/calendar/calendar.service')
@@ -214,6 +215,7 @@ export function NewTaskScreen() {
               if (!cal?.ok && cal?.reason === 'too_soon') {
                 setSaving(false)
                 setShowAviso(false)
+                showToast('El aviso debe ser al menos 5 min en el futuro', '⚠️')
                 return
               }
             }
@@ -245,6 +247,7 @@ export function NewTaskScreen() {
       }
 
       navigate(dest)
+      showToast('Tarea creada', '✓')
     } catch (err) {
       console.error('[NewTaskScreen] save error:', err)
       showToast('No se pudo crear la tarea', '⚠️')
@@ -451,6 +454,7 @@ const s = {
   header: {
     flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr auto 1fr',
     alignItems: 'center', padding: '12px 16px',
+    paddingTop: 'max(12px, env(safe-area-inset-top))',
     borderBottom: `1px solid rgba(196,169,98,0.2)`,
   },
   btnCancel: { background: 'none', border: 'none', fontSize: 15, color: L.ivoryMuted, cursor: 'pointer', textAlign: 'left' },
