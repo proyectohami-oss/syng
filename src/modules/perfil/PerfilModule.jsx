@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
@@ -14,6 +14,7 @@ import { isIOS } from '../../core/calendar/calendar.service'
 import { PWAInstallButton } from '../../core/pwa/PWAInstallButton'
 import { usePWAInstall } from '../../core/pwa/usePWAInstall'
 import { A, L } from '../../shared/agendaEditorial'
+import { PlanUpgradeSection } from './PlanUpgradeSection'
 
 export function PerfilModule() {
   const auth = useCoreAuth()
@@ -41,6 +42,24 @@ export function PerfilModule() {
   const [success,      setSuccess]      = useState(null)
   const [signingOut,   setSigningOut]   = useState(false)
   const [pushLoading,  setPushLoading]  = useState(false)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const pago   = params.get('pago')
+    if (!pago) return
+
+    if (pago === 'ok') {
+      setSuccess('¡Pago recibido! Tu plan se activará en unos segundos.')
+    } else if (pago === 'pending') {
+      setSuccess('Pago pendiente. Te avisaremos cuando se confirme.')
+    } else if (pago === 'fail') {
+      setError('El pago no se completó. Puedes intentar de nuevo.')
+    }
+
+    params.delete('pago')
+    const qs = params.toString()
+    window.history.replaceState({}, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`)
+  }, [])
 
   async function handleEnablePush() {
     setPushLoading(true)
@@ -158,11 +177,17 @@ export function PerfilModule() {
                 {isPaidPlan ? 'Activo' : planPrice || 'Gratis'}
               </span>
             </div>
-            {planId === 'gratis' && (
+            {planId === 'gratis' && !usage.atLimit && (
               <p style={{ margin: '12px 0 0', fontSize: 12, color: L.ivoryMuted, lineHeight: 1.5 }}>
-                Los planes de pago estarán disponibles pronto desde aquí.
+                Elige un plan de pago para más movimientos y funciones.
               </p>
             )}
+            <PlanUpgradeSection
+              currentPlanId={planId}
+              systemConfig={auth.systemConfig}
+              onError={setError}
+              onCheckoutStart={() => { setError(null); setSuccess(null) }}
+            />
             {!usage.unlimited && (
               <div style={{ marginTop: 14 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>

@@ -26,3 +26,4 @@ dist-ssr
 android/app/google-services.json
 android/local.properties
 .env
+functions/.env.syng-app
