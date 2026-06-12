@@ -12,6 +12,7 @@ import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
 import { showToast } from '../../../shared/Toast'
 import { calendarIcsUrl } from '../../../core/calendar/icsToken'
 import { L } from '../../../shared/agendaEditorial'
+import { SyngMark } from '../../../shared/SyngLogo'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
   'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -305,9 +306,12 @@ export function NewTaskScreen() {
             <button type="button" onClick={goBack} style={s.btnCancel}>
               {panel === 'main' ? 'Cancelar' : '‹ Atrás'}
             </button>
-            <p style={s.headerTitle}>
-              {panel === 'main' ? 'Nueva tarea' : panel === 'repeat' ? 'Repetir' : 'Fecha'}
-            </p>
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+              <SyngMark size={24} />
+              <p style={s.headerTitle}>
+                {panel === 'main' ? 'Nueva tarea' : panel === 'repeat' ? 'Repetir' : 'Fecha'}
+              </p>
+            </div>
             <button
               type="button"
               onClick={handleSave}

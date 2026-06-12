@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from 'react'
-import { T } from '../../../theme'
+import { L } from '../../../shared/agendaEditorial'
+import { SyngMark } from '../../../shared/SyngLogo'
 
 const IOS_ROW = 44
 const REPEAT = 20
@@ -136,7 +137,7 @@ function IOSWheel({ items, value, onChange, format, infinite = true, label }) {
                   ...ios.wheelItem,
                   fontSize: selected ? 23 : 20,
                   fontWeight: selected ? 600 : 400,
-                  color: selected ? '#000' : 'rgba(60,60,67,0.36)',
+                  color: selected ? L.ivory : L.ivoryFaint,
                 }}
               >
                 {format ? format(item) : item}
@@ -172,8 +173,8 @@ function SegmentedAmpm({ value, onChange }) {
 function CheckIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-      <circle cx="12" cy="12" r="11" fill={T.primary} />
-      <path d="M7 12.5l3 3 7-7" stroke="#fff" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="12" cy="12" r="11" fill={L.champagne} />
+      <path d="M7 12.5l3 3 7-7" stroke={L.ink} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   )
 }
@@ -217,6 +218,7 @@ export function ReminderPanel({
           {step === 'aviso' ? 'Hora' : 'Cancelar'}
         </button>
         <div style={ios.navCenter}>
+          <SyngMark size={26} style={{ margin: '0 auto 6px' }} />
           <p style={ios.navTitle}>{step === 'hora' ? 'Hora de la tarea' : 'Aviso'}</p>
           <div style={ios.dots}>
             <span style={{ ...ios.dot, ...(step === 'hora' ? ios.dotOn : {}) }} />
@@ -279,11 +281,11 @@ export function ReminderPanel({
                     onClick={() => onChangeOffset(opt.d, opt.h, opt.m)}
                     style={{
                       ...ios.groupRow,
-                      borderBottom: i < AVISO_OPCIONES.length - 1 ? '0.5px solid rgba(60,60,67,0.12)' : 'none',
+                      borderBottom: i < AVISO_OPCIONES.length - 1 ? `1px solid rgba(196,169,98,0.18)` : 'none',
                     }}
                   >
                     <div style={{ textAlign: 'left' }}>
-                      <p style={{ ...ios.groupTitle, color: on ? T.primary : '#000' }}>{opt.label}</p>
+                      <p style={{ ...ios.groupTitle, color: on ? L.champagne : L.ivory }}>{opt.label}</p>
                       <p style={ios.groupSub}>{opt.sub}</p>
                     </div>
                     {on && <CheckIcon />}
@@ -332,31 +334,31 @@ const ios = {
   root: {
     position: 'absolute', inset: 0, zIndex: 50,
     display: 'flex', flexDirection: 'column',
-    background: '#F2F2F7',
-    fontFamily: '-apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif',
+    background: L.ink,
+    color: L.ivory,
+    fontFamily: '-apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif',
     WebkitFontSmoothing: 'antialiased',
   },
   nav: {
     flexShrink: 0, display: 'grid', gridTemplateColumns: '88px 1fr 88px',
     alignItems: 'center', padding: '8px 12px',
     paddingTop: 'max(8px, env(safe-area-inset-top))',
-    background: 'rgba(242,242,247,0.92)',
-    backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-    borderBottom: '0.5px solid rgba(60,60,67,0.18)',
+    background: L.inkSoft,
+    borderBottom: `1px solid ${L.champagneBorder}`,
   },
   navBtn: {
-    background: 'none', border: 'none', fontSize: 17, color: T.primary,
+    background: 'none', border: 'none', fontSize: 15, color: L.ivoryMuted,
     cursor: 'pointer', textAlign: 'left', padding: '6px 4px',
   },
   navBtnPrimary: {
-    background: 'none', border: 'none', fontSize: 17, fontWeight: 600,
-    color: T.primary, cursor: 'pointer', textAlign: 'right', padding: '6px 4px',
+    background: 'none', border: 'none', fontSize: 15, fontWeight: 600,
+    color: L.champagne, cursor: 'pointer', textAlign: 'right', padding: '6px 4px',
   },
   navCenter: { textAlign: 'center' },
-  navTitle: { margin: 0, fontSize: 13, fontWeight: 600, color: 'rgba(60,60,67,0.6)' },
+  navTitle: { margin: 0, fontSize: 13, fontWeight: 500, color: L.ivoryMuted, fontFamily: L.serif },
   dots: { display: 'flex', gap: 5, justifyContent: 'center', marginTop: 5 },
-  dot: { width: 6, height: 6, borderRadius: 3, background: 'rgba(60,60,67,0.22)' },
-  dotOn: { background: T.primary, width: 18 },
+  dot: { width: 6, height: 6, borderRadius: 3, background: L.ivoryFaint },
+  dotOn: { background: L.champagne, width: 18 },
   body: {
     flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column',
     padding: '0 20px', overflow: 'hidden',
@@ -366,42 +368,42 @@ const ios = {
     gap: 2, paddingTop: 20, flexShrink: 0,
   },
   clockDigits: {
-    fontSize: 56, fontWeight: 200, color: '#000',
+    fontSize: 56, fontWeight: 300, color: L.ivory, fontFamily: L.serif,
     fontVariantNumeric: 'tabular-nums', letterSpacing: '-0.02em', lineHeight: 1,
   },
   clockColon: {
-    fontSize: 56, fontWeight: 200, color: '#000', padding: '0 2px',
-    fontVariantNumeric: 'tabular-nums',
+    fontSize: 56, fontWeight: 300, color: L.ivory, padding: '0 2px',
+    fontVariantNumeric: 'tabular-nums', fontFamily: L.serif,
   },
   clockAmpm: {
-    fontSize: 20, fontWeight: 600, color: T.primary,
+    fontSize: 18, fontWeight: 600, color: L.champagne,
     marginLeft: 8, alignSelf: 'flex-end', paddingBottom: 8,
   },
   clockCaption: {
-    margin: '8px 0 16px', textAlign: 'center', fontSize: 15,
-    color: 'rgba(60,60,67,0.6)', flexShrink: 0,
+    margin: '8px 0 16px', textAlign: 'center', fontSize: 14,
+    color: L.ivoryMuted, flexShrink: 0,
   },
   segmented: {
     display: 'flex', margin: '0 auto 12px', padding: 3,
-    background: 'rgba(118,118,128,0.12)', borderRadius: 9,
+    background: L.champagneLight, borderRadius: 2,
     width: '100%', maxWidth: 280, flexShrink: 0,
+    border: `1px solid ${L.champagneBorder}`,
   },
   segment: {
-    flex: 1, padding: '7px 0', border: 'none', borderRadius: 7,
-    background: 'transparent', fontSize: 15, fontWeight: 600,
-    color: 'rgba(60,60,67,0.6)', cursor: 'pointer',
+    flex: 1, padding: '7px 0', border: 'none', borderRadius: 2,
+    background: 'transparent', fontSize: 14, fontWeight: 600,
+    color: L.ivoryMuted, cursor: 'pointer',
   },
   segmentOn: {
-    background: '#fff', color: '#000',
-    boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+    background: L.champagne, color: L.ink,
   },
   wheelRow: {
     display: 'flex', gap: 0, flexShrink: 0,
     marginBottom: 4,
   },
   wheelColLabel: {
-    margin: '0 0 4px', fontSize: 11, fontWeight: 600,
-    color: 'rgba(60,60,67,0.45)', letterSpacing: '0.04em',
+    margin: '0 0 4px', fontSize: 10, fontWeight: 500,
+    color: L.champagne, letterSpacing: '0.12em', textTransform: 'uppercase',
   },
   wheelWrap: {
     position: 'relative', width: '100%', height: IOS_ROW * 5, overflow: 'hidden',
@@ -409,17 +411,18 @@ const ios = {
   wheelSelect: {
     position: 'absolute', left: 8, right: 8, top: '50%',
     transform: 'translateY(-50%)', height: IOS_ROW,
-    background: 'rgba(118,118,128,0.12)', borderRadius: 8,
+    background: L.champagneLight, borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`,
     pointerEvents: 'none', zIndex: 1,
   },
   wheelFadeTop: {
     position: 'absolute', top: 0, left: 0, right: 0, height: IOS_ROW * 2,
-    background: 'linear-gradient(to bottom, #F2F2F7 40%, rgba(242,242,247,0))',
+    background: `linear-gradient(to bottom, ${L.ink} 40%, rgba(10,10,10,0))`,
     pointerEvents: 'none', zIndex: 2,
   },
   wheelFadeBot: {
     position: 'absolute', bottom: 0, left: 0, right: 0, height: IOS_ROW * 2,
-    background: 'linear-gradient(to top, #F2F2F7 40%, rgba(242,242,247,0))',
+    background: `linear-gradient(to top, ${L.ink} 40%, rgba(10,10,10,0))`,
     pointerEvents: 'none', zIndex: 2,
   },
   wheelScroll: {
@@ -430,55 +433,57 @@ const ios = {
   wheelItem: {
     height: IOS_ROW, display: 'flex', alignItems: 'center', justifyContent: 'center',
     scrollSnapAlign: 'center', cursor: 'pointer', userSelect: 'none',
-    fontVariantNumeric: 'tabular-nums',
+    fontVariantNumeric: 'tabular-nums', fontFamily: L.serif,
   },
   lead: {
-    margin: '20px 0 0', textAlign: 'center', fontSize: 17,
-    color: 'rgba(60,60,67,0.6)', flexShrink: 0,
+    margin: '20px 0 0', textAlign: 'center', fontSize: 16,
+    color: L.ivoryMuted, flexShrink: 0,
   },
   notifyHero: {
-    margin: '4px 0 0', textAlign: 'center', fontSize: 48, fontWeight: 600,
-    color: T.primary, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums',
-    flexShrink: 0,
+    margin: '4px 0 0', textAlign: 'center', fontSize: 48, fontWeight: 400,
+    color: L.champagne, letterSpacing: '-0.03em', fontVariantNumeric: 'tabular-nums',
+    fontFamily: L.serif, flexShrink: 0,
   },
   leadSub: {
-    margin: '6px 0 20px', textAlign: 'center', fontSize: 15,
-    color: 'rgba(60,60,67,0.6)', flexShrink: 0, lineHeight: 1.4,
+    margin: '6px 0 20px', textAlign: 'center', fontSize: 14,
+    color: L.ivoryMuted, flexShrink: 0, lineHeight: 1.4,
   },
   grouped: {
-    background: '#fff', borderRadius: 12, overflow: 'hidden', flexShrink: 0,
+    background: L.champagneLight, borderRadius: 2, overflow: 'hidden', flexShrink: 0,
+    border: `1px solid ${L.champagneBorder}`,
   },
   groupRow: {
     width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-    padding: '12px 16px', border: 'none', background: '#fff', cursor: 'pointer',
+    padding: '12px 16px', border: 'none', background: 'transparent', cursor: 'pointer',
     gap: 12,
   },
-  groupTitle: { margin: 0, fontSize: 17, fontWeight: 400 },
-  groupSub: { margin: '2px 0 0', fontSize: 13, color: 'rgba(60,60,67,0.6)' },
+  groupTitle: { margin: 0, fontSize: 16, fontWeight: 500, fontFamily: L.serif },
+  groupSub: { margin: '2px 0 0', fontSize: 13, color: L.ivoryMuted },
   advancedBtn: {
     background: 'none', border: 'none', marginTop: 12, width: '100%',
-    fontSize: 15, fontWeight: 500, color: T.primary, cursor: 'pointer',
+    fontSize: 14, fontWeight: 500, color: L.champagne, cursor: 'pointer',
     padding: '8px 0', flexShrink: 0,
   },
   manualLabel: {
     margin: '4px 0 0', textAlign: 'center', fontSize: 12,
-    color: 'rgba(60,60,67,0.45)', letterSpacing: '0.04em',
+    color: L.ivoryFaint, letterSpacing: '0.04em',
   },
   footer: {
     marginTop: 'auto', paddingBottom: 'max(16px, env(safe-area-inset-bottom))',
     flexShrink: 0,
   },
   btnFilled: {
-    width: '100%', padding: 16, borderRadius: 14, border: 'none',
-    background: T.primary, color: '#fff', fontSize: 17, fontWeight: 600,
-    cursor: 'pointer', boxShadow: '0 4px 16px rgba(45,58,140,0.28)',
+    width: '100%', padding: 16, borderRadius: 2, border: `1px solid ${L.ivory}`,
+    background: L.ivory, color: L.ink, fontSize: 13, fontWeight: 600,
+    letterSpacing: '0.1em', textTransform: 'uppercase',
+    cursor: 'pointer',
   },
   btnText: {
     width: '100%', padding: 12, border: 'none', background: 'transparent',
-    color: T.primary, fontSize: 17, cursor: 'pointer', marginTop: 4,
+    color: L.champagne, fontSize: 15, cursor: 'pointer', marginTop: 4,
   },
   footerHint: {
     margin: '6px 0 0', textAlign: 'center', fontSize: 13,
-    color: 'rgba(60,60,67,0.45)',
+    color: L.ivoryFaint,
   },
 }

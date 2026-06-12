@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
 
   <!-- PWA -->
-  <meta name="theme-color" content="#5B3DF6" />
+  <meta name="theme-color" content="#0A0A0A" />
   <meta name="mobile-web-app-capable" content="yes" />
 
   <!-- iOS específico -->
@@ -16,7 +16,9 @@
   <meta name="apple-mobile-web-app-title" content="Syng" />
 
   <!-- Iconos iOS (requiere archivos en /public) -->
-  <link rel="apple-touch-icon" href="./icon-192.png" />
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" sizes="180x180" href="./icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="./icon-512.png" />
 
   <!-- Splash screens iOS (opcional pero mejora experiencia de instalación) -->
   <!-- Se generan con herramientas como pwa-asset-generator -->
@@ -34,7 +36,7 @@
   <meta property="og:url"         content="https://syng-psi.vercel.app" />
   <meta property="og:title"       content="Syng — Organiza tu vida" />
   <meta property="og:description" content="Tareas, grupos y recordatorios en sincronía. Prueba Syng gratis." />
-  <meta property="og:image"       content="https://syng-psi.vercel.app/og-syng.png?v=3" />
+  <meta property="og:image"       content="https://syng-psi.vercel.app/icon-512.png?v=4" />
   <meta property="og:image:width"  content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:type"   content="image/png" />
@@ -43,7 +45,7 @@
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Syng — Organiza tu vida" />
   <meta name="twitter:description" content="Tareas, grupos y recordatorios en sincronía. Prueba Syng gratis." />
-  <meta name="twitter:image"       content="https://syng-psi.vercel.app/og-syng.png?v=3" />
+  <meta name="twitter:image"       content="https://syng-psi.vercel.app/icon-512.png?v=4" />
   <title>Syng</title>
   <style>
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -55,7 +57,7 @@
       window.__installPrompt = e;
     });
   </script>
-  <script type="module" crossorigin src="./assets/index-BIstZ5c7.js"></script>
+  <script type="module" crossorigin src="./assets/index-odHRV5-7.js"></script>
   <link rel="modulepreload" crossorigin href="./assets/vendor-react-CGaFXDi2.js">
   <link rel="modulepreload" crossorigin href="./assets/vendor-firebase-CYGlpaX2.js">
 <link rel="manifest" href="./manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="./registerSW.js"></script></head>
