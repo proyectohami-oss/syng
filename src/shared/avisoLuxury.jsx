@@ -50,7 +50,7 @@ export function LuxuryHandle() {
     <div style={{
       width: 36, height: 2, borderRadius: 1,
       background: L.champagneBorder,
-      margin: '0 auto 28px',
+      margin: '0 auto 16px',
     }} />
   )
 }
@@ -70,13 +70,13 @@ export function LuxuryBadge({ children }) {
   )
 }
 
-export function LuxuryDivider() {
+export function LuxuryDivider({ tight = false }) {
   return (
     <div style={{
       width: 48,
       height: 1,
       background: `linear-gradient(90deg, transparent, ${L.champagne}, transparent)`,
-      margin: '20px auto',
+      margin: tight ? '12px auto' : '20px auto',
     }} />
   )
 }
@@ -126,13 +126,13 @@ export function LuxuryTimeCard({ notifyLabel, taskTimeLabel }) {
   )
 }
 
-export function LuxuryCalPreview({ title, notifyLabel }) {
+export function LuxuryCalPreview({ title, notifyLabel, compact = false }) {
   const sum = title ? `Syng · ${title}` : 'Syng · Recordatorio'
   return (
     <div style={{
-      margin: '0 0 20px',
-      padding: '16px 18px',
-      borderRadius: 14,
+      margin: compact ? '0 0 12px' : '0 0 20px',
+      padding: compact ? '12px 14px' : '16px 18px',
+      borderRadius: compact ? 2 : 14,
       background: 'rgba(255,255,255,0.06)',
       border: `1px solid ${L.champagneBorder}`,
     }}>
@@ -146,63 +146,63 @@ export function LuxuryCalPreview({ title, notifyLabel }) {
         Vista previa · Calendario iPhone
       </p>
       <p style={{
-        margin: '0 0 8px',
+        margin: '0 0 6px',
         fontFamily: L.serif,
-        fontSize: 18,
+        fontSize: compact ? 16 : 18,
         color: L.ivory,
         lineHeight: 1.25,
       }}>
         {sum}
       </p>
       {notifyLabel ? (
-        <p style={{ margin: '0 0 12px', fontSize: 13, color: L.ivoryMuted }}>{notifyLabel}</p>
+        <p style={{ margin: '0 0 8px', fontSize: 12, color: L.ivoryMuted }}>{notifyLabel}</p>
       ) : null}
       <div style={{
         display: 'flex',
         alignItems: 'center',
         gap: 8,
-        padding: '10px 12px',
-        borderRadius: 10,
+        padding: compact ? '8px 10px' : '10px 12px',
+        borderRadius: compact ? 2 : 10,
         background: 'rgba(255,255,255,0.08)',
-        marginBottom: 10,
+        marginBottom: compact ? 6 : 10,
       }}>
-        <span style={{ fontSize: 12, color: L.ivoryMuted, flex: 1 }}>syng-psi.vercel.app</span>
+        <span style={{ fontSize: 11, color: L.ivoryMuted, flex: 1 }}>syng-psi.vercel.app</span>
         <span style={{
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: 600,
           color: '#fff',
           background: '#34C759',
-          padding: '4px 10px',
-          borderRadius: 6,
+          padding: '3px 8px',
+          borderRadius: 4,
         }}>
           Abrir
         </span>
       </div>
-      <p style={{ margin: 0, fontSize: 11, lineHeight: 1.5, color: L.ivoryFaint }}>
+      <p style={{ margin: 0, fontSize: 10, lineHeight: 1.45, color: L.ivoryFaint }}>
         iPhone controla esta pantalla. Abajo verás <strong style={{ color: L.ivoryMuted }}>Agregar al calendario</strong>.
       </p>
     </div>
   )
 }
 
-export function LuxuryStep({ n, title, desc }) {
+export function LuxuryStep({ n, title, desc, tight = false }) {
   return (
     <div style={{
       display: 'flex',
-      gap: 16,
+      gap: tight ? 12 : 16,
       alignItems: 'flex-start',
-      padding: '14px 0',
+      padding: tight ? '10px 0' : '14px 0',
       borderBottom: `1px solid rgba(196,169,98,0.12)`,
     }}>
       <span style={{
         flexShrink: 0,
-        width: 28,
-        height: 28,
+        width: tight ? 24 : 28,
+        height: tight ? 24 : 28,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
         fontFamily: L.serif,
-        fontSize: 15,
+        fontSize: tight ? 13 : 15,
         color: L.champagne,
         border: `1px solid ${L.champagneBorder}`,
         borderRadius: '50%',
@@ -211,8 +211,8 @@ export function LuxuryStep({ n, title, desc }) {
       </span>
       <div>
         <p style={{
-          margin: '0 0 3px',
-          fontSize: 15,
+          margin: '0 0 2px',
+          fontSize: tight ? 14 : 15,
           fontWeight: 500,
           color: L.ivory,
           letterSpacing: '0.01em',
@@ -221,8 +221,8 @@ export function LuxuryStep({ n, title, desc }) {
         </p>
         <p style={{
           margin: 0,
-          fontSize: 13,
-          lineHeight: 1.5,
+          fontSize: tight ? 12 : 13,
+          lineHeight: 1.45,
           color: L.ivoryMuted,
         }}>
           {desc}
