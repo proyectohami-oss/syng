@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   L,
   LuxuryKeyframes,
@@ -17,6 +17,22 @@ import {
 /** iPhone: guía editorial para confirmar en Calendario */
 export function SyngAvisoIosHelp({ onOpenCalendar, onDone }) {
   const [opened, setOpened] = useState(false)
+  const openedRef = useRef(false)
+
+  useEffect(() => {
+    if (!opened) return
+    openedRef.current = true
+    function onReturn() {
+      if (!openedRef.current || document.visibilityState !== 'visible') return
+      setTimeout(() => onDone?.(), 350)
+    }
+    window.addEventListener('pageshow', onReturn)
+    document.addEventListener('visibilitychange', onReturn)
+    return () => {
+      window.removeEventListener('pageshow', onReturn)
+      document.removeEventListener('visibilitychange', onReturn)
+    }
+  }, [opened, onDone])
 
   async function handleOpen() {
     const result = await onOpenCalendar?.()
@@ -61,7 +77,7 @@ export function SyngAvisoIosHelp({ onOpenCalendar, onDone }) {
                 <LuxuryStep
                   n="3"
                   title="Agregar al calendario"
-                  desc="Confirma el evento Syng te avisa."
+                  desc="Confirma el evento Syng · Recordatorio."
                 />
               </div>
               <p style={luxuryNote}>
@@ -79,8 +95,8 @@ export function SyngAvisoIosHelp({ onOpenCalendar, onDone }) {
                 lineHeight: 1.6,
                 color: L.ivoryMuted,
               }}>
-                Busca <strong style={{ color: L.ivory, fontWeight: 500 }}>Syng te avisa</strong>
-                {' '}en la app Calendario. Si no aparece, reintenta.
+                Busca <strong style={{ color: L.ivory, fontWeight: 500 }}>Syng · Recordatorio</strong>
+                {' '}en Calendario. Al volver, Syng te lleva a la agenda.
               </p>
               <button type="button" style={luxuryBtnOutline} onClick={handleOpen}>
                 Reintentar

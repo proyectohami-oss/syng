@@ -45,7 +45,7 @@ export function buildIcsEvent({
     `DTSTART:${start}`,
     `DTEND:${end}`,
     `SUMMARY:${sum}`,
-    `DESCRIPTION:${desc}${url ? `\\n${url}` : ''}`,
+    `DESCRIPTION:${desc}`,
     url ? `URL:${url}` : null,
     'BEGIN:VALARM',
     'TRIGGER:PT0S',

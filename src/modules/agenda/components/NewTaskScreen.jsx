@@ -10,6 +10,7 @@ import { RepeatCinemaPicker } from './RepeatCinemaPicker'
 import { ReminderPanel } from './ReminderPanel'
 import { SyngAvisoSheet } from '../../../shared/SyngAvisoSheet'
 import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
+import { markIosCalendarReturn } from '../../../shared/DeepLinkHandler'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
   'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -256,6 +257,7 @@ export function NewTaskScreen() {
 
   async function openIosCalendar() {
     if (!iosCalPayload) return { ok: false }
+    markIosCalendarReturn(afterSavePath || '/agenda')
     const { activateSyngAviso } = await import('../../../core/calendar/calendar.service')
     return activateSyngAviso(iosCalPayload)
   }

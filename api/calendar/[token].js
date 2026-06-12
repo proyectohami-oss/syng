@@ -25,7 +25,7 @@ function buildIcsEvent({ uid, title, alarmAt, taskTime, url }) {
   const now = toIcsUtc(new Date())
   const safeTitle = (title || 'Recordatorio').replace(/[,;\\]/g, ' ')
   const sum = 'Syng · Recordatorio'
-  const desc = `${safeTitle}\\n\\nTu momento. Abre Syng cuando suene.${url ? `\\n${url}` : ''}`
+  const desc = `${safeTitle}\\n\\nTu momento. Toca Abrir en el evento para ir a Syng.`
 
   return [
     'BEGIN:VCALENDAR',

@@ -39,6 +39,10 @@ export function SyngAvisoSheet({
             letterSpacing: '-0.02em',
             lineHeight: 1.2,
             textAlign: 'center',
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
           }}>
             {title || 'Tu tarea'}
           </h2>
