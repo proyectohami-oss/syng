@@ -23,7 +23,6 @@ import { useState, useEffect, useRef } from 'react'
 import { collection, query, where, onSnapshot } from 'firebase/firestore'
 import { db } from '../firebase'
 import { useCoreAuth, useCoreGroups } from '../core/hooks/useCoreData'
-import { usePushNotifications }    from '../core/notifications/usePushNotifications'
 import { useAuthActions }             from '../auth/useAuthActions'
 import { useShellChrome }             from './ShellChromeContext'
 
@@ -91,12 +90,13 @@ const NAV_ITEMS = [
 export function AppShell({ children }) {
   const auth      = useCoreAuth()
   const groupsCtx = useCoreGroups()
-  usePushNotifications()
   const navigate  = useNavigate()
   const location  = useLocation()
   const { signOut } = useAuthActions()
   const { hideBottomNav } = useShellChrome()
-  const hideNav = hideBottomNav || location.pathname.startsWith('/recordatorio/')
+  const hideNav = hideBottomNav
+    || location.pathname.startsWith('/recordatorio/')
+    || location.pathname.startsWith('/resumen-diario')
   const [unreadCount, setUnreadCount] = useState(0)
   useEffect(() => {
     const uid = auth?.user?.uid

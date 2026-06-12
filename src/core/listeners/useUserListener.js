@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+import { Capacitor } from '@capacitor/core'
 import { onAuthStateChanged } from 'firebase/auth'
 import { doc, onSnapshot, getDoc } from 'firebase/firestore'
 import { auth, db } from '../../firebase'
@@ -39,9 +40,11 @@ async function loadUserProfile(dispatch, firebaseUser) {
     console.error('[UserListener] upsertUser:', error)
     dispatchUserData(dispatch, null, firebaseUser)
   }
-  import('../notifications/fcm.service')
-    .then(({ syncFcmToken }) => syncFcmToken(firebaseUser.uid))
-    .catch(err => console.error('[UserListener] syncFcmToken:', err))
+  if (Capacitor.isNativePlatform()) {
+    import('../notifications/fcm.service')
+      .then(({ syncFcmToken }) => syncFcmToken(firebaseUser.uid))
+      .catch(err => console.error('[UserListener] syncFcmToken:', err))
+  }
 }
 
 export function useUserListener(dispatch) {

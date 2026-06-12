@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react'
+import { useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { collection, query, where, getDocs, Timestamp } from 'firebase/firestore'
-import { db } from '../../firebase'
-import { useCoreAuth } from '../../core/hooks/useCoreData'
+import { useCoreAuth, useCoreTasks } from '../../core/hooks/useCoreData'
+import { A, L } from '../../shared/agendaEditorial'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre']
 
@@ -18,40 +17,27 @@ function toDateKey(date) {
 export function ResumenDiarioScreen() {
   const navigate = useNavigate()
   const auth     = useCoreAuth()
-  const uid      = auth?.user?.uid
-  const [tasks,   setTasks]   = useState([])
-  const [loading, setLoading] = useState(true)
+  const tasksCtx = useCoreTasks()
+  const todayKey = toDateKey(new Date())
 
-  useEffect(() => {
-    if (!uid) return
-    const now      = new Date()
-    const dayStart = new Date(now); dayStart.setHours(0,0,0,0)
-    const dayEnd   = new Date(now); dayEnd.setHours(23,59,59,999)
-
-    getDocs(query(
-      collection(db, 'tasks'),
-      where('ownerId',   '==', uid),
-      where('status',    '==', 'pending'),
-      where('isDeleted', '==', false),
-      where('dueDate',   '>=', Timestamp.fromDate(dayStart)),
-      where('dueDate',   '<=', Timestamp.fromDate(dayEnd)),
-    )).then(snap => {
-      setTasks(snap.docs.map(d => ({ id: d.id, ...d.data() })))
-      setLoading(false)
+  const tasks = useMemo(() => {
+    const personal = Array.from(tasksCtx.personal.values())
+    const grouped  = Array.from(tasksCtx.byGroup.values()).flatMap(m => Array.from(m.values()))
+    return [...personal, ...grouped].filter(t => {
+      if (t.isDeleted || t.status !== 'pending' || !t.dueDate) return false
+      const d = t.dueDate.toDate ? t.dueDate.toDate() : new Date(t.dueDate)
+      return toDateKey(d) === todayKey
     })
-  }, [uid])
+  }, [tasksCtx.personal, tasksCtx.byGroup, todayKey])
 
+  const loading = tasksCtx.loading && !auth.user
   const n = tasks.length
 
   return (
     <div style={screen}>
       <div style={card}>
-
-        <div style={header}>
-          <div style={iconWrap}>📋</div>
-          <p style={labelStyle}>TU DÍA EN SYNG</p>
-          <p style={fechaStyle}>{hoy()}</p>
-        </div>
+        <p style={labelStyle}>Tu día en Syng</p>
+        <p style={fechaStyle}>{hoy()}</p>
 
         {!loading && (
           <div style={conteoWrap}>
@@ -63,54 +49,167 @@ export function ResumenDiarioScreen() {
         <div style={divider} />
 
         {loading ? (
-          <p style={muted}>Cargando tu día...</p>
+          <p style={muted}>Cargando tu día…</p>
         ) : tasks.length === 0 ? (
-          <p style={muted}>No tienes tareas pendientes hoy. 🎉</p>
+          <p style={muted}>No tienes tareas pendientes hoy.</p>
         ) : (
-          <div style={{ marginBottom:20 }}>
+          <div style={{ marginBottom: 20 }}>
             {tasks.map(t => (
               <div key={t.id} style={taskRow}>
-                <div style={taskCircle} />
+                <div style={taskDot} />
                 <p style={taskTitle}>{t.title}</p>
               </div>
             ))}
           </div>
         )}
 
-        <button onClick={() => navigate(`/agenda/${toDateKey(new Date())}`)} style={btnPrimary}>
-          📅 Organizar mi día
+        <button type="button" onClick={() => navigate(`/agenda/${todayKey}`)} style={btnPrimary}>
+          Organizar mi día
         </button>
 
-        <button onClick={() => navigate('/')} style={btnSecondary}>
+        <button type="button" onClick={() => navigate('/agenda')} style={btnSecondary}>
           Cerrar
         </button>
 
-        <div style={fraseWrap}>
-          <p style={fraseText}>"Lo que se agenda, se logra. Hoy tienes {n} oportunidad{n !== 1 ? 'es' : ''} de avanzar."</p>
-          <p style={fraseSyng}>— Syng</p>
-        </div>
-
+        {n > 0 && (
+          <p style={fraseText}>
+            Lo que se agenda, se logra. Hoy tienes {n} oportunidad{n !== 1 ? 'es' : ''} de avanzar.
+          </p>
+        )}
       </div>
     </div>
   )
 }
 
-const screen      = { minHeight:'100svh', display:'flex', alignItems:'center', justifyContent:'center', padding:'24px 20px', background:'linear-gradient(158deg, #F0F3FF 0%, #E8EDF8 100%)' }
-const card        = { width:'100%', maxWidth:400, background:'rgba(255,255,255,0.92)', borderRadius:28, padding:'36px 28px 32px', boxShadow:'0 8px 40px rgba(13,18,64,0.10), 0 2px 8px rgba(13,18,64,0.06)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', border:'1px solid rgba(255,255,255,0.75)' }
-const header      = { display:'flex', flexDirection:'column', alignItems:'center', marginBottom:20 }
-const iconWrap    = { fontSize:44, marginBottom:10, filter:'drop-shadow(0 4px 12px rgba(45,58,140,0.18))' }
-const labelStyle  = { margin:0, fontSize:11, fontWeight:700, color:'rgba(13,18,64,0.35)', letterSpacing:'0.1em' }
-const fechaStyle  = { margin:'4px 0 0', fontSize:16, fontWeight:600, color:'#0D1240' }
-const conteoWrap  = { display:'flex', alignItems:'baseline', gap:8, justifyContent:'center', marginBottom:20 }
-const conteoNum   = { fontSize:48, fontWeight:800, color:'#2D3A8C', lineHeight:1, letterSpacing:'-0.04em' }
-const conteoLabel = { fontSize:16, color:'rgba(13,18,64,0.50)', fontWeight:500 }
-const divider     = { height:1, background:'rgba(13,18,64,0.07)', margin:'0 0 20px' }
-const taskRow     = { display:'flex', alignItems:'center', gap:12, padding:'10px 0', borderBottom:'1px solid rgba(13,18,64,0.05)' }
-const taskCircle  = { width:8, height:8, borderRadius:'50%', background:'#2D3A8C', flexShrink:0 }
-const taskTitle   = { margin:0, fontSize:14, color:'#0D1240', fontWeight:500, lineHeight:1.4 }
-const muted       = { margin:'0 0 20px', fontSize:14, color:'rgba(13,18,64,0.45)', textAlign:'center' }
-const btnPrimary  = { display:'block', width:'100%', padding:'15px', borderRadius:16, border:'none', background:'linear-gradient(135deg,#3D4FA8,#2D3A8C)', color:'#fff', fontSize:15, fontWeight:600, cursor:'pointer', marginBottom:10, boxShadow:'0 4px 16px rgba(45,58,140,0.25)', WebkitTapHighlightColor:'transparent' }
-const btnSecondary= { display:'block', width:'100%', padding:'14px', borderRadius:16, border:'1.5px solid rgba(13,18,64,0.10)', background:'rgba(255,255,255,0.8)', color:'rgba(13,18,64,0.55)', fontSize:14, fontWeight:500, cursor:'pointer', WebkitTapHighlightColor:'transparent' }
-const fraseWrap   = { marginTop:24, padding:'16px 20px', borderRadius:16, background:'rgba(45,58,140,0.04)', border:'1px solid rgba(45,58,140,0.07)' }
-const fraseText   = { margin:'0 0 6px', fontSize:13, color:'rgba(13,18,64,0.50)', lineHeight:1.6, fontStyle:'italic', textAlign:'center' }
-const fraseSyng   = { margin:0, fontSize:11, fontWeight:700, color:'rgba(45,58,140,0.40)', textAlign:'center', letterSpacing:'0.05em' }
+const screen = {
+  minHeight: '100svh',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  padding: '24px 20px',
+  background: L.ink,
+}
+
+const card = {
+  width: '100%',
+  maxWidth: 400,
+  background: L.champagneLight,
+  border: `1px solid ${L.champagneBorder}`,
+  borderRadius: 2,
+  padding: '36px 28px 32px',
+}
+
+const labelStyle = {
+  margin: 0,
+  fontSize: 10,
+  fontWeight: 500,
+  letterSpacing: '0.28em',
+  textTransform: 'uppercase',
+  color: L.champagne,
+  textAlign: 'center',
+}
+
+const fechaStyle = {
+  margin: '8px 0 0',
+  fontFamily: L.serif,
+  fontSize: 24,
+  color: L.ivory,
+  textAlign: 'center',
+}
+
+const conteoWrap = {
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: 8,
+  justifyContent: 'center',
+  margin: '20px 0',
+}
+
+const conteoNum = {
+  fontFamily: L.serif,
+  fontSize: 48,
+  fontWeight: 400,
+  color: L.champagne,
+  lineHeight: 1,
+}
+
+const conteoLabel = {
+  fontSize: 15,
+  color: L.ivoryMuted,
+}
+
+const divider = {
+  height: 1,
+  background: L.champagneBorder,
+  margin: '0 0 20px',
+}
+
+const taskRow = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  padding: '10px 0',
+  borderBottom: `1px solid rgba(196,169,98,0.15)`,
+}
+
+const taskDot = {
+  width: 6,
+  height: 6,
+  borderRadius: 2,
+  background: L.champagne,
+  flexShrink: 0,
+}
+
+const taskTitle = {
+  margin: 0,
+  fontSize: 14,
+  color: L.ivory,
+  lineHeight: 1.4,
+}
+
+const muted = {
+  margin: '0 0 20px',
+  fontSize: 14,
+  color: L.ivoryMuted,
+  textAlign: 'center',
+  lineHeight: 1.5,
+}
+
+const btnPrimary = {
+  display: 'block',
+  width: '100%',
+  padding: '14px',
+  borderRadius: 2,
+  border: `1px solid ${L.ivory}`,
+  background: L.ivory,
+  color: L.ink,
+  fontSize: 13,
+  fontWeight: 600,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  cursor: 'pointer',
+  marginBottom: 10,
+  WebkitTapHighlightColor: 'transparent',
+}
+
+const btnSecondary = {
+  display: 'block',
+  width: '100%',
+  padding: '13px',
+  borderRadius: 2,
+  border: `1px solid ${L.champagneBorder}`,
+  background: 'transparent',
+  color: L.ivoryMuted,
+  fontSize: 14,
+  cursor: 'pointer',
+  WebkitTapHighlightColor: 'transparent',
+}
+
+const fraseText = {
+  margin: '24px 0 0',
+  fontSize: 13,
+  color: L.ivoryFaint,
+  lineHeight: 1.6,
+  fontStyle: 'italic',
+  textAlign: 'center',
+}

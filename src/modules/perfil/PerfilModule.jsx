@@ -5,7 +5,7 @@ import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.
 import { useAuthActions } from '../../auth/useAuthActions'
 import { PWAInstallButton } from '../../core/pwa/PWAInstallButton'
 import { usePWAInstall } from '../../core/pwa/usePWAInstall'
-import { NotifPrefsSection } from './NotifPrefsSection'
+import { DailyReminderSection } from './DailyReminderSection'
 import { A, L } from '../../shared/agendaEditorial'
 
 export function PerfilModule() {
@@ -175,7 +175,7 @@ export function PerfilModule() {
           </div>
         )}
 
-        <NotifPrefsSection />
+        <DailyReminderSection />
 
         <div style={{ padding: '24px 16px 32px' }}>
           <button

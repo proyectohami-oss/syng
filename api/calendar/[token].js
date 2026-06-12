@@ -83,20 +83,23 @@ export default async function handler(req) {
   const token = url.pathname.split('/').pop() || ''
 
   try {
-    const { id, t, a, u } = JSON.parse(b64urlDecode(token))
+    const { id, t, a, u, k, r } = JSON.parse(b64urlDecode(token))
     if (!id || !a) return new Response('Datos incompletos', { status: 400 })
 
     const alarmAt = new Date(a)
     if (Number.isNaN(alarmAt.getTime())) return new Response('Fecha inválida', { status: 400 })
 
     const webApp = process.env.WEB_APP_URL || 'https://syng-psi.vercel.app'
-    const recordatorio = `${webApp}/recordatorio/${id}`
+    const targetUrl = r
+      ? `${webApp}${r.startsWith('/') ? r : `/${r}`}`
+      : `${webApp}/recordatorio/${id}`
+    const eventUid = k === 'daily' ? `syng-${id}@syng.app` : `syng-${id}@syng.app`
     const ics = buildIcsEvent({
-      uid: `syng-${id}@syng.app`,
+      uid: eventUid,
       title: t,
       alarmAt,
       taskTime: u ? new Date(u) : null,
-      url: recordatorio,
+      url: targetUrl,
     })
 
     return new Response(ics, {
