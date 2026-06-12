@@ -10,7 +10,7 @@ import { RepeatCinemaPicker } from './RepeatCinemaPicker'
 import { ReminderPanel } from './ReminderPanel'
 import { SyngAvisoSheet } from '../../../shared/SyngAvisoSheet'
 import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
-import { markIosCalendarReturn } from '../../../shared/DeepLinkHandler'
+import { showToast } from '../../../shared/Toast'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
   'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -255,18 +255,19 @@ export function NewTaskScreen() {
     }
   }
 
-  async function openIosCalendar() {
-    if (!iosCalPayload) return { ok: false }
-    markIosCalendarReturn(afterSavePath || '/agenda')
-    const { activateSyngAviso } = await import('../../../core/calendar/calendar.service')
-    return activateSyngAviso(iosCalPayload)
-  }
-
-  function finishIosHelp() {
+  async function continueIosCalendar() {
+    if (!iosCalPayload) return
+    const payload = iosCalPayload
+    const dest = afterSavePath || '/agenda'
     setShowIosHelp(false)
     setIosCalPayload(null)
-    navigate(afterSavePath || '/agenda')
     setAfterSavePath(null)
+    navigate(dest, { replace: true })
+    showToast('Tarea guardada · confirma en Calendario', '✓')
+    setTimeout(async () => {
+      const { activateSyngAviso } = await import('../../../core/calendar/calendar.service')
+      await activateSyngAviso(payload)
+    }, 450)
   }
 
   async function handleSave() {
@@ -410,10 +411,7 @@ export function NewTaskScreen() {
       )}
 
       {showIosHelp && (
-        <SyngAvisoIosHelp
-          onOpenCalendar={openIosCalendar}
-          onDone={finishIosHelp}
-        />
+        <SyngAvisoIosHelp onContinue={continueIosCalendar} />
       )}
     </div>
   )
