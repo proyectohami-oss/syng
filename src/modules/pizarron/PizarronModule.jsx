@@ -11,6 +11,7 @@ import { TaskFormNew }                 from '../../shared/TaskFormNew'
 import { EmptyState }                  from '../../shared/EmptyState'
 import { SyncBadge }                   from '../../shared/SyncBadge'
 import { CalendarSwipe }               from './components/CalendarSwipe'
+import { A, L }                        from '../../shared/agendaEditorial'
 
 const DIAS       = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']
 const DIAS_CORTO = ['Do','Lu','Ma','Mi','Ju','Vi','Sá']
@@ -304,10 +305,10 @@ export function PizarronModule() {
           onClick={() => navigate(`/pizarron/${groupId}/info`)}>
           <div style={groupAvatar}>{group.name[0].toUpperCase()}</div>
           <div style={{ minWidth:0 }}>
-            <p style={{ margin:0, fontSize:16, fontWeight:700, color:'#0D1240', overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', letterSpacing:'-0.01em' }}>
+            <p style={{ margin:0, fontSize:16, fontWeight:500, color:L.ivory, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap' }}>
               {group.name}
             </p>
-            <p style={{ margin:0, fontSize:11, color:'rgba(13,18,64,0.38)' }}>
+            <p style={{ margin:0, fontSize:11, color:L.ivoryMuted }}>
               {members.length} miembro{members.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -319,12 +320,12 @@ export function PizarronModule() {
             </div>
           ))}
           {members.length > 3 && (
-            <div style={{ ...memberBubble, marginLeft:-6, background:'rgba(13,18,64,0.08)', color:'rgba(13,18,64,0.45)', fontSize:10 }}>
+            <div style={{ ...memberBubble, marginLeft:-6, background:L.champagneLight, color:L.ivoryMuted, fontSize:10 }}>
               +{members.length - 3}
             </div>
           )}
         </div>
-        <SyncBadge />
+        <SyncBadge dark />
       </div>
 
       {/* Mes — jerarquía visual dominante */}
@@ -332,10 +333,10 @@ export function PizarronModule() {
         onClick={() => { setCalOpen(o => !o); setShowYearPicker(false); if(!calOpen) setShowDateModal(false) }}
         style={monthBar}
       >
-        <span style={{ fontSize:22, fontWeight:600, color:'#0D1240', letterSpacing:'-0.5px', lineHeight:1 }}>
+        <span style={{ fontFamily:L.serif, fontSize:22, fontWeight:400, color:L.ivory, letterSpacing:'-0.02em', lineHeight:1 }}>
           {MESES_CAP[calViewMonth.getMonth()]} {calViewMonth.getFullYear()}
         </span>
-        <span style={{ fontSize:11, color:'#2D3A8C', lineHeight:1, marginLeft:4, opacity:0.7 }}>
+        <span style={{ fontSize:11, color:L.champagne, lineHeight:1, marginLeft:4, opacity:0.8 }}>
           {calOpen ? '⌃' : '⌄'}
         </span>
       </div>
@@ -370,20 +371,20 @@ export function PizarronModule() {
                   style={{
                     flexShrink:0, display:'flex', flexDirection:'column', alignItems:'center',
                     padding:'8px 12px', borderRadius:14, border:'none', cursor:'pointer',
-                    background: isSelected ? 'linear-gradient(145deg, #3D4FA8, #2D3A8C)' : 'transparent',
-                    boxShadow:  isSelected ? '0 2px 8px rgba(45,58,140,0.28)' : 'none',
+                    background: isSelected ? L.ivory : 'transparent',
+                    boxShadow:  isSelected ? '0 4px 16px rgba(0,0,0,0.35)' : 'none',
                     WebkitTapHighlightColor:'transparent',
                     transition:'background 0.15s',
                   }}
                 >
-                  <span style={{ fontSize:10, fontWeight:500, color: isSelected ? 'rgba(255,255,255,0.70)' : 'rgba(13,18,64,0.38)' }}>
+                  <span style={{ fontSize:10, fontWeight:500, color: isSelected ? L.ink : L.ivoryMuted }}>
                     {d.isToday ? 'Hoy' : DIAS_CORTO[d.date.getDay()]}
                   </span>
-                  <span style={{ fontSize:16, fontWeight:700, color: isSelected ? '#fff' : '#0D1240', lineHeight:1.2 }}>
+                  <span style={{ fontSize:16, fontWeight:600, color: isSelected ? L.ink : L.ivory, lineHeight:1.2 }}>
                     {d.dayNum}
                   </span>
                   {hasActivity && (
-                    <div style={{ width:4, height:4, borderRadius:'50%', background: isSelected ? 'rgba(255,255,255,0.75)' : '#2D3A8C', marginTop:2, opacity:1 }} />
+                    <div style={{ width:4, height:4, borderRadius:2, background: isSelected ? L.champagne : L.champagne, marginTop:2, opacity:1 }} />
                   )}
                 </button>
               )
@@ -395,29 +396,29 @@ export function PizarronModule() {
       {/* Contadores */}
       {daySelected && <div style={counters}>
         <div style={counter}>
-          <span style={{ fontSize:20, fontWeight:700, color:'#2D3A8C' }}>{pending.length}</span>
-          <span style={{ fontSize:11, color:'rgba(13,18,64,0.38)' }}>Pendientes</span>
+          <span style={{ fontSize:20, fontWeight:500, fontFamily:L.serif, color:L.champagne }}>{pending.length}</span>
+          <span style={{ fontSize:11, color:L.ivoryMuted }}>Pendientes</span>
         </div>
         <div style={counterDivider} />
         <div style={counter}>
-          <span style={{ fontSize:20, fontWeight:700, color:'#22C55E' }}>{completed.length}</span>
-          <span style={{ fontSize:11, color:'rgba(13,18,64,0.38)' }}>Completadas</span>
+          <span style={{ fontSize:20, fontWeight:500, fontFamily:L.serif, color:'#6ee7a0' }}>{completed.length}</span>
+          <span style={{ fontSize:11, color:L.ivoryMuted }}>Completadas</span>
         </div>
       </div>}
 
       {/* Lista de tareas */}
       <div style={taskList}>
-        <p style={{ margin:'0 0 4px', fontSize:15, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em' }}>
+        <p style={{ margin:'0 0 4px', fontFamily:L.serif, fontSize:18, color:L.ivory }}>
           {selectedDateLabel}
         </p>
         {pending.length > 0 && (
-          <p style={{ margin:'0 0 12px', fontSize:13, fontWeight:600, color:'#2D3A8C' }}>
+          <p style={{ margin:'0 0 12px', fontSize:10, fontWeight:500, letterSpacing:'0.12em', textTransform:'uppercase', color:L.champagne }}>
             Pendientes ({pending.length})
           </p>
         )}
 
         {pending.length === 0 && completed.length === 0 && (
-          <p style={{ fontSize:13, color:'rgba(13,18,64,0.35)', textAlign:'center', padding:'24px 0' }}>
+          <p style={{ fontSize:13, color:L.ivoryFaint, textAlign:'center', padding:'24px 0' }}>
             Sin tareas para este día
           </p>
         )}
@@ -429,25 +430,25 @@ export function PizarronModule() {
             return d.toLocaleTimeString('es-MX', { hour:'2-digit', minute:'2-digit' })
           })() : null
           return (
-            <div key={task.id} style={{ ...taskCard, background: selectedIds.has(task.id) ? 'rgba(45,58,140,0.06)' : 'transparent' }}>
+            <div key={task.id} style={{ ...taskCard, background: selectedIds.has(task.id) ? L.champagneLight : 'transparent' }}>
               <button
                 onClick={() => toggleSeleccion(task.id)}
-                style={{ ...checkBtn, border: selectedIds.has(task.id) ? '2px solid #2D3A8C' : '2px solid rgba(13,18,64,0.28)', background: selectedIds.has(task.id) ? '#2D3A8C' : 'none' }}
+                style={{ ...checkBtn, border: selectedIds.has(task.id) ? `2px solid ${L.champagne}` : `2px solid ${L.champagneBorder}`, background: selectedIds.has(task.id) ? L.champagne : 'none' }}
               />
               <div style={{ flex:1, minWidth:0, cursor:'pointer' }} onClick={() => !haySeleccion && toggleStatus(task)}>
                 <div style={{ display:'flex', alignItems:'center', gap:4 }}>
-                  {task.reminder && <span style={{ fontSize:12, opacity:0.5 }}>🔔</span>}
-                  <p style={{ margin:0, fontSize:14, fontWeight:500, color:'#0D1240', lineHeight:1.3 }}>{task.title}</p>
+                  {task.reminder && <span style={{ fontSize:10, color:L.champagne, letterSpacing:'0.08em' }}>●</span>}
+                  <p style={{ margin:0, fontSize:14, fontWeight:500, color:L.ivory, lineHeight:1.3 }}>{task.title}</p>
                 </div>
-                {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:'rgba(13,18,64,0.35)' }}>{hora}</p>}
+                {hora && <p style={{ margin:'2px 0 0', fontSize:11, color:L.ivoryFaint }}>{hora}</p>}
               </div>
               {member && (
                 <div style={memberMini} title={member.displayName}>
                   {(member.displayName?.[0] ?? '?').toUpperCase()}
                 </div>
               )}
-              <button onClick={() => navigate(`/pizarron/${groupId}/editar/${task.id}`)} style={btnTask}>✏️</button>
-              <button onClick={() => setModal({ tipo:'borrar', task })} style={btnTask}>🗑️</button>
+              <button onClick={() => navigate(`/pizarron/${groupId}/editar/${task.id}`)} style={btnTask}>Editar</button>
+              <button onClick={() => setModal({ tipo:'borrar', task })} style={btnTask}>Eliminar</button>
             </div>
           )
         })}
@@ -455,7 +456,7 @@ export function PizarronModule() {
         {!taskExpanded && pending.length > 3 && (
           <button
             onClick={() => setTaskExpanded(true)}
-            style={{ width:'100%', padding:'10px 0', background:'none', border:'none', cursor:'pointer', fontSize:13, color:'#2D3A8C', fontWeight:600, textAlign:'center', letterSpacing:'-0.01em' }}
+            style={{ width:'100%', padding:'10px 0', background:'none', border:'none', cursor:'pointer', fontSize:13, color:L.champagne, fontWeight:500, textAlign:'center' }}
           >
             Ver {pending.length - 3} más ⌄
           </button>
@@ -463,13 +464,13 @@ export function PizarronModule() {
 
         {completed.length > 0 && (
           <>
-            <p style={{ margin:'20px 0 8px', fontSize:11, color:'rgba(13,18,64,0.32)', fontWeight:600, letterSpacing:'0.06em' }}>
-              COMPLETADAS ({completed.length})
+            <p style={{ margin:'20px 0 8px', fontSize:10, color:L.champagne, fontWeight:500, letterSpacing:'0.12em', textTransform:'uppercase' }}>
+              Completadas ({completed.length})
             </p>
             {completed.map(task => (
-              <div key={task.id} style={{ ...taskCard, opacity:0.55 }}>
-                <button onClick={() => toggleStatus(task)} style={{ ...checkBtn, border:'2px solid rgba(13,18,64,0.20)', background:'rgba(13,18,64,0.08)', WebkitTapHighlightColor:'transparent' }} />
-                <p style={{ flex:1, margin:0, fontSize:14, color:'rgba(13,18,64,0.35)', textDecoration:'line-through', cursor:'pointer' }} onClick={() => toggleStatus(task)}>{task.title}</p>
+              <div key={task.id} style={{ ...taskCard, opacity:0.45 }}>
+                <button onClick={() => toggleStatus(task)} style={{ ...checkBtn, border:`2px solid ${L.champagneBorder}`, background:L.champagneLight, WebkitTapHighlightColor:'transparent' }} />
+                <p style={{ flex:1, margin:0, fontSize:14, color:L.ivoryMuted, textDecoration:'line-through', cursor:'pointer' }} onClick={() => toggleStatus(task)}>{task.title}</p>
               </div>
             ))}
           </>
@@ -479,7 +480,7 @@ export function PizarronModule() {
       {/* Barra de selección */}
       {haySeleccion && (
         <div style={barraSeleccion}>
-          <span style={{ fontSize:13, color:'#0D1240', fontWeight:500 }}>
+          <span style={{ fontSize:13, color:L.ivory, fontWeight:500 }}>
             {selectedIds.size} seleccionada{selectedIds.size !== 1 ? 's' : ''}
           </span>
           <div style={{ display:'flex', gap:8 }}>
@@ -488,9 +489,9 @@ export function PizarronModule() {
               const seleccionadas = todas.filter(t => selectedIds.has(t.id))
               await Promise.all(seleccionadas.map(t => toggleStatus(t)))
               limpiarSeleccion()
-            }} style={btnBarra}>✅ Completar</button>
-            <button onClick={() => setModal({ tipo:'editarVarias' })} style={btnBarra}>✏️ Editar</button>
-            <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ ...btnBarra, background:'rgba(224,82,82,0.10)', color:'#E05252' }}>🗑️ Eliminar</button>
+            }} style={btnBarra}>Completar</button>
+            <button onClick={() => setModal({ tipo:'editarVarias' })} style={btnBarra}>Editar</button>
+            <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ ...btnBarra, background:'rgba(224,82,82,0.12)', color:'#E05252', border:'1px solid rgba(224,82,82,0.25)' }}>Eliminar</button>
           </div>
         </div>
       )}
@@ -572,25 +573,25 @@ export function PizarronModule() {
   )
 }
 
-const screen         = { display:'flex', flexDirection:'column', flex:1, minHeight:0, background:'transparent', overflow:'hidden' }
+const screen         = { ...A.screen }
 const centered       = { display:'flex', alignItems:'center', justifyContent:'center', flex:1 }
-const spinner        = { width:28, height:28, borderRadius:'50%', border:'3px solid rgba(13,18,64,0.10)', borderTopColor:'#2D3A8C', animation:'spin 0.7s linear infinite' }
-const header         = { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'8px 16px', background:'transparent', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const groupAvatar    = { width:40, height:40, borderRadius:12, background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:18, fontWeight:700, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
-const memberBubble   = { width:28, height:28, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', border:'2px solid rgba(255,255,255,0.80)', flexShrink:0 }
-const monthBar       = { flexShrink:0, display:'flex', alignItems:'center', padding:'14px 16px 10px', background:'transparent', cursor:'pointer', userSelect:'none' }
-const calDrawer      = { flexShrink:0, background:'rgba(255,255,255,0.95)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', padding:'12px 16px 16px', borderBottom:'1px solid rgba(13,18,64,0.07)', WebkitOverflowScrolling:'touch' }
-const arrowBtn       = { background:'none', border:'none', fontSize:22, color:'rgba(13,18,64,0.35)', cursor:'pointer', padding:'4px 12px', minWidth:44, minHeight:44, display:'flex', alignItems:'center', justifyContent:'center', WebkitTapHighlightColor:'transparent' }
-const daySelector    = { flexShrink:0, padding:'6px 16px 4px', background:'rgba(255,255,255,0.70)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const counters       = { flexShrink:0, display:'flex', alignItems:'center', padding:'10px 20px', background:'rgba(255,255,255,0.60)', backdropFilter:'blur(12px)', WebkitBackdropFilter:'blur(12px)', borderBottom:'1px solid rgba(13,18,64,0.07)', gap:0 }
+const spinner        = { width:28, height:28, borderRadius:2, border:`3px solid ${L.champagneBorder}`, borderTopColor:L.champagne, animation:'spin 0.7s linear infinite' }
+const header         = { ...A.header, gap:10, padding:'8px 16px', paddingTop:'max(8px, env(safe-area-inset-top))' }
+const groupAvatar    = { width:40, height:40, borderRadius:2, background:L.champagneLight, border:`1px solid ${L.champagneBorder}`, color:L.champagne, fontFamily:L.serif, fontSize:18, fontWeight:400, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const memberBubble   = { width:28, height:28, borderRadius:2, background:L.champagneLight, border:`1px solid ${L.champagneBorder}`, color:L.champagne, fontSize:11, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const monthBar       = { flexShrink:0, display:'flex', alignItems:'center', padding:'14px 16px 10px', background:L.ink, cursor:'pointer', userSelect:'none' }
+const calDrawer      = { flexShrink:0, background:L.inkSoft, padding:'12px 16px 16px', borderBottom:`1px solid rgba(196,169,98,0.2)`, WebkitOverflowScrolling:'touch' }
+const arrowBtn       = { background:'none', border:'none', fontSize:22, color:L.champagne, cursor:'pointer', padding:'4px 12px', minWidth:44, minHeight:44, display:'flex', alignItems:'center', justifyContent:'center', WebkitTapHighlightColor:'transparent' }
+const daySelector    = { flexShrink:0, padding:'6px 16px 4px', background:L.ink, borderBottom:`1px solid rgba(196,169,98,0.15)` }
+const counters       = { flexShrink:0, display:'flex', alignItems:'center', padding:'10px 20px', background:L.inkSoft, borderBottom:`1px solid rgba(196,169,98,0.15)`, gap:0 }
 const counter        = { flex:1, display:'flex', flexDirection:'column', alignItems:'center', gap:2 }
-const counterDivider = { width:1, height:32, background:'rgba(13,18,64,0.08)' }
+const counterDivider = { width:1, height:32, background:L.champagneBorder }
 const taskList       = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px' }
-const taskCard       = { display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const checkBtn       = { width:22, height:22, borderRadius:'50%', border:'2px solid rgba(13,18,64,0.28)', background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
-const memberMini     = { width:24, height:24, borderRadius:'50%', background:'rgba(45,58,140,0.10)', color:'#2D3A8C', fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
-const btnTask        = { background:'none', border:'none', cursor:'pointer', fontSize:14, padding:'4px', color:'rgba(13,18,64,0.35)' }
-const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:'rgba(255,255,255,0.88)', backdropFilter:'blur(20px)', WebkitBackdropFilter:'blur(20px)', borderTop:'1px solid rgba(13,18,64,0.07)' }
-const btnBarra       = { padding:'8px 14px', borderRadius:10, border:'none', background:'rgba(45,58,140,0.09)', color:'#2D3A8C', fontSize:13, fontWeight:600, cursor:'pointer' }
-const fabBtn         = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:6, height:42, padding:'0 18px', borderRadius:21, background:'rgba(45,58,140,0.88)', border:'none', color:'#fff', cursor:'pointer', boxShadow:'0 2px 12px rgba(45,58,140,0.28)', zIndex:50, WebkitTapHighlightColor:'transparent', fontSize:14, fontWeight:600 }
-const backBtn        = { padding:'10px 20px', borderRadius:10, border:'none', background:'linear-gradient(135deg, #3D4FA8, #2D3A8C)', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer' }
+const taskCard       = { display:'flex', alignItems:'center', gap:12, padding:'12px 0', borderBottom:`1px solid rgba(196,169,98,0.12)` }
+const checkBtn       = { width:22, height:22, borderRadius:2, border:`2px solid ${L.champagneBorder}`, background:'none', cursor:'pointer', flexShrink:0, WebkitTapHighlightColor:'transparent' }
+const memberMini     = { width:24, height:24, borderRadius:2, background:L.champagneLight, border:`1px solid ${L.champagneBorder}`, color:L.champagne, fontSize:10, fontWeight:600, display:'flex', alignItems:'center', justifyContent:'center', flexShrink:0 }
+const btnTask        = { background:'none', border:'none', cursor:'pointer', fontSize:13, padding:'4px 8px', color:L.ivoryMuted, letterSpacing:'0.06em' }
+const barraSeleccion = { flexShrink:0, display:'flex', alignItems:'center', justifyContent:'space-between', padding:'10px 16px', background:L.inkSoft, borderTop:`1px solid rgba(196,169,98,0.2)` }
+const btnBarra       = { padding:'8px 14px', borderRadius:2, border:`1px solid ${L.champagneBorder}`, background:L.champagneLight, color:L.ivory, fontSize:12, fontWeight:600, letterSpacing:'0.06em', cursor:'pointer' }
+const fabBtn         = { position:'fixed', bottom:'calc(82px + env(safe-area-inset-bottom))', right:16, display:'flex', flexDirection:'row', alignItems:'center', justifyContent:'center', gap:6, height:42, padding:'0 18px', borderRadius:2, background:L.ivory, border:`1px solid ${L.ivory}`, color:L.ink, cursor:'pointer', boxShadow:'0 8px 32px rgba(0,0,0,0.45)', zIndex:50, WebkitTapHighlightColor:'transparent', fontSize:13, fontWeight:600, letterSpacing:'0.08em' }
+const backBtn        = { padding:'10px 20px', borderRadius:2, border:`1px solid ${L.ivory}`, background:L.ivory, color:L.ink, fontSize:13, fontWeight:600, letterSpacing:'0.08em', cursor:'pointer' }

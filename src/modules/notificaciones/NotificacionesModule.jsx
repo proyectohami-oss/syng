@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
-import { collection, query, orderBy, limit, onSnapshot, doc, updateDoc, writeBatch } from 'firebase/firestore'
+import { collection, query, orderBy, limit, onSnapshot, doc, writeBatch } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { useNavigate } from 'react-router-dom'
+import { A, L } from '../../shared/agendaEditorial'
 
 function timeAgo(ts) {
   if (!ts) return ''
@@ -17,13 +18,13 @@ function timeAgo(ts) {
   return `hace ${days} días`
 }
 
-function iconFor(type) {
-  if (type?.startsWith('task.completed')) return '✅'
-  if (type?.startsWith('task.created'))   return '📝'
-  if (type?.startsWith('task.deleted'))   return '🗑️'
-  if (type?.startsWith('member'))         return '👤'
-  if (type?.startsWith('payment'))        return '💳'
-  return '🔔'
+function labelFor(type) {
+  if (type?.startsWith('task.completed')) return 'Tarea'
+  if (type?.startsWith('task.created'))   return 'Nueva'
+  if (type?.startsWith('task.deleted'))   return 'Eliminada'
+  if (type?.startsWith('member'))         return 'Miembro'
+  if (type?.startsWith('payment'))        return 'Pago'
+  return 'Aviso'
 }
 
 export function NotificacionesModule() {
@@ -47,7 +48,6 @@ export function NotificacionesModule() {
     return unsub
   }, [uid])
 
-  // Marcar todas como leídas al entrar
   useEffect(() => {
     if (!uid || !notifs.length) return
     const unread = notifs.filter(n => !n.read)
@@ -60,36 +60,38 @@ export function NotificacionesModule() {
   const unread = notifs.filter(n => !n.read).length
 
   return (
-    <div style={{ display:'flex', flexDirection:'column', height:'100%', background:'transparent' }}>
+    <div style={A.screen}>
 
-      {/* Header */}
-      <div style={{ padding:'20px 20px 12px', flexShrink:0 }}>
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between' }}>
-          <h1 style={{ margin:0, fontSize:22, fontWeight:700, color:'#0D1240' }}>Notificaciones</h1>
-          {unread > 0 && (
-            <span style={{
-              background:'#2D3A8C', color:'#fff',
-              fontSize:12, fontWeight:700,
-              borderRadius:20, padding:'3px 10px',
-            }}>{unread} nuevas</span>
-          )}
-        </div>
+      <div style={A.header}>
+        <span style={A.headerTitle}>Avisos</span>
+        {unread > 0 && (
+          <span style={{
+            fontSize: 10,
+            fontWeight: 600,
+            letterSpacing: '0.12em',
+            textTransform: 'uppercase',
+            color: L.ink,
+            background: L.champagne,
+            borderRadius: 2,
+            padding: '4px 10px',
+          }}>{unread} nuevas</span>
+        )}
       </div>
 
-      {/* Lista */}
-      <div style={{ flex:1, overflowY:'auto', padding:'0 16px 24px' }}>
+      <div style={{ ...A.body, padding: '0 16px 24px' }}>
 
         {loading && (
-          <div style={{ textAlign:'center', padding:40, color:'rgba(13,18,64,0.4)', fontSize:14 }}>
+          <div style={{ textAlign: 'center', padding: 40, color: L.ivoryMuted, fontSize: 14 }}>
             Cargando…
           </div>
         )}
 
         {!loading && notifs.length === 0 && (
-          <div style={{ textAlign:'center', padding:60, color:'rgba(13,18,64,0.4)' }}>
-            <div style={{ fontSize:48, marginBottom:12 }}>🔔</div>
-            <p style={{ margin:0, fontSize:16, fontWeight:500 }}>Sin notificaciones</p>
-            <p style={{ margin:'6px 0 0', fontSize:13 }}>Aquí aparecerá la actividad de tus grupos</p>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: L.ivoryMuted }}>
+            <p style={{ margin: 0, fontFamily: L.serif, fontSize: 22, color: L.ivory }}>Sin avisos</p>
+            <p style={{ margin: '10px 0 0', fontSize: 13, lineHeight: 1.5 }}>
+              Aquí aparecerá la actividad de tus grupos
+            </p>
           </div>
         )}
 
@@ -98,27 +100,42 @@ export function NotificacionesModule() {
             key={n.id}
             onClick={() => n.actionUrl && navigate(n.actionUrl)}
             style={{
-              display:'flex', gap:12, alignItems:'flex-start',
-              padding:'14px 16px', marginBottom:8,
-              borderRadius:16,
-              background: n.read ? 'rgba(255,255,255,0.7)' : 'rgba(255,255,255,0.95)',
-              boxShadow: n.read ? '0 1px 4px rgba(13,18,64,0.05)' : '0 2px 12px rgba(13,18,64,0.10)',
-              border: n.read ? '1px solid rgba(13,18,64,0.06)' : '1px solid rgba(45,58,140,0.15)',
+              display: 'flex',
+              gap: 12,
+              alignItems: 'flex-start',
+              padding: '14px 16px',
+              marginBottom: 8,
+              borderRadius: 2,
+              ...(n.read ? A.notifRead : A.notifUnread),
               cursor: n.actionUrl ? 'pointer' : 'default',
-              transition: 'opacity 0.15s',
             }}
           >
-            <span style={{ fontSize:24, lineHeight:1, flexShrink:0, marginTop:2 }}>{iconFor(n.type)}</span>
-            <div style={{ flex:1, minWidth:0 }}>
-              <p style={{ margin:0, fontSize:14, fontWeight: n.read ? 400 : 600, color:'#0D1240', lineHeight:1.4 }}>
+            <span style={{
+              fontSize: 10,
+              fontWeight: 600,
+              letterSpacing: '0.1em',
+              textTransform: 'uppercase',
+              color: L.champagne,
+              flexShrink: 0,
+              marginTop: 3,
+              minWidth: 52,
+            }}>{labelFor(n.type)}</span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{
+                margin: 0,
+                fontSize: 14,
+                fontWeight: n.read ? 400 : 500,
+                color: L.ivory,
+                lineHeight: 1.45,
+              }}>
                 {n.body}
               </p>
-              <p style={{ margin:'4px 0 0', fontSize:12, color:'rgba(13,18,64,0.4)' }}>
+              <p style={{ margin: '4px 0 0', fontSize: 12, color: L.ivoryFaint }}>
                 {timeAgo(n.createdAt)}
               </p>
             </div>
             {!n.read && (
-              <div style={{ width:8, height:8, borderRadius:'50%', background:'#2D3A8C', flexShrink:0, marginTop:6 }} />
+              <div style={{ width: 6, height: 6, borderRadius: 2, background: L.champagne, flexShrink: 0, marginTop: 6 }} />
             )}
           </div>
         ))}

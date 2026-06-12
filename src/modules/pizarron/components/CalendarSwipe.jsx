@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import { addMonths, subMonths, startOfMonth, endOfMonth, eachDayOfInterval, startOfWeek, endOfWeek, format, isSameDay, isSameMonth } from 'date-fns'
 import { es } from 'date-fns/locale'
+import { L } from '../../../shared/agendaEditorial'
 
 const DAYS_HDR = ['L','M','M','J','V','S','D']
 
@@ -16,8 +17,8 @@ function MonthGrid({ monthDate, selectedDate, daysWithActivity, onSelectDate }) 
       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', marginBottom:6 }}>
         {DAYS_HDR.map((d,i) => (
           <span key={i} style={{
-            fontSize:11, color:'rgba(13,18,64,0.32)',
-            textAlign:'center', fontWeight:600, letterSpacing:'0.04em',
+            fontSize: 11, color: L.ivoryFaint,
+            textAlign: 'center', fontWeight: 500, letterSpacing: '0.08em',
           }}>{d}</span>
         ))}
       </div>
@@ -45,27 +46,22 @@ function MonthGrid({ monthDate, selectedDate, daysWithActivity, onSelectDate }) 
               }}
             >
               <div style={{
-                width:30, height:30, borderRadius:'50%',
-                background: isSelected
-                  ? 'linear-gradient(145deg, #3D4FA8, #2D3A8C)'
-                  : 'transparent',
-                border: (!isSelected && isToday)
-                  ? '2px solid #2D3A8C'
-                  : '2px solid transparent',
-                display:'flex', alignItems:'center', justifyContent:'center',
-                boxShadow: isSelected ? '0 2px 8px rgba(45,58,140,0.32)' : 'none',
+                width: 30, height: 30, borderRadius: 2,
+                background: isSelected ? L.champagne : 'transparent',
+                border: (!isSelected && isToday) ? `1px solid ${L.champagne}` : '1px solid transparent',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 <span style={{
-                  fontSize:13, lineHeight:1,
+                  fontSize: 13, lineHeight: 1,
                   fontWeight: (isSelected || isToday) ? 600 : 400,
-                  color: isSelected ? '#fff' : isToday ? '#2D3A8C' : '#0D1240',
+                  color: isSelected ? L.ink : isToday ? L.champagne : L.ivory,
                 }}>
                   {day.getDate()}
                 </span>
               </div>
-              <div style={{ height:5, display:'flex', alignItems:'center', justifyContent:'center' }}>
+              <div style={{ height: 5, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {hasDot && isCurrentMonth ? (
-                  <div style={{ width:4, height:4, borderRadius:'50%', background:'#2D3A8C' }} />
+                  <div style={{ width: 4, height: 4, borderRadius: 2, background: L.champagne }} />
                 ) : (
                   <div style={{ width:4, height:4 }} />
                 )}
@@ -139,7 +135,7 @@ export function CalendarSwipe({ selectedDate, daysWithActivity, onSelectDate, on
       <div style={{ display:'flex', alignItems:'center', justifyContent:'center', padding:'8px 0 4px' }}>
         <span
           onClick={onMonthTap}
-          style={{ fontSize:13, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em', cursor: onMonthTap ? 'pointer' : 'default', WebkitTapHighlightColor:'transparent' }}
+          style={{ fontFamily: L.serif, fontSize: 15, fontWeight: 400, color: L.ivory, cursor: onMonthTap ? 'pointer' : 'default', WebkitTapHighlightColor: 'transparent' }}
         >
           {monthLabel}
         </span>
