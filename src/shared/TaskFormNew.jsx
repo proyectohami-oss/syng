@@ -193,14 +193,6 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
     return () => clearTimeout(t)
   }, [])
 
-  useEffect(() => {
-    const prev = document.body.style.cssText
-    document.body.style.position = 'fixed'
-    document.body.style.width = '100%'
-    document.body.style.overflow = 'hidden'
-    return () => { document.body.style.cssText = prev }
-  }, [])
-
   function applyReminderResult({ h24, min, offsetMin }) {
     const t = from24h(h24)
     setActH12(t.h12)
@@ -406,13 +398,15 @@ function OptionRow({ icon, label, value, onClick, accent }) {
 }
 
 const s = {
+  screen: {
+    display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0,
+    overflow: 'hidden', background: L.ink, color: L.ivory, position: 'relative',
+  },
   overlay: {
     position: 'fixed', inset: 0, zIndex: 5000,
     background: L.ink,
-  },
-  screen: {
-    display: 'flex', flexDirection: 'column', height: '100%',
-    overflow: 'hidden', color: L.ivory, position: 'relative',
+    overflow: 'hidden',
+    WebkitOverflowScrolling: 'touch',
   },
   header: {
     flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr auto 1fr',
