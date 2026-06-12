@@ -15,13 +15,16 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Syng" />
 
-  <!-- Iconos — rutas absolutas (Safari iOS share sheet + pantalla de inicio) -->
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <!-- Iconos iOS — PNG primero (Safari ignora SVG en share sheet) -->
+  <link rel="apple-touch-icon" href="/syng-ios-icon.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/syng-ios-icon.png" />
+  <link rel="apple-touch-icon-precomposed" href="/syng-ios-icon.png" />
+  <link rel="icon" href="/favicon.ico" sizes="48x48" />
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
   <link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <!-- Compat legacy iOS -->
   <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon-180x180.png" />
-  <link rel="apple-touch-icon-precomposed" href="/apple-touch-icon-precomposed.png" />
 
   <!-- Splash screens iOS (opcional pero mejora experiencia de instalación) -->
   <!-- Se generan con herramientas como pwa-asset-generator -->
@@ -39,7 +42,7 @@
   <meta property="og:url"         content="https://syng-psi.vercel.app" />
   <meta property="og:title"       content="Syng — Organiza tu vida" />
   <meta property="og:description" content="Tareas, grupos y recordatorios en sincronía. Prueba Syng gratis." />
-  <meta property="og:image"       content="https://syng-psi.vercel.app/icon-512.png?v=6" />
+  <meta property="og:image"       content="https://syng-psi.vercel.app/syng-ios-icon.png?v=7" />
   <meta property="og:image:width"  content="512" />
   <meta property="og:image:height" content="512" />
   <meta property="og:image:type"   content="image/png" />
@@ -48,7 +51,7 @@
   <meta name="twitter:card"        content="summary_large_image" />
   <meta name="twitter:title"       content="Syng — Organiza tu vida" />
   <meta name="twitter:description" content="Tareas, grupos y recordatorios en sincronía. Prueba Syng gratis." />
-  <meta name="twitter:image"       content="https://syng-psi.vercel.app/icon-512.png?v=6" />
+  <meta name="twitter:image"       content="https://syng-psi.vercel.app/syng-ios-icon.png?v=7" />
   <title>Syng</title>
   <style>
     @keyframes spin { to { transform: rotate(360deg); } }

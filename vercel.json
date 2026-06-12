@@ -5,7 +5,7 @@
       "destination": "/api/invite/[token]"
     },
     {
-      "source": "/((?!api/).*)",
+      "source": "/((?!api/|favicon\\.ico|syng-ios-icon\\.png|apple-touch-icon|icon-|favicon|manifest\\.webmanifest|manifest\\.json|assets/).*)",
       "destination": "/index.html"
     }
   ],
@@ -29,7 +29,7 @@
       ]
     },
     {
-      "source": "/(apple-touch-icon.*|icon-.*|favicon.*|og-.*|manifest\\.webmanifest|manifest\\.json)",
+      "source": "/(apple-touch-icon.*|syng-ios-icon\\.png|icon-.*|favicon.*|og-.*|manifest\\.webmanifest|manifest\\.json)",
       "headers": [
         {
           "key": "Cache-Control",
