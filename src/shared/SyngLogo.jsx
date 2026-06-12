@@ -1,7 +1,7 @@
 import { L } from './agendaEditorial'
 
 /** Isotipo Syng — 4 con punto debajo */
-export function SyngMark({ size = 56, animated = false, style = {} }) {
+export function SyngMark({ size = 56, animated = false, style = {}, bordered = true }) {
   const dotSize = Math.max(5, Math.round(size * 0.13))
   return (
     <div style={{
@@ -9,7 +9,7 @@ export function SyngMark({ size = 56, animated = false, style = {} }) {
       height: size,
       borderRadius: 2,
       background: L.ink,
-      border: `1px solid ${L.champagneBorder}`,
+      border: bordered ? `1px solid ${L.champagneBorder}` : 'none',
       display: 'flex',
       flexDirection: 'column',
       alignItems: 'center',
