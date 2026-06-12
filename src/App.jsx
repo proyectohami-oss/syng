@@ -35,8 +35,8 @@ const globalStyles = `
     user-select: text;
     -webkit-font-smoothing: antialiased;
     font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', sans-serif;
-    background: #F2F4FB;
-    color: #111827;
+    background: #0A0A0A;
+    color: #FAF8F5;
   }
 
   input, textarea, [contenteditable] {
@@ -65,9 +65,9 @@ const globalStyles = `
   @keyframes pulse { 0%,100%{opacity:1;}50%{opacity:0.35;} }
 
   :focus-visible {
-    outline: 2px solid #2D3A8C;
+    outline: 2px solid #C4A962;
     outline-offset: 2px;
-    border-radius: 4px;
+    border-radius: 2px;
   }
 
   .desktop-sidebar  { display: flex !important; }

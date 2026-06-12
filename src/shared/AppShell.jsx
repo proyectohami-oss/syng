@@ -25,6 +25,7 @@ import { db } from '../firebase'
 import { useCoreAuth, useCoreGroups } from '../core/hooks/useCoreData'
 import { useAuthActions }             from '../auth/useAuthActions'
 import { useShellChrome }             from './ShellChromeContext'
+import { SyngLogoRow }                from './SyngLogo'
 
 async function shareApp() {
   const data = {
@@ -229,19 +230,8 @@ export function AppShell({ children }) {
       }}>
 
         {/* Logo */}
-        <div
-          onClick={() => navigate('/agenda')}
-          style={{ display:'flex', alignItems:'center', gap:10, padding:'4px 10px 16px', cursor:'pointer' }}
-        >
-          <div style={{
-            width: 30, height: 30, borderRadius: 8,
-            background: 'linear-gradient(145deg, #3D4FA8, #2D3A8C)',
-            color: '#fff', fontSize: 15, fontWeight: 700,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            flexShrink: 0,
-            boxShadow: '0 2px 8px rgba(45,58,140,0.28)',
-          }}>S</div>
-          <span style={{ fontSize:15, fontWeight:700, color:'#0D1240', letterSpacing:'-0.01em' }}>Syng</span>
+        <div style={{ padding:'4px 10px 16px' }}>
+          <SyngLogoRow onClick={() => navigate('/agenda')} lightBg />
         </div>
 
         {/* Nav items */}

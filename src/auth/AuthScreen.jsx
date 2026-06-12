@@ -1,8 +1,10 @@
 /**
- * AuthScreen — login and signup.
+ * AuthScreen — login and signup (estilo editorial).
  */
 import { useState, useEffect } from 'react'
 import { useAuthActions } from './useAuthActions'
+import { SyngLogo } from '../shared/SyngLogo'
+import { L } from '../shared/agendaEditorial'
 
 export function AuthScreen() {
   const { beginGoogleSignIn, signInWithEmail, signUpWithEmail } = useAuthActions()
@@ -51,7 +53,6 @@ export function AuthScreen() {
   function handleGoogle() {
     setLoading('google')
     setError(null)
-    // Llamada síncrona — iOS Safari bloquea popup si hay await antes
     beginGoogleSignIn()
       .then((result) => {
         if (!result?.redirected) setLoading(null)
@@ -81,39 +82,37 @@ export function AuthScreen() {
     <div style={screen}>
       <div style={card}>
 
-        <div style={{ textAlign:'center', marginBottom:36 }}>
-          <div style={logoWrap}>
-            <div style={logoMark}>
-              <img src='/icon-192.png' alt='Syng' style={{ width:'100%', height:'100%', objectFit:'cover', borderRadius:18 }} />
-            </div>
-          </div>
-          {/* Tipografía: 28px/700, color sistema */}
-          <h1 style={{ margin:'18px 0 6px', fontSize:28, fontWeight:700, color:'#0D1240', letterSpacing:'-0.03em' }}>
-            Syng
-          </h1>
-          <p style={{ margin:0, fontSize:14, color:'#5B6480', lineHeight:1.5, fontWeight:400 }}>
+        <div style={{ marginBottom: 32 }}>
+          <SyngLogo size="lg" />
+          <p style={{
+            margin: '14px 0 0',
+            fontSize: 14,
+            color: L.ivoryMuted,
+            lineHeight: 1.55,
+            textAlign: 'center',
+          }}>
             Todo lo importante, en sincronía.
           </p>
         </div>
 
-        <button onClick={handleGoogle} disabled={isLoading} style={googleBtn}>
+        <button type="button" onClick={handleGoogle} disabled={isLoading} style={googleBtn}>
           {loading === 'google' ? <Spinner /> : <GoogleIcon />}
-          {loading === 'google' ? 'Conectando...' : 'Continuar con Google'}
+          {loading === 'google' ? 'Conectando…' : 'Continuar con Google'}
         </button>
 
         <div style={divider}>
           <span style={dividerLine} />
-          <span style={{ padding:'0 14px', fontSize:12, color:'#C8CEDD', flexShrink:0 }}>o</span>
+          <span style={{ padding: '0 14px', fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', color: L.ivoryFaint, flexShrink: 0 }}>o</span>
           <span style={dividerLine} />
         </div>
 
-        <form onSubmit={handleEmailSubmit} style={{ display:'flex', flexDirection:'column', gap:14 }}>
+        <form onSubmit={handleEmailSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {mode === 'signup' && (
             <div>
               <label style={lbl} htmlFor="auth-name">Nombre completo</label>
               <input id="auth-name" type="text" value={displayName}
                 onChange={e => { setDisplayName(e.target.value); clearError() }}
-                placeholder="Tu nombre" autoComplete="name" required={mode==='signup'} style={inp} />
+                placeholder="Tu nombre" autoComplete="name" required={mode === 'signup'} style={inp} />
             </div>
           )}
           <div>
@@ -126,9 +125,9 @@ export function AuthScreen() {
             <label style={lbl} htmlFor="auth-password">Contraseña</label>
             <input id="auth-password" type="password" value={password}
               onChange={e => { setPassword(e.target.value); clearError() }}
-              placeholder={mode==='signup' ? 'Mínimo 6 caracteres' : '••••••••'}
-              autoComplete={mode==='login' ? 'current-password' : 'new-password'}
-              required minLength={mode==='signup' ? 6 : undefined} style={inp} />
+              placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+              required minLength={mode === 'signup' ? 6 : undefined} style={inp} />
           </div>
 
           {error && <p style={errorMsg}>{error}</p>}
@@ -136,16 +135,16 @@ export function AuthScreen() {
           <button type="submit" disabled={isLoading} style={submitBtn}>
             {loading === 'email' ? <Spinner light /> : null}
             {loading === 'email'
-              ? (mode==='login' ? 'Entrando...' : 'Creando cuenta...')
-              : (mode==='login' ? 'Entrar' : 'Crear cuenta')}
+              ? (mode === 'login' ? 'Entrando…' : 'Creando cuenta…')
+              : (mode === 'login' ? 'Entrar' : 'Crear cuenta')}
           </button>
         </form>
 
-        <p style={{ textAlign:'center', fontSize:13, color:'#5B6480', marginTop:24 }}>
-          {mode==='login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
-          <button onClick={() => { setMode(mode==='login' ? 'signup' : 'login'); clearError() }}
+        <p style={{ textAlign: 'center', fontSize: 13, color: L.ivoryMuted, marginTop: 24 }}>
+          {mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
+          <button type="button" onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); clearError() }}
             style={toggleBtn} disabled={isLoading}>
-            {mode==='login' ? 'Crear cuenta' : 'Iniciar sesión'}
+            {mode === 'login' ? 'Crear cuenta' : 'Iniciar sesión'}
           </button>
         </p>
 
@@ -168,15 +167,13 @@ function GoogleIcon() {
 function Spinner({ light }) {
   return (
     <span style={{
-      width:16, height:16, borderRadius:'50%',
-      border: `2px solid ${light ? 'rgba(255,255,255,0.30)' : '#E8EBF4'}`,
-      borderTopColor: light ? '#fff' : '#2D3A8C',
-      display:'inline-block', animation:'spin 0.7s linear infinite',
+      width: 16, height: 16, borderRadius: 2,
+      border: `2px solid ${light ? 'rgba(10,10,10,0.2)' : L.champagneBorder}`,
+      borderTopColor: light ? L.ink : L.champagne,
+      display: 'inline-block', animation: 'spin 0.7s linear infinite',
     }} />
   )
 }
-
-// ── Estilos ─────────────────────────────────────────────────────────────────
 
 const screen = {
   flex: 1,
@@ -185,34 +182,16 @@ const screen = {
   alignItems: 'center',
   justifyContent: 'center',
   padding: '24px 20px',
-  background: 'linear-gradient(158deg, #F7F8FC 0%, #EEF1F8 100%)',
+  background: L.ink,
 }
 
 const card = {
   width: '100%',
   maxWidth: 380,
-  background: '#FFFFFF',
-  borderRadius: 24,
-  padding: '40px 32px 32px',
-  /* Sombra sistema — tono índigo, no púrpura */
-  boxShadow: [
-    '0 2px 4px rgba(13,18,64,0.04)',
-    '0 8px 32px rgba(13,18,64,0.08)',
-    'inset 0 1px 0 rgba(255,255,255,0.90)',
-  ].join(', '),
-}
-
-const logoWrap = { display: 'inline-flex' }
-
-const logoMark = {
-  width: 64,
-  height: 64,
-  borderRadius: 18,
-  overflow: 'hidden',
-  display: 'flex',
-  background: '#0D1240',
-  /* Sombra logo — índigo */
-  boxShadow: '0 4px 16px rgba(13,18,64,0.22)',
+  background: L.champagneLight,
+  border: `1px solid ${L.champagneBorder}`,
+  borderRadius: 2,
+  padding: '36px 28px 32px',
 }
 
 const googleBtn = {
@@ -222,53 +201,52 @@ const googleBtn = {
   alignItems: 'center',
   justifyContent: 'center',
   gap: 10,
-  border: '1.5px solid #E8EBF4',
-  borderRadius: 14,
-  background: '#FAFBFE',
+  border: `1px solid ${L.champagneBorder}`,
+  borderRadius: 2,
+  background: 'rgba(255,255,255,0.06)',
   cursor: 'pointer',
   fontSize: 14,
   fontWeight: 500,
-  color: '#0D1240',
-  boxShadow: '0 1px 4px rgba(13,18,64,0.05)',
-  transition: 'background 0.15s',
+  color: L.ivory,
+  WebkitTapHighlightColor: 'transparent',
 }
 
 const divider     = { display: 'flex', alignItems: 'center', margin: '22px 0' }
-const dividerLine = { flex: 1, height: 1, background: '#EEF1F8' }
+const dividerLine = { flex: 1, height: 1, background: 'rgba(196,169,98,0.25)' }
 
 const lbl = {
   display: 'block',
-  fontSize: 12,
-  fontWeight: 600,
-  color: '#5B6480',
+  fontSize: 10,
+  fontWeight: 500,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+  color: L.champagne,
   marginBottom: 6,
-  letterSpacing: '0.02em',
 }
 
 const inp = {
   width: '100%',
   boxSizing: 'border-box',
   padding: '12px 14px',
-  borderRadius: 12,
-  border: '1.5px solid #E8EBF4',
+  borderRadius: 2,
+  border: `1px solid ${L.champagneBorder}`,
   fontSize: 15,
-  color: '#0D1240',
+  color: L.ivory,
   outline: 'none',
   fontFamily: 'inherit',
-  background: '#FAFBFE',
-  boxShadow: 'inset 0 1px 3px rgba(13,18,64,0.04)',
-  transition: 'border-color 0.15s',
+  background: 'rgba(255,255,255,0.04)',
+  colorScheme: 'dark',
 }
 
 const errorMsg = {
   margin: 0,
   padding: '10px 14px',
-  background: '#FFF1F1',
-  color: '#C0392B',
-  borderRadius: 12,
+  background: 'rgba(224,82,82,0.08)',
+  color: '#E05252',
+  borderRadius: 2,
   fontSize: 13,
   lineHeight: 1.5,
-  border: '1px solid #FEE2E2',
+  border: '1px solid rgba(224,82,82,0.25)',
 }
 
 const submitBtn = {
@@ -278,24 +256,22 @@ const submitBtn = {
   alignItems: 'center',
   justifyContent: 'center',
   gap: 8,
-  border: 'none',
-  borderRadius: 14,
-  /* Gradiente índigo — sistema Syng */
-  background: 'linear-gradient(135deg, #3D4FA8 0%, #2D3A8C 100%)',
-  color: '#fff',
-  fontSize: 15,
+  border: `1px solid ${L.ivory}`,
+  borderRadius: 2,
+  background: L.ivory,
+  color: L.ink,
+  fontSize: 13,
   fontWeight: 600,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
   cursor: 'pointer',
-  /* Sombra con tono de marca */
-  boxShadow: '0 4px 16px rgba(45,58,140,0.32)',
-  letterSpacing: '-0.01em',
+  WebkitTapHighlightColor: 'transparent',
 }
 
 const toggleBtn = {
   background: 'none',
   border: 'none',
-  /* Color marca índigo */
-  color: '#2D3A8C',
+  color: L.champagne,
   cursor: 'pointer',
   fontSize: 13,
   fontWeight: 600,

@@ -4,6 +4,8 @@ import { CoreAuthContext }                 from '../core/CoreDataProvider'
 import { AuthScreen }                      from './AuthScreen'
 import { PhoneSetupScreen }               from './PhoneSetupScreen'
 import { BienvenidaScreen }               from '../modules/bienvenida/BienvenidaScreen'
+import { SyngLogo } from '../shared/SyngLogo'
+import { L } from '../shared/agendaEditorial'
 
 function todayKey() {
   return 'syng_bienvenida_' + new Date().toDateString()
@@ -86,21 +88,19 @@ function LoadingScreen({ message, onRetry }) {
     <div style={{
       flex: 1, minHeight: 0,
       display: 'flex', flexDirection: 'column',
-      alignItems: 'center', justifyContent: 'center', gap: 16,
-      background: [
-        'radial-gradient(ellipse at 92% 4%, rgba(255,200,150,0.28) 0%, transparent 48%)',
-        'radial-gradient(ellipse at 8% 96%, rgba(150,180,255,0.22) 0%, transparent 48%)',
-        'linear-gradient(168deg, #F7F8FC 0%, #F2F4FB 50%, #EEF1F8 100%)',
-      ].join(', '),
+      alignItems: 'center', justifyContent: 'center', gap: 20,
+      background: L.ink,
       animation: 'syngFadeIn 0.3s ease',
     }}>
       <style>{'@keyframes syngFadeIn { from { opacity:0 } to { opacity:1 } }'}</style>
-      <img src="/icon-192.png" alt="Syng" style={{ width:80, height:80, borderRadius:18, boxShadow:'0 8px 24px rgba(45,58,140,0.18)' }} />
-      {message && <p style={{ margin:0, fontSize:14, color:'#5B6480' }}>{message}</p>}
+      <SyngLogo size="md" />
+      {message && <p style={{ margin: 0, fontSize: 14, color: L.ivoryMuted }}>{message}</p>}
       {onRetry && (
-        <button onClick={onRetry} style={{
-          padding:'10px 20px', borderRadius:12, border:'none',
-          background:'#2D3A8C', color:'#fff', fontSize:14, fontWeight:600, cursor:'pointer',
+        <button type="button" onClick={onRetry} style={{
+          padding: '10px 20px', borderRadius: 2,
+          border: `1px solid ${L.ivory}`, background: L.ivory,
+          color: L.ink, fontSize: 13, fontWeight: 600, letterSpacing: '0.08em',
+          textTransform: 'uppercase', cursor: 'pointer',
         }}>
           Reintentar
         </button>
