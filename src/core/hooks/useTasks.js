@@ -90,7 +90,6 @@ export function useTasks() {
       await svcUpdate(task.id, {
         ...updates,
         reminder: updates.reminder ?? null,
-        updatedAt: now,
         ownerId: task.ownerId,
         title: updates.title ?? task.title,
         dueDate: updates.dueDate ?? task.dueDate,

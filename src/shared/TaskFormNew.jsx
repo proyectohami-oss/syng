@@ -3,7 +3,6 @@
  */
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { Timestamp } from 'firebase/firestore'
-import { useKeyboardOffset } from '../pwa/useKeyboardOffset'
 import { useTasks } from '../core/hooks/useTasks'
 import { useCoreState } from '../core/hooks/useCoreData'
 import { RepeatDayPicker } from './RepeatDayPicker'
@@ -86,7 +85,6 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
   const { setHideBottomNav } = useShellChrome()
   const isEdit = !!task
   const inputRef = useRef(null)
-  const keyboardOffset = useKeyboardOffset()
   const [saving, setSaving] = useState(false)
 
   const groups = useMemo(
@@ -227,15 +225,6 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
     }
   }
 
-  function labelGuardar() {
-    if (isEdit) {
-      if (repeatDays.size > 0) return `Guardar + ${repeatDays.size} repetición${repeatDays.size !== 1 ? 'es' : ''}`
-      return 'Guardar cambios'
-    }
-    if (repeatDays.size > 0) return `Crear ${repeatDays.size} tareas`
-    return 'Crear tarea'
-  }
-
   function goBack() {
     if (panel === 'main') onClose()
     else setPanel('main')
@@ -332,20 +321,6 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
                   </div>
                 )}
               </div>
-
-              <div style={{
-                ...s.footer,
-                paddingBottom: `calc(12px + ${keyboardOffset}px + env(safe-area-inset-bottom))`,
-              }}>
-                <button
-                  type="button"
-                  onClick={handleSave}
-                  disabled={!puedeGuardar}
-                  style={{ ...s.btnSave, opacity: puedeGuardar ? 1 : 0.45 }}
-                >
-                  {labelGuardar()}
-                </button>
-              </div>
             </>
           )}
 
@@ -408,11 +383,7 @@ const s = {
   content: {
     flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     padding: '12px 16px',
-  },
-  footer: {
-    flexShrink: 0, padding: '12px 16px',
-    borderTop: `1px solid rgba(196,169,98,0.2)`,
-    background: L.ink,
+    paddingBottom: 'max(12px, env(safe-area-inset-bottom))',
   },
   titleCard: {
     background: L.champagneLight, borderRadius: 2, marginBottom: 12,
@@ -475,11 +446,6 @@ const s = {
     textTransform: 'uppercase',
     cursor: active ? 'pointer' : 'default',
   }),
-  btnSave: {
-    width: '100%', padding: 14, borderRadius: 2, border: `1px solid ${L.ivory}`,
-    background: L.ivory, color: L.ink, fontSize: 13, fontWeight: 600,
-    letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
-  },
   repeatHint: { margin: '12px 0 0', fontSize: 12, color: L.ivoryMuted, lineHeight: 1.5 },
   linkBtn: {
     background: 'none', border: 'none', color: L.champagne, fontSize: 12,

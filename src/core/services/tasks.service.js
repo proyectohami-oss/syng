@@ -3,7 +3,7 @@ import { logActivityEvent } from "./activityLog.service"
  * Tasks service — CRUD puro de Firestore. Sin React, sin estado.
  */
 import {
-  doc, collection, setDoc, updateDoc, serverTimestamp,
+  doc, collection, setDoc, updateDoc, deleteDoc, serverTimestamp, deleteField,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { logActivity } from './activity.service'
@@ -49,18 +49,30 @@ export async function createTask({ id, title, description, type, ownerId, groupI
  */
 export async function updateTask(taskId, updates) {
   const ref = doc(db, 'tasks', taskId)
-  await updateDoc(ref, {
-    ...updates,
-    updatedAt: serverTimestamp(),
-  })
-  if (updates.reminder?.scheduledAt && updates.ownerId) {
-    await applyReminderForTask({
-      taskId,
-      userId: updates.ownerId,
-      title: updates.title || updates.reminder.title || 'Recordatorio',
-      reminder: updates.reminder,
-      dueDate: updates.dueDate,
-    })
+  const ownerId = updates.ownerId
+  const { ownerId: _owner, updatedAt: _ts, ...taskFields } = updates
+
+  const payload = { ...taskFields, updatedAt: serverTimestamp() }
+  if (taskFields.reminder === null) {
+    payload.reminderTime = deleteField()
+  }
+
+  await updateDoc(ref, payload)
+
+  try {
+    if (taskFields.reminder?.scheduledAt && ownerId) {
+      await applyReminderForTask({
+        taskId,
+        userId: ownerId,
+        title: taskFields.title || taskFields.reminder.title || 'Recordatorio',
+        reminder: taskFields.reminder,
+        dueDate: taskFields.dueDate,
+      })
+    } else if (taskFields.reminder === null && ownerId) {
+      await deleteDoc(doc(db, 'reminders', taskId)).catch(() => {})
+    }
+  } catch (remErr) {
+    console.warn('[tasks.service] reminder sync failed:', remErr)
   }
 }
 
