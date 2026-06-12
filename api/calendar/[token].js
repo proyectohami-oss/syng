@@ -37,10 +37,29 @@ function icsSummary(title) {
   return `Syng · ${label}`
 }
 
-function buildIcsEvent({ uid, title, alarmAt, taskTime, url }) {
-  const start = toIcsLocal(alarmAt)
-  const endDate = taskTime || new Date(alarmAt.getTime() + 15 * 60_000)
-  const end = toIcsLocal(endDate)
+const ICS_LOCAL_RE = /^\d{8}T\d{6}$/
+
+/** Acepta "20260612T100900" (cliente) o ISO legacy */
+function normalizeIcsLocal(value) {
+  if (typeof value === 'string' && ICS_LOCAL_RE.test(value)) return value
+  const d = new Date(value)
+  if (Number.isNaN(d.getTime())) return null
+  return toIcsLocal(d)
+}
+
+function addMinutesIcsLocal(icsLocal, minutes) {
+  const y = +icsLocal.slice(0, 4)
+  const mo = +icsLocal.slice(4, 6) - 1
+  const d = +icsLocal.slice(6, 8)
+  const h = +icsLocal.slice(9, 11)
+  const mi = +icsLocal.slice(11, 13)
+  const sec = +icsLocal.slice(13, 15)
+  const dt = new Date(y, mo, d, h, mi, sec, 0)
+  dt.setMinutes(dt.getMinutes() + minutes)
+  return toIcsLocal(dt)
+}
+
+function buildIcsEvent({ uid, title, startLocal, endLocal, url }) {
   const now = toIcsUtc(new Date())
   const sum = icsSummary(title)
   const desc = 'Tu momento Syng.\\nAbre la app cuando suene.'
@@ -54,8 +73,8 @@ function buildIcsEvent({ uid, title, alarmAt, taskTime, url }) {
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTAMP:${now}`,
-    `DTSTART:${start}`,
-    `DTEND:${end}`,
+    `DTSTART:${startLocal}`,
+    `DTEND:${endLocal}`,
     `SUMMARY:${sum}`,
     `DESCRIPTION:${desc}`,
     url ? `URL:${url}` : null,
@@ -86,8 +105,10 @@ export default async function handler(req) {
     const { id, t, a, u, k, r } = JSON.parse(b64urlDecode(token))
     if (!id || !a) return new Response('Datos incompletos', { status: 400 })
 
-    const alarmAt = new Date(a)
-    if (Number.isNaN(alarmAt.getTime())) return new Response('Fecha inválida', { status: 400 })
+    const startLocal = normalizeIcsLocal(a)
+    if (!startLocal) return new Response('Fecha inválida', { status: 400 })
+    const endLocal = u ? normalizeIcsLocal(u) : addMinutesIcsLocal(startLocal, 15)
+    if (!endLocal) return new Response('Fecha inválida', { status: 400 })
 
     const webApp = process.env.WEB_APP_URL || 'https://syng-psi.vercel.app'
     const targetUrl = k === 'daily'
@@ -95,60 +116,11 @@ export default async function handler(req) {
       : `${webApp}/recordatorio/${id}`
     const eventUid = k === 'daily' ? `syng-${id}@syng.app` : `syng-${id}@syng.app`
 
-    const wrap = url.searchParams.get('wrap')
-    const destParam = url.searchParams.get('dest') || '/agenda'
-    const safeDest = destParam.startsWith('/') ? destParam : '/agenda'
-    const icsPath = url.pathname
-
-    if (wrap === '1') {
-      const html = `<!DOCTYPE html>
-<html lang="es">
-<head>
-<meta charset="utf-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Syng · Calendario</title>
-<style>
-  body{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0A0A0A;color:#FAF8F5;font-family:-apple-system,BlinkMacSystemFont,system-ui,sans-serif;padding:24px}
-  .box{max-width:360px;text-align:center}
-  h1{font-family:Georgia,serif;font-size:22px;font-weight:400;margin:0 0 8px}
-  p{font-size:14px;color:rgba(250,248,245,0.55);line-height:1.5;margin:0 0 20px}
-  a{display:inline-block;padding:14px 24px;background:#FAF8F5;color:#0A0A0A;text-decoration:none;font-size:13px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;border-radius:2px}
-</style>
-</head>
-<body>
-<div class="box">
-  <h1>Agregar a Calendario</h1>
-  <p>Confirma en Calendario para que suene tu aviso Syng.</p>
-  <a id="open" href="${icsPath}">Abrir invitación</a>
-</div>
-<script>
-(function(){
-  var app=${JSON.stringify(webApp)};
-  var dest=${JSON.stringify(safeDest)};
-  function goSyng(){
-    try{ sessionStorage.removeItem('syng_ios_cal_return'); sessionStorage.removeItem('syng_ios_cal_dest'); }catch(e){}
-    location.replace(app + dest);
-  }
-  document.getElementById('open').click();
-  document.addEventListener('visibilitychange',function(){
-    if(document.visibilityState==='visible') setTimeout(goSyng,400);
-  });
-  window.addEventListener('pageshow',function(){ setTimeout(goSyng,400); });
-})();
-</script>
-</body>
-</html>`
-      return new Response(html, {
-        status: 200,
-        headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' },
-      })
-    }
-
     const ics = buildIcsEvent({
       uid: eventUid,
       title: t,
-      alarmAt,
-      taskTime: u ? new Date(u) : null,
+      startLocal,
+      endLocal,
       url: targetUrl,
     })
 

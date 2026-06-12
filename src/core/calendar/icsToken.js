@@ -1,3 +1,5 @@
+import { toIcsLocal } from './ics'
+
 const WEB_APP = import.meta.env.VITE_WEB_APP_URL || 'https://syng-psi.vercel.app'
 
 function b64urlEncode(str) {
@@ -11,9 +13,10 @@ export function encodeCalendarToken({ taskId, title, alarmAt, taskTime, kind, re
   const payload = {
     id: taskId,
     t: title || 'Recordatorio',
-    a: new Date(alarmAt).toISOString(),
+    // Hora local del iPhone — evita que Vercel (UTC) desplace el evento
+    a: toIcsLocal(new Date(alarmAt)),
   }
-  if (taskTime) payload.u = new Date(taskTime).toISOString()
+  if (taskTime) payload.u = toIcsLocal(new Date(taskTime))
   if (kind) payload.k = kind
   if (redirect) payload.r = redirect
   return `${b64urlEncode(JSON.stringify(payload))}.ics`

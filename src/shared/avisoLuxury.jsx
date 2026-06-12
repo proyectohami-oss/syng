@@ -126,7 +126,7 @@ export function LuxuryTimeCard({ notifyLabel, taskTimeLabel }) {
   )
 }
 
-export function LuxuryCalPreview({ title, notifyLabel, compact = false }) {
+export function LuxuryCalPreview({ title, notifyLabel, taskTimeLabel, compact = false }) {
   const sum = title ? `Syng · ${title}` : 'Syng · Recordatorio'
   return (
     <div style={{
@@ -143,7 +143,7 @@ export function LuxuryCalPreview({ title, notifyLabel, compact = false }) {
         textTransform: 'uppercase',
         color: L.champagne,
       }}>
-        Vista previa · Calendario iPhone
+        Así se verá en Calendario
       </p>
       <p style={{
         margin: '0 0 6px',
@@ -155,7 +155,14 @@ export function LuxuryCalPreview({ title, notifyLabel, compact = false }) {
         {sum}
       </p>
       {notifyLabel ? (
-        <p style={{ margin: '0 0 8px', fontSize: 12, color: L.ivoryMuted }}>{notifyLabel}</p>
+        <p style={{ margin: '0 0 4px', fontSize: 12, color: L.champagne, fontWeight: 500 }}>
+          Aviso: {notifyLabel}
+        </p>
+      ) : null}
+      {taskTimeLabel ? (
+        <p style={{ margin: '0 0 8px', fontSize: 12, color: L.ivoryMuted }}>
+          Tarea a las {taskTimeLabel}
+        </p>
       ) : null}
       <div style={{
         display: 'flex',

@@ -293,7 +293,7 @@ export function NewGroupTaskScreen() {
       sessionStorage.setItem('syng_ios_cal_dest', dest)
     } catch { /* ignore */ }
 
-    openIosCalendarIcs(icsUrl, dest)
+    openIosCalendarIcs(icsUrl)
   }
 
   async function handleSave() {
@@ -453,6 +453,7 @@ export function NewGroupTaskScreen() {
         <SyngAvisoIosHelp
           title={title.trim()}
           notifyLabel={avisoNotifyLabel}
+          taskTimeLabel={taskTimeStr}
           onContinue={continueIosCalendar}
         />
       )}

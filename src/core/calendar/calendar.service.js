@@ -11,13 +11,10 @@ export function isIOS() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent)
 }
 
-/** Abre .ics — en iOS usa página puente con retorno a Syng. */
-export function openIosCalendarIcs(icsUrl, dest) {
-  const url = dest
-    ? `${icsUrl}${icsUrl.includes('?') ? '&' : '?'}wrap=1&dest=${encodeURIComponent(dest)}`
-    : icsUrl
+/** Abre .ics en iOS — navegación directa; DeepLinkHandler regresa a Syng tras confirmar. */
+export function openIosCalendarIcs(icsUrl) {
   if (isIOS()) {
-    window.location.assign(url)
+    window.location.assign(icsUrl)
     return true
   }
   try {

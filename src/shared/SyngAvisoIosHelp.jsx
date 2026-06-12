@@ -12,7 +12,7 @@ import {
 } from './avisoLuxury'
 
 /** iPhone: pantalla completa editorial — tarea ya guardada */
-export function SyngAvisoIosHelp({ title, notifyLabel, onContinue }) {
+export function SyngAvisoIosHelp({ title, notifyLabel, taskTimeLabel, onContinue }) {
   return (
     <LuxuryPortal>
       <LuxuryKeyframes />
@@ -42,17 +42,17 @@ export function SyngAvisoIosHelp({ title, notifyLabel, onContinue }) {
             Tu tarea ya está guardada. Falta confirmar en Calendario para que suene.
           </p>
 
-          <LuxuryCalPreview title={title} notifyLabel={notifyLabel} compact />
+          <LuxuryCalPreview title={title} notifyLabel={notifyLabel} taskTimeLabel={taskTimeLabel} compact />
 
           <LuxuryDivider tight />
 
           <div style={{ marginBottom: 8 }}>
-            <LuxuryStep n="1" title="Continuar" desc="Abre la invitación en iPhone." tight />
+            <LuxuryStep n="1" title="Continuar" desc="Se abre Calendario de iPhone." tight />
             <LuxuryStep n="2" title="Permitir" desc="Acepta cuando Safari te lo pida." tight />
             <LuxuryStep
               n="3"
               title="Agregar al calendario"
-              desc="Toca el botón blanco abajo en la pantalla de Apple."
+              desc="Toca el botón blanco abajo. Verifica que la hora coincida con «Te avisamos»."
               tight
             />
           </div>
