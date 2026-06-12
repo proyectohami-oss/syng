@@ -26,6 +26,7 @@ import { useCoreAuth, useCoreGroups } from '../core/hooks/useCoreData'
 import { useAuthActions }             from '../auth/useAuthActions'
 import { useShellChrome }             from './ShellChromeContext'
 import { SyngLogoRow }                from './SyngLogo'
+import { L } from './agendaEditorial'
 
 async function shareApp() {
   const data = {
@@ -45,36 +46,39 @@ async function shareApp() {
   }
 }
 
+const NAV_STROKE_ACTIVE = L.champagne
+const NAV_STROKE_IDLE   = L.ivoryFaint
+
 // Íconos SVG planos para la barra de navegación
 const ICONS = {
   agenda: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? NAV_STROKE_ACTIVE : NAV_STROKE_IDLE} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
     </svg>
   ),
   pizarrones: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? NAV_STROKE_ACTIVE : NAV_STROKE_IDLE} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
     </svg>
   ),
   compartir: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? NAV_STROKE_ACTIVE : NAV_STROKE_IDLE} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
     </svg>
   ),
   avisos: (active, badge) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? NAV_STROKE_ACTIVE : NAV_STROKE_IDLE} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      {badge > 0 && <circle cx="18" cy="5" r="4" fill="#E53E3E" stroke="white" strokeWidth="1.5"/>}
+      {badge > 0 && <circle cx="18" cy="5" r="4" fill="#E05252" stroke={L.ink} strokeWidth="1.5"/>}
     </svg>
   ),
   perfil: (active) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? '#2D3A8C' : 'rgba(13,18,64,0.38)'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? NAV_STROKE_ACTIVE : NAV_STROKE_IDLE} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
     </svg>
   ),
   microfono: (escuchando) => (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={escuchando ? '#ffffff' : '#2D3A8C'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={escuchando ? L.ivory : L.champagne} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
       <rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10a7 7 0 0 1-14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
     </svg>
   ),
@@ -205,33 +209,25 @@ export function AppShell({ children }) {
       display: 'flex',
       height: '100%',
       overflow: 'hidden',
-      /* Fondo sistema Syng — azul-blanco neutro con luz atmosférica suave */
-      background: [
-        'radial-gradient(ellipse at 92% 4%,  rgba(255,200,150,0.28) 0%, transparent 48%)',
-        'radial-gradient(ellipse at 8%  96%,  rgba(150,180,255,0.22) 0%, transparent 48%)',
-        'linear-gradient(168deg, #F7F8FC 0%, #F2F4FB 50%, #EEF1F8 100%)',
-      ].join(', '),
-      backgroundAttachment: 'fixed',
+      background: L.ink,
     }}>
 
       {/* ── Sidebar desktop ─────────────────────────────────────────── */}
       <nav className="desktop-sidebar" aria-label="Navegación principal" style={{
         width: 220,
         flexShrink: 0,
-        borderRight: '1px solid rgba(13,18,64,0.07)',
+        borderRight: `1px solid ${L.champagneBorder}`,
         display: 'flex',
         flexDirection: 'column',
         padding: '16px 8px 12px',
         gap: 2,
         overflowY: 'auto',
-        background: 'rgba(255,255,255,0.55)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
+        background: L.inkSoft,
       }}>
 
         {/* Logo */}
         <div style={{ padding:'4px 10px 16px' }}>
-          <SyngLogoRow onClick={() => navigate('/agenda')} lightBg />
+          <SyngLogoRow onClick={() => navigate('/agenda')} />
         </div>
 
         {/* Nav items */}
@@ -242,8 +238,8 @@ export function AppShell({ children }) {
             border: 'none', textAlign: 'left', cursor: 'pointer',
             fontSize: 13,
             fontWeight: isActive(item.path) ? 600 : 400,
-            background: isActive(item.path) ? 'rgba(45,58,140,0.10)' : 'transparent',
-            color:      isActive(item.path) ? '#2D3A8C' : '#5B6480',
+            background: isActive(item.path) ? L.champagneLight : 'transparent',
+            color:      isActive(item.path) ? L.champagne : L.ivoryMuted,
             transition: 'background 0.15s',
           }}>
             <span style={{ display:'flex', alignItems:'center', justifyContent:'center', width:22 }}>{ICONS[item.key]?.(isActive(item.path))}</span>
@@ -254,7 +250,7 @@ export function AppShell({ children }) {
         {/* Grupos */}
         {groups.length > 0 && (
           <div style={{ marginTop:16 }}>
-            <p style={{ margin:'0 0 4px', padding:'0 10px', fontSize:10, fontWeight:600, color:'rgba(13,18,64,0.30)', letterSpacing:'0.08em' }}>MIS GRUPOS</p>
+            <p style={{ margin:'0 0 4px', padding:'0 10px', fontSize:10, fontWeight:500, color:L.champagne, letterSpacing:'0.12em' }}>MIS GRUPOS</p>
             {groups.map(g => {
               const active = location.pathname === `/pizarron/${g.id}`
               return (
@@ -264,14 +260,15 @@ export function AppShell({ children }) {
                   border: 'none', cursor: 'pointer', textAlign: 'left',
                   fontSize: 13,
                   fontWeight: active ? 600 : 400,
-                  background: active ? 'rgba(45,58,140,0.10)' : 'transparent',
-                  color:      active ? '#2D3A8C' : '#5B6480',
+                  background: active ? L.champagneLight : 'transparent',
+                  color:      active ? L.champagne : L.ivoryMuted,
                   transition: 'background 0.15s',
                 }}>
                   <span style={{
-                    width: 22, height: 22, borderRadius: '50%',
-                    background: 'rgba(45,58,140,0.10)',
-                    color: '#2D3A8C',
+                    width: 22, height: 22, borderRadius: 2,
+                    background: L.champagneLight,
+                    border: `1px solid ${L.champagneBorder}`,
+                    color: L.champagne,
                     fontSize: 11, fontWeight: 700,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     flexShrink: 0,
@@ -288,25 +285,26 @@ export function AppShell({ children }) {
         <div style={{ flex:1 }} />
 
         {/* Usuario */}
-        <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 8px', borderTop:'1px solid rgba(13,18,64,0.07)' }}>
+        <div style={{ display:'flex', alignItems:'center', gap:8, padding:'10px 8px', borderTop:`1px solid ${L.champagneBorder}` }}>
           <div style={{
-            width: 30, height: 30, borderRadius: '50%', flexShrink: 0,
-            background: 'rgba(45,58,140,0.10)',
-            color: '#2D3A8C',
+            width: 30, height: 30, borderRadius: 2, flexShrink: 0,
+            background: L.champagneLight,
+            border: `1px solid ${L.champagneBorder}`,
+            color: L.champagne,
             fontSize: 13, fontWeight: 600,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             {(user?.displayName?.[0] ?? user?.email?.[0] ?? '?').toUpperCase()}
           </div>
           <div style={{ flex:1, minWidth:0 }}>
-            <p style={{ margin:0, fontSize:13, fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', color:'#0D1240' }}>
+            <p style={{ margin:0, fontSize:13, fontWeight:500, overflow:'hidden', textOverflow:'ellipsis', whiteSpace:'nowrap', color:L.ivory }}>
               {user?.displayName || user?.email}
             </p>
           </div>
           <button
             onClick={handleSignOut}
             disabled={signingOut}
-            style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, color:'rgba(13,18,64,0.30)', padding:4 }}
+            style={{ background:'none', border:'none', cursor:'pointer', fontSize:16, color:L.ivoryFaint, padding:4 }}
             title="Cerrar sesión"
           >⎋</button>
         </div>
@@ -322,12 +320,10 @@ export function AppShell({ children }) {
         {/* Mobile bottom nav — oculta en pantallas de foco (ej. recordatorio iOS) */}
         {!hideNav && <nav className="mobile-bottom-nav" aria-label="Navegación móvil" style={{
           display: 'flex',
-          background: 'rgba(255,255,255,0.78)',
-          backdropFilter: 'blur(32px)',
-          WebkitBackdropFilter: 'blur(32px)',
-          borderTop: '1px solid rgba(255,255,255,0.60)',
+          background: L.inkSoft,
+          borderTop: `1px solid ${L.champagneBorder}`,
           flexShrink: 0,
-          boxShadow: '0 -8px 32px rgba(13,18,64,0.07)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
           alignItems: 'center',
         }}>
           {NAV_ITEMS.slice(0,2).map(item => (
@@ -348,7 +344,8 @@ export function AppShell({ children }) {
               <span style={{
                 fontSize: 10, lineHeight: 1,
                 fontWeight: isActive(item.path) ? 600 : 400,
-                color: isActive(item.path) ? '#2D3A8C' : 'rgba(13,18,64,0.38)',
+                letterSpacing: '0.04em',
+                color: isActive(item.path) ? L.champagne : L.ivoryMuted,
                 transition: 'color 0.12s ease',
               }}>{item.label}</span>
             </button>
@@ -408,9 +405,9 @@ export function AppShell({ children }) {
                 {item.key === 'avisos' && unreadCount > 0 && (
                   <span style={{
                     position:'absolute', top:-4, right:-6,
-                    background:'#E53E3E', color:'#fff',
+                    background:'#E05252', color:L.ivory,
                     fontSize:9, fontWeight:700,
-                    borderRadius:10, minWidth:15, height:15,
+                    borderRadius:2, minWidth:15, height:15,
                     display:'flex', alignItems:'center', justifyContent:'center',
                     padding:'0 3px', lineHeight:1,
                   }}>{unreadCount > 99 ? '99+' : unreadCount}</span>
@@ -419,7 +416,8 @@ export function AppShell({ children }) {
               <span style={{
                 fontSize: 10, lineHeight: 1,
                 fontWeight: isActive(item.path) ? 600 : 400,
-                color: isActive(item.path) ? '#2D3A8C' : 'rgba(13,18,64,0.38)',
+                letterSpacing: '0.04em',
+                color: isActive(item.path) ? L.champagne : L.ivoryMuted,
                 transition: 'color 0.12s ease',
               }}>{item.label}</span>
             </button>
