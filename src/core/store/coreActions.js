@@ -2,6 +2,9 @@ export const CORE_ACTIONS = {
   // ── Auth ────────────────────────────────────────────────────────────
   SET_AUTH_USER:    'SET_AUTH_USER',
   SET_USER_DATA:    'SET_USER_DATA',
+  SET_SUBSCRIPTION:  'SET_SUBSCRIPTION',
+  SET_PLAN:          'SET_PLAN',
+  SET_SYSTEM_CONFIG: 'SET_SYSTEM_CONFIG',
 
   // ── Tasks — Firestore snapshots (docChanges) ─────────────────────────
   APPLY_PERSONAL_TASK_CHANGES: 'APPLY_PERSONAL_TASK_CHANGES',

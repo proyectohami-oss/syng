@@ -14,6 +14,8 @@ import { createContext, useReducer, useMemo, useEffect } from 'react'
 import { coreReducer }              from './store/coreReducer'
 import { initialState }             from './store/initialState'
 import { useUserListener }          from './listeners/useUserListener'
+import { useSubscriptionListener }  from './listeners/useSubscriptionListener'
+import { useSystemConfigListener }  from './listeners/useSystemConfigListener'
 import { usePersonalTasksListener } from './listeners/usePersonalTasksListener'
 import { useGroupTasksListener }    from './listeners/useGroupTasksListener'
 import { useGroupsListener }        from './listeners/useGroupsListener'
@@ -40,6 +42,8 @@ export function CoreDataProvider({ children }) {
   )
 
   useUserListener(dispatch)
+  useSubscriptionListener(uid, dispatch)
+  useSystemConfigListener(uid, dispatch)
   usePersonalTasksListener(uid, dispatch)
   useGroupTasksListener(groupIdsKey, dispatch)
   useGroupsListener(uid, dispatch)

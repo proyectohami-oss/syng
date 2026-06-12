@@ -2,6 +2,12 @@ import { useState } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
+import {
+  planDisplayName,
+  planPriceLabel,
+  planLimitLabel,
+} from '../../core/services/subscriptions.service'
+import { computePlanUsage } from '../../core/services/movements.service'
 import { useAuthActions } from '../../auth/useAuthActions'
 import { usePushNotifications } from '../../core/notifications/usePushNotifications'
 import { isIOS } from '../../core/calendar/calendar.service'
@@ -15,8 +21,16 @@ export function PerfilModule() {
   const { isInstalled, canInstall } = usePWAInstall()
   const { isSupported, permissionState, requestPermission } = usePushNotifications()
 
-  const user     = auth.user
-  const userData = auth.userData
+  const user         = auth.user
+  const userData     = auth.userData
+  const subscription = auth.subscription
+  const plan         = auth.plan
+  const planId       = subscription?.planId ?? 'gratis'
+  const planName     = planDisplayName(plan, planId)
+  const planPrice    = planPriceLabel(plan)
+  const planLimit    = planLimitLabel(plan, planId)
+  const isPaidPlan   = planId !== 'gratis' && subscription?.status === 'active'
+  const usage        = computePlanUsage(subscription, plan, planId, auth.systemConfig)
 
   const [editingName,  setEditingName]  = useState(false)
   const [editingPhone, setEditingPhone] = useState(false)
@@ -109,6 +123,75 @@ export function PerfilModule() {
             {userData?.displayName || 'Sin nombre'}
           </p>
           <p style={{ margin: 0, fontSize: 13, color: L.ivoryMuted }}>{user?.email}</p>
+        </div>
+
+        <div style={A.section}>
+          <p style={A.sectionLabel}>Tu plan</p>
+          <div style={{ padding: '14px 16px 16px' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <p style={{ margin: '0 0 4px', fontFamily: L.serif, fontSize: 18, color: L.ivory }}>
+                  {planName}
+                </p>
+                {plan?.description && (
+                  <p style={{ margin: '0 0 8px', fontSize: 13, color: L.ivoryMuted, lineHeight: 1.45 }}>
+                    {plan.description}
+                  </p>
+                )}
+                {planLimit && (
+                  <p style={{ margin: 0, fontSize: 12, color: L.champagne, letterSpacing: '0.04em' }}>
+                    {planLimit}
+                  </p>
+                )}
+              </div>
+              <span style={{
+                flexShrink: 0,
+                fontSize: 11,
+                fontWeight: 600,
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: isPaidPlan ? '#6ee7a0' : L.champagne,
+                border: `1px solid ${isPaidPlan ? 'rgba(52,199,89,0.35)' : 'rgba(196,169,98,0.35)'}`,
+                padding: '4px 8px',
+                borderRadius: 2,
+              }}>
+                {isPaidPlan ? 'Activo' : planPrice || 'Gratis'}
+              </span>
+            </div>
+            {planId === 'gratis' && (
+              <p style={{ margin: '12px 0 0', fontSize: 12, color: L.ivoryMuted, lineHeight: 1.5 }}>
+                Los planes de pago estarán disponibles pronto desde aquí.
+              </p>
+            )}
+            {!usage.unlimited && (
+              <div style={{ marginTop: 14 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontSize: 12, color: L.ivoryMuted }}>Uso del plan</span>
+                  <span style={{ fontSize: 12, color: usage.atLimit ? '#E05252' : L.champagne }}>
+                    {usage.label}
+                  </span>
+                </div>
+                <div style={{
+                  height: 4,
+                  borderRadius: 2,
+                  background: 'rgba(196,169,98,0.15)',
+                  overflow: 'hidden',
+                }}>
+                  <div style={{
+                    height: '100%',
+                    width: `${usage.percent}%`,
+                    background: usage.atLimit ? '#E05252' : L.champagne,
+                    transition: 'width 0.3s ease',
+                  }} />
+                </div>
+                {usage.atLimit && (
+                  <p style={{ margin: '8px 0 0', fontSize: 12, color: '#E05252', lineHeight: 1.45 }}>
+                    Llegaste al límite. Mejora tu plan para seguir creando y editando tareas.
+                  </p>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         <div style={A.section}>

@@ -17,9 +17,34 @@ import {
   toggleTaskStatus as svcToggle,
   deleteTask  as svcDelete,
 } from '../services/tasks.service'
+import { reserveMovement, PlanLimitError } from '../services/movements.service'
 
 export function useTasks() {
   const { state, dispatch } = useCoreData()
+
+  const guardMovement = useCallback(async () => {
+    const uid = state.auth.user?.uid
+    if (!uid || !state.auth.subscription) return
+    await reserveMovement(
+      uid,
+      state.auth.subscription,
+      state.auth.plan,
+      state.auth.subscription.planId,
+      state.auth.systemConfig,
+    )
+  }, [
+    state.auth.user,
+    state.auth.subscription,
+    state.auth.plan,
+    state.auth.systemConfig,
+  ])
+
+  const handleMovementError = useCallback((error) => {
+    if (error instanceof PlanLimitError) {
+      showToast(error.message, '⚠️')
+    }
+    throw error
+  }, [])
 
   // ── Crear ────────────────────────────────────────────────────────
 
@@ -53,15 +78,16 @@ export function useTasks() {
     dispatch({ type: CORE_ACTIONS.TASK_ADDED_OPTIMISTIC, task: optimistic })
 
     try {
+      await guardMovement()
       const actorName = state.auth.userData?.displayName || ''
       await svcCreate({ id, ...data, ownerId: uid, actorName })
       if (data.groupId) showToast('Tarea creada', '＋')
     } catch (error) {
       console.error('[useTasks] createTask error:', error)
       dispatch({ type: CORE_ACTIONS.TASK_DELETED_OPTIMISTIC, taskId: id })
-      throw error
+      handleMovementError(error)
     }
-  }, [state.auth.user, dispatch])
+  }, [state.auth.user, state.auth.userData, state.auth.subscription, dispatch, guardMovement, handleMovementError])
 
   // ── Actualizar ───────────────────────────────────────────────────
 
@@ -87,6 +113,7 @@ export function useTasks() {
     dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task: patched })
 
     try {
+      await guardMovement()
       const fsUpdates = {
         ...updates,
         ownerId: task.ownerId,
@@ -104,9 +131,9 @@ export function useTasks() {
       console.error('[useTasks] updateTask error:', error)
       // Rollback: restaura la tarea original
       dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task })
-      throw error
+      handleMovementError(error)
     }
-  }, [dispatch])
+  }, [dispatch, guardMovement, handleMovementError])
 
   // ── Toggle completada/pendiente ──────────────────────────────────
 
@@ -128,6 +155,7 @@ export function useTasks() {
     dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task: optimistic })
 
     try {
+      await guardMovement()
       const actorName = state.auth.userData?.displayName || ''
       const completing = task.status === 'pending'
       await svcToggle(task.id, task.status, uid, task.groupId || null, actorName, task.title || '')
@@ -135,9 +163,9 @@ export function useTasks() {
     } catch (error) {
       console.error('[useTasks] toggleStatus error:', error)
       dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task })
-      throw error
+      handleMovementError(error)
     }
-  }, [state.auth.user, dispatch])
+  }, [state.auth.user, state.auth.userData, dispatch, guardMovement, handleMovementError])
 
   // ── Eliminar (soft delete) ───────────────────────────────────────
 

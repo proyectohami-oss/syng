@@ -7,9 +7,12 @@
  */
 export const initialState = {
   auth: {
-    user:     null, // FirebaseUser | null
-    userData: null, // Firestore /users/{uid} document | null
-    loading:  true,
+    user:         null, // FirebaseUser | null
+    userData:     null, // Firestore /users/{uid} document | null
+    subscription:  null, // Firestore /subscriptions/{uid} document | null
+    plan:          null, // Firestore /subscription_plans/{planId} document | null
+    systemConfig:  null, // Firestore /system_config/main document | null
+    loading:       true,
   },
 
   tasks: {

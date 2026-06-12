@@ -15,6 +15,10 @@ service cloud.firestore {
       return isAuthenticated() &&
         request.auth.uid in get(/databases/$(database)/documents/groups/$(groupId)).data.memberIds;
     }
+    function isSyngAdmin() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/admin_users/$(request.auth.uid));
+    }
 
     match /users/{uid} {
       allow read:   if isAuthenticated();
@@ -78,6 +82,59 @@ service cloud.firestore {
       allow read: if request.auth != null
         && resource.data.actor_id == request.auth.uid;
       allow update, delete: if false;
+    }
+
+    match /subscriptions/{uid} {
+      allow read: if isAuthenticated() && (isOwner(uid) || isSyngAdmin());
+      allow create: if isAuthenticated() && isOwner(uid)
+        && request.resource.data.userId == uid
+        && request.resource.data.planId == 'gratis'
+        && request.resource.data.status == 'active';
+      allow update: if isSyngAdmin() || (
+        isAuthenticated() && isOwner(uid)
+        && request.resource.data.userId == resource.data.userId
+        && request.resource.data.planId == resource.data.planId
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.get('source', 'auto') == resource.data.get('source', 'auto')
+        && request.resource.data.movementTotal >= resource.data.get('movementTotal', 0)
+        && request.resource.data.movementMonthCount >= 0
+      );
+      allow delete: if false;
+    }
+
+    match /subscription_plans/{planId} {
+      allow read: if isAuthenticated();
+      allow write: if isSyngAdmin();
+    }
+
+    match /system_config/{docId} {
+      allow read: if isAuthenticated();
+      allow write: if isSyngAdmin();
+    }
+
+    match /admin_users/{uid} {
+      allow read: if isAuthenticated() && isOwner(uid);
+      allow write: if isSyngAdmin();
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isSyngAdmin();
+      allow write: if false;
+    }
+
+    match /promotores/{promotorId} {
+      allow read: if isAuthenticated();
+      allow write: if isSyngAdmin();
+    }
+
+    match /audit_log/{logId} {
+      allow read: if isSyngAdmin();
+      allow write: if isSyngAdmin();
+    }
+
+    match /feature_flags/{flagId} {
+      allow read: if isAuthenticated();
+      allow write: if isSyngAdmin();
     }
   }
 }

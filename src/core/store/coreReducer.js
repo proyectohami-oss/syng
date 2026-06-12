@@ -45,6 +45,15 @@ export function coreReducer(state, action) {
     case CORE_ACTIONS.SET_USER_DATA:
       return { ...state, auth: { ...state.auth, userData: action.userData } }
 
+    case CORE_ACTIONS.SET_SUBSCRIPTION:
+      return { ...state, auth: { ...state.auth, subscription: action.subscription } }
+
+    case CORE_ACTIONS.SET_PLAN:
+      return { ...state, auth: { ...state.auth, plan: action.plan } }
+
+    case CORE_ACTIONS.SET_SYSTEM_CONFIG:
+      return { ...state, auth: { ...state.auth, systemConfig: action.systemConfig } }
+
     // ── TASKS — snapshots ─────────────────────────────────────────────
 
     case CORE_ACTIONS.APPLY_PERSONAL_TASK_CHANGES: {
