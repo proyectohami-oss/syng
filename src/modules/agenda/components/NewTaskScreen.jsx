@@ -11,6 +11,7 @@ import { ReminderPanel } from './ReminderPanel'
 import { SyngAvisoSheet } from '../../../shared/SyngAvisoSheet'
 import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
 import { showToast } from '../../../shared/Toast'
+import { calendarIcsUrl } from '../../../core/calendar/icsToken'
 
 const MESES = ['enero','febrero','marzo','abril','mayo','junio',
   'julio','agosto','septiembre','octubre','noviembre','diciembre']
@@ -255,19 +256,24 @@ export function NewTaskScreen() {
     }
   }
 
-  async function continueIosCalendar() {
+  function continueIosCalendar() {
     if (!iosCalPayload) return
-    const payload = iosCalPayload
+    const { taskId, title, alarmAt, taskTime } = iosCalPayload
     const dest = afterSavePath || '/agenda'
+
+    try {
+      sessionStorage.setItem('syng_ios_cal_return', '1')
+      sessionStorage.setItem('syng_ios_cal_dest', dest)
+    } catch { /* ignore */ }
+
     setShowIosHelp(false)
     setIosCalPayload(null)
     setAfterSavePath(null)
-    navigate(dest, { replace: true })
     showToast('Tarea guardada · confirma en Calendario', '✓')
-    setTimeout(async () => {
-      const { activateSyngAviso } = await import('../../../core/calendar/calendar.service')
-      await activateSyngAviso(payload)
-    }, 450)
+
+    // iOS exige abrir el .ics en el mismo toque — sin setTimeout ni navigate antes
+    const icsUrl = calendarIcsUrl({ taskId, title, alarmAt, taskTime })
+    window.location.assign(icsUrl)
   }
 
   async function handleSave() {
