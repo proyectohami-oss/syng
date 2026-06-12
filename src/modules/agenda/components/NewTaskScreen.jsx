@@ -102,6 +102,8 @@ export function NewTaskScreen() {
   const [saving, setSaving] = useState(false)
   const [showAviso, setShowAviso] = useState(false)
   const [showIosHelp, setShowIosHelp] = useState(false)
+  const [iosCalPayload, setIosCalPayload] = useState(null)
+  const [afterSavePath, setAfterSavePath] = useState(null)
 
   const actH24 = useMemo(() => to24h(actH12, actAmpm), [actH12, actAmpm])
   const taskTimeStr = `${actH12}:${pad2(actM)} ${actAmpm}`
@@ -186,9 +188,13 @@ export function NewTaskScreen() {
   async function commitSave(withSyngAviso) {
     const trimmed = title.trim()
     const days = repeatDays.size > 0 ? Array.from(repeatDays).sort() : [dateStr]
+    const dest = dateParam ? `/agenda/${dateParam}` : '/agenda'
     setSaving(true)
     try {
+      const { activateSyngAviso, isIOS } = await import('../../../core/calendar/calendar.service')
+      let pendingCal = null
       let firstAviso = withSyngAviso
+
       for (const day of days) {
         const taskId = generateTaskId()
         const activityDate = new Date(`${day}T00:00:00`)
@@ -198,16 +204,20 @@ export function NewTaskScreen() {
           const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
           const reminderTime = Timestamp.fromDate(scheduled)
           if (firstAviso) {
-            const { activateSyngAviso } = await import('../../../core/calendar/calendar.service')
-            const cal = await activateSyngAviso({
-              taskId, title: trimmed, alarmAt: scheduled, taskTime: activityDate,
-            })
-            if (!cal?.ok && cal?.reason === 'too_soon') {
-              setSaving(false)
-              setShowAviso(false)
-              return
+            if (isIOS()) {
+              pendingCal = {
+                taskId, title: trimmed, alarmAt: scheduled, taskTime: activityDate,
+              }
+            } else {
+              const cal = await activateSyngAviso({
+                taskId, title: trimmed, alarmAt: scheduled, taskTime: activityDate,
+              })
+              if (!cal?.ok && cal?.reason === 'too_soon') {
+                setSaving(false)
+                setShowAviso(false)
+                return
+              }
             }
-            if (cal?.needsHelp) setShowIosHelp(true)
             firstAviso = false
           }
           await createTask({
@@ -226,13 +236,35 @@ export function NewTaskScreen() {
           })
         }
       }
-      navigate(dateParam ? `/agenda/${dateParam}` : '/agenda')
+
+      if (pendingCal) {
+        setIosCalPayload(pendingCal)
+        setAfterSavePath(dest)
+        setShowIosHelp(true)
+        setShowAviso(false)
+        return
+      }
+
+      navigate(dest)
     } catch (err) {
       console.error('[NewTaskScreen] save error:', err)
     } finally {
       setSaving(false)
       setShowAviso(false)
     }
+  }
+
+  async function openIosCalendar() {
+    if (!iosCalPayload) return { ok: false }
+    const { activateSyngAviso } = await import('../../../core/calendar/calendar.service')
+    return activateSyngAviso(iosCalPayload)
+  }
+
+  function finishIosHelp() {
+    setShowIosHelp(false)
+    setIosCalPayload(null)
+    navigate(afterSavePath || '/agenda')
+    setAfterSavePath(null)
   }
 
   async function handleSave() {
@@ -376,7 +408,10 @@ export function NewTaskScreen() {
       )}
 
       {showIosHelp && (
-        <SyngAvisoIosHelp onDone={() => setShowIosHelp(false)} />
+        <SyngAvisoIosHelp
+          onOpenCalendar={openIosCalendar}
+          onDone={finishIosHelp}
+        />
       )}
     </div>
   )

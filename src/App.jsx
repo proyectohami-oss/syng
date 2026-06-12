@@ -17,6 +17,7 @@ import { Toast }             from './shared/Toast'
 import { PizarronesModule }  from './modules/pizarrones/PizarronesModule'
 import { NotificacionesModule } from './modules/notificaciones/NotificacionesModule'
 import RecordatorioView from './pages/RecordatorioView'
+import AvisoPreview from './pages/AvisoPreview'
 import { ResumenDiarioScreen } from './modules/resumen/ResumenDiarioScreen'
 import { BienvenidoDeVueltaScreen } from './modules/reenganche/BienvenidoDeVueltaScreen'
 import { DeepLinkHandler } from './shared/DeepLinkHandler'
@@ -93,6 +94,9 @@ function AppWithViewport() {
   return (
     <BrowserRouter>
       <DeepLinkHandler />
+      <Routes>
+        <Route path="/preview/aviso" element={<AvisoPreview />} />
+        <Route path="*" element={
       <AuthGuard>
         <InvitationChecker>
           <ShellChromeProvider>
@@ -120,6 +124,8 @@ function AppWithViewport() {
           </ShellChromeProvider>
         </InvitationChecker>
       </AuthGuard>
+        } />
+      </Routes>
     </BrowserRouter>
   )
 }

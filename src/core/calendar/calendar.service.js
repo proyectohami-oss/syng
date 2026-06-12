@@ -2,11 +2,12 @@
  * Sincroniza recordatorios Syng → Calendario del dispositivo.
  */
 import { buildIcsEvent } from './ics'
+import { calendarIcsUrl } from './icsToken'
 import { showToast } from '../../shared/Toast'
 
 const WEB_APP = import.meta.env.VITE_WEB_APP_URL || 'https://syng-psi.vercel.app'
 
-function isIOS() {
+export function isIOS() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent)
 }
 
@@ -51,10 +52,9 @@ export async function syncReminderToCalendar({ taskId, title, alarmAt, taskTime 
   const blob = new Blob([ics], { type: 'text/calendar;charset=utf-8' })
 
   if (isIOS()) {
-    const blobUrl = URL.createObjectURL(blob)
-    window.open(blobUrl, '_blank')
-    setTimeout(() => URL.revokeObjectURL(blobUrl), 60_000)
-    return { ok: true, method: 'ios-open', needsHelp: true }
+    const icsUrl = calendarIcsUrl({ taskId, title, alarmAt: alarm, taskTime })
+    window.location.assign(icsUrl)
+    return { ok: true, method: 'ios-url', needsHelp: true, icsUrl }
   }
 
   const file = new File([blob], filename, { type: 'text/calendar' })

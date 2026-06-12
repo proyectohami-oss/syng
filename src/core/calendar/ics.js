@@ -30,8 +30,8 @@ export function buildIcsEvent({
   const end = toIcsUtc(endDate)
   const now = toIcsUtc(new Date())
   const safeTitle = (title || 'Recordatorio').replace(/[,;\\]/g, ' ')
-  const sum = 'Syng te avisa'
-  const desc = `${safeTitle}\\n\\nAbre Syng para ver tu tarea.`.replace(/\n/g, '\\n')
+  const sum = 'Syng · Recordatorio'
+  const desc = `${safeTitle}\\n\\nTu momento. Abre Syng cuando suene.`.replace(/\n/g, '\\n')
 
   return [
     'BEGIN:VCALENDAR',
