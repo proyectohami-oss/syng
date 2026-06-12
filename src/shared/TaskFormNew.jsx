@@ -1,100 +1,155 @@
 /**
- * TaskFormNew — formulario de tarea.
- * Estructura: header fijo + contenido scrollable + footer fijo
+ * TaskFormNew — crear / editar tarea (Mi Agenda y Pizarrones).
  */
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { Timestamp } from 'firebase/firestore'
 import { useKeyboardOffset } from '../pwa/useKeyboardOffset'
-import { Timestamp }         from 'firebase/firestore'
-import { useTasks }          from '../core/hooks/useTasks'
-import { useCoreState }      from '../core/hooks/useCoreData'
-import { RepeatDayPicker }   from './RepeatDayPicker'
-import { ReminderPicker }    from './ReminderPicker'
+import { useTasks } from '../core/hooks/useTasks'
+import { useCoreState } from '../core/hooks/useCoreData'
+import { RepeatDayPicker } from './RepeatDayPicker'
+import { ReminderPanel } from '../modules/agenda/components/ReminderPanel'
+import { L } from './agendaEditorial'
+import { SyngMark } from './SyngLogo'
 
-const MESES = ['enero','febrero','marzo','abril','mayo','junio',
-               'julio','agosto','septiembre','octubre','noviembre','diciembre']
+const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+  'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
-function labelFecha(ds) {
+function pad2(n) { return String(n).padStart(2, '0') }
+
+function labelFechaLarga(ds) {
   if (!ds) return 'Elegir fecha'
-  const [y,m,d] = ds.split('-').map(Number)
-  return `${d} de ${MESES[m-1]} de ${y}`
+  const [y, m, d] = ds.split('-').map(Number)
+  return `${d} de ${MESES[m - 1]} de ${y}`
 }
 
-function labelRepetir(days) {
-  if (!days || days.size === 0) return 'No repetir'
-  return `${days.size} día${days.size !== 1 ? 's' : ''} seleccionado${days.size !== 1 ? 's' : ''}`
+function from24h(h24) {
+  return { h12: h24 % 12 || 12, ampm: h24 >= 12 ? 'PM' : 'AM' }
+}
+
+function to24h(h12, ampm) {
+  let h = h12 % 12
+  if (ampm === 'PM') h += 12
+  return h
+}
+
+function parseOffsetMin(total) {
+  const d = Math.floor(total / 1440)
+  const rem = total % 1440
+  return { d, h: Math.floor(rem / 60), m: rem % 60 }
+}
+
+function buildOffsetLabel(d, h, m) {
+  if (d === 0 && h === 0 && m === 0) return 'Cuando toque'
+  const parts = []
+  if (d > 0) parts.push(`${d} día${d !== 1 ? 's' : ''}`)
+  if (h > 0) parts.push(`${h} hora${h !== 1 ? 's' : ''}`)
+  if (m > 0) parts.push(`${m} minuto${m !== 1 ? 's' : ''}`)
+  return parts.join(' y ') + ' antes'
+}
+
+function buildDueAndReminder(dayKey, reminderOn, actH24, actM, totalOffsetMin, offsetSummary) {
+  if (!reminderOn) {
+    return {
+      dueDate: dayKey ? Timestamp.fromDate(new Date(`${dayKey}T23:59:59`)) : null,
+      reminder: null,
+      reminderTime: null,
+    }
+  }
+  const [y, mo, d] = dayKey.split('-').map(Number)
+  const activityDate = new Date(y, mo - 1, d, actH24, actM, 0, 0)
+  const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
+  const reminderTime = Timestamp.fromDate(scheduled)
+  return {
+    dueDate: Timestamp.fromDate(activityDate),
+    reminderTime,
+    reminder: {
+      scheduledAt: reminderTime,
+      offsetMin: totalOffsetMin,
+      dueTime: `${pad2(actH24)}:${pad2(actM)}`,
+      label: offsetSummary,
+    },
+  }
+}
+
+function IconChevron() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={L.ivoryFaint} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <path d="m9 18 6-6-6-6" />
+    </svg>
+  )
 }
 
 export function TaskFormNew({ task, defaultDate, onClose }) {
   const { createTask, updateTask } = useTasks()
-  const state  = useCoreState()
+  const state = useCoreState()
   const isEdit = !!task
+  const inputRef = useRef(null)
+  const keyboardOffset = useKeyboardOffset()
 
   const groups = useMemo(
     () => Array.from(state.groups.list.values()),
-    [state.groups.list]
+    [state.groups.list],
   )
 
-  const [title,      setTitle]      = useState(task?.title   ?? '')
-  const [groupId,    setGroupId]    = useState(task?.groupId ?? '')
-  const [dateStr,    setDateStr]    = useState(() => {
+  const today = new Date()
+  const initTime = useMemo(() => from24h(today.getHours()), [])
+
+  const [panel, setPanel] = useState('main')
+  const [title, setTitle] = useState(task?.title ?? '')
+  const [groupId, setGroupId] = useState(task?.groupId ?? '')
+  const [dateStr, setDateStr] = useState(() => {
     if (task?.dueDate) {
       const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
-      return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`
+      return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`
     }
     return defaultDate ?? ''
   })
-  const [repeatDays,   setRepeatDays]   = useState(new Set())
-  const [error,        setError]        = useState(null)
-  const [showGroup,    setShowGroup]    = useState(false)
-  const [showDate,     setShowDate]     = useState(false)
-  const [showRepeat,   setShowRepeat]   = useState(false)
-  const [reminder,     setReminder]     = useState(task?.reminder ?? null)
-  const [showReminder, setShowReminder] = useState(false)
+  const [repeatDays, setRepeatDays] = useState(new Set())
+  const [showGroup, setShowGroup] = useState(false)
+  const [showRepeat, setShowRepeat] = useState(false)
+  const [reminderOn, setReminderOn] = useState(!!task?.reminder?.dueTime)
+  const [actH12, setActH12] = useState(() => {
+    if (task?.reminder?.dueTime) {
+      const [hh] = task.reminder.dueTime.split(':').map(Number)
+      return from24h(hh).h12
+    }
+    return initTime.h12
+  })
+  const [actAmpm, setActAmpm] = useState(() => {
+    if (task?.reminder?.dueTime) {
+      const [hh] = task.reminder.dueTime.split(':').map(Number)
+      return from24h(hh).ampm
+    }
+    return initTime.ampm
+  })
+  const [actM, setActM] = useState(() => {
+    if (task?.reminder?.dueTime) {
+      const [, mm] = task.reminder.dueTime.split(':').map(Number)
+      return mm
+    }
+    return today.getMinutes()
+  })
+  const [offD, setOffD] = useState(() => parseOffsetMin(task?.reminder?.offsetMin ?? 10).d)
+  const [offH, setOffH] = useState(() => parseOffsetMin(task?.reminder?.offsetMin ?? 10).h)
+  const [offM, setOffM] = useState(() => parseOffsetMin(task?.reminder?.offsetMin ?? 10).m)
+
+  const actH24 = useMemo(() => to24h(actH12, actAmpm), [actH12, actAmpm])
+  const totalOffsetMin = offD * 1440 + offH * 60 + offM
+  const offsetSummary = buildOffsetLabel(offD, offH, offM)
+  const taskTimeStr = `${actH12}:${pad2(actM)} ${actAmpm}`
+  const reminderSummary = reminderOn ? `${taskTimeStr} · ${offsetSummary}` : 'Sin recordatorio'
 
   const grupoSeleccionado = groups.find(g => g.id === groupId)
-  const grupoLabel        = grupoSeleccionado ? grupoSeleccionado.name : 'Personal'
+  const grupoLabel = grupoSeleccionado ? grupoSeleccionado.name : 'Personal'
 
-  function handleSave() {
-    if (!title.trim()) return
-    const type = groupId ? 'group' : 'personal'
-    const gId  = groupId || null
-    const dueDateTs = dateStr
-      ? Timestamp.fromDate(new Date(dateStr + 'T23:59:59'))
-      : null
-    onClose()
-    if (isEdit) {
-      updateTask(task, { title: title.trim(), groupId: gId, type, dueDate: dueDateTs, reminder: reminder ?? null })
-        .catch(err => console.error('[TaskFormNew] updateTask error:', err))
-      if (repeatDays.size > 0) {
-        Array.from(repeatDays).sort().filter(d => d !== dateStr).forEach(day => {
-          createTask({ title: title.trim(), type, groupId: gId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
-        })
-      }
-    } else if (repeatDays.size > 0) {
-      Array.from(repeatDays).sort().forEach(day => {
-        createTask({ title: title.trim(), type, groupId: gId, dueDate: Timestamp.fromDate(new Date(day + 'T23:59:59')) }).catch(console.error)
-      })
-    } else {
-      createTask({ title: title.trim(), type, groupId: gId, dueDate: dueDateTs, reminder: reminder ?? null })
-        .catch(err => console.error('[TaskFormNew] createTask error:', err))
-    }
-  }
-
-  function labelGuardar() {
-    if (isEdit) {
-      if (repeatDays.size > 0) return `Guardar + ${repeatDays.size} repetición${repeatDays.size !== 1 ? 'es' : ''}`
-      return 'Guardar cambios'
-    }
-    if (repeatDays.size > 0) return `Crear ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''}`
-    return 'Crear tarea'
-  }
+  const repeatSummary = repeatDays.size === 0
+    ? 'No repetir'
+    : `${repeatDays.size} día${repeatDays.size !== 1 ? 's' : ''}`
 
   const puedeGuardar = !!title.trim()
 
   useEffect(() => {
-    const t = setTimeout(() => {
-      document.getElementById('syng-task-input')?.focus()
-    }, 120)
+    const t = setTimeout(() => inputRef.current?.focus(), 120)
     return () => clearTimeout(t)
   }, [])
 
@@ -106,150 +161,183 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
     return () => { document.body.style.cssText = prev }
   }, [])
 
-  const keyboardOffset = useKeyboardOffset()
+  function applyReminderResult({ h24, min, offsetMin }) {
+    const t = from24h(h24)
+    setActH12(t.h12)
+    setActAmpm(t.ampm)
+    setActM(min)
+    const o = parseOffsetMin(offsetMin)
+    setOffD(o.d)
+    setOffH(o.h)
+    setOffM(o.m)
+    setReminderOn(true)
+    setPanel('main')
+  }
+
+  function handleSave() {
+    if (!title.trim()) return
+    const type = groupId ? 'group' : 'personal'
+    const gId = groupId || null
+    const trimmed = title.trim()
+    onClose()
+
+    if (isEdit) {
+      const { dueDate, reminder, reminderTime } = buildDueAndReminder(
+        dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
+      )
+      updateTask(task, { title: trimmed, groupId: gId, type, dueDate, reminder, reminderTime })
+        .catch(err => console.error('[TaskFormNew] updateTask error:', err))
+      if (repeatDays.size > 0) {
+        Array.from(repeatDays).sort().filter(d => d !== dateStr).forEach(day => {
+          const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
+          createTask({ title: trimmed, type, groupId: gId, ...extra }).catch(console.error)
+        })
+      }
+    } else if (repeatDays.size > 0) {
+      Array.from(repeatDays).sort().forEach(day => {
+        const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
+        createTask({ title: trimmed, type, groupId: gId, ...extra }).catch(console.error)
+      })
+    } else {
+      const { dueDate, reminder, reminderTime } = buildDueAndReminder(
+        dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
+      )
+      createTask({ title: trimmed, type, groupId: gId, dueDate, reminder, reminderTime })
+        .catch(err => console.error('[TaskFormNew] createTask error:', err))
+    }
+  }
+
+  function labelGuardar() {
+    if (isEdit) {
+      if (repeatDays.size > 0) return `Guardar + ${repeatDays.size} repetición${repeatDays.size !== 1 ? 'es' : ''}`
+      return 'Guardar cambios'
+    }
+    if (repeatDays.size > 0) return `Crear ${repeatDays.size} tareas`
+    return 'Crear tarea'
+  }
+
+  function goBack() {
+    if (panel === 'main') onClose()
+    else setPanel('main')
+  }
 
   return (
     <>
-      <div style={overlay} onClick={e => e.target === e.currentTarget && onClose()}>
-        <div style={sheet}>
-
-          {/* Header */}
-          <div style={sheetHeader}>
-            <button onClick={onClose} style={btnVolver}>‹</button>
-            <span style={{ fontSize:17, fontWeight:600, color:'#0D1240', letterSpacing:'-0.01em' }}>
-              {isEdit ? 'Editar tarea' : 'Nueva tarea'}
-            </span>
-          </div>
-
-          {/* Contenido */}
-          <div style={sheetBody}>
-            <label style={lbl}>¿Qué quieres hacer?</label>
-            <textarea
-              value={title}
-              onChange={e => setTitle(e.target.value)}
-              id="syng-task-input"
-              placeholder="Escribe tu tarea aquí..."
-              rows={3}
-              style={textArea}
-            />
-
-            {/* Grupo */}
-            <div style={row} onClick={() => { setShowGroup(v=>!v); setShowDate(false) }}>
-              <span>👥</span>
-              <span style={rLbl}>Grupo</span>
-              <span style={rVal}>{grupoLabel}</span>
-              <span style={arr}>›</span>
-            </div>
-            {showGroup && (
-              <div style={picker}>
-                <div style={opt(groupId === '')} onClick={() => { setGroupId(''); setShowGroup(false) }}>Personal</div>
-                {groups.map(g => (
-                  <div key={g.id} style={opt(groupId === g.id)} onClick={() => { setGroupId(g.id); setShowGroup(false) }}>{g.name}</div>
-                ))}
-              </div>
-            )}
-
-            {/* Fecha */}
-            {repeatDays.size === 0 && (
-              <>
-                <div style={row} onClick={() => { setShowDate(v=>!v); setShowGroup(false) }}>
-                  <span>📅</span>
-                  <span style={rLbl}>Fecha</span>
-                  <span style={rVal}>{labelFecha(dateStr)}</span>
-                  <span style={arr}>›</span>
+      <div style={s.overlay}>
+        <div style={s.screen}>
+          {panel !== 'reminder' && (
+            <>
+              <div style={s.header}>
+                <button type="button" onClick={goBack} style={s.btnCancel}>
+                  {panel === 'main' ? 'Cancelar' : '‹ Atrás'}
+                </button>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
+                  <SyngMark size={24} bordered={false} />
+                  <p style={s.headerTitle}>{isEdit ? 'Editar tarea' : 'Nueva tarea'}</p>
                 </div>
-                {showDate && (
-                  <input
-                    type="date" value={dateStr}
-                    onChange={e => { setDateStr(e.target.value); setShowDate(false) }}
-                    style={{ ...textArea, padding:'10px 14px', resize:'none', marginBottom:8 }}
-                  />
+                <div style={{ width: 64 }} />
+              </div>
+
+              <div style={s.content}>
+                {panel === 'main' && (
+                  <>
+                    <div style={s.titleCard}>
+                      <textarea
+                        ref={inputRef}
+                        value={title}
+                        onChange={e => setTitle(e.target.value)}
+                        placeholder="¿Qué quieres hacer?"
+                        rows={2}
+                        style={s.titleInput}
+                      />
+                    </div>
+
+                    <div style={s.optionsCard}>
+                      <button type="button" onClick={() => setShowGroup(v => !v)} style={s.optionRow}>
+                        <span style={s.optionIcon}>👥</span>
+                        <span style={s.optionLabel}>Grupo</span>
+                        <span style={{ ...s.optionValue, color: L.ivoryMuted }}>{grupoLabel}</span>
+                        <IconChevron />
+                      </button>
+                      {showGroup && (
+                        <div style={s.inlinePicker}>
+                          <button type="button" onClick={() => { setGroupId(''); setShowGroup(false) }} style={s.pickerOpt(groupId === '')}>Personal</button>
+                          {groups.map(g => (
+                            <button key={g.id} type="button" onClick={() => { setGroupId(g.id); setShowGroup(false) }} style={s.pickerOpt(groupId === g.id)}>
+                              {g.name}
+                            </button>
+                          ))}
+                        </div>
+                      )}
+                      <div style={s.divider} />
+
+                      {repeatDays.size === 0 && (
+                        <>
+                          <OptionRow icon="📅" label="Fecha" value={labelFechaLarga(dateStr)} onClick={() => setPanel('date')} />
+                          <div style={s.divider} />
+                        </>
+                      )}
+
+                      <OptionRow icon="🔔" label="Recordatorio" value={reminderSummary} onClick={() => setPanel('reminder')} accent={reminderOn} />
+                      <div style={s.divider} />
+                      <OptionRow icon="🔁" label="Repetir" value={repeatSummary} onClick={() => setShowRepeat(true)} accent={repeatDays.size > 0} />
+                    </div>
+
+                    {repeatDays.size > 0 && (
+                      <p style={s.repeatHint}>
+                        {isEdit
+                          ? `Se crearán ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''} adicionales.`
+                          : `Se crearán ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''}.`}
+                        {' '}
+                        <button type="button" onClick={() => setRepeatDays(new Set())} style={s.linkBtn}>Limpiar</button>
+                      </p>
+                    )}
+                  </>
                 )}
-              </>
-            )}
 
-            {/* Recordatorio */}
-            <div style={row} onClick={() => setShowReminder(true)}>
-              <span>🔔</span>
-              <span style={rLbl}>Recordatorio</span>
-              <span style={{ ...rVal, color: reminder ? '#2D3A8C' : 'rgba(13,18,64,0.40)' }}>
-                {reminder
-                  ? (reminder.dueTime
-                      ? (() => { const [h,m]=reminder.dueTime.split(':').map(Number); const ap=h>=12?'PM':'AM'; const h12=h%12||12; return `${h12}:${String(m).padStart(2,'0')} ${ap} • ${reminder.label}` })()
-                      : reminder.label)
-                  : 'Sin recordatorio'}
-              </span>
-              <span style={arr}>›</span>
-            </div>
+                {panel === 'date' && (
+                  <div style={s.subPanel}>
+                    <div style={s.card}>
+                      <p style={s.cardLabel}>Elegir fecha</p>
+                      <input type="date" value={dateStr} onChange={e => setDateStr(e.target.value)} style={s.dateInput} />
+                      <button type="button" style={s.btnPrimary} onClick={() => setPanel('main')}>Listo</button>
+                    </div>
+                  </div>
+                )}
+              </div>
 
-            {/* Repetir */}
-            <div style={row} onClick={() => setShowRepeat(true)}>
-              <span>🔁</span>
-              <span style={rLbl}>Repetir</span>
-              <span style={{ ...rVal, color: repeatDays.size > 0 ? '#2D3A8C' : 'rgba(13,18,64,0.40)' }}>
-                {labelRepetir(repeatDays)}
-              </span>
-              <span style={arr}>›</span>
-            </div>
-
-            {repeatDays.size > 0 && (
-              <div style={{ padding:'10px 14px', background:'rgba(45,58,140,0.07)', borderRadius:12, marginTop:4, border:'1px solid rgba(45,58,140,0.12)' }}>
-                <p style={{ margin:0, fontSize:12, color:'#2D3A8C' }}>
-                  {isEdit
-                    ? `Se crearán ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''} adicionales.`
-                    : `Se crearán ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''}.`
-                  }
-                </p>
-                <button onClick={() => setRepeatDays(new Set())}
-                  style={{ background:'none', border:'none', color:'rgba(13,18,64,0.35)', fontSize:11, cursor:'pointer', padding:'4px 0 0', textDecoration:'underline' }}>
-                  Limpiar
+              <div style={{
+                ...s.footer,
+                paddingBottom: `calc(12px + ${keyboardOffset}px + env(safe-area-inset-bottom))`,
+              }}>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={!puedeGuardar}
+                  style={{ ...s.btnSave, opacity: puedeGuardar ? 1 : 0.45 }}
+                >
+                  {labelGuardar()}
                 </button>
               </div>
-            )}
+            </>
+          )}
 
-            {error && (
-              <p style={{ color:'#E05252', fontSize:13, margin:'8px 0', padding:'10px 14px', background:'rgba(224,82,82,0.08)', borderRadius:12, border:'1px solid rgba(224,82,82,0.15)' }}>
-                {error}
-              </p>
-            )}
-          </div>
-
-          {/* Footer */}
-          <div style={{ ...sheetFooter, paddingBottom:`calc(12px + ${keyboardOffset}px + env(safe-area-inset-bottom))`, transition:'padding-bottom 0.2s ease' }}>
-            <button
-              onClick={handleSave}
-              disabled={!puedeGuardar}
-              style={{
-                width:'100%', padding:'14px', borderRadius:14,
-                border:'none', fontSize:15, fontWeight:600,
-                background: puedeGuardar
-                  ? 'linear-gradient(135deg, #3D4FA8, #2D3A8C)'
-                  : 'rgba(13,18,64,0.08)',
-                color: puedeGuardar ? '#fff' : 'rgba(13,18,64,0.28)',
-                cursor: puedeGuardar ? 'pointer' : 'default',
-                boxShadow: puedeGuardar ? '0 4px 16px rgba(45,58,140,0.30)' : 'none',
-                transition:'all 0.15s ease',
-              }}
-            >
-              {labelGuardar()}
-            </button>
-            <button onClick={onClose}
-              style={{ background:'none', border:'none', color:'rgba(13,18,64,0.40)', fontSize:15, cursor:'pointer', padding:'8px' }}>
-              Cancelar
-            </button>
-          </div>
-
+          {panel === 'reminder' && (
+            <ReminderPanel
+              dateStr={dateStr || defaultDate || `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`}
+              initialH24={actH24}
+              initialMin={actM}
+              offD={offD}
+              offH={offH}
+              offM={offM}
+              onChangeOffset={(d, h, m) => { setOffD(d); setOffH(h); setOffM(m) }}
+              onConfirm={applyReminderResult}
+              onSkip={() => { setReminderOn(false); setPanel('main') }}
+              onBack={() => setPanel('main')}
+            />
+          )}
         </div>
       </div>
-
-      {showReminder && (
-        <ReminderPicker
-          dateStr={dateStr}
-          reminder={reminder}
-          onChange={r => setReminder(r)}
-          onClose={() => setShowReminder(false)}
-        />
-      )}
 
       {showRepeat && (
         <RepeatDayPicker
@@ -262,17 +350,98 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
   )
 }
 
-const overlay    = { position:'fixed', inset:0, background:'rgba(13,18,64,0.28)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }
-const sheet      = { background:'rgba(250,251,255,0.97)', backdropFilter:'blur(48px)', WebkitBackdropFilter:'blur(48px)', borderRadius:'24px 24px 0 0', width:'100%', maxWidth:480, maxHeight:'85svh', display:'flex', flexDirection:'column', overflow:'hidden', boxShadow:'0 -8px 48px rgba(13,18,64,0.12)' }
-const sheetHeader= { flexShrink:0, display:'flex', alignItems:'center', gap:10, padding:'20px 20px 14px', borderBottom:'1px solid rgba(13,18,64,0.07)' }
-const sheetBody  = { flex:1, overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'16px 20px 8px' }
-const sheetFooter= { flexShrink:0, padding:'12px 20px', paddingBottom:'calc(12px + env(safe-area-inset-bottom))', borderTop:'1px solid rgba(13,18,64,0.07)', display:'flex', flexDirection:'column', gap:8, background:'transparent' }
-const btnVolver  = { background:'none', border:'none', fontSize:22, color:'rgba(13,18,64,0.35)', cursor:'pointer', padding:'0 4px' }
-const lbl        = { display:'block', fontSize:12, color:'rgba(13,18,64,0.38)', fontWeight:500, marginBottom:6 }
-const textArea   = { width:'100%', boxSizing:'border-box', padding:'11px 14px', borderRadius:12, border:'1.5px solid rgba(13,18,64,0.10)', fontSize:15, color:'#0D1240', fontFamily:'inherit', resize:'vertical', outline:'none', marginBottom:14, background:'rgba(255,255,255,0.80)', boxShadow:'inset 0 1px 3px rgba(13,18,64,0.04)', lineHeight:1.5 }
-const row        = { display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid rgba(13,18,64,0.07)', cursor:'pointer' }
-const rLbl       = { fontSize:14, color:'#0D1240', flex:1 }
-const rVal       = { fontSize:14, color:'rgba(13,18,64,0.40)' }
-const arr        = { fontSize:16, color:'rgba(13,18,64,0.20)' }
-const picker     = { background:'rgba(255,255,255,0.80)', borderRadius:12, overflow:'hidden', marginBottom:4, border:'1px solid rgba(13,18,64,0.08)' }
-const opt        = sel => ({ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid rgba(13,18,64,0.06)', color: sel ? '#2D3A8C' : '#0D1240', fontWeight: sel ? 600 : 400, background: sel ? 'rgba(45,58,140,0.08)' : 'transparent' })
+function OptionRow({ icon, label, value, onClick, accent }) {
+  return (
+    <button type="button" onClick={onClick} style={s.optionRow}>
+      <span style={s.optionIcon}>{icon}</span>
+      <span style={s.optionLabel}>{label}</span>
+      <span style={{ ...s.optionValue, color: accent ? L.champagne : L.ivoryMuted }}>{value}</span>
+      <IconChevron />
+    </button>
+  )
+}
+
+const s = {
+  overlay: {
+    position: 'fixed', inset: 0, zIndex: 1000,
+    background: L.ink,
+  },
+  screen: {
+    display: 'flex', flexDirection: 'column', height: '100%',
+    overflow: 'hidden', color: L.ivory, position: 'relative',
+  },
+  header: {
+    flexShrink: 0, display: 'grid', gridTemplateColumns: '1fr auto 1fr',
+    alignItems: 'center', padding: '12px 16px',
+    paddingTop: 'max(12px, env(safe-area-inset-top))',
+    borderBottom: `1px solid rgba(196,169,98,0.2)`,
+  },
+  btnCancel: { background: 'none', border: 'none', fontSize: 15, color: L.ivoryMuted, cursor: 'pointer', textAlign: 'left' },
+  headerTitle: { margin: 0, fontSize: 15, fontWeight: 500, color: L.ivory, textAlign: 'center', fontFamily: L.serif },
+  content: {
+    flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
+    padding: '12px 16px',
+  },
+  footer: {
+    flexShrink: 0, padding: '12px 16px',
+    borderTop: `1px solid rgba(196,169,98,0.2)`,
+    background: L.ink,
+  },
+  titleCard: {
+    background: L.champagneLight, borderRadius: 2, marginBottom: 12,
+    border: `1px solid ${L.champagneBorder}`,
+  },
+  titleInput: {
+    width: '100%', boxSizing: 'border-box', padding: '18px 20px', border: 'none', outline: 'none',
+    resize: 'none', background: 'transparent', fontSize: 17, fontWeight: 400,
+    color: L.ivory, lineHeight: 1.4, fontFamily: L.serif,
+  },
+  optionsCard: {
+    background: 'rgba(255,255,255,0.04)', borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`, overflow: 'hidden',
+  },
+  optionRow: {
+    display: 'grid', gridTemplateColumns: '28px 1fr auto 20px', alignItems: 'center', gap: 10,
+    width: '100%', padding: '14px 16px', border: 'none', background: 'transparent', cursor: 'pointer', textAlign: 'left',
+  },
+  optionIcon: { fontSize: 17 },
+  optionLabel: { fontSize: 15, fontWeight: 500, color: L.ivory },
+  optionValue: { fontSize: 13, fontWeight: 400, textAlign: 'right', maxWidth: 150, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  divider: { height: 1, background: 'rgba(196,169,98,0.12)', marginLeft: 54 },
+  inlinePicker: { borderTop: `1px solid rgba(196,169,98,0.12)` },
+  pickerOpt: sel => ({
+    display: 'block', width: '100%', padding: '12px 16px 12px 54px', border: 'none', textAlign: 'left',
+    fontSize: 14, cursor: 'pointer',
+    color: sel ? L.champagne : L.ivory,
+    fontWeight: sel ? 600 : 400,
+    background: sel ? L.champagneLight : 'transparent',
+  }),
+  subPanel: { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' },
+  card: {
+    background: 'rgba(255,255,255,0.04)', borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`, padding: '12px 14px 14px',
+  },
+  cardLabel: {
+    margin: '0 0 12px', fontSize: 9, fontWeight: 500, letterSpacing: '0.2em',
+    textTransform: 'uppercase', color: L.champagne, textAlign: 'center',
+  },
+  dateInput: {
+    width: '100%', boxSizing: 'border-box', padding: 14, borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`, fontSize: 15, marginBottom: 12,
+    color: L.ivory, background: L.champagneLight, fontFamily: 'inherit',
+  },
+  btnPrimary: {
+    width: '100%', padding: 14, borderRadius: 2, border: `1px solid ${L.ivory}`, cursor: 'pointer',
+    background: L.ivory, color: L.ink, fontSize: 13, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase',
+  },
+  btnSave: {
+    width: '100%', padding: 14, borderRadius: 2, border: `1px solid ${L.ivory}`,
+    background: L.ivory, color: L.ink, fontSize: 13, fontWeight: 600,
+    letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer',
+  },
+  repeatHint: { margin: '12px 0 0', fontSize: 12, color: L.ivoryMuted, lineHeight: 1.5 },
+  linkBtn: {
+    background: 'none', border: 'none', color: L.champagne, fontSize: 12,
+    cursor: 'pointer', padding: 0, textDecoration: 'underline',
+  },
+}
