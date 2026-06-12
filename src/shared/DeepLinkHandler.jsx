@@ -35,10 +35,13 @@ export function DeepLinkHandler() {
       if (document.visibilityState === 'visible') finishCalFlow()
     }
 
+    finishCalFlow()
     window.addEventListener('pageshow', finishCalFlow)
+    window.addEventListener('focus', finishCalFlow)
     document.addEventListener('visibilitychange', onVisible)
     return () => {
       window.removeEventListener('pageshow', finishCalFlow)
+      window.removeEventListener('focus', finishCalFlow)
       document.removeEventListener('visibilitychange', onVisible)
     }
   }, [navigate])

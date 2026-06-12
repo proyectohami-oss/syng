@@ -27,6 +27,7 @@ import { useAuthActions }             from '../auth/useAuthActions'
 import { useShellChrome }             from './ShellChromeContext'
 import { SyngLogoRow }                from './SyngLogo'
 import { L } from './agendaEditorial'
+import { usePushNotifications } from '../core/notifications/usePushNotifications'
 
 async function shareApp() {
   const data = {
@@ -93,6 +94,7 @@ const NAV_ITEMS = [
 ]
 
 export function AppShell({ children }) {
+  usePushNotifications()
   const auth      = useCoreAuth()
   const groupsCtx = useCoreGroups()
   const navigate  = useNavigate()

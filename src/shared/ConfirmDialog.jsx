@@ -1,11 +1,12 @@
 /**
- * Modal confirmation dialog for destructive actions.
+ * Modal de confirmación — estilo editorial Syng.
  */
 import { useState } from 'react'
+import { L } from './agendaEditorial'
 
 export function ConfirmDialog({ title, message, confirmLabel = 'Confirmar', danger = false, onConfirm, onCancel }) {
   const [loading, setLoading] = useState(false)
-  const [error,   setError]   = useState(null)
+  const [error, setError] = useState(null)
 
   async function handleConfirm() {
     setLoading(true)
@@ -18,36 +19,29 @@ export function ConfirmDialog({ title, message, confirmLabel = 'Confirmar', dang
     }
   }
 
+  const confirmStyle = danger
+    ? { ...btnConfirm, background: 'rgba(224,82,82,0.18)', color: '#E05252', border: '1px solid rgba(224,82,82,0.35)' }
+    : btnConfirm
+
   return (
-    <div style={overlay}>
+    <div style={overlayModal}>
       <div style={dialog} role="alertdialog" aria-modal="true" aria-labelledby="dlg-title">
-        <p id="dlg-title" style={{ margin:'0 0 8px', fontWeight:600, fontSize:16, color:'#0D1240', letterSpacing:'-0.01em' }}>
-          {title}
-        </p>
-        <p style={{ margin:'0 0 20px', fontSize:14, color:'rgba(13,18,64,0.45)', lineHeight:1.5 }}>
-          {message}
-        </p>
+        <p id="dlg-title" style={dialogTitle}>{title}</p>
+        <p style={dialogBody}>{message}</p>
         {error && (
-          <p style={{ margin:'0 0 12px', fontSize:13, color:'#E05252', padding:'8px 12px', background:'rgba(224,82,82,0.08)', borderRadius:10 }}>{error}</p>
+          <p style={errorBox}>{error}</p>
         )}
-        <div style={{ display:'flex', gap:8, justifyContent:'flex-end' }}>
-          <button onClick={onCancel} disabled={loading} style={btnSecondary}>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button type="button" onClick={onCancel} disabled={loading} style={btnCancel}>
             Cancelar
           </button>
           <button
+            type="button"
             onClick={handleConfirm}
             disabled={loading}
-            style={{
-              ...btnPrimary,
-              background: danger
-                ? 'linear-gradient(135deg, #E86060, #E05252)'
-                : 'linear-gradient(135deg, #3D4FA8, #2D3A8C)',
-              boxShadow: danger
-                ? '0 2px 8px rgba(224,82,82,0.28)'
-                : '0 2px 8px rgba(45,58,140,0.28)',
-            }}
+            style={{ ...confirmStyle, opacity: loading ? 0.45 : 1 }}
           >
-            {loading ? 'Cargando...' : confirmLabel}
+            {loading ? 'Cargando…' : confirmLabel}
           </button>
         </div>
       </div>
@@ -55,34 +49,74 @@ export function ConfirmDialog({ title, message, confirmLabel = 'Confirmar', dang
   )
 }
 
-const overlay = {
-  position:'fixed', inset:0,
-  background:'rgba(13,18,64,0.30)',
-  display:'flex', alignItems:'center', justifyContent:'center',
-  zIndex:1000,
-  backdropFilter:'blur(4px)',
-  WebkitBackdropFilter:'blur(4px)',
+const overlayModal = {
+  position: 'fixed',
+  inset: 0,
+  background: 'rgba(0,0,0,0.72)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  zIndex: 1000,
+  padding: 20,
 }
+
 const dialog = {
-  background:'rgba(255,255,255,0.96)',
-  backdropFilter:'blur(48px)',
-  WebkitBackdropFilter:'blur(48px)',
-  borderRadius:20,
-  padding:'24px',
-  width:'100%', maxWidth:360,
-  margin:'0 20px',
-  boxShadow:'0 20px 60px rgba(13,18,64,0.16), inset 0 1px 0 rgba(255,255,255,0.95)',
-  border:'1px solid rgba(255,255,255,0.70)',
+  background: L.inkSoft,
+  borderRadius: 2,
+  padding: '24px 20px',
+  width: '100%',
+  maxWidth: 360,
+  boxShadow: '0 20px 60px rgba(0,0,0,0.55)',
+  border: `1px solid ${L.champagneBorder}`,
 }
-const btnSecondary = {
-  padding:'10px 18px', borderRadius:12,
-  border:'1px solid rgba(13,18,64,0.12)',
-  background:'rgba(255,255,255,0.80)',
-  cursor:'pointer', fontSize:14,
-  color:'rgba(13,18,64,0.50)',
+
+const dialogTitle = {
+  margin: '0 0 8px',
+  fontWeight: 500,
+  fontSize: 18,
+  color: L.ivory,
+  letterSpacing: '-0.01em',
+  fontFamily: L.serif,
 }
-const btnPrimary = {
-  padding:'10px 18px', borderRadius:12,
-  border:'none', color:'#fff',
-  cursor:'pointer', fontSize:14, fontWeight:600,
+
+const dialogBody = {
+  margin: '0 0 20px',
+  fontSize: 14,
+  color: L.ivoryMuted,
+  lineHeight: 1.5,
+}
+
+const errorBox = {
+  margin: '0 0 12px',
+  fontSize: 13,
+  color: '#E05252',
+  padding: '8px 12px',
+  background: 'rgba(224,82,82,0.08)',
+  borderRadius: 2,
+  border: '1px solid rgba(224,82,82,0.2)',
+}
+
+const btnCancel = {
+  flex: 1,
+  padding: '12px',
+  borderRadius: 2,
+  border: `1px solid ${L.champagneBorder}`,
+  background: 'transparent',
+  fontSize: 14,
+  cursor: 'pointer',
+  color: L.ivoryMuted,
+}
+
+const btnConfirm = {
+  flex: 1,
+  padding: '12px',
+  borderRadius: 2,
+  border: `1px solid ${L.ivory}`,
+  background: L.ivory,
+  color: L.ink,
+  fontSize: 13,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  cursor: 'pointer',
 }

@@ -11,6 +11,7 @@ import { SyngAvisoSheet } from '../../../shared/SyngAvisoSheet'
 import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
 import { showToast } from '../../../shared/Toast'
 import { calendarIcsUrl } from '../../../core/calendar/icsToken'
+import { openIosCalendarIcs } from '../../../core/calendar/calendar.service'
 import { L } from '../../../shared/agendaEditorial'
 import { SyngMark } from '../../../shared/SyngLogo'
 
@@ -260,21 +261,21 @@ export function NewTaskScreen() {
   function continueIosCalendar() {
     if (!iosCalPayload) return
     const { taskId, title, alarmAt, taskTime } = iosCalPayload
-    const dest = afterSavePath || '/agenda'
-
-    try {
-      sessionStorage.setItem('syng_ios_cal_return', '1')
-      sessionStorage.setItem('syng_ios_cal_dest', dest)
-    } catch { /* ignore */ }
+    const dest = afterSavePath || (dateParam ? `/agenda/${dateParam}` : '/agenda')
 
     setShowIosHelp(false)
     setIosCalPayload(null)
     setAfterSavePath(null)
     showToast('Tarea guardada · confirma en Calendario', '✓')
 
-    // iOS exige abrir el .ics en el mismo toque — sin setTimeout ni navigate antes
     const icsUrl = calendarIcsUrl({ taskId, title, alarmAt, taskTime })
-    window.location.assign(icsUrl)
+
+    try {
+      sessionStorage.setItem('syng_ios_cal_return', '1')
+      sessionStorage.setItem('syng_ios_cal_dest', dest)
+    } catch { /* ignore */ }
+
+    openIosCalendarIcs(icsUrl, dest)
   }
 
   async function handleSave() {
@@ -316,7 +317,7 @@ export function NewTaskScreen() {
               type="button"
               onClick={handleSave}
               disabled={!puedeGuardar}
-              style={{ ...s.btnCreate, color: puedeGuardar ? L.champagne : L.ivoryFaint }}
+              style={s.btnCreate(puedeGuardar)}
             >
               {saving ? '…' : 'Crear'}
             </button>
@@ -454,7 +455,20 @@ const s = {
   },
   btnCancel: { background: 'none', border: 'none', fontSize: 15, color: L.ivoryMuted, cursor: 'pointer', textAlign: 'left' },
   headerTitle: { margin: 0, fontSize: 15, fontWeight: 500, color: L.ivory, textAlign: 'center', fontFamily: L.serif },
-  btnCreate: { background: 'none', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', textAlign: 'right', color: L.champagne },
+  btnCreate: active => ({
+    justifySelf: 'end',
+    padding: '8px 14px',
+    minHeight: 36,
+    borderRadius: 2,
+    border: `1px solid ${active ? L.ivory : 'rgba(196,169,98,0.2)'}`,
+    background: active ? L.ivory : 'rgba(255,255,255,0.06)',
+    color: active ? L.ink : L.ivoryFaint,
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    cursor: active ? 'pointer' : 'default',
+  }),
   content: { flex: 1, minHeight: 0, overflow: 'hidden', padding: '12px 16px', display: 'flex', flexDirection: 'column' },
   subPanel: { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' },
   titleCard: {

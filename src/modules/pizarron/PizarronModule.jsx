@@ -67,12 +67,12 @@ function DatePickerModal({ selectedKey, todayKey, daysWithActivity, onSelect, on
 
   return (
     <>
-      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.45)', zIndex:1000, backdropFilter:'blur(4px)' }} />
-      <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:1001, background:'#fff', borderRadius:'22px 22px 0 0', maxHeight:'82vh', display:'flex', flexDirection:'column' }}>
-        <div style={{ width:32, height:3, borderRadius:2, background:'rgba(13,18,64,0.12)', margin:'10px auto 6px' }} />
-        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px 10px', borderBottom:'0.5px solid rgba(13,18,64,0.07)' }}>
-          <p style={{ margin:0, fontSize:16, fontWeight:700, color:'#0D1240' }}>Seleccionar fecha</p>
-          <button onClick={onClose} style={{ background:'rgba(13,18,64,0.07)', border:'none', borderRadius:'50%', width:28, height:28, fontSize:14, cursor:'pointer', color:'rgba(13,18,64,0.5)', display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
+      <div onClick={onClose} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.72)', zIndex:1000 }} />
+      <div style={{ position:'fixed', bottom:0, left:0, right:0, zIndex:1001, background:L.inkSoft, borderRadius:'2px 2px 0 0', borderTop:`1px solid ${L.champagneBorder}`, maxHeight:'82vh', display:'flex', flexDirection:'column' }}>
+        <div style={{ width:32, height:3, borderRadius:2, background:L.champagneBorder, margin:'10px auto 6px' }} />
+        <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', padding:'0 16px 10px', borderBottom:`1px solid rgba(196,169,98,0.15)` }}>
+          <p style={{ margin:0, fontSize:16, fontWeight:500, color:L.ivory, fontFamily:L.serif }}>Seleccionar fecha</p>
+          <button onClick={onClose} style={{ background:L.champagneLight, border:`1px solid ${L.champagneBorder}`, borderRadius:2, width:28, height:28, fontSize:14, cursor:'pointer', color:L.ivoryMuted, display:'flex', alignItems:'center', justifyContent:'center' }}>✕</button>
         </div>
         <div ref={scrollRef} style={{ overflowY:'auto', WebkitOverflowScrolling:'touch', padding:'12px 12px 40px', flex:1 }}>
           {years.map(year => {
@@ -81,16 +81,16 @@ function DatePickerModal({ selectedKey, todayKey, daysWithActivity, onSelect, on
               : today.getFullYear() === year
             return (
             <div key={year} ref={anchor ? anchorRef : null} style={{ marginBottom:20 }}>
-              <p style={{ margin:'0 0 10px 2px', fontSize:22, fontWeight:700, color:'#0D1240', letterSpacing:'-0.5px' }}>{year}</p>
+              <p style={{ margin:'0 0 10px 2px', fontSize:22, fontWeight:400, color:L.ivory, letterSpacing:'-0.02em', fontFamily:L.serif }}>{year}</p>
               <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:8 }}>
                 {Array.from({ length: 12 }, (_, m) => {
                   const days = buildMonthDays(year, m)
                   return (
-                    <div key={m} style={{ background:'#F8F9FC', borderRadius:12, padding:'7px 7px 8px' }}>
-                      <p style={{ margin:'0 0 4px', fontSize:10, fontWeight:700, color:'#0D1240', textAlign:'center' }}>{MESES_MINI[m]}</p>
+                    <div key={m} style={{ background:L.champagneLight, borderRadius:2, padding:'7px 7px 8px', border:`1px solid ${L.champagneBorder}` }}>
+                      <p style={{ margin:'0 0 4px', fontSize:10, fontWeight:500, color:L.champagne, textAlign:'center', letterSpacing:'0.08em' }}>{MESES_MINI[m]}</p>
                       <div style={{ display:'grid', gridTemplateColumns:'repeat(7,1fr)', gap:0 }}>
                         {['L','M','M','J','V','S','D'].map((d,i) => (
-                          <div key={i} style={{ textAlign:'center', fontSize:6, color: i===6 ? 'rgba(224,82,82,0.7)' : '#8E8E93', fontWeight:600, paddingBottom:1 }}>{d}</div>
+                          <div key={i} style={{ textAlign:'center', fontSize:6, color: i===6 ? 'rgba(224,82,82,0.7)' : L.ivoryFaint, fontWeight:600, paddingBottom:1 }}>{d}</div>
                         ))}
                         {days.map((date, i) => {
                           if (!date) return <div key={`e-${i}`} />
@@ -109,20 +109,20 @@ function DatePickerModal({ selectedKey, todayKey, daysWithActivity, onSelect, on
                                 flexDirection:  'column',
                                 alignItems:     'center',
                                 justifyContent: 'center',
-                                borderRadius:   '50%',
+                                borderRadius:   2,
                                 border:         'none',
                                 cursor:         'pointer',
                                 position:       'relative',
-                                background:     isToday ? 'linear-gradient(135deg,#3D4FA8,#2D3A8C)' : isSel ? 'rgba(45,58,140,0.12)' : 'transparent',
+                                background:     isToday ? L.ivory : isSel ? L.champagneLight : 'transparent',
                                 WebkitTapHighlightColor: 'transparent',
                                 padding:        0,
                               }}
                             >
-                              <span style={{ fontSize:7, fontWeight: isToday||isSel ? 700 : 400, color: isToday ? '#fff' : isSel ? '#2D3A8C' : isSun ? 'rgba(224,82,82,0.85)' : '#0D1240', lineHeight:1 }}>
+                              <span style={{ fontSize:7, fontWeight: isToday||isSel ? 700 : 400, color: isToday ? L.ink : isSel ? L.champagne : isSun ? 'rgba(224,82,82,0.85)' : L.ivoryMuted, lineHeight:1 }}>
                                 {date.getDate()}
                               </span>
                               {hasTask && (
-                                <div style={{ width:2, height:2, borderRadius:'50%', background: isToday ? 'rgba(255,255,255,0.8)' : '#2D3A8C', position:'absolute', bottom:1 }} />
+                                <div style={{ width:2, height:2, borderRadius:'50%', background: isToday ? L.ink : L.champagne, position:'absolute', bottom:1 }} />
                               )}
                             </button>
                           )
@@ -153,37 +153,37 @@ function EditVariasModal({ count, groups, onSave, onClose }) {
   }
 
   return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(13,18,64,0.30)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
-      <div style={{ background:'rgba(250,251,255,0.97)', backdropFilter:'blur(48px)', WebkitBackdropFilter:'blur(48px)', borderRadius:'24px 24px 0 0', padding:'20px', width:'100%', maxWidth:480, paddingBottom:'calc(20px + env(safe-area-inset-bottom))', boxShadow:'0 -8px 48px rgba(13,18,64,0.12)' }}>
-        <p style={{ margin:'0 0 4px', fontSize:16, fontWeight:600, color:'#0D1240', letterSpacing:'-0.01em' }}>
+    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.72)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
+      <div style={{ background:L.inkSoft, borderRadius:'2px 2px 0 0', borderTop:`1px solid ${L.champagneBorder}`, padding:'20px', width:'100%', maxWidth:480, paddingBottom:'calc(20px + env(safe-area-inset-bottom))' }}>
+        <p style={{ margin:'0 0 4px', fontSize:18, fontWeight:500, color:L.ivory, letterSpacing:'-0.01em', fontFamily:L.serif }}>
           Editar {count} tarea{count !== 1 ? 's' : ''}
         </p>
-        <p style={{ margin:'0 0 20px', fontSize:13, color:'rgba(13,18,64,0.40)' }}>Solo se aplican los campos que cambies.</p>
+        <p style={{ margin:'0 0 20px', fontSize:13, color:L.ivoryMuted }}>Solo se aplican los campos que cambies.</p>
 
-        <label style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:'1px solid rgba(13,18,64,0.07)', cursor:'pointer' }}>
+        <label style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:`1px solid rgba(196,169,98,0.12)`, cursor:'pointer' }}>
           <span>📅</span>
-          <span style={{ flex:1, fontSize:14, color:'#0D1240' }}>Nueva fecha</span>
-          <span style={{ fontSize:14, color: fecha ? '#2D3A8C' : 'rgba(13,18,64,0.35)' }}>
+          <span style={{ flex:1, fontSize:14, color:L.ivory }}>Nueva fecha</span>
+          <span style={{ fontSize:14, color: fecha ? L.champagne : L.ivoryFaint }}>
             {fecha ? (() => { const [y,m,d] = fecha.split('-').map(Number); return `${d} de ${MESES[m-1]}` })() : 'Sin cambio ›'}
           </span>
           <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={{ position:'absolute', opacity:0, pointerEvents:'none', width:0, height:0 }} />
         </label>
 
-        <p style={{ margin:'12px 0 6px', fontSize:12, color:'rgba(13,18,64,0.40)', fontWeight:600, letterSpacing:'0.04em' }}>👥 CAMBIAR GRUPO</p>
-        <div style={{ background:'rgba(255,255,255,0.80)', borderRadius:12, overflow:'hidden', border:'1px solid rgba(13,18,64,0.08)', marginBottom:20 }}>
+        <p style={{ margin:'12px 0 6px', fontSize:10, color:L.champagne, fontWeight:500, letterSpacing:'0.12em' }}>CAMBIAR GRUPO</p>
+        <div style={{ background:L.champagneLight, borderRadius:2, overflow:'hidden', border:`1px solid ${L.champagneBorder}`, marginBottom:20 }}>
           {[{ id:'__sin_cambio__', name:'Sin cambio' }, { id:'', name:'Personal' }, ...groups].map(g => (
             <div key={g.id} onClick={() => setNuevoGroupId(g.id)}
-              style={{ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:'1px solid rgba(13,18,64,0.06)', background: nuevoGroupId === g.id ? 'rgba(45,58,140,0.08)' : 'transparent', color: nuevoGroupId === g.id ? '#2D3A8C' : '#0D1240', fontWeight: nuevoGroupId === g.id ? 600 : 400 }}>
+              style={{ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:`1px solid rgba(196,169,98,0.1)`, background: nuevoGroupId === g.id ? 'rgba(196,169,98,0.12)' : 'transparent', color: nuevoGroupId === g.id ? L.champagne : L.ivory, fontWeight: nuevoGroupId === g.id ? 600 : 400 }}>
               {g.name}
             </div>
           ))}
         </div>
 
         <div style={{ display:'flex', gap:8 }}>
-          <button onClick={onClose} style={{ flex:1, padding:'12px', borderRadius:12, border:'1px solid rgba(13,18,64,0.12)', background:'rgba(255,255,255,0.80)', color:'rgba(13,18,64,0.45)', fontSize:15, cursor:'pointer' }}>Cancelar</button>
+          <button onClick={onClose} style={{ ...A.btnSecondary, flex:1 }}>Cancelar</button>
           <button onClick={guardar} disabled={!hayCambio || loading}
-            style={{ flex:1, padding:'12px', borderRadius:12, border:'none', fontSize:15, fontWeight:600, cursor: hayCambio ? 'pointer' : 'default', background: hayCambio ? 'linear-gradient(135deg, #3D4FA8, #2D3A8C)' : 'rgba(13,18,64,0.08)', color: hayCambio ? '#fff' : 'rgba(13,18,64,0.28)', boxShadow: hayCambio ? '0 2px 8px rgba(45,58,140,0.28)' : 'none' }}>
-            {loading ? 'Aplicando...' : 'Aplicar cambios'}
+            style={{ ...A.btnPrimary, flex:1, opacity: hayCambio ? 1 : 0.45, cursor: hayCambio ? 'pointer' : 'default' }}>
+            {loading ? 'Aplicando…' : 'Aplicar cambios'}
           </button>
         </div>
       </div>

@@ -3,6 +3,8 @@ import { Capacitor } from '@capacitor/core'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
 import { useAuthActions } from '../../auth/useAuthActions'
+import { usePushNotifications } from '../../core/notifications/usePushNotifications'
+import { isIOS } from '../../core/calendar/calendar.service'
 import { PWAInstallButton } from '../../core/pwa/PWAInstallButton'
 import { usePWAInstall } from '../../core/pwa/usePWAInstall'
 import { A, L } from '../../shared/agendaEditorial'
@@ -11,6 +13,7 @@ export function PerfilModule() {
   const auth = useCoreAuth()
   const { signOut } = useAuthActions()
   const { isInstalled, canInstall } = usePWAInstall()
+  const { isSupported, permissionState, requestPermission } = usePushNotifications()
 
   const user     = auth.user
   const userData = auth.userData
@@ -23,6 +26,24 @@ export function PerfilModule() {
   const [error,        setError]        = useState(null)
   const [success,      setSuccess]      = useState(null)
   const [signingOut,   setSigningOut]   = useState(false)
+  const [pushLoading,  setPushLoading]  = useState(false)
+
+  async function handleEnablePush() {
+    setPushLoading(true)
+    setError(null)
+    try {
+      const result = await requestPermission()
+      if (!result.ok && result.reason === 'denied') {
+        setError('Permiso denegado. Actívalo en Ajustes del dispositivo.')
+      } else if (result.ok) {
+        setSuccess('Avisos push activados')
+      }
+    } catch (e) {
+      setError(e.message ?? 'No se pudieron activar los avisos')
+    } finally {
+      setPushLoading(false)
+    }
+  }
 
   async function handleSaveName() {
     if (!name.trim()) return
@@ -165,6 +186,36 @@ export function PerfilModule() {
             </div>
           </div>
         )}
+
+        <div style={{ ...A.section, marginTop: 12 }}>
+          <p style={A.sectionLabel}>Recordatorios</p>
+          <div style={{ padding: '12px 16px 14px' }}>
+            {isIOS() && !Capacitor.isNativePlatform() ? (
+              <p style={{ margin: 0, fontSize: 13, color: L.ivoryMuted, lineHeight: 1.5 }}>
+                En iPhone, los avisos llegan por <strong style={{ color: L.ivory }}>Calendario</strong>.
+                Al crear una tarea, elige <strong style={{ color: L.ivory }}>Activar aviso</strong> y confirma en Calendario.
+              </p>
+            ) : isSupported && permissionState === 'granted' ? (
+              <p style={{ margin: 0, fontSize: 13, color: '#6ee7a0' }}>Avisos push activos en este dispositivo</p>
+            ) : isSupported ? (
+              <>
+                <p style={{ margin: '0 0 10px', fontSize: 13, color: L.ivoryMuted, lineHeight: 1.5 }}>
+                  Activa avisos para recibir recordatorios de tareas en este dispositivo.
+                </p>
+                <button
+                  type="button"
+                  onClick={handleEnablePush}
+                  disabled={pushLoading || permissionState === 'denied'}
+                  style={{ ...A.btnPrimary, flex: 'none', width: '100%' }}
+                >
+                  {pushLoading ? 'Activando…' : permissionState === 'denied' ? 'Permiso denegado' : 'Activar avisos push'}
+                </button>
+              </>
+            ) : (
+              <p style={{ margin: 0, fontSize: 13, color: L.ivoryMuted }}>Este navegador no soporta avisos push.</p>
+            )}
+          </div>
+        </div>
 
         {isInstalled && (
           <div style={{ ...A.section, marginTop: 12, border: '1px solid rgba(52,199,89,0.35)' }}>

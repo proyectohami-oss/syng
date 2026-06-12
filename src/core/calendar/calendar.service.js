@@ -11,6 +11,29 @@ export function isIOS() {
   return /iphone|ipad|ipod/i.test(navigator.userAgent)
 }
 
+/** Abre .ics — en iOS usa página puente con retorno a Syng. */
+export function openIosCalendarIcs(icsUrl, dest) {
+  const url = dest
+    ? `${icsUrl}${icsUrl.includes('?') ? '&' : '?'}wrap=1&dest=${encodeURIComponent(dest)}`
+    : icsUrl
+  if (isIOS()) {
+    window.location.assign(url)
+    return true
+  }
+  try {
+    const iframe = document.createElement('iframe')
+    iframe.setAttribute('aria-hidden', 'true')
+    iframe.style.cssText = 'position:fixed;width:1px;height:1px;opacity:0;pointer-events:none;border:none'
+    iframe.src = icsUrl
+    document.body.appendChild(iframe)
+    setTimeout(() => iframe.remove(), 60_000)
+    return true
+  } catch {
+    window.location.assign(icsUrl)
+    return true
+  }
+}
+
 export function recordatorioUrl(taskId) {
   return `${WEB_APP}/recordatorio/${taskId}`
 }

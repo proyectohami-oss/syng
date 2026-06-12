@@ -1,4 +1,5 @@
 import { useEffect, useState, CSSProperties } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
 import { SyngMark } from '../shared/SyngLogo'
 import { doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
 import { db } from '../firebase'

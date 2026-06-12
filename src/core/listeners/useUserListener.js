@@ -43,6 +43,10 @@ async function loadUserProfile(dispatch, firebaseUser, onSnapshotReady) {
     import('../notifications/fcm.service')
       .then(({ syncFcmToken }) => syncFcmToken(firebaseUser.uid))
       .catch(err => console.error('[UserListener] syncFcmToken:', err))
+  } else if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
+    import('../notifications/fcm.service')
+      .then(({ syncFcmToken }) => syncFcmToken(firebaseUser.uid))
+      .catch(err => console.error('[UserListener] syncFcmToken:', err))
   }
 }
 

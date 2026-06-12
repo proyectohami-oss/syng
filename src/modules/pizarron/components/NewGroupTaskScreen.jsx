@@ -4,8 +4,14 @@ import { Timestamp } from 'firebase/firestore'
 import { useTasks } from '../../../core/hooks/useTasks'
 import { usePizarronView } from '../hooks/usePizarronView'
 import { useCoreState } from '../../../core/hooks/useCoreData'
+import { generateTaskId } from '../../../core/services/tasks.service'
 import { RepeatDayPicker } from '../../../shared/RepeatDayPicker'
 import { ReminderPanel } from '../../agenda/components/ReminderPanel'
+import { SyngAvisoSheet } from '../../../shared/SyngAvisoSheet'
+import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
+import { showToast } from '../../../shared/Toast'
+import { calendarIcsUrl } from '../../../core/calendar/icsToken'
+import { openIosCalendarIcs } from '../../../core/calendar/calendar.service'
 import { useShellChrome } from '../../../shared/ShellChromeContext'
 import { L } from '../../../shared/agendaEditorial'
 import { SyngMark } from '../../../shared/SyngLogo'
@@ -116,12 +122,26 @@ export function NewGroupTaskScreen() {
   const [targetGroupId, setTargetGroupId] = useState(groupId)
   const [showGroup, setShowGroup] = useState(false)
   const [showRepeat, setShowRepeat] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [showAviso, setShowAviso] = useState(false)
+  const [showIosHelp, setShowIosHelp] = useState(false)
+  const [iosCalPayload, setIosCalPayload] = useState(null)
+  const [afterSavePath, setAfterSavePath] = useState(null)
 
   const actH24 = useMemo(() => to24h(actH12, actAmpm), [actH12, actAmpm])
   const totalOffsetMin = offD * 1440 + offH * 60 + offM
   const offsetSummary = buildOffsetLabel(offD, offH, offM)
   const taskTimeStr = `${actH12}:${pad2(actM)} ${actAmpm}`
   const reminderSummary = reminderOn ? `${taskTimeStr} · ${offsetSummary}` : 'Sin recordatorio'
+
+  const avisoNotifyLabel = useMemo(() => {
+    const activityDate = new Date(`${dateStr}T00:00:00`)
+    activityDate.setHours(actH24, actM, 0, 0)
+    const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
+    return scheduled.toLocaleString('es-MX', {
+      weekday: 'short', day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
+    })
+  }, [dateStr, actH24, actM, totalOffsetMin])
 
   useEffect(() => {
     if (isEdit && task) {
@@ -151,11 +171,11 @@ export function NewGroupTaskScreen() {
   }, [ready])
 
   useEffect(() => {
-    setHideBottomNav(panel === 'reminder' || showRepeat)
+    setHideBottomNav(panel === 'reminder' || showRepeat || showAviso || showIosHelp)
     return () => setHideBottomNav(false)
-  }, [panel, showRepeat, setHideBottomNav])
+  }, [panel, showRepeat, showAviso, showIosHelp, setHideBottomNav])
 
-  const puedeGuardar = !!title.trim()
+  const puedeGuardar = !!title.trim() && !saving
 
   function applyReminderResult({ h24, min, offsetMin }) {
     const t = from24h(h24)
@@ -170,38 +190,119 @@ export function NewGroupTaskScreen() {
     setPanel('main')
   }
 
-  function handleSave() {
-    if (!title.trim()) return
-    navigate(-1)
-
-    const finalGroupId = isEdit ? targetGroupId : groupId
+  async function commitSave(withSyngAviso) {
     const trimmed = title.trim()
+    const finalGroupId = isEdit ? targetGroupId : groupId
+    const dest = `/pizarron/${finalGroupId || groupId}`
+    setSaving(true)
+    try {
+      const { activateSyngAviso, isIOS } = await import('../../../core/calendar/calendar.service')
+      let pendingCal = null
+      let firstAviso = withSyngAviso
 
-    if (isEdit && task) {
-      const { dueDate, reminder, reminderTime } = buildDueAndReminder(
-        dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
-      )
-      updateTask(task, {
-        title: trimmed, dueDate, reminder, reminderTime,
-        groupId: finalGroupId, type: finalGroupId ? 'group' : 'personal',
-      }).catch(console.error)
-      if (repeatDays.size > 0) {
-        Array.from(repeatDays).sort().forEach(day => {
-          const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
-          createTask({ title: trimmed, type: 'group', groupId, ...extra }).catch(console.error)
-        })
+      async function saveDay(dayKey, existingTaskId) {
+        const taskId = existingTaskId || generateTaskId()
+        const { dueDate, reminder, reminderTime } = buildDueAndReminder(
+          dayKey, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
+        )
+
+        if (reminderOn) {
+          const [y, mo, d] = dayKey.split('-').map(Number)
+          const activityDate = new Date(y, mo - 1, d, actH24, actM, 0, 0)
+          const scheduled = new Date(activityDate.getTime() - totalOffsetMin * 60_000)
+          if (firstAviso) {
+            if (isIOS()) {
+              pendingCal = { taskId, title: trimmed, alarmAt: scheduled, taskTime: activityDate }
+            } else {
+              const cal = await activateSyngAviso({
+                taskId, title: trimmed, alarmAt: scheduled, taskTime: activityDate,
+              })
+              if (!cal?.ok && cal?.reason === 'too_soon') {
+                setSaving(false)
+                setShowAviso(false)
+                return false
+              }
+            }
+            firstAviso = false
+          }
+        }
+
+        if (existingTaskId && isEdit && task) {
+          await updateTask(task, {
+            title: trimmed, dueDate, reminder, reminderTime,
+            groupId: finalGroupId, type: finalGroupId ? 'group' : 'personal',
+          })
+        } else {
+          await createTask({
+            id: taskId, title: trimmed, type: 'group', groupId: finalGroupId,
+            dueDate, reminder, reminderTime,
+          })
+        }
+        return true
       }
-    } else if (repeatDays.size > 0) {
-      Array.from(repeatDays).sort().forEach(day => {
-        const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
-        createTask({ title: trimmed, type: 'group', groupId, ...extra }).catch(console.error)
-      })
-    } else {
-      const { dueDate, reminder, reminderTime } = buildDueAndReminder(
-        dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
-      )
-      createTask({ title: trimmed, type: 'group', groupId, dueDate, reminder, reminderTime }).catch(console.error)
+
+      if (isEdit && task) {
+        const ok = await saveDay(dateStr, task.id)
+        if (ok === false) return
+        for (const day of Array.from(repeatDays).sort()) {
+          const extraOk = await saveDay(day, null)
+          if (extraOk === false) return
+        }
+      } else if (repeatDays.size > 0) {
+        for (const day of Array.from(repeatDays).sort()) {
+          const ok = await saveDay(day, null)
+          if (ok === false) return
+        }
+      } else {
+        const ok = await saveDay(dateStr, null)
+        if (ok === false) return
+      }
+
+      if (pendingCal) {
+        setIosCalPayload(pendingCal)
+        setAfterSavePath(dest)
+        setShowIosHelp(true)
+        setShowAviso(false)
+        return
+      }
+
+      navigate(dest)
+    } catch (err) {
+      console.error('[NewGroupTaskScreen] save error:', err)
+    } finally {
+      setSaving(false)
+      setShowAviso(false)
     }
+  }
+
+  function continueIosCalendar() {
+    if (!iosCalPayload) return
+    const { taskId, title: tTitle, alarmAt, taskTime } = iosCalPayload
+    const finalGroupId = isEdit ? targetGroupId : groupId
+    const dest = afterSavePath || `/pizarron/${finalGroupId || groupId}`
+
+    setShowIosHelp(false)
+    setIosCalPayload(null)
+    setAfterSavePath(null)
+    showToast('Tarea guardada · confirma en Calendario', '✓')
+
+    const icsUrl = calendarIcsUrl({ taskId, title: tTitle, alarmAt, taskTime })
+
+    try {
+      sessionStorage.setItem('syng_ios_cal_return', '1')
+      sessionStorage.setItem('syng_ios_cal_dest', dest)
+    } catch { /* ignore */ }
+
+    openIosCalendarIcs(icsUrl, dest)
+  }
+
+  async function handleSave() {
+    if (!title.trim()) return
+    if (reminderOn) {
+      setShowAviso(true)
+      return
+    }
+    await commitSave(false)
   }
 
   function goBack() {
@@ -238,7 +339,7 @@ export function NewGroupTaskScreen() {
               type="button"
               onClick={handleSave}
               disabled={!puedeGuardar}
-              style={{ ...s.btnCreate, color: puedeGuardar ? L.champagne : L.ivoryFaint }}
+              style={s.btnCreate(puedeGuardar)}
             >
               {isEdit ? 'Guardar' : repeatDays.size > 0 ? `Crear ${repeatDays.size}` : 'Crear'}
             </button>
@@ -336,6 +437,25 @@ export function NewGroupTaskScreen() {
           onClose={() => setShowRepeat(false)}
         />
       )}
+
+      {showAviso && (
+        <SyngAvisoSheet
+          title={title.trim()}
+          notifyLabel={avisoNotifyLabel}
+          taskTimeLabel={taskTimeStr}
+          onActivate={() => commitSave(true)}
+          onSkip={() => commitSave(false)}
+          onClose={() => setShowAviso(false)}
+        />
+      )}
+
+      {showIosHelp && (
+        <SyngAvisoIosHelp
+          title={title.trim()}
+          notifyLabel={avisoNotifyLabel}
+          onContinue={continueIosCalendar}
+        />
+      )}
     </div>
   )
 }
@@ -364,7 +484,20 @@ const s = {
   btnCancel: { background: 'none', border: 'none', fontSize: 15, color: L.ivoryMuted, cursor: 'pointer', textAlign: 'left' },
   headerTitle: { margin: 0, fontSize: 15, fontWeight: 500, color: L.ivory, textAlign: 'center', fontFamily: L.serif },
   groupName: { fontSize: 11, color: L.ivoryFaint, marginTop: 1 },
-  btnCreate: { background: 'none', border: 'none', fontSize: 15, fontWeight: 600, cursor: 'pointer', textAlign: 'right' },
+  btnCreate: active => ({
+    justifySelf: 'end',
+    padding: '8px 14px',
+    minHeight: 36,
+    borderRadius: 2,
+    border: `1px solid ${active ? L.ivory : 'rgba(196,169,98,0.2)'}`,
+    background: active ? L.ivory : 'rgba(255,255,255,0.06)',
+    color: active ? L.ink : L.ivoryFaint,
+    fontSize: 12,
+    fontWeight: 700,
+    letterSpacing: '0.1em',
+    textTransform: 'uppercase',
+    cursor: active ? 'pointer' : 'default',
+  }),
   content: { flex: 1, minHeight: 0, overflow: 'auto', padding: '12px 16px', WebkitOverflowScrolling: 'touch' },
   subPanel: { flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column' },
   titleCard: {

@@ -67,8 +67,9 @@ export async function scheduleReminder({
     tzOffsetMin: -new Date().getTimezoneOffset(),
     status: 'pending',
     delivery: 'calendar',
+    updatedAt: serverTimestamp(),
     createdAt: serverTimestamp(),
-  })
+  }, { merge: true })
 }
 
 /** Desde objeto reminder de la UI + dueDate de la tarea. */
