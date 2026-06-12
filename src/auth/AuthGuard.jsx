@@ -62,14 +62,7 @@ export function AuthGuard({ children }) {
 
   if (auth.userData && !auth.userData.phoneNumber) return <PhoneSetupScreen />
 
-  if (!auth.userData) {
-    return (
-      <LoadingScreen
-        message="Cargando tu perfil…"
-        onRetry={() => window.location.reload()}
-      />
-    )
-  }
+  if (!auth.userData) return <LoadingScreen message="Cargando tu perfil…" />
 
   if (showBienvenida) {
     return <BienvenidaScreen
@@ -83,7 +76,7 @@ export function AuthGuard({ children }) {
   return children
 }
 
-function LoadingScreen({ message, onRetry }) {
+function LoadingScreen({ message }) {
   return (
     <div style={{
       flex: 1, minHeight: 0,
@@ -95,16 +88,6 @@ function LoadingScreen({ message, onRetry }) {
       <style>{'@keyframes syngFadeIn { from { opacity:0 } to { opacity:1 } }'}</style>
       <SyngLogo size="md" />
       {message && <p style={{ margin: 0, fontSize: 14, color: L.ivoryMuted }}>{message}</p>}
-      {onRetry && (
-        <button type="button" onClick={onRetry} style={{
-          padding: '10px 20px', borderRadius: 2,
-          border: `1px solid ${L.ivory}`, background: L.ivory,
-          color: L.ink, fontSize: 13, fontWeight: 600, letterSpacing: '0.08em',
-          textTransform: 'uppercase', cursor: 'pointer',
-        }}>
-          Reintentar
-        </button>
-      )}
     </div>
   )
 }

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react'
 import { Capacitor } from '@capacitor/core'
 import { onAuthStateChanged } from 'firebase/auth'
-import { doc, onSnapshot, getDoc } from 'firebase/firestore'
+import { doc, onSnapshot } from 'firebase/firestore'
 import { auth, db } from '../../firebase'
 import { CORE_ACTIONS } from '../store/coreActions'
 import { upsertUser } from '../services/users.service'
@@ -26,20 +26,19 @@ function dispatchUserData(dispatch, snap, firebaseUser) {
   })
 }
 
-async function loadUserProfile(dispatch, firebaseUser) {
+async function loadUserProfile(dispatch, firebaseUser, onSnapshotReady) {
   dispatch({ type: CORE_ACTIONS.SET_AUTH_USER, user: firebaseUser })
-  try {
-    await upsertUser({
-      uid:         firebaseUser.uid,
-      displayName: firebaseUser.displayName ?? '',
-      email:       firebaseUser.email       ?? '',
-    })
-    const snap = await getDoc(doc(db, 'users', firebaseUser.uid))
-    dispatchUserData(dispatch, snap, firebaseUser)
-  } catch (error) {
-    console.error('[UserListener] upsertUser:', error)
-    dispatchUserData(dispatch, null, firebaseUser)
-  }
+  // Fallback inmediato — nunca bloquear la entrada por red lenta
+  dispatchUserData(dispatch, null, firebaseUser)
+
+  onSnapshotReady(firebaseUser)
+
+  upsertUser({
+    uid:         firebaseUser.uid,
+    displayName: firebaseUser.displayName ?? '',
+    email:       firebaseUser.email       ?? '',
+  }).catch(error => console.error('[UserListener] upsertUser:', error))
+
   if (Capacitor.isNativePlatform()) {
     import('../notifications/fcm.service')
       .then(({ syncFcmToken }) => syncFcmToken(firebaseUser.uid))
@@ -52,39 +51,33 @@ export function useUserListener(dispatch) {
   const bootstrappedRef = useRef(false)
 
   useEffect(() => {
-    let unsubAuth = () => {}
+    consumeGoogleRedirect().catch(() => {})
 
-    async function init() {
-      await consumeGoogleRedirect()
+    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      if (!bootstrappedRef.current) {
+        bootstrappedRef.current = true
+        notifyAuthBootstrapped()
+      }
 
-      unsubAuth = onAuthStateChanged(auth, async (firebaseUser) => {
-        if (!bootstrappedRef.current) {
-          bootstrappedRef.current = true
-          notifyAuthBootstrapped()
-        }
+      if (unsubUserDocRef.current) {
+        unsubUserDocRef.current()
+        unsubUserDocRef.current = null
+      }
 
-        if (unsubUserDocRef.current) {
-          unsubUserDocRef.current()
-          unsubUserDocRef.current = null
-        }
+      if (!firebaseUser) {
+        dispatch({ type: CORE_ACTIONS.SET_AUTH_USER, user: null })
+        dispatch({ type: CORE_ACTIONS.SET_USER_DATA, userData: null })
+        return
+      }
 
-        if (!firebaseUser) {
-          dispatch({ type: CORE_ACTIONS.SET_AUTH_USER, user: null })
-          dispatch({ type: CORE_ACTIONS.SET_USER_DATA, userData: null })
-          return
-        }
-
-        await loadUserProfile(dispatch, firebaseUser)
-
+      loadUserProfile(dispatch, firebaseUser, (user) => {
         unsubUserDocRef.current = onSnapshot(
-          doc(db, 'users', firebaseUser.uid),
-          (snap) => dispatchUserData(dispatch, snap, firebaseUser),
+          doc(db, 'users', user.uid),
+          (snap) => dispatchUserData(dispatch, snap, user),
           (error) => console.error('[UserListener] snapshot:', error),
         )
       })
-    }
-
-    init()
+    })
 
     return () => {
       unsubAuth()
