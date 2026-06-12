@@ -1,4 +1,6 @@
 /** Estética aviso Syng — editorial, sobria, champagne sobre negro */
+import { createPortal } from 'react-dom'
+
 export const L = {
   ink: '#0A0A0A',
   inkSoft: '#141414',
@@ -22,8 +24,25 @@ export const luxuryCss = `
 }
 `
 
+export function LuxuryPortal({ children }) {
+  if (typeof document === 'undefined') return children
+  return createPortal(children, document.body)
+}
+
 export function LuxuryKeyframes() {
   return <style>{luxuryCss}</style>
+}
+
+export const luxuryFullscreen = {
+  position: 'fixed',
+  inset: 0,
+  zIndex: 100000,
+  background: L.ink,
+  color: L.ivory,
+  overflowY: 'auto',
+  WebkitOverflowScrolling: 'touch',
+  padding:
+    'max(20px, env(safe-area-inset-top)) 22px max(28px, calc(env(safe-area-inset-bottom) + 12px))',
 }
 
 export function LuxuryHandle() {

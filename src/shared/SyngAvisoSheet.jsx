@@ -8,8 +8,8 @@ import {
   LuxuryBadge,
   LuxuryDivider,
   LuxuryTimeCard,
-  luxuryOverlay,
-  luxurySheet,
+  LuxuryPortal,
+  luxuryFullscreen,
   luxuryBtnPrimary,
   luxuryBtnGhost,
 } from './avisoLuxury'
@@ -23,10 +23,10 @@ export function SyngAvisoSheet({
   onClose,
 }) {
   return (
-    <>
+    <LuxuryPortal>
       <LuxuryKeyframes />
-      <div style={luxuryOverlay} onClick={onClose}>
-        <div style={luxurySheet} onClick={(e) => e.stopPropagation()}>
+      <div style={luxuryFullscreen} onClick={onClose}>
+        <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: 480, margin: '0 auto' }}>
           <LuxuryHandle />
           <LuxuryBadge>Aviso personal</LuxuryBadge>
 
@@ -72,6 +72,6 @@ export function SyngAvisoSheet({
           </button>
         </div>
       </div>
-    </>
+    </LuxuryPortal>
   )
 }

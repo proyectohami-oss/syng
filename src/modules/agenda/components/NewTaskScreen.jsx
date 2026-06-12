@@ -128,9 +128,9 @@ export function NewTaskScreen() {
   }, [])
 
   useEffect(() => {
-    setHideBottomNav(panel === 'reminder')
+    setHideBottomNav(panel === 'reminder' || showAviso || showIosHelp)
     return () => setHideBottomNav(false)
-  }, [panel, setHideBottomNav])
+  }, [panel, showAviso, showIosHelp, setHideBottomNav])
 
   const repeatSummary = useMemo(() => {
     if (repeatMode === 'daily') return 'Diario'
