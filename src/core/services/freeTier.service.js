@@ -15,6 +15,8 @@ import { db } from '../../firebase'
 
 export const DEFAULT_FREE_MOVEMENTS = 270
 
+const DEVICE_KEY = 'syng_device_id'
+
 export function getDeviceId() {
   try {
     let id = localStorage.getItem(DEVICE_KEY)

@@ -68,25 +68,19 @@
       e.preventDefault();
       window.__installPrompt = e;
     });
-    /* Recuperación: SW roto tras deploy deja pantalla negra — limpiar una vez */
+    /* Quitar SW en iOS — causa pantalla negra tras deploys */
     (function() {
       if (!("serviceWorker" in navigator)) return;
-      if (sessionStorage.getItem("syng_sw_reset_v3")) return;
       navigator.serviceWorker.getRegistrations().then(function(regs) {
         if (!regs.length) return;
         return Promise.all(regs.map(function(r) { return r.unregister(); }));
-      }).then(function(did) {
-        if (!did) return;
-        if (window.caches && caches.keys) {
-          return caches.keys().then(function(keys) {
-            return Promise.all(keys.map(function(k) { return caches.delete(k); }));
-          });
-        }
-      }).then(function() {
-        sessionStorage.setItem("syng_sw_reset_v3", "1");
-        location.reload();
       }).catch(function() {});
     })();
+    window.addEventListener("error", function(e) {
+      var el = document.getElementById("syng-boot");
+      if (!el) return;
+      el.innerHTML = "<div style=\"padding:24px;text-align:center\"><p style=\"margin:0 0 12px;font-size:16px\">No se pudo cargar Syng</p><button type=\"button\" onclick=\"location.reload()\" style=\"padding:10px 18px;border:1px solid #FAF8F5;background:#FAF8F5;color:#0A0A0A;border-radius:2px;font-size:14px\">Reintentar</button></div>";
+    }, true);
   </script>
 </head>
 <body>

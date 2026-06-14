@@ -16,9 +16,16 @@ import {
   CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore'
 
-/** En app nativa el authDomain debe ser firebaseapp.com, no la URL de Vercel. */
+function isIOSWeb() {
+  if (typeof navigator === 'undefined') return false
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
+/** iOS web: firebaseapp.com + sin IndexedDB — evita pantalla negra por auth/Firestore colgado. */
 function authDomainForApp() {
   if (Capacitor.isNativePlatform()) return 'syng-app.firebaseapp.com'
+  if (isIOSWeb()) return 'syng-app.firebaseapp.com'
   if (typeof window !== 'undefined') {
     const { hostname, host } = window.location
     if (hostname !== 'localhost' && hostname !== '127.0.0.1') return host
@@ -38,6 +45,9 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 
 function createAuth() {
+  if (isIOSWeb() && !Capacitor.isNativePlatform()) {
+    return getAuth(app)
+  }
   try {
     return initializeAuth(app, {
       persistence: [indexedDBLocalPersistence, browserLocalPersistence],
@@ -51,6 +61,9 @@ function createAuth() {
 export const auth = createAuth()
 
 function createDb() {
+  if (isIOSWeb() && !Capacitor.isNativePlatform()) {
+    return getFirestore(app)
+  }
   try {
     return initializeFirestore(app, {
       localCache: persistentLocalCache({

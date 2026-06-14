@@ -67,7 +67,7 @@ export function useUserListener(dispatch) {
       bootstrappedRef.current = true
       markBootstrapped()
       dispatch({ type: CORE_ACTIONS.AUTH_BOOT_TIMEOUT })
-    }, 5000)
+    }, 2000)
 
     consumeGoogleRedirect().catch(() => {})
 

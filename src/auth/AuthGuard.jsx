@@ -46,7 +46,7 @@ export function AuthGuard({ children }) {
     }
   }, [auth?.user, auth?.userData, navigate])
 
-  if (!auth || auth.loading) return <LoadingScreen />
+  if (!auth || auth.loading) return <LoadingScreen message="Iniciando Syng…" />
 
   if (!auth.user) {
     const params = new URLSearchParams(window.location.search)
