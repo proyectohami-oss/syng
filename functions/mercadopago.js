@@ -381,8 +381,10 @@ const createMercadoPagoCheckout = onRequest({
       }),
     })
 
-    // Con credenciales de prueba hay que usar sandbox_init_point
-    const checkoutUrl = preference.sandbox_init_point || preference.init_point
+    // Sandbox: sandbox_init_point. Producción: init_point (no mezclar).
+    const checkoutUrl = production
+      ? (preference.init_point || preference.sandbox_init_point)
+      : (preference.sandbox_init_point || preference.init_point)
     if (!checkoutUrl) {
       return res.status(502).json({ error: 'Mercado Pago no devolvió URL de pago' })
     }
