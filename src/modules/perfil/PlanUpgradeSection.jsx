@@ -58,9 +58,35 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado,
     return () => { cancelled = true }
   }, [currentPlanId, systemConfig, onError])
 
+  useEffect(() => {
+    function clearCheckoutOverlay() {
+      setCheckoutBusy(false)
+      setCheckoutId(null)
+      sessionStorage.removeItem('syng_checkout_pending')
+    }
+
+    const pago = new URLSearchParams(window.location.search).get('pago')
+    if (pago || sessionStorage.getItem('syng_checkout_pending') === '1') {
+      clearCheckoutOverlay()
+    }
+
+    const onPageShow = (e) => {
+      if (e.persisted || document.visibilityState === 'visible') {
+        clearCheckoutOverlay()
+      }
+    }
+    window.addEventListener('pageshow', onPageShow)
+    document.addEventListener('visibilitychange', onPageShow)
+    return () => {
+      window.removeEventListener('pageshow', onPageShow)
+      document.removeEventListener('visibilitychange', onPageShow)
+    }
+  }, [])
+
   async function handlePay(planId) {
     setCheckoutId(planId)
     setCheckoutBusy(true)
+    sessionStorage.setItem('syng_checkout_pending', '1')
     onError?.(null)
     onCheckoutStart?.()
     try {
