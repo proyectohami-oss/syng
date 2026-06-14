@@ -19,6 +19,12 @@ export function isStandalonePwa() {
     || window.navigator.standalone === true
 }
 
+export function isIOSWeb() {
+  if (typeof navigator === 'undefined') return false
+  return /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+}
+
 /**
  * Web/PWA: popup primero. App nativa: redirect (popup abre Chrome y te saca a Vercel).
  */
@@ -34,8 +40,9 @@ export function beginGoogleSignIn() {
 
   if (!isStandalonePwa()) return popup
 
-  // App instalada: popup primero; si falla ("Unable to process request"), redirect
+  // PWA iOS: popup; redirect solo si no es iPhone (Safari ITP rompía el estado).
   return popup.catch((err) => {
+    if (isIOSWeb()) throw err
     console.warn('[Auth] popup en PWA falló, intentando redirect:', err?.code)
     return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
   })

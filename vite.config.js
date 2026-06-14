@@ -52,4 +52,20 @@ export default defineConfig({
       },
     },
   },
+
+  server: {
+    proxy: {
+      '/__/auth': {
+        target:       'https://syng-app.firebaseapp.com',
+        changeOrigin: true,
+        secure:       true,
+      },
+      '/api/checkout': {
+        target:       'https://us-central1-syng-app.cloudfunctions.net',
+        changeOrigin: true,
+        secure:       true,
+        rewrite:      () => '/createMercadoPagoCheckout',
+      },
+    },
+  },
 })

@@ -4,6 +4,7 @@ import { useDayView } from './hooks/useDayView'
 import { DayTaskItem } from './components/DayTaskItem'
 import { useTasks } from '../../core/hooks/useTasks'
 import { useCoreState } from '../../core/hooks/useCoreData'
+import { useFreeTierBlocked } from '../../core/hooks/useFreeTierGuard'
 import { ConfirmDialog } from '../../shared/ConfirmDialog'
 import { TaskFormNew } from '../../shared/TaskFormNew'
 import { Timestamp } from 'firebase/firestore'
@@ -53,6 +54,7 @@ export function DayModule() {
   const state = useCoreState()
   const { pending, completed, getGroupName } = useDayView(date)
   const { toggleStatus, deleteTask, updateTask } = useTasks()
+  const readOnly = useFreeTierBlocked()
   const groups = useMemo(() => Array.from(state.groups.list.values()), [state.groups.list])
 
   const [selectedIds, setSelectedIds] = useState(new Set())
@@ -117,17 +119,17 @@ export function DayModule() {
             task={task}
             groupName={getGroupName(task.groupId)}
             onToggle={toggleStatus}
-            onEdit={t => setModal({ tipo:'editar', task:t })}
             onDelete={t => { hideLocally(t.id); setModal({ tipo:'borrar', task:t }) }}
             selected={selectedIds.has(task.id)}
             onCircleTap={toggleSeleccion}
-            hasSelection={haySeleccion}
+            hasSelection={!readOnly && haySeleccion}
+            readOnly={readOnly}
             variant="pending"
           />
         ))}
 
         {/* Toolbar sticky con emojis 3D */}
-        {haySeleccion && (
+        {haySeleccion && !readOnly && (
           <div style={{ position:'sticky', bottom:12, zIndex:500, margin:'12px 0' }}>
             <div style={{
               height: 72,
@@ -167,11 +169,11 @@ export function DayModule() {
                 task={task}
                 groupName={getGroupName(task.groupId)}
                 onToggle={toggleStatus}
-                onEdit={t => setModal({ tipo:'editar', task:t })}
                 onDelete={t => { hideLocally(t.id); setModal({ tipo:'borrar', task:t }) }}
                 selected={selectedIds.has(task.id)}
                 onCircleTap={toggleSeleccion}
-                hasSelection={haySeleccion}
+                hasSelection={!readOnly && haySeleccion}
+                readOnly={readOnly}
                 variant="completed"
               />
             ))}
@@ -180,7 +182,7 @@ export function DayModule() {
       </div>
 
       {/* ── FAB: Nueva tarea — esquina inferior derecha ── */}
-      {!haySeleccion && (
+      {!haySeleccion && !readOnly && (
         <button
           type="button"
           onClick={() => navigate(`/agenda/${date}/nueva`)}

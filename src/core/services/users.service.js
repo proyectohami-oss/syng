@@ -54,6 +54,7 @@ import {
   limit,
 } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { isPhoneFreeTierExhausted, freeTierBlockedMessage } from './freeTier.service'
 
 /**
  * Create or overwrite a user document on first login.
@@ -213,6 +214,9 @@ export async function updatePhoneNumber(uid, rawPhone) {
   const phoneNumber = normalizePhone(rawPhone)
   const taken = await isPhoneTaken(phoneNumber, uid)
   if (taken) throw new Error('Este número ya está registrado en otra cuenta.')
+  if (await isPhoneFreeTierExhausted(phoneNumber)) {
+    throw new Error(freeTierBlockedMessage('phone'))
+  }
   await updateDoc(doc(db, 'users', uid), {
     phoneNumber,
     updatedAt: serverTimestamp(),

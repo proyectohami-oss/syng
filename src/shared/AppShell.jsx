@@ -28,6 +28,7 @@ import { useShellChrome }             from './ShellChromeContext'
 import { SyngLogoRow }                from './SyngLogo'
 import { L } from './agendaEditorial'
 import { usePushNotifications } from '../core/notifications/usePushNotifications'
+import { FreeTierBanner } from './FreeTierBanner'
 
 async function shareApp() {
   const data = {
@@ -119,7 +120,7 @@ export function AppShell({ children }) {
   const [historial, setHistorial]             = useState([])
   const mediaRecorderRef = useRef(null)
   const chunksRef        = useRef([])
-  const tieneSyngAI      = false // Pendiente app nativa — oculto en web
+  const tieneSyngAI      = false // Syng AI — pausado; analizar fluidez de comunicación antes de activar
 
   async function toggleSyng() {
     if (syngCargando) return
@@ -318,6 +319,7 @@ export function AppShell({ children }) {
       <div style={{ flex:1, display:'flex', flexDirection:'column', overflow:'hidden', minWidth:0, background:'transparent' }}>
 
         <main style={{ flex:1, overflow:'hidden', display:'flex', flexDirection:'column', minHeight:0, background:'transparent', isolation:'isolate' }}>
+          <FreeTierBanner />
           {children}
         </main>
 

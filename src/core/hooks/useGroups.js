@@ -11,14 +11,35 @@ import {
   createInvitationLink as createInvitationLinkService,
 } from '../services/invitations.service'
 import { addMember } from '../services/groups.service'
+import { assertFreeTierCanWrite, PlanLimitError } from '../services/movements.service'
+import { showToast } from '../../shared/Toast'
 
 export function useGroups() {
   const { state, dispatch } = useCoreData()
+
+  function guardFreeWrite() {
+    assertFreeTierCanWrite(
+      state.auth.subscription,
+      state.auth.plan,
+      state.auth.subscription?.planId ?? 'gratis',
+      state.auth.systemConfig,
+    )
+  }
+
+  function tryGuardFreeWrite() {
+    try {
+      guardFreeWrite()
+    } catch (error) {
+      if (error instanceof PlanLimitError) showToast(error.message, '⚠️')
+      throw error
+    }
+  }
 
   const createGroup = useCallback(async ({ name }) => {
     const uid      = state.auth.user?.uid
     const userData = state.auth.userData
     if (!uid || !userData) throw new Error('Not authenticated')
+    tryGuardFreeWrite()
     const { id } = await groupsService.createGroup({
       name,
       adminId:          uid,
@@ -26,9 +47,10 @@ export function useGroups() {
       adminEmail:       userData.email ?? '',
     })
     return id
-  }, [state.auth.user, state.auth.userData])
+  }, [state.auth.user, state.auth.userData, state.auth.subscription, state.auth.plan, state.auth.systemConfig])
 
   const updateGroupName = useCallback(async (groupId, name) => {
+    tryGuardFreeWrite()
     const group = state.groups.list.get(groupId)
     if (!group) throw new Error('Group not found')
     dispatch({ type: CORE_ACTIONS.GROUP_UPDATED_OPTIMISTIC, group: { ...group, name } })
@@ -38,15 +60,17 @@ export function useGroups() {
       dispatch({ type: CORE_ACTIONS.GROUP_UPDATED_OPTIMISTIC, group })
       throw error
     }
-  }, [state.groups.list, dispatch])
+  }, [state.groups.list, dispatch, state.auth.subscription, state.auth.plan, state.auth.systemConfig])
 
   const deleteGroup = useCallback(async (groupId) => {
+    tryGuardFreeWrite()
     const membersMap = state.groups.members.get(groupId) ?? new Map()
     const memberIds  = Array.from(membersMap.keys())
     await groupsService.deleteGroup(groupId, memberIds)
-  }, [state.groups.members])
+  }, [state.groups.members, state.auth.subscription, state.auth.plan, state.auth.systemConfig])
 
   const inviteUser = useCallback(async ({ groupId, email }) => {
+    tryGuardFreeWrite()
     const uid      = state.auth.user?.uid
     const userData = state.auth.userData
     const group    = state.groups.list.get(groupId)
@@ -58,9 +82,10 @@ export function useGroups() {
       invitedByUid:  uid,
       invitedByName: userData.displayName ?? uid,
     })
-  }, [state.auth.user, state.auth.userData, state.groups.list])
+  }, [state.auth.user, state.auth.userData, state.auth.subscription, state.auth.plan, state.auth.systemConfig, state.groups.list])
 
   const acceptInvitation = useCallback(async ({ invitationId, groupId, invitedBy }) => {
+    tryGuardFreeWrite()
     const uid      = state.auth.user?.uid
     const userData = state.auth.userData
     if (!uid || !userData) throw new Error('Not authenticated')
@@ -72,11 +97,12 @@ export function useGroups() {
       email:       userData.email ?? '',
       invitedBy,
     })
-  }, [state.auth.user, state.auth.userData])
+  }, [state.auth.user, state.auth.userData, state.auth.subscription, state.auth.plan, state.auth.systemConfig])
 
   const removeMember = useCallback(async ({ groupId, targetUid }) => {
+    tryGuardFreeWrite()
     await membersService.removeMember({ groupId, targetUid })
-  }, [])
+  }, [state.auth.subscription, state.auth.plan, state.auth.systemConfig])
 
   const leaveGroup = useCallback(async (groupId) => {
     const uid        = state.auth.user?.uid
@@ -96,16 +122,19 @@ export function useGroups() {
   }, [state.auth.user, state.groups.list, state.groups.members, dispatch])
 
   const transferAdmin = useCallback(async ({ groupId, newAdminUid }) => {
+    tryGuardFreeWrite()
     const uid = state.auth.user?.uid
     if (!uid) throw new Error('Not authenticated')
     await membersService.transferAdmin({ groupId, currentAdminUid: uid, newAdminUid })
-  }, [state.auth.user])
+  }, [state.auth.user, state.auth.subscription, state.auth.plan, state.auth.systemConfig])
 
   const addMemberByPhone = useCallback(async ({ groupId, phone }) => {
     const uid      = state.auth.user?.uid
     const userData = state.auth.userData
     const group    = state.groups.list.get(groupId)
     if (!uid || !userData || !group) throw new Error('Invalid state')
+
+    tryGuardFreeWrite()
 
     const found = await findUserByPhone(phone)
     if (found) {
@@ -134,7 +163,7 @@ export function useGroups() {
       phoneNumber,
     })
     return { status: 'invited', displayName: phoneNumber }
-  }, [state.auth.user, state.auth.userData, state.groups.list])
+  }, [state.auth.user, state.auth.userData, state.auth.subscription, state.auth.plan, state.auth.systemConfig, state.groups.list])
 
   const cancelInvitation = useCallback(async (invitationId) => {
     await cancelInvitationService(invitationId)
@@ -142,6 +171,7 @@ export function useGroups() {
 
 
   const createInvitationLink = useCallback(async ({ groupId, groupName, inviterName }) => {
+    tryGuardFreeWrite()
     const uid      = state.auth.user?.uid
     const userData = state.auth.userData
     const group    = state.groups.list.get(groupId)
@@ -152,7 +182,7 @@ export function useGroups() {
       inviterUid:  uid,
       inviterName: inviterName || userData.displayName || '',
     })
-  }, [state.auth.user, state.auth.userData, state.groups.list])
+  }, [state.auth.user, state.auth.userData, state.auth.subscription, state.auth.plan, state.auth.systemConfig, state.groups.list])
 
   return {
     createGroup,

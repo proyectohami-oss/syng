@@ -16,6 +16,10 @@ import { createRoot }   from 'react-dom/client'
 import { App }          from './App'
 import { registerSW }   from './pwa/registerSW'
 import { isNativeApp }  from './core/notifications/native-push.service'
+import { consumeGoogleRedirect } from './auth/authBootstrap'
+
+// Antes de React — no perder estado del redirect de Google (Safari/PWA).
+consumeGoogleRedirect()
 
 const root = document.getElementById('root')
 if (!root) throw new Error('[Syng] #root element not found in index.html')

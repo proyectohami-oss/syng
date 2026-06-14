@@ -6,8 +6,11 @@
  */
 import { useEffect, useRef } from 'react'
 import { rolloverPersonalTasks } from '../services/rollover.service'
+import { useCoreAuth } from './useCoreData'
+import { isFreePlanExhausted } from '../services/movements.service'
 
 export function useRollover(uid) {
+  const auth = useCoreAuth()
   const ranTodayRef = useRef(null)
 
   useEffect(() => {
@@ -19,6 +22,9 @@ export function useRollover(uid) {
     }
 
     async function run() {
+      const planId = auth.subscription?.planId ?? 'gratis'
+      if (isFreePlanExhausted(auth.subscription, planId, auth.plan, auth.systemConfig)) return
+
       const today = getTodayStr()
       if (ranTodayRef.current === today) return
       ranTodayRef.current = today
@@ -44,5 +50,5 @@ export function useRollover(uid) {
       clearTimeout(timeoutId)
       if (intervalId) clearInterval(intervalId)
     }
-  }, [uid])
+  }, [uid, auth.subscription, auth.plan, auth.systemConfig])
 }

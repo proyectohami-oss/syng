@@ -44,8 +44,8 @@ export function AuthScreen() {
       'access_denied':                 'Acceso cancelado. Intenta de nuevo.',
       'redirect_failed':               'Safari bloqueó el acceso. Ve a Ajustes → Safari → desactiva "Evitar rastreo entre sitios" e intenta otra vez.',
     }
-    if (code?.includes('Unable to process')) {
-      return 'Safari bloqueó Google. Usa correo y contraseña, o abre syng-psi.vercel.app en una ventana normal de Safari.'
+    if (code?.includes('Unable to process') || code?.includes('missing initial state')) {
+      return 'Safari bloqueó Google. Abre syng-psi.vercel.app en Safari (no desde el ícono), o usa correo y contraseña.'
     }
     return map[code] ?? 'Ocurrió un error. Intenta de nuevo.'
   }

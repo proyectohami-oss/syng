@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useCoreGroups } from '../../core/hooks/useCoreData'
+import { useFreeTierBlocked } from '../../core/hooks/useFreeTierGuard'
 import { GroupForm } from '../../shared/GroupForm'
 import { A, L } from '../../shared/agendaEditorial'
 
@@ -8,6 +9,7 @@ export function PizarronesModule() {
   const navigate   = useNavigate()
   const groupsCtx  = useCoreGroups()
   const groups     = Array.from(groupsCtx.list.values())
+  const readOnly     = useFreeTierBlocked()
   const [showForm, setShowForm] = useState(false)
 
   return (
@@ -17,7 +19,9 @@ export function PizarronesModule() {
 
         <div style={A.stickyHeader}>
           <span style={{ ...A.headerTitle, flex: 1 }}>Pizarrones</span>
-          <button onClick={() => setShowForm(true)} style={A.btnNew}>+ Nuevo grupo</button>
+          {!readOnly && (
+            <button onClick={() => setShowForm(true)} style={A.btnNew}>+ Nuevo grupo</button>
+          )}
         </div>
 
         {groups.length === 0 ? (
@@ -26,9 +30,11 @@ export function PizarronesModule() {
             <p style={{ fontSize: 14, color: L.ivoryMuted, margin: 0, textAlign: 'center', lineHeight: 1.5 }}>
               Crea un grupo para colaborar con otras personas.
             </p>
-            <button onClick={() => setShowForm(true)} style={{ ...A.btnPrimary, flex: 'none', marginTop: 8, padding: '12px 24px' }}>
-              Crear primer pizarrón
-            </button>
+            {!readOnly && (
+              <button onClick={() => setShowForm(true)} style={{ ...A.btnPrimary, flex: 'none', marginTop: 8, padding: '12px 24px' }}>
+                Crear primer pizarrón
+              </button>
+            )}
           </div>
         ) : (
           <div style={{ padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 10 }}>

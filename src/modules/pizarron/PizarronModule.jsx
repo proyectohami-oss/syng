@@ -6,6 +6,7 @@ import { useTasks }                    from '../../core/hooks/useTasks'
 import { useGroups }                   from '../../core/hooks/useGroups'
 import { usePermissions }              from '../../core/hooks/usePermissions'
 import { useCoreState }                from '../../core/hooks/useCoreData'
+import { useFreeTierBlocked }          from '../../core/hooks/useFreeTierGuard'
 import { ReminderBell } from '../../shared/ReminderBell'
 import { taskHasReminder } from '../../core/tasks/taskReminder'
 import { EmptyState }                  from '../../shared/EmptyState'
@@ -199,6 +200,7 @@ export function PizarronModule() {
   const { toggleStatus, deleteTask, updateTask } = useTasks()
   const { leaveGroup, deleteGroup }              = useGroups()
   const perms = usePermissions(groupId)
+  const readOnly = useFreeTierBlocked()
 
   const { days, selectedKey, setSelectedKey, selectedDate, pending, completed, daysWithActivity, todayKey } = usePizarronDayView(tasks)
 
@@ -478,7 +480,7 @@ export function PizarronModule() {
       </div>
 
       {/* Barra de selección */}
-      {haySeleccion && (
+      {haySeleccion && !readOnly && (
         <div style={barraSeleccion}>
           <span style={{ fontSize:13, color:L.ivory, fontWeight:500 }}>
             {selectedIds.size} seleccionada{selectedIds.size !== 1 ? 's' : ''}
@@ -511,7 +513,7 @@ export function PizarronModule() {
         />
       )}
 
-      {perms.canCreateGroupTask && !haySeleccion && (
+      {perms.canCreateGroupTask && !haySeleccion && !readOnly && (
         <button onClick={() => navigate(`/pizarron/${groupId}/nueva/${selectedKey}`)} style={fabBtn}>
           <span style={{ fontSize:15, fontWeight:600 }}>+ Añadir tarea</span>
         </button>

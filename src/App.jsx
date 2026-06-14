@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useNavigate } from 'react-route
 import { useEffect } from 'react'
 import { CoreDataProvider }  from './core/CoreDataProvider'
 import { AuthGuard }         from './auth/AuthGuard'
+import { FreeTierGate }      from './core/hooks/useFreeTierGuard'
 import { InvitationChecker } from './auth/InvitationChecker'
 import { AppShell }          from './shared/AppShell'
 import { ShellChromeProvider } from './shared/ShellChromeContext'
@@ -99,6 +100,7 @@ function AppWithViewport() {
         <Route path="*" element={
       <AuthGuard>
         <InvitationChecker>
+          <FreeTierGate>
           <ShellChromeProvider>
           <AppShell>
             <Routes>
@@ -122,6 +124,7 @@ function AppWithViewport() {
             </Routes>
           </AppShell>
           </ShellChromeProvider>
+          </FreeTierGate>
         </InvitationChecker>
       </AuthGuard>
         } />

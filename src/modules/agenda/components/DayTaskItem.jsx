@@ -1,12 +1,10 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { A, L } from '../../../shared/agendaEditorial'
 import { ReminderBell } from '../../../shared/ReminderBell'
 import { taskHasReminder, formatTaskReminderTime } from '../../../core/tasks/taskReminder'
 
-export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selected, onCircleTap, hasSelection, variant }) {
+export function DayTaskItem({ task, groupName, onToggle, onDelete, selected, onCircleTap, hasSelection, variant, readOnly = false }) {
   const [localDone, setLocalDone] = useState(task.status === 'completed')
-  const longPressRef = useRef(null)
-  const suppressTapRef = useRef(false)
   useEffect(() => { setLocalDone(task.status === 'completed') }, [task.status])
 
   const isGroup = !!groupName
@@ -15,34 +13,17 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
   const hasReminder = taskHasReminder(task)
   const reminderLabel = formatTaskReminderTime(task)
 
-  async function handleToggle() {
+  async function handleTextTap() {
+    if (readOnly || hasSelection) return
     const prev = localDone
     setLocalDone(!prev)
     try { await onToggle(task) } catch { setLocalDone(prev) }
   }
 
-  function handleBodyTap() {
-    if (hasSelection || suppressTapRef.current) {
-      suppressTapRef.current = false
-      return
-    }
-    onEdit?.(task)
-  }
-
-  function startLongPress() {
-    clearTimeout(longPressRef.current)
-    longPressRef.current = setTimeout(() => {
-      longPressRef.current = null
-      if (!hasSelection) {
-        suppressTapRef.current = true
-        handleToggle()
-      }
-    }, 480)
-  }
-
-  function cancelLongPress() {
-    clearTimeout(longPressRef.current)
-    longPressRef.current = null
+  function handleCircleTap(e) {
+    e.stopPropagation()
+    if (readOnly) return
+    onCircleTap?.(task.id)
   }
 
   const dueLabel = task.dueDate ? (() => {
@@ -62,19 +43,20 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
     }}>
       <button
         type="button"
-        onClick={e => { e.stopPropagation(); onCircleTap(task.id) }}
+        onClick={handleCircleTap}
         style={{
           flexShrink: 0,
           width: 28,
           height: 28,
           borderRadius: 2,
-          cursor: 'pointer',
+          cursor: readOnly ? 'default' : 'pointer',
           padding: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           transition: 'all 0.18s ease',
           WebkitTapHighlightColor: 'transparent',
+          opacity: readOnly ? 0.45 : 1,
           ...(selected ? {
             background: L.champagne,
             border: 'none',
@@ -100,14 +82,14 @@ export function DayTaskItem({ task, groupName, onToggle, onEdit, onDelete, selec
       </button>
 
       <div
-        onClick={handleBodyTap}
-        onTouchStart={startLongPress}
-        onTouchEnd={cancelLongPress}
-        onTouchMove={cancelLongPress}
-        onMouseDown={startLongPress}
-        onMouseUp={cancelLongPress}
-        onMouseLeave={cancelLongPress}
-        style={{ flex:1, cursor:hasSelection?'default':'pointer', userSelect:'none', WebkitTapHighlightColor:'transparent' }}
+        onClick={handleTextTap}
+        style={{
+          flex: 1,
+          cursor: readOnly || hasSelection ? 'default' : 'pointer',
+          userSelect: 'none',
+          WebkitTapHighlightColor: 'transparent',
+          opacity: readOnly ? 0.7 : 1,
+        }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, minWidth: 0 }}>
           {hasReminder && (

@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { SyngMark } from '../shared/SyngLogo'
 import { doc, getDoc, updateDoc, serverTimestamp, Timestamp } from 'firebase/firestore'
 import { db } from '../firebase'
+import { useCoreAuth } from '../core/hooks/useCoreData'
+import { isFreePlanExhausted } from '../core/services/movements.service'
 
 interface Task {
   id: string
@@ -36,6 +38,9 @@ function formatDue(dueDate?: Timestamp): string | null {
 export default function RecordatorioView() {
   const { taskId } = useParams<{ taskId: string }>()
   const navigate     = useNavigate()
+  const auth         = useCoreAuth()
+  const planId       = auth.subscription?.planId ?? 'gratis'
+  const readOnly     = isFreePlanExhausted(auth.subscription, planId, auth.plan, auth.systemConfig)
   const isDemo       = taskId === 'prueba'
   const [task, setTask] = useState<Task | null>(isDemo ? DEMO : null)
 
@@ -47,6 +52,10 @@ export default function RecordatorioView() {
   }, [taskId, isDemo])
 
   async function completar() {
+    if (readOnly) {
+      navigate('/perfil')
+      return
+    }
     if (!isDemo && taskId) {
       await updateDoc(doc(db, 'tasks', taskId), {
         status: 'completed',
@@ -89,8 +98,17 @@ export default function RecordatorioView() {
       </div>
 
       <div style={s.footer}>
-        <button type="button" style={s.btnPrimary} onClick={completar}>Completar</button>
-        <button type="button" style={s.btnSecondary} onClick={() => navigate('/agenda')}>Ver en agenda</button>
+        {!readOnly ? (
+          <>
+            <button type="button" style={s.btnPrimary} onClick={completar}>Completar</button>
+            <button type="button" style={s.btnSecondary} onClick={() => navigate('/agenda')}>Ver en agenda</button>
+          </>
+        ) : (
+          <>
+            <button type="button" style={s.btnPrimary} onClick={() => navigate('/perfil')}>Elegir un plan</button>
+            <button type="button" style={s.btnSecondary} onClick={() => navigate('/agenda')}>Ver en agenda</button>
+          </>
+        )}
       </div>
     </div>
   )

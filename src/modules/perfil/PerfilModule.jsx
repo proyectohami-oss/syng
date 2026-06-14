@@ -8,6 +8,7 @@ import {
   planLimitLabel,
 } from '../../core/services/subscriptions.service'
 import { computePlanUsage } from '../../core/services/movements.service'
+import { MovementLimitPanel } from './MovementLimitPanel'
 import { useAuthActions } from '../../auth/useAuthActions'
 import { usePushNotifications } from '../../core/notifications/usePushNotifications'
 import { isIOS } from '../../core/calendar/calendar.service'
@@ -15,6 +16,7 @@ import { PWAInstallButton } from '../../core/pwa/PWAInstallButton'
 import { usePWAInstall } from '../../core/pwa/usePWAInstall'
 import { A, L } from '../../shared/agendaEditorial'
 import { PlanUpgradeSection } from './PlanUpgradeSection'
+import { PromotorCodeSection } from './PromotorCodeSection'
 
 export function PerfilModule() {
   const auth = useCoreAuth()
@@ -42,6 +44,15 @@ export function PerfilModule() {
   const [success,      setSuccess]      = useState(null)
   const [signingOut,   setSigningOut]   = useState(false)
   const [pushLoading,  setPushLoading]  = useState(false)
+  const [appliedAliado, setAppliedAliado] = useState(null)
+
+  useEffect(() => {
+    if (planId !== 'gratis' || !usage.atLimit) return
+    const t = setTimeout(() => {
+      document.getElementById('syng-mejorar-plan')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }, 400)
+    return () => clearTimeout(t)
+  }, [planId, usage.atLimit])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
@@ -179,42 +190,28 @@ export function PerfilModule() {
             </div>
             {planId === 'gratis' && !usage.atLimit && (
               <p style={{ margin: '12px 0 0', fontSize: 12, color: L.ivoryMuted, lineHeight: 1.5 }}>
-                Elige un plan de pago para más movimientos y funciones.
+                270 movimientos únicos de por vida. Al agotarlos, elige un plan de pago para seguir.
               </p>
             )}
+            {planId === 'gratis' && usage.atLimit && (
+              <p style={{ margin: '12px 0 0', fontSize: 12, color: '#E05252', lineHeight: 1.5 }}>
+                Plan Gratis agotado. Puedes consultar tu información; para crear o editar tareas elige un plan de pago.
+              </p>
+            )}
+            <PromotorCodeSection
+              systemConfig={auth.systemConfig}
+              onApplied={setAppliedAliado}
+              onError={setError}
+            />
             <PlanUpgradeSection
               currentPlanId={planId}
               systemConfig={auth.systemConfig}
+              appliedAliado={appliedAliado}
               onError={setError}
               onCheckoutStart={() => { setError(null); setSuccess(null) }}
             />
             {!usage.unlimited && (
-              <div style={{ marginTop: 14 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                  <span style={{ fontSize: 12, color: L.ivoryMuted }}>Uso del plan</span>
-                  <span style={{ fontSize: 12, color: usage.atLimit ? '#E05252' : L.champagne }}>
-                    {usage.label}
-                  </span>
-                </div>
-                <div style={{
-                  height: 4,
-                  borderRadius: 2,
-                  background: 'rgba(196,169,98,0.15)',
-                  overflow: 'hidden',
-                }}>
-                  <div style={{
-                    height: '100%',
-                    width: `${usage.percent}%`,
-                    background: usage.atLimit ? '#E05252' : L.champagne,
-                    transition: 'width 0.3s ease',
-                  }} />
-                </div>
-                {usage.atLimit && (
-                  <p style={{ margin: '8px 0 0', fontSize: 12, color: '#E05252', lineHeight: 1.45 }}>
-                    Llegaste al límite. Mejora tu plan para seguir creando y editando tareas.
-                  </p>
-                )}
-              </div>
+              <MovementLimitPanel planId={planId} usage={usage} />
             )}
           </div>
         </div>

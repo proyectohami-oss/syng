@@ -1,8 +1,11 @@
 import { useEffect, useState } from 'react'
 import { collection, getDocs } from 'firebase/firestore'
 import { db } from '../../firebase'
+import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { startMercadoPagoCheckout } from '../../core/services/payments.service'
 import { planDisplayName, planPriceLabel, planLimitLabel } from '../../core/services/subscriptions.service'
+import { qualifiesForAliadoDiscount } from '../../core/services/promotores.service'
+import { showToast } from '../../shared/Toast'
 import { A, L } from '../../shared/agendaEditorial'
 
 const PAID_PLAN_ORDER = ['plus_individual', 'plus_ilimitado', 'familiar']
@@ -22,10 +25,19 @@ function isPlanAvailable(plan, systemConfig) {
   return PAID_PLAN_ORDER.includes(plan.id)
 }
 
-export function PlanUpgradeSection({ currentPlanId, systemConfig, onError, onCheckoutStart }) {
+export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado, onError, onCheckoutStart }) {
+  const auth = useCoreAuth()
   const [plans, setPlans]           = useState([])
   const [loading, setLoading]       = useState(true)
-  const [checkoutId, setCheckoutId]   = useState(null)
+  const [checkoutId, setCheckoutId] = useState(null)
+
+  const discountEligible = qualifiesForAliadoDiscount({
+    subscription: auth.subscription,
+    userData:     auth.userData,
+  })
+  const descuentoPct = (appliedAliado && discountEligible)
+    ? (systemConfig?.descuento_usuario ?? 0)
+    : 0
 
   useEffect(() => {
     let cancelled = false
@@ -50,10 +62,16 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, onError, onChe
     onError?.(null)
     onCheckoutStart?.()
     try {
-      const { checkoutUrl } = await startMercadoPagoCheckout(planId)
+      const payload = { planId }
+      if (appliedAliado?.codigo && descuentoPct > 0) {
+        payload.promotorCodigo = appliedAliado.codigo
+      }
+      const { checkoutUrl } = await startMercadoPagoCheckout(payload)
       window.location.href = checkoutUrl
     } catch (e) {
-      onError?.(e.message || 'No se pudo iniciar el pago')
+      const msg = e.message || 'No se pudo iniciar el pago'
+      onError?.(msg)
+      showToast(msg, '⚠️')
       setCheckoutId(null)
     }
   }
@@ -69,7 +87,7 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, onError, onChe
   if (!plans.length) return null
 
   return (
-    <div style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <div id="syng-mejorar-plan" style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <p style={{ margin: 0, fontSize: 12, color: L.ivoryMuted, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
         Mejorar plan
       </p>
@@ -89,8 +107,13 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, onError, onChe
                 {planDisplayName(plan, plan.id)}
               </p>
               <p style={{ margin: 0, fontSize: 12, color: L.champagne }}>
-                {planPriceLabel(plan)} · {planLimitLabel(plan, plan.id)}
+                {planPriceLabel(plan, descuentoPct)} · {planLimitLabel(plan, plan.id)}
               </p>
+              {descuentoPct > 0 && (
+                <p style={{ margin: '4px 0 0', fontSize: 11, color: '#6ee7a0' }}>
+                  Descuento Aliados Syng aplicado en checkout
+                </p>
+              )}
             </div>
             <button
               type="button"

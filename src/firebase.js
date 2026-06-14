@@ -14,9 +14,16 @@ import {
   CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore'
 
-/** En app nativa el authDomain debe ser firebaseapp.com, no la URL de Vercel. */
+/**
+ * Web: authDomain = origen de la app + proxy /__/auth en Vercel (Safari 16.1+).
+ * Nativa: firebaseapp.com (Capacitor no sirve el helper de auth).
+ */
 function authDomainForApp() {
   if (Capacitor.isNativePlatform()) return 'syng-app.firebaseapp.com'
+  if (typeof window !== 'undefined') {
+    const { hostname, host } = window.location
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') return host
+  }
   return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'syng-app.firebaseapp.com'
 }
 

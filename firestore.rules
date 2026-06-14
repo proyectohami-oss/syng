@@ -127,6 +127,11 @@ service cloud.firestore {
       allow write: if isSyngAdmin();
     }
 
+    match /comisiones/{comisionId} {
+      allow read: if isSyngAdmin();
+      allow write: if false;
+    }
+
     match /audit_log/{logId} {
       allow read: if isSyngAdmin();
       allow write: if isSyngAdmin();
@@ -135,6 +140,20 @@ service cloud.firestore {
     match /feature_flags/{flagId} {
       allow read: if isAuthenticated();
       allow write: if isSyngAdmin();
+    }
+
+    match /free_tier_by_phone/{phone} {
+      allow read: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.uid == request.auth.uid
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.phoneNumber == phone;
+      allow update, delete: if false;
+    }
+
+    match /device_links/{deviceId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if false;
     }
   }
 }

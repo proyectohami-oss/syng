@@ -19,6 +19,164 @@ const db      = getFirestore()
 const WEB_APP_URL = process.env.WEB_APP_URL || 'https://syng-psi.vercel.app'
 const PAID_PLANS  = new Set(['plus_individual', 'plus_ilimitado', 'familiar'])
 
+function roundMoney(n) {
+  return Math.round(Number(n) * 100) / 100
+}
+
+async function loadSystemConfig() {
+  const [mainSnap, adminSnap] = await Promise.all([
+    db.doc('system_config/main').get(),
+    db.doc('system_config/admin').get(),
+  ])
+  return {
+    ...(mainSnap.exists ? mainSnap.data() : {}),
+    ...(adminSnap.exists ? adminSnap.data() : {}),
+  }
+}
+
+async function findPromotorByCodigo(codigo) {
+  const normalized = String(codigo || '').trim().toUpperCase()
+  if (!normalized) return null
+  const snap = await db.collection('promotores')
+    .where('codigo', '==', normalized)
+    .limit(1)
+    .get()
+  if (snap.empty) return null
+  const docSnap = snap.docs[0]
+  const data = docSnap.data()
+  if (data.activo === false) return null
+  return { id: docSnap.id, ...data }
+}
+
+async function assertNotSelfReferral(uid, promotor) {
+  const userSnap = await db.doc(`users/${uid}`).get()
+  const userEmail = (userSnap.data()?.email || '').trim().toLowerCase()
+  const aliadoEmail = (promotor.email || '').trim().toLowerCase()
+  if (promotor.userId && promotor.userId === uid) {
+    const err = new Error('Este código es tuyo — compártelo con alguien más para que reciba el descuento')
+    err.status = 400
+    throw err
+  }
+  if (userEmail && aliadoEmail && userEmail === aliadoEmail) {
+    const err = new Error('Este código es tuyo — compártelo con alguien más para que reciba el descuento')
+    err.status = 400
+    throw err
+  }
+}
+
+async function userEligibleForPromotorDiscount(uid) {
+  const [subSnap, userSnap, paysSnap] = await Promise.all([
+    db.doc(`subscriptions/${uid}`).get(),
+    db.doc(`users/${uid}`).get(),
+    db.collection('payments')
+      .where('userId', '==', uid)
+      .where('status', '==', 'approved')
+      .limit(1)
+      .get(),
+  ])
+
+  if (userSnap.exists && userSnap.data().promotorCodigoUsado) return false
+  if (!paysSnap.empty) return false
+
+  const sub = subSnap.exists ? subSnap.data() : null
+  if (sub?.source === 'payment' && PAID_PLANS.has(sub.planId)) return false
+  return true
+}
+
+async function resolveCheckoutPricing({ uid, plan, promotorCodigo }) {
+  const config = await loadSystemConfig()
+  const listPrice = planUnitPrice(plan)
+  let promotor = null
+  let descuentoPct = 0
+
+  if (promotorCodigo) {
+    const eligible = await userEligibleForPromotorDiscount(uid)
+    if (!eligible) {
+      const err = new Error('El descuento de promotor solo aplica en tu primera suscripción pagada')
+      err.status = 400
+      throw err
+    }
+    promotor = await findPromotorByCodigo(promotorCodigo)
+    if (!promotor) {
+      const err = new Error('Código de promotor no válido')
+      err.status = 400
+      throw err
+    }
+    await assertNotSelfReferral(uid, promotor)
+    descuentoPct = Number(config.descuento_usuario ?? 0)
+    if (descuentoPct <= 0) {
+      const err = new Error('No hay descuento de promotor activo')
+      err.status = 400
+      throw err
+    }
+  }
+
+  const finalPrice = descuentoPct > 0
+    ? roundMoney(listPrice * (1 - descuentoPct / 100))
+    : listPrice
+
+  if (finalPrice <= 0) {
+    const err = new Error('Precio final inválido')
+    err.status = 400
+    throw err
+  }
+
+  return { config, listPrice, finalPrice, descuentoPct, promotor }
+}
+
+async function recordPromotorCommission(payment, meta) {
+  const promotorId = meta.promotor_id
+  if (!promotorId) return
+
+  const promotorRef = db.doc(`promotores/${promotorId}`)
+  const promotorSnap = await promotorRef.get()
+  if (!promotorSnap.exists) {
+    console.warn('[MP webhook] promotor no encontrado', promotorId)
+    return
+  }
+
+  const config = await loadSystemConfig()
+  const promotor = promotorSnap.data()
+  const pct = Number(promotor.porcentaje_comision ?? config.comision_promotores ?? 20)
+  const monto = Number(payment.transaction_amount ?? 0)
+  const comision = roundMoney(monto * pct / 100)
+  const userId = meta.user_id || meta.userId
+
+  const batch = db.batch()
+
+  const comisionRef = db.collection('comisiones').doc()
+  batch.set(comisionRef, {
+    promotorId,
+    promotorNombre: promotor.nombre || '',
+    userId,
+    paymentId: String(payment.id),
+    monto,
+    comision,
+    porcentaje: pct,
+    estatus: 'Pendiente',
+    createdAt: FieldValue.serverTimestamp(),
+  })
+
+  batch.update(promotorRef, {
+    usuarios_pago: FieldValue.increment(1),
+    comisiones_pendientes: FieldValue.increment(comision),
+    total_generado: FieldValue.increment(monto),
+    updatedAt: FieldValue.serverTimestamp(),
+  })
+
+  if (userId) {
+    batch.set(db.doc(`users/${userId}`), {
+      promotorCodigoUsado: true,
+      promotorId,
+      promotorCodigo: meta.promotor_codigo || promotor.codigo || null,
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true })
+  }
+
+  await batch.commit()
+  console.log('[MP webhook] comisión registrada', promotorId, comision)
+}
+
 function setCors(req, res) {
   const origin = req.get('Origin') || ''
   if (origin === WEB_APP_URL || origin.endsWith('.vercel.app') || origin.includes('localhost')) {
@@ -96,7 +254,7 @@ function paymentUserAndPlan(payment) {
 
 async function loadPlan(planId) {
   const snap = await db.doc(`subscription_plans/${planId}`).get()
-  if (!snap.exists()) {
+  if (!snap.exists) {
     const err = new Error('Plan no encontrado')
     err.status = 404
     throw err
@@ -125,16 +283,23 @@ async function activateSubscriptionFromPayment(payment) {
     return { skipped: true }
   }
 
+  const meta = payment.metadata || {}
+
   const batch = db.batch()
   batch.set(payRef, {
     userId,
     planId,
-    monto:       payment.transaction_amount ?? 0,
-    currency:    payment.currency_id || 'MXN',
-    status:      'approved',
-    mpPaymentId: paymentId,
-    mpStatus:    payment.status,
-    createdAt:   FieldValue.serverTimestamp(),
+    monto:            payment.transaction_amount ?? 0,
+    precioLista:      Number(meta.precio_lista ?? 0) || null,
+    descuentoPct:     Number(meta.descuento_pct ?? 0) || null,
+    descuentoMonto:   Number(meta.descuento_monto ?? 0) || null,
+    promotorId:       meta.promotor_id || null,
+    promotorCodigo:   meta.promotor_codigo || null,
+    currency:         payment.currency_id || 'MXN',
+    status:           'approved',
+    mpPaymentId:      paymentId,
+    mpStatus:         payment.status,
+    createdAt:        FieldValue.serverTimestamp(),
   }, { merge: true })
 
   batch.set(db.doc(`subscriptions/${userId}`), {
@@ -146,6 +311,7 @@ async function activateSubscriptionFromPayment(payment) {
   }, { merge: true })
 
   await batch.commit()
+  await recordPromotorCommission(payment, meta)
   console.log('[MP webhook] plan activado', userId, planId, paymentId)
   return { activated: true, userId, planId }
 }
@@ -160,30 +326,51 @@ const createMercadoPagoCheckout = onRequest({
 
   try {
     const decoded = await verifyAuth(req)
-    const { planId } = req.body || {}
+    const { planId, promotorCodigo } = req.body || {}
     if (!planId || !PAID_PLANS.has(planId)) {
       return res.status(400).json({ error: 'Plan no válido' })
     }
 
     const plan  = await loadPlan(planId)
-    const price = planUnitPrice(plan)
     const uid   = decoded.uid
-    const email = decoded.email || ''
+    const { listPrice, finalPrice, descuentoPct, promotor } = await resolveCheckoutPricing({
+      uid,
+      plan,
+      promotorCodigo,
+    })
+    const production = process.env.MERCADOPAGO_PRODUCTION === 'true'
+    const payerEmail = production ? (decoded.email || '') : 'test@testuser.com'
+
+    const itemTitle = promotor && descuentoPct > 0
+      ? `${plan.name || planId} (−${descuentoPct}% promotor)`
+      : (plan.name || planId)
+
+    const metadata = {
+      user_id:        uid,
+      plan_id:        planId,
+      precio_lista:   String(listPrice),
+      descuento_pct:  String(descuentoPct),
+      descuento_monto: String(roundMoney(listPrice - finalPrice)),
+    }
+    if (promotor) {
+      metadata.promotor_id = promotor.id
+      metadata.promotor_codigo = promotor.codigo
+    }
 
     const preference = await mpRequest('/checkout/preferences', {
       method: 'POST',
       body:   JSON.stringify({
         items: [{
           id:          planId,
-          title:       plan.name || planId,
+          title:       itemTitle,
           description: plan.description || `Suscripción Syng — ${plan.name || planId}`,
           quantity:    1,
-          unit_price:  price,
+          unit_price:  finalPrice,
           currency_id: plan.currency || 'MXN',
         }],
-        payer: { email },
+        payer: { email: payerEmail },
         external_reference: `${uid}|${planId}|${Date.now()}`,
-        metadata:           { user_id: uid, plan_id: planId },
+        metadata,
         back_urls: {
           success: `${WEB_APP_URL}/perfil?pago=ok`,
           failure: `${WEB_APP_URL}/perfil?pago=fail`,
@@ -194,7 +381,8 @@ const createMercadoPagoCheckout = onRequest({
       }),
     })
 
-    const checkoutUrl = preference.init_point || preference.sandbox_init_point
+    // Con credenciales de prueba hay que usar sandbox_init_point
+    const checkoutUrl = preference.sandbox_init_point || preference.init_point
     if (!checkoutUrl) {
       return res.status(502).json({ error: 'Mercado Pago no devolvió URL de pago' })
     }
@@ -203,7 +391,10 @@ const createMercadoPagoCheckout = onRequest({
       checkoutUrl,
       preferenceId: preference.id,
       planId,
-      amount:       price,
+      amount:       finalPrice,
+      listPrice,
+      descuentoPct,
+      promotorCodigo: promotor?.codigo || null,
     })
   } catch (err) {
     console.error('[createMercadoPagoCheckout]', err)

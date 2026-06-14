@@ -17,7 +17,7 @@ import {
   toggleTaskStatus as svcToggle,
   deleteTask  as svcDelete,
 } from '../services/tasks.service'
-import { reserveMovement, PlanLimitError } from '../services/movements.service'
+import { reserveMovement, PlanLimitError, assertFreeTierCanWrite } from '../services/movements.service'
 
 export function useTasks() {
   const { state, dispatch } = useCoreData()
@@ -25,15 +25,23 @@ export function useTasks() {
   const guardMovement = useCallback(async () => {
     const uid = state.auth.user?.uid
     if (!uid || !state.auth.subscription) return
+    assertFreeTierCanWrite(
+      state.auth.subscription,
+      state.auth.plan,
+      state.auth.subscription.planId,
+      state.auth.systemConfig,
+    )
     await reserveMovement(
       uid,
       state.auth.subscription,
       state.auth.plan,
       state.auth.subscription.planId,
       state.auth.systemConfig,
+      state.auth.userData?.phoneNumber,
     )
   }, [
     state.auth.user,
+    state.auth.userData,
     state.auth.subscription,
     state.auth.plan,
     state.auth.systemConfig,
@@ -170,6 +178,18 @@ export function useTasks() {
   // ── Eliminar (soft delete) ───────────────────────────────────────
 
   const deleteTask = useCallback(async (task) => {
+    try {
+      assertFreeTierCanWrite(
+        state.auth.subscription,
+        state.auth.plan,
+        state.auth.subscription?.planId ?? 'gratis',
+        state.auth.systemConfig,
+      )
+    } catch (error) {
+      if (error instanceof PlanLimitError) showToast(error.message, '⚠️')
+      throw error
+    }
+
     dispatch({ type: CORE_ACTIONS.TASK_DELETED_OPTIMISTIC, taskId: task.id })
 
     try {
@@ -179,7 +199,7 @@ export function useTasks() {
       dispatch({ type: CORE_ACTIONS.TASK_ADDED_OPTIMISTIC, task })
       throw error
     }
-  }, [dispatch])
+  }, [dispatch, state.auth.subscription, state.auth.plan, state.auth.systemConfig])
 
   return { createTask, updateTask, toggleStatus, deleteTask }
 }

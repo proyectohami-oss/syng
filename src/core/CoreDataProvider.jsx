@@ -21,6 +21,7 @@ import { useGroupTasksListener }    from './listeners/useGroupTasksListener'
 import { useGroupsListener }        from './listeners/useGroupsListener'
 import { useOnlineStatus }          from './hooks/useOnlineStatus'
 import { useRollover }              from './hooks/useRollover'
+import { useFreeTierSync }          from './hooks/useFreeTierSync'
 
 export const CoreDispatchContext = createContext(null)
 export const CoreAuthContext     = createContext(null)
@@ -51,8 +52,7 @@ export function CoreDataProvider({ children }) {
 
   /* Rollover — mueve tareas personales vencidas al día actual */
   useRollover(uid)
-
-
+  useFreeTierSync()
 
   // Slices memoizados — cada contexto solo cambia cuando su slice cambia
   const authValue   = useMemo(() => state.auth,   [state.auth])

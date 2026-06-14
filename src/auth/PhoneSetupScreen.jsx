@@ -5,7 +5,8 @@
  */
 import { useState } from 'react'
 import { useCoreAuth } from '../core/hooks/useCoreData'
-import { updatePhoneNumber } from '../core/services/users.service'
+import { updatePhoneNumber, normalizePhone } from '../core/services/users.service'
+import { isPhoneFreeTierExhausted, freeTierBlockedMessage } from '../core/services/freeTier.service'
 import { checkPendingInvitations } from '../core/services/invitations.service'
 
 export function PhoneSetupScreen() {
@@ -25,14 +26,18 @@ export function PhoneSetupScreen() {
     setLoading(true)
     setError(null)
     try {
-      const phoneNumber = await updatePhoneNumber(uid, phone)
-      // Buscar invitaciones pendientes para este número
+      const phoneNumber = normalizePhone(phone)
+      if (await isPhoneFreeTierExhausted(phoneNumber)) {
+        setError(freeTierBlockedMessage('phone'))
+        return
+      }
+      const savedPhone = await updatePhoneNumber(uid, phone)
       const userData = auth.userData
       await checkPendingInvitations({
         uid,
         displayName: userData?.displayName ?? '',
         email:       userData?.email ?? '',
-        phoneNumber,
+        phoneNumber: savedPhone,
       })
       // El listener de Firestore actualizará userData automáticamente
       // y AuthGuard dejará pasar al usuario
@@ -55,7 +60,7 @@ export function PhoneSetupScreen() {
 
         <p style={{ fontSize:14, color:'#6b7280', margin:'0 0 28px', lineHeight:1.5 }}>
           Syng usa tu número para que otros puedan encontrarte y agregarte a grupos.
-          Tu número no se comparte públicamente.
+          El plan Gratis incluye 270 movimientos únicos de por vida.
         </p>
 
         <label style={lbl}>Número de teléfono</label>
