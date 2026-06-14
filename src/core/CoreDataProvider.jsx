@@ -51,8 +51,8 @@ export function CoreDataProvider({ children }) {
   useOnlineStatus(dispatch)
 
   /* Rollover — mueve tareas personales vencidas al día actual */
-  useRollover(uid)
-  useFreeTierSync()
+  useRollover(uid, state.auth)
+  useFreeTierSync(state.auth)
 
   // Slices memoizados — cada contexto solo cambia cuando su slice cambia
   const authValue   = useMemo(() => state.auth,   [state.auth])
