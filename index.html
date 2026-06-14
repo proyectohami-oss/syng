@@ -54,6 +54,12 @@
   <meta name="twitter:image"       content="https://syng-psi.vercel.app/syng-ios-icon.png?v=7" />
   <title>Syng</title>
   <style>
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #0A0A0A;
+    }
+    #root { min-height: 100%; }
     @keyframes spin { to { transform: rotate(360deg); } }
   </style>
   <script>
@@ -62,6 +68,20 @@
       e.preventDefault();
       window.__installPrompt = e;
     });
+    /* PWA iOS: si el SW sirve index viejo, el JS 404 deja pantalla blanca — limpiar y recargar una vez */
+    window.addEventListener("error", function(e) {
+      var t = e.target;
+      if (!t || t.tagName !== "SCRIPT" || !t.src || t.src.indexOf("/assets/") === -1) return;
+      if (sessionStorage.getItem("syng_chunk_reload")) return;
+      sessionStorage.setItem("syng_chunk_reload", "1");
+      if (window.caches && caches.keys) {
+        caches.keys().then(function(keys) {
+          return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+        }).finally(function() { location.reload(); });
+      } else {
+        location.reload();
+      }
+    }, true);
   </script>
 </head>
 <body>

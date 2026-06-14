@@ -9,8 +9,11 @@ import {
 } from 'firebase/auth'
 import {
   initializeFirestore,
+  getFirestore,
   persistentLocalCache,
+  persistentSingleTabManager,
   persistentMultipleTabManager,
+  memoryLocalCache,
   CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore'
 
@@ -55,9 +58,34 @@ function createAuth() {
 
 export const auth = createAuth()
 
-export const db = initializeFirestore(app, {
-  localCache: persistentLocalCache({
-    tabManager:       persistentMultipleTabManager(),
-    cacheSizeBytes:   CACHE_SIZE_UNLIMITED,
-  }),
-})
+function isIOSOrStandalonePwa() {
+  if (typeof window === 'undefined') return false
+  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  const standalone = window.matchMedia('(display-mode: standalone)').matches
+    || window.navigator.standalone === true
+  return ios || standalone
+}
+
+function createDb() {
+  try {
+    const tabManager = isIOSOrStandalonePwa()
+      ? persistentSingleTabManager()
+      : persistentMultipleTabManager()
+    return initializeFirestore(app, {
+      localCache: persistentLocalCache({
+        tabManager,
+        cacheSizeBytes: CACHE_SIZE_UNLIMITED,
+      }),
+    })
+  } catch (err) {
+    console.warn('[Firebase] Firestore persistence fallback:', err)
+    try {
+      return initializeFirestore(app, { localCache: memoryLocalCache() })
+    } catch {
+      return getFirestore(app)
+    }
+  }
+}
+
+export const db = createDb()
