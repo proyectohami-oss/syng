@@ -12,6 +12,8 @@ export function AuthScreen() {
   const [mode,        setMode]        = useState('login')
   const [email,       setEmail]       = useState('')
   const [password,    setPassword]    = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [displayName, setDisplayName] = useState('')
   const [loading,     setLoading]     = useState(null)
   const [error,       setError]       = useState(null)
@@ -51,6 +53,18 @@ export function AuthScreen() {
     if (code?.includes('Unable to process') || code?.includes('missing initial state')) {
       return 'Safari bloqueó Google. Abre syng-psi.vercel.app en Safari (no desde el ícono), o usa correo y contraseña.'
     }
+    const lower = (code || '').toLowerCase()
+    if (
+      lower.includes('family link')
+      || lower.includes('familylink')
+      || lower.includes('supervised')
+      || lower.includes('administrada')
+      || lower.includes('managed')
+      || lower.includes('child')
+      || lower.includes('menor')
+    ) {
+      return 'Esta cuenta Google está bajo Family Link y Google puede bloquear apps de terceros. Pide permiso en Family Link o crea la cuenta con correo y contraseña abajo.'
+    }
     return map[code] ?? 'Ocurrió un error. Intenta de nuevo.'
   }
 
@@ -74,6 +88,8 @@ export function AuthScreen() {
         await signInWithEmail(email, password)
       } else {
         if (!displayName.trim()) { setError('Ingresa tu nombre.'); setLoading(null); return }
+        if (password.length < 6) { setError('La contraseña debe tener al menos 6 caracteres.'); setLoading(null); return }
+        if (password !== confirmPassword) { setError('Las contraseñas no coinciden.'); setLoading(null); return }
         await signUpWithEmail(email, password, displayName)
       }
     } catch (err) { setError(friendlyError(err.code)) }
@@ -125,14 +141,31 @@ export function AuthScreen() {
               onChange={e => { setEmail(e.target.value); clearError() }}
               placeholder="correo@ejemplo.com" autoComplete="email" required style={inp} />
           </div>
-          <div>
-            <label style={lbl} htmlFor="auth-password">Contraseña</label>
-            <input id="auth-password" type="password" value={password}
-              onChange={e => { setPassword(e.target.value); clearError() }}
-              placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : '••••••••'}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              required minLength={mode === 'signup' ? 6 : undefined} style={inp} />
-          </div>
+          <PasswordField
+            id="auth-password"
+            label="Contraseña"
+            value={password}
+            onChange={v => { setPassword(v); clearError() }}
+            placeholder={mode === 'signup' ? 'Mínimo 6 caracteres' : 'Tu contraseña'}
+            autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            minLength={mode === 'signup' ? 6 : undefined}
+            show={showPassword}
+            onToggleShow={() => setShowPassword(v => !v)}
+          />
+
+          {mode === 'signup' && (
+            <PasswordField
+              id="auth-password-confirm"
+              label="Confirmar contraseña"
+              value={confirmPassword}
+              onChange={v => { setConfirmPassword(v); clearError() }}
+              placeholder="Repite la contraseña"
+              autoComplete="new-password"
+              minLength={6}
+              show={showPassword}
+              onToggleShow={() => setShowPassword(v => !v)}
+            />
+          )}
 
           {error && <p style={errorMsg}>{error}</p>}
 
@@ -146,13 +179,49 @@ export function AuthScreen() {
 
         <p style={{ textAlign: 'center', fontSize: 13, color: L.ivoryMuted, marginTop: 24 }}>
           {mode === 'login' ? '¿No tienes cuenta?' : '¿Ya tienes cuenta?'}{' '}
-          <button type="button" onClick={() => { setMode(mode === 'login' ? 'signup' : 'login'); clearError() }}
+          <button type="button" onClick={() => {
+            setMode(mode === 'login' ? 'signup' : 'login')
+            setConfirmPassword('')
+            setShowPassword(false)
+            clearError()
+          }}
             style={toggleBtn} disabled={isLoading}>
             {mode === 'login' ? 'Crear cuenta' : 'Iniciar sesión'}
           </button>
         </p>
 
       </div>
+    </div>
+  )
+}
+
+function PasswordField({
+  id, label, value, onChange, placeholder, autoComplete, minLength, show, onToggleShow,
+}) {
+  return (
+    <div>
+      <div style={passwordLabelRow}>
+        <label style={{ ...lbl, marginBottom: 0 }} htmlFor={id}>{label}</label>
+        <button
+          type="button"
+          onClick={onToggleShow}
+          style={visibilityBtn}
+          aria-label={show ? 'Ocultar contraseña' : 'Ver contraseña'}
+        >
+          {show ? 'Ocultar' : 'Ver'}
+        </button>
+      </div>
+      <input
+        id={id}
+        type={show ? 'text' : 'password'}
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        placeholder={placeholder}
+        autoComplete={autoComplete}
+        required
+        minLength={minLength}
+        style={inp}
+      />
     </div>
   )
 }
@@ -226,6 +295,28 @@ const lbl = {
   textTransform: 'uppercase',
   color: L.champagne,
   marginBottom: 6,
+}
+
+const passwordLabelRow = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 10,
+  marginBottom: 6,
+}
+
+const visibilityBtn = {
+  background: 'none',
+  border: 'none',
+  padding: 0,
+  color: L.champagne,
+  fontSize: 11,
+  fontWeight: 600,
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  cursor: 'pointer',
+  flexShrink: 0,
+  WebkitTapHighlightColor: 'transparent',
 }
 
 const inp = {
