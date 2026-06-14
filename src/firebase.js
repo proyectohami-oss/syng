@@ -22,13 +22,14 @@ function isIOSWeb() {
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 }
 
-/** iOS web: firebaseapp.com + sin IndexedDB — evita pantalla negra por auth/Firestore colgado. */
+/** Prod: siempre firebaseapp.com (OAuth preconfigurado). Localhost mantiene env/default. */
 function authDomainForApp() {
   if (Capacitor.isNativePlatform()) return 'syng-app.firebaseapp.com'
-  if (isIOSWeb()) return 'syng-app.firebaseapp.com'
   if (typeof window !== 'undefined') {
-    const { hostname, host } = window.location
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') return host
+    const { hostname } = window.location
+    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
+      return 'syng-app.firebaseapp.com'
+    }
   }
   return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'syng-app.firebaseapp.com'
 }

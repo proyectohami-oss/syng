@@ -25,11 +25,16 @@ export function isIOSWeb() {
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 }
 
+export function isAndroidWeb() {
+  if (typeof navigator === 'undefined') return false
+  return /Android/i.test(navigator.userAgent)
+}
+
 /**
- * Web/PWA: popup primero. App nativa: redirect (popup abre Chrome y te saca a Vercel).
+ * Web/PWA: popup en desktop. Android + app nativa: redirect (popup falla o abre OAuth inválido).
  */
 export function beginGoogleSignIn() {
-  if (isNativeApp()) {
+  if (isNativeApp() || isAndroidWeb()) {
     return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
   }
 
