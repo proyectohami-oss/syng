@@ -29,7 +29,8 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado,
   const auth = useCoreAuth()
   const [plans, setPlans]           = useState([])
   const [loading, setLoading]       = useState(true)
-  const [checkoutId, setCheckoutId] = useState(null)
+  const [checkoutId, setCheckoutId]     = useState(null)
+  const [checkoutBusy, setCheckoutBusy] = useState(false)
 
   const discountEligible = qualifiesForAliadoDiscount({
     subscription: auth.subscription,
@@ -59,6 +60,7 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado,
 
   async function handlePay(planId) {
     setCheckoutId(planId)
+    setCheckoutBusy(true)
     onError?.(null)
     onCheckoutStart?.()
     try {
@@ -73,6 +75,7 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado,
       onError?.(msg)
       showToast(msg, '⚠️')
       setCheckoutId(null)
+      setCheckoutBusy(false)
     }
   }
 
@@ -87,7 +90,16 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado,
   if (!plans.length) return null
 
   return (
-    <div id="syng-mejorar-plan" style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
+    <>
+      {checkoutBusy && (
+        <div style={checkoutOverlay} role="status" aria-live="polite" aria-busy="true">
+          <CheckoutSpinner />
+          <p style={checkoutTitle}>Conectando con Mercado Pago…</p>
+          <p style={checkoutHint}>Preparando tu pago seguro. No cierres la app.</p>
+        </div>
+      )}
+
+      <div id="syng-mejorar-plan" style={{ marginTop: 16, display: 'flex', flexDirection: 'column', gap: 10 }}>
       <p style={{ margin: 0, fontSize: 12, color: L.ivoryMuted, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
         Mejorar plan
       </p>
@@ -125,8 +137,13 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado,
                 padding: '8px 12px',
                 fontSize: 12,
                 whiteSpace: 'nowrap',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 6,
+                opacity: checkoutId != null && checkoutId !== plan.id ? 0.45 : 1,
               }}
             >
+              {checkoutId === plan.id && <CheckoutSpinner small />}
               {checkoutId === plan.id ? 'Abriendo…' : 'Pagar'}
             </button>
           </div>
@@ -136,5 +153,57 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado,
         Pago seguro con Mercado Pago. Tu plan se activa al confirmarse el pago.
       </p>
     </div>
+    </>
+  )
+}
+
+const checkoutOverlay = {
+  position:        'fixed',
+  inset:           0,
+  zIndex:          9999,
+  display:        'flex',
+  flexDirection:  'column',
+  alignItems:     'center',
+  justifyContent: 'center',
+  gap:            14,
+  padding:        '24px 32px',
+  background:     'rgba(10,10,10,0.88)',
+  backdropFilter: 'blur(6px)',
+  WebkitBackdropFilter: 'blur(6px)',
+}
+
+const checkoutTitle = {
+  margin:     0,
+  fontFamily: L.serif,
+  fontSize:   18,
+  color:      L.ivory,
+  textAlign:  'center',
+}
+
+const checkoutHint = {
+  margin:     0,
+  fontSize:   13,
+  color:      L.ivoryMuted,
+  textAlign:  'center',
+  lineHeight: 1.5,
+  maxWidth:   280,
+}
+
+function CheckoutSpinner({ small }) {
+  const size = small ? 14 : 28
+  return (
+    <span
+      style={{
+        width: size,
+        height: size,
+        borderRadius: 2,
+        border: `2px solid ${small ? 'rgba(10,10,10,0.2)' : L.champagneBorder}`,
+        borderTopColor: small ? L.ink : L.champagne,
+        display: 'inline-block',
+        animation: 'spin 0.7s linear infinite',
+        flexShrink: 0,
+      }}
+      aria-hidden="true"
+    />
   )
 }
