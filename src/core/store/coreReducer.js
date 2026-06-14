@@ -42,6 +42,10 @@ export function coreReducer(state, action) {
     case CORE_ACTIONS.SET_AUTH_USER:
       return { ...state, auth: { ...state.auth, user: action.user, loading: false } }
 
+    case CORE_ACTIONS.AUTH_BOOT_TIMEOUT:
+      if (!state.auth.loading) return state
+      return { ...state, auth: { ...state.auth, loading: false } }
+
     case CORE_ACTIONS.SET_USER_DATA:
       return { ...state, auth: { ...state.auth, userData: action.userData } }
 

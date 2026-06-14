@@ -8,19 +8,15 @@ import {
   browserPopupRedirectResolver,
 } from 'firebase/auth'
 import {
-  initializeFirestore,
   getFirestore,
+  initializeFirestore,
   persistentLocalCache,
-  persistentSingleTabManager,
   persistentMultipleTabManager,
   memoryLocalCache,
   CACHE_SIZE_UNLIMITED,
 } from 'firebase/firestore'
 
-/**
- * Web: authDomain = origen de la app + proxy /__/auth en Vercel (Safari 16.1+).
- * Nativa: firebaseapp.com (Capacitor no sirve el helper de auth).
- */
+/** En app nativa el authDomain debe ser firebaseapp.com, no la URL de Vercel. */
 function authDomainForApp() {
   if (Capacitor.isNativePlatform()) return 'syng-app.firebaseapp.com'
   if (typeof window !== 'undefined') {
@@ -41,10 +37,6 @@ const firebaseConfig = {
 
 export const app = initializeApp(firebaseConfig)
 
-/**
- * indexedDBLocalPersistence + popupRedirectResolver son obligatorios en iOS
- * (Safari y PWA). getAuth() usa localStorage que iOS borra con frecuencia.
- */
 function createAuth() {
   try {
     return initializeAuth(app, {
@@ -58,23 +50,11 @@ function createAuth() {
 
 export const auth = createAuth()
 
-function isIOSOrStandalonePwa() {
-  if (typeof window === 'undefined') return false
-  const ios = /iPad|iPhone|iPod/.test(navigator.userAgent)
-    || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
-  const standalone = window.matchMedia('(display-mode: standalone)').matches
-    || window.navigator.standalone === true
-  return ios || standalone
-}
-
 function createDb() {
   try {
-    const tabManager = isIOSOrStandalonePwa()
-      ? persistentSingleTabManager()
-      : persistentMultipleTabManager()
     return initializeFirestore(app, {
       localCache: persistentLocalCache({
-        tabManager,
+        tabManager: persistentMultipleTabManager(),
         cacheSizeBytes: CACHE_SIZE_UNLIMITED,
       }),
     })

@@ -1,6 +1,7 @@
 export const CORE_ACTIONS = {
   // ── Auth ────────────────────────────────────────────────────────────
-  SET_AUTH_USER:    'SET_AUTH_USER',
+  SET_AUTH_USER:       'SET_AUTH_USER',
+  AUTH_BOOT_TIMEOUT:   'AUTH_BOOT_TIMEOUT',
   SET_USER_DATA:    'SET_USER_DATA',
   SET_SUBSCRIPTION:  'SET_SUBSCRIPTION',
   SET_PLAN:          'SET_PLAN',

@@ -55,12 +55,27 @@ export function useUserListener(dispatch) {
   const bootstrappedRef = useRef(false)
 
   useEffect(() => {
+    let bootDone = false
+    function markBootstrapped() {
+      if (bootDone) return
+      bootDone = true
+      notifyAuthBootstrapped()
+    }
+
+    const bootTimeout = setTimeout(() => {
+      if (bootstrappedRef.current) return
+      bootstrappedRef.current = true
+      markBootstrapped()
+      dispatch({ type: CORE_ACTIONS.AUTH_BOOT_TIMEOUT })
+    }, 5000)
+
     consumeGoogleRedirect().catch(() => {})
 
     const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
+      clearTimeout(bootTimeout)
       if (!bootstrappedRef.current) {
         bootstrappedRef.current = true
-        notifyAuthBootstrapped()
+        markBootstrapped()
       }
 
       if (unsubUserDocRef.current) {
@@ -84,6 +99,7 @@ export function useUserListener(dispatch) {
     })
 
     return () => {
+      clearTimeout(bootTimeout)
       unsubAuth()
       if (unsubUserDocRef.current) {
         unsubUserDocRef.current()

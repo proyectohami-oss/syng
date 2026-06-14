@@ -12,25 +12,9 @@ self.clients.claim()
 cleanupOutdatedCaches()
 precacheAndRoute(self.__WB_MANIFEST)
 
-// Tras deploy: no reutilizar HTML de navegación viejo (apuntaba a JS borrado → pantalla blanca).
-self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.delete('navigation').catch(() => {}))
-})
-
 registerRoute(
   new NavigationRoute(
-    new NetworkFirst({
-      cacheName: 'navigation',
-      networkTimeoutSeconds: 8,
-      plugins: [{
-        cacheWillUpdate: async ({ response }) => {
-          if (!response || response.status !== 200) return null
-          const ct = response.headers.get('content-type') || ''
-          if (!ct.includes('text/html')) return null
-          return response
-        },
-      }],
-    }),
+    new NetworkFirst({ cacheName: 'navigation', networkTimeoutSeconds: 5 }),
   ),
 )
 

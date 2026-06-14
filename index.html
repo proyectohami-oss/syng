@@ -68,24 +68,33 @@
       e.preventDefault();
       window.__installPrompt = e;
     });
-    /* PWA iOS: si el SW sirve index viejo, el JS 404 deja pantalla blanca — limpiar y recargar una vez */
-    window.addEventListener("error", function(e) {
-      var t = e.target;
-      if (!t || t.tagName !== "SCRIPT" || !t.src || t.src.indexOf("/assets/") === -1) return;
-      if (sessionStorage.getItem("syng_chunk_reload")) return;
-      sessionStorage.setItem("syng_chunk_reload", "1");
-      if (window.caches && caches.keys) {
-        caches.keys().then(function(keys) {
-          return Promise.all(keys.map(function(k) { return caches.delete(k); }));
-        }).finally(function() { location.reload(); });
-      } else {
+    /* Recuperación: SW roto tras deploy deja pantalla negra — limpiar una vez */
+    (function() {
+      if (!("serviceWorker" in navigator)) return;
+      if (sessionStorage.getItem("syng_sw_reset_v3")) return;
+      navigator.serviceWorker.getRegistrations().then(function(regs) {
+        if (!regs.length) return;
+        return Promise.all(regs.map(function(r) { return r.unregister(); }));
+      }).then(function(did) {
+        if (!did) return;
+        if (window.caches && caches.keys) {
+          return caches.keys().then(function(keys) {
+            return Promise.all(keys.map(function(k) { return caches.delete(k); }));
+          });
+        }
+      }).then(function() {
+        sessionStorage.setItem("syng_sw_reset_v3", "1");
         location.reload();
-      }
-    }, true);
+      }).catch(function() {});
+    })();
   </script>
 </head>
 <body>
-  <div id="root"></div>
+  <div id="root">
+    <div id="syng-boot" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:#0A0A0A;color:#FAF8F5;font-family:-apple-system,sans-serif;font-size:15px;">
+      Cargando Syng…
+    </div>
+  </div>
   <script type="module" src="/src/main.jsx"></script>
 </body>
 </html>
