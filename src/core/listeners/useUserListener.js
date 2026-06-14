@@ -55,6 +55,7 @@ export function useUserListener(dispatch) {
   const bootstrappedRef = useRef(false)
 
   useEffect(() => {
+    let cancelled = false
     let bootDone = false
     function markBootstrapped() {
       if (bootDone) return
@@ -62,45 +63,56 @@ export function useUserListener(dispatch) {
       notifyAuthBootstrapped()
     }
 
-    const bootTimeout = setTimeout(() => {
-      if (bootstrappedRef.current) return
-      bootstrappedRef.current = true
-      markBootstrapped()
-      dispatch({ type: CORE_ACTIONS.AUTH_BOOT_TIMEOUT })
-    }, 2000)
+    const bootTimeoutRef = { id: null }
 
-    consumeGoogleRedirect().catch(() => {})
+    let unsubAuth = null
 
-    const unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
-      clearTimeout(bootTimeout)
-      if (!bootstrappedRef.current) {
+    ;(async () => {
+      try {
+        await consumeGoogleRedirect()
+      } catch (_) {}
+
+      if (cancelled) return
+
+      bootTimeoutRef.id = setTimeout(() => {
+        if (bootstrappedRef.current) return
         bootstrappedRef.current = true
         markBootstrapped()
-      }
+        dispatch({ type: CORE_ACTIONS.AUTH_BOOT_TIMEOUT })
+      }, 3000)
 
-      if (unsubUserDocRef.current) {
-        unsubUserDocRef.current()
-        unsubUserDocRef.current = null
-      }
+      unsubAuth = onAuthStateChanged(auth, (firebaseUser) => {
+        if (bootTimeoutRef.id) clearTimeout(bootTimeoutRef.id)
+        if (!bootstrappedRef.current) {
+          bootstrappedRef.current = true
+          markBootstrapped()
+        }
 
-      if (!firebaseUser) {
-        dispatch({ type: CORE_ACTIONS.SET_AUTH_USER, user: null })
-        dispatch({ type: CORE_ACTIONS.SET_USER_DATA, userData: null })
-        return
-      }
+        if (unsubUserDocRef.current) {
+          unsubUserDocRef.current()
+          unsubUserDocRef.current = null
+        }
 
-      loadUserProfile(dispatch, firebaseUser, (user) => {
-        unsubUserDocRef.current = onSnapshot(
-          doc(db, 'users', user.uid),
-          (snap) => dispatchUserData(dispatch, snap, user),
-          (error) => console.error('[UserListener] snapshot:', error),
-        )
+        if (!firebaseUser) {
+          dispatch({ type: CORE_ACTIONS.SET_AUTH_USER, user: null })
+          dispatch({ type: CORE_ACTIONS.SET_USER_DATA, userData: null })
+          return
+        }
+
+        loadUserProfile(dispatch, firebaseUser, (user) => {
+          unsubUserDocRef.current = onSnapshot(
+            doc(db, 'users', user.uid),
+            (snap) => dispatchUserData(dispatch, snap, user),
+            (error) => console.error('[UserListener] snapshot:', error),
+          )
+        })
       })
-    })
+    })()
 
     return () => {
-      clearTimeout(bootTimeout)
-      unsubAuth()
+      cancelled = true
+      if (bootTimeoutRef.id) clearTimeout(bootTimeoutRef.id)
+      unsubAuth?.()
       if (unsubUserDocRef.current) {
         unsubUserDocRef.current()
         unsubUserDocRef.current = null

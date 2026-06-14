@@ -22,6 +22,15 @@ function isIOSWeb() {
     || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
 }
 
+function isAndroidWeb() {
+  if (typeof navigator === 'undefined') return false
+  return /Android/i.test(navigator.userAgent)
+}
+
+function isMobileWeb() {
+  return !Capacitor.isNativePlatform() && (isIOSWeb() || isAndroidWeb())
+}
+
 /** Prod: siempre firebaseapp.com (OAuth preconfigurado). Localhost mantiene env/default. */
 function authDomainForApp() {
   if (Capacitor.isNativePlatform()) return 'syng-app.firebaseapp.com'
@@ -46,9 +55,7 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 
 function createAuth() {
-  if (isIOSWeb() && !Capacitor.isNativePlatform()) {
-    return getAuth(app)
-  }
+  if (isMobileWeb()) return getAuth(app)
   try {
     return initializeAuth(app, {
       persistence: [indexedDBLocalPersistence, browserLocalPersistence],
@@ -62,9 +69,7 @@ function createAuth() {
 export const auth = createAuth()
 
 function createDb() {
-  if (isIOSWeb() && !Capacitor.isNativePlatform()) {
-    return getFirestore(app)
-  }
+  if (isMobileWeb()) return getFirestore(app)
   try {
     return initializeFirestore(app, {
       localCache: persistentLocalCache({

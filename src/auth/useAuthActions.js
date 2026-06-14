@@ -31,11 +31,23 @@ export function isAndroidWeb() {
 }
 
 /**
- * Web/PWA: popup en desktop. Android + app nativa: redirect (popup falla o abre OAuth inválido).
+ * Web/PWA: popup en desktop. Android: popup primero (evita bucle redirect). Nativa: redirect.
  */
 export function beginGoogleSignIn() {
-  if (isNativeApp() || isAndroidWeb()) {
+  if (isNativeApp()) {
     return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
+  }
+
+  if (isAndroidWeb()) {
+    return signInWithPopup(auth, googleProvider)
+      .then((result) => {
+        sessionStorage.setItem('justLoggedIn', '1')
+        return { redirected: false, user: result.user }
+      })
+      .catch((err) => {
+        console.warn('[Auth] Android popup falló, intentando redirect:', err?.code)
+        return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
+      })
   }
 
   const popup = signInWithPopup(auth, googleProvider).then((result) => {
