@@ -11,6 +11,7 @@ import {
   SELF_REFERRAL_MSG,
   isAliadosProgramActive,
   ALIADOS_PAUSADO_MSG,
+  ALIADO_CODIGO_INACTIVO_MSG,
 } from '../../core/services/promotores.service'
 import { A, L } from '../../shared/agendaEditorial'
 
@@ -44,7 +45,7 @@ export function PromotorCodeSection({ systemConfig, onApplied, onError }) {
         const p = await findPromotorByCodigo(stored)
         if (cancelled) return
         if (!p) {
-          onError?.('Código no válido o aliado inactivo')
+          onError?.(ALIADO_CODIGO_INACTIVO_MSG)
           return
         }
         if (isSelfReferral({ user, promotor: p })) {
@@ -92,7 +93,7 @@ export function PromotorCodeSection({ systemConfig, onApplied, onError }) {
     try {
       const p = await findPromotorByCodigo(codigo)
       if (!p) {
-        onError?.('Código no válido o aliado inactivo')
+        onError?.(ALIADO_CODIGO_INACTIVO_MSG)
         setPromotor(null)
         setApplied(false)
         return

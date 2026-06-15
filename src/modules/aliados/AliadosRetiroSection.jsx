@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import {
-  solicitarRetiroAliado, datosFiscalesCompletos,
+  solicitarRetiroAliado, datosFiscalesCompletos, aliadoPuedeRetirar,
 } from '../../core/services/promotores.service'
 import {
   RETIRO_MULTIPLO, montosPagoPermitidos, fmtMXN, faltanteParaRetiro,
@@ -14,7 +14,7 @@ export function AliadosRetiroSection({ aliado, retiroSolicitado, userName }) {
   const faltante = faltanteParaRetiro(disponible)
   const cuentas = aliado?.cuentas_bancarias || []
   const fiscalOk = datosFiscalesCompletos(aliado?.datos_fiscales)
-  const puedeRetirar = montos.length > 0 && cuentas.length > 0 && fiscalOk && !retiroSolicitado && aliado?.activo !== false
+  const puedeRetirar = montos.length > 0 && cuentas.length > 0 && fiscalOk && !retiroSolicitado && aliadoPuedeRetirar(aliado)
 
   const [monto, setMonto] = useState(montos[montos.length - 1] ?? RETIRO_MULTIPLO)
   const [cuentaId, setCuentaId] = useState(

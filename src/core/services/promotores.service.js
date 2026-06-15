@@ -103,6 +103,18 @@ export async function solicitarRetiroAliado({ monto, cuentaId }) {
   return aliadoApiCall('/api/aliados-retiro', { monto, cuentaId })
 }
 
+export async function dejarAliadoSyng() {
+  return aliadoApiCall('/api/aliados-dejar', {})
+}
+
+export const ALIADO_CODIGO_INACTIVO_MSG =
+  'Este código ya no está activo. Pide a tu aliado un enlace nuevo o usa otro código.'
+
+export function aliadoPuedeRetirar(aliado) {
+  if (!aliado || aliado.en_revision) return false
+  return true
+}
+
 export function subscribeRetiroSolicitado(uid, onData) {
   if (!uid) return () => {}
   const q = query(

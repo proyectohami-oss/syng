@@ -126,6 +126,20 @@ function requireAliadoActivo(aliado) {
   }
 }
 
+/** Cuentas y retiros — permitido aunque haya dejado el programa (activo false). */
+function requireAliadoSelfService(aliado) {
+  if (!aliado) {
+    const err = new Error('No eres aliado Syng')
+    err.status = 404
+    throw err
+  }
+  if (aliado.en_revision) {
+    const err = new Error('Tu cuenta está en revisión. Te avisaremos pronto.')
+    err.status = 403
+    throw err
+  }
+}
+
 function datosFiscalesCompletos(datos) {
   if (!datos) return false
   const rfc = String(datos.rfc || '').trim().toUpperCase()
@@ -220,7 +234,7 @@ const updateAliadoCuentas = onRequest({
   try {
     const decoded = await verifyAuth(req)
     const aliado = await findAliadoByUserId(decoded.uid)
-    requireAliadoActivo(aliado)
+    requireAliadoSelfService(aliado)
 
     const cuentas = normalizeCuentas(req.body?.cuentas_bancarias)
     const rfc = String(req.body?.datos_fiscales?.rfc || '').trim().toUpperCase()
@@ -280,7 +294,7 @@ const solicitarRetiroAliado = onRequest({
       if (aliadoSnap.empty) throw Object.assign(new Error('No eres aliado Syng'), { status: 404 })
       const docSnap = aliadoSnap.docs[0]
       const aliado = { id: docSnap.id, ...docSnap.data() }
-      requireAliadoActivo(aliado)
+      requireAliadoSelfService(aliado)
 
       if (!datosFiscalesCompletos(aliado.datos_fiscales)) {
         throw Object.assign(new Error('Completa tus datos fiscales (RFC y razón social) antes de retirar'), { status: 400 })
@@ -346,9 +360,42 @@ const solicitarRetiroAliado = onRequest({
   }
 })
 
+const dejarAliadoSyng = onRequest({
+  timeoutSeconds: 30,
+  invoker: 'public',
+}, async (req, res) => {
+  setCors(req, res)
+  if (req.method === 'OPTIONS') return res.status(204).send('')
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
+
+  try {
+    const decoded = await verifyAuth(req)
+    const aliado = await findAliadoByUserId(decoded.uid)
+    if (!aliado) {
+      return res.status(404).json({ error: 'No eres aliado Syng' })
+    }
+    if (aliado.activo === false) {
+      return res.json({ ok: true, alreadyLeft: true })
+    }
+
+    await aliado.ref.update({
+      activo: false,
+      dejadoAt: FieldValue.serverTimestamp(),
+      dejadoPor: 'aliado',
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+
+    return res.json({ ok: true, mensaje: 'Dejaste Aliados Syng. Tu saldo disponible sigue siendo retirable.' })
+  } catch (err) {
+    console.error('[dejarAliadoSyng]', err)
+    res.status(err.status || 500).json({ error: err.message || 'Error interno' })
+  }
+})
+
 module.exports = {
   registerAliadoSyng,
   updateAliadoCuentas,
   solicitarRetiroAliado,
+  dejarAliadoSyng,
   RETIRO_MULTIPLO,
 }

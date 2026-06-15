@@ -15,6 +15,8 @@ import {
 } from '../../core/utils/aliadosRetiro'
 import { AliadosCuentasSection } from './AliadosCuentasSection'
 import { AliadosRetiroSection } from './AliadosRetiroSection'
+import { AliadosFaqSection } from './AliadosFaqSection'
+import { AliadosDejarSection } from './AliadosDejarSection'
 import { A, L } from '../../shared/agendaEditorial'
 import { showToast } from '../../shared/Toast'
 
@@ -131,6 +133,7 @@ export function AliadosSyngModule() {
   const pendiente = aliado?.comisiones_pendientes ?? 0
   const pagado = aliado?.comisiones_pagadas ?? 0
   const faltante = faltanteParaRetiro(disponible)
+  const codigoActivo = aliado?.activo !== false
 
   return (
     <div style={A.screen}>
@@ -165,7 +168,7 @@ export function AliadosSyngModule() {
           <>
             <div style={{ padding: '20px 16px 8px', textAlign: 'center' }}>
               <p style={{ margin: '0 0 4px', fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', color: L.champagne }}>
-                Eres aliado Syng
+                {codigoActivo ? 'Eres aliado Syng' : 'Ex aliado Syng'}
               </p>
               <p style={{ margin: '0 0 12px', fontFamily: L.serif, fontSize: 28, color: L.ivory, letterSpacing: '0.12em' }}>
                 {aliado.codigo}
@@ -173,21 +176,30 @@ export function AliadosSyngModule() {
               <p style={{ margin: 0, fontSize: 12, color: L.ivoryMuted }}>
                 Comisión {comisionPct}% · Descuento referido {descuentoPct}%
               </p>
-              {!aliado.activo && (
-                <p style={{ margin: '10px 0 0', fontSize: 12, color: '#E05252' }}>
-                  Tu código está inactivo — no genera nuevas comisiones.
+              {!codigoActivo && (
+                <p style={{
+                  margin: '12px 0 0', fontSize: 13, color: L.ivoryMuted, lineHeight: 1.5,
+                  padding: '10px 12px', background: 'rgba(196,169,98,0.06)',
+                  border: `1px solid ${L.champagneBorder}`, borderRadius: 2,
+                }}>
+                  Dejaste el programa — tu código ya no genera comisiones nuevas.
+                  Tu saldo disponible sigue siendo retirable.
                 </p>
               )}
             </div>
 
-            <div style={{ display: 'flex', gap: 8, padding: '0 16px 20px' }}>
-              <button type="button" onClick={handleShare} style={{ ...A.btnPrimary, flex: 1 }}>
-                Compartir
-              </button>
-              <button type="button" onClick={handleCopyCode} style={{ ...A.btnSecondary, flex: 'none', padding: '10px 14px' }}>
-                Copiar
-              </button>
-            </div>
+            {codigoActivo && (
+              <div style={{ display: 'flex', gap: 8, padding: '0 16px 20px' }}>
+                <button type="button" onClick={handleShare} style={{ ...A.btnPrimary, flex: 1 }}>
+                  Compartir
+                </button>
+                <button type="button" onClick={handleCopyCode} style={{ ...A.btnSecondary, flex: 'none', padding: '10px 14px' }}>
+                  Copiar
+                </button>
+              </div>
+            )}
+
+            {!codigoActivo && <div style={{ height: 8 }} />}
 
             <div style={A.section}>
               <p style={A.sectionLabel}>Mis ganancias</p>
@@ -252,11 +264,21 @@ export function AliadosSyngModule() {
                 <p style={{
                   margin: 0, fontSize: 12, color: L.champagne, fontFamily: 'monospace',
                   wordBreak: 'break-all', lineHeight: 1.5,
+                  opacity: codigoActivo ? 1 : 0.45,
                 }}>
                   {aliadoShareUrl(aliado.codigo)}
                 </p>
+                {!codigoActivo && (
+                  <p style={{ margin: '8px 0 0', fontSize: 11, color: L.ivoryMuted }}>
+                    Enlace inactivo — no otorga descuento ni comisión.
+                  </p>
+                )}
               </div>
             </div>
+
+            <AliadosFaqSection />
+
+            <AliadosDejarSection aliado={aliado} />
           </>
         ) : (
           <div style={{ padding: '8px 16px 32px' }}>

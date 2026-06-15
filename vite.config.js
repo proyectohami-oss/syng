@@ -85,6 +85,12 @@ export default defineConfig({
         secure:       true,
         rewrite:      () => '/solicitarRetiroAliado',
       },
+      '/api/aliados-dejar': {
+        target:       'https://us-central1-syng-app.cloudfunctions.net',
+        changeOrigin: true,
+        secure:       true,
+        rewrite:      () => '/dejarAliadoSyng',
+      },
     },
   },
 })
