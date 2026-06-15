@@ -67,6 +67,12 @@ export default defineConfig({
         secure:       true,
         rewrite:      () => '/createMercadoPagoCheckout',
       },
+      '/api/register-aliado': {
+        target:       'https://us-central1-syng-app.cloudfunctions.net',
+        changeOrigin: true,
+        secure:       true,
+        rewrite:      () => '/registerAliadoSyng',
+      },
     },
   },
 })

@@ -43,6 +43,13 @@
         { "fieldPath": "promotorId", "order": "ASCENDING" },
         { "fieldPath": "estatus", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "promotores",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "userId", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

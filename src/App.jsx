@@ -22,6 +22,7 @@ import AvisoPreview from './pages/AvisoPreview'
 import { ResumenDiarioScreen } from './modules/resumen/ResumenDiarioScreen'
 import { BienvenidoDeVueltaScreen } from './modules/reenganche/BienvenidoDeVueltaScreen'
 import { DeepLinkHandler } from './shared/DeepLinkHandler'
+import { AliadosSyngModule } from './modules/aliados/AliadosSyngModule'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -120,6 +121,7 @@ function AppWithViewport() {
               <Route path="/resumen-diario" element={<ResumenDiarioScreen />} />
               <Route path="/bienvenido-de-vuelta" element={<BienvenidoDeVueltaScreen />} />
               <Route path="/perfil"       element={<PerfilModule />} />
+              <Route path="/aliados"     element={<AliadosSyngModule />} />
               <Route path="/unirse"       element={<UnirseScreen />} />
             </Routes>
           </AppShell>

@@ -218,3 +218,4 @@ exports.sendReminderTask = onDocumentCreated('reminders/{id}', async (event) => 
 })
 
 Object.assign(exports, require('./mercadopago'))
+Object.assign(exports, require('./aliados'))

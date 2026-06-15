@@ -31,6 +31,40 @@ export function PromotorCodeSection({ systemConfig, onApplied, onError }) {
   const [applied, setApplied]   = useState(!!userData?.promotorCodigo)
 
   useEffect(() => {
+    const stored = sessionStorage.getItem('syng_aliado_codigo')
+    if (!stored) return
+    sessionStorage.removeItem('syng_aliado_codigo')
+    setInput(stored)
+    if (!canEdit || !aliadosActivo) return
+    let cancelled = false
+    ;(async () => {
+      setLoading(true)
+      onError?.(null)
+      try {
+        const p = await findPromotorByCodigo(stored)
+        if (cancelled) return
+        if (!p) {
+          onError?.('Código no válido o aliado inactivo')
+          return
+        }
+        if (isSelfReferral({ user, promotor: p })) {
+          onError?.(SELF_REFERRAL_MSG)
+          return
+        }
+        await savePromotorCodigo(user.uid, p)
+        setPromotor(p)
+        setApplied(true)
+        onApplied?.(p)
+      } catch (e) {
+        if (!cancelled) onError?.(e.message || 'No se pudo aplicar el código')
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    })()
+    return () => { cancelled = true }
+  }, [user?.uid])
+
+  useEffect(() => {
     if (!userData?.promotorCodigo) return
     let cancelled = false
     findPromotorByCodigo(userData.promotorCodigo).then(p => {

@@ -11,6 +11,16 @@ export function DeepLinkHandler() {
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+    const aliado = params.get('aliado')
+    if (aliado) {
+      sessionStorage.setItem('syng_aliado_codigo', aliado.trim().toUpperCase())
+      params.delete('aliado')
+      const qs = params.toString()
+      window.history.replaceState({}, '', `${window.location.pathname}${qs ? `?${qs}` : ''}`)
+      navigate('/perfil', { replace: true })
+      return
+    }
+
     const redirect = params.get('redirect')
     if (!redirect || !redirect.startsWith('/')) return
 

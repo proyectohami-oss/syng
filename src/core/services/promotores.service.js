@@ -8,8 +8,9 @@
  */
 import {
   collection, doc, getDocs, limit, query, updateDoc, where, serverTimestamp,
+  onSnapshot,
 } from 'firebase/firestore'
-import { db } from '../../firebase'
+import { auth, db } from '../../firebase'
 
 export function normalizePromotorCodigo(raw) {
   return (raw || '').trim().toUpperCase()
@@ -30,8 +31,58 @@ export const SELF_REFERRAL_MSG =
 export const ALIADOS_PAUSADO_MSG =
   'Aliados Syng está pausado temporalmente. Vuelve pronto — te avisaremos cuando esté activo de nuevo.'
 
+export const EN_REVISION_MSG =
+  'Tu cuenta está en revisión. Te avisaremos pronto.'
+
 export function isAliadosProgramActive(systemConfig) {
   return systemConfig?.aliados_activo !== false
+}
+
+export async function findPromotorByUserId(uid) {
+  if (!uid) return null
+  const snap = await getDocs(query(
+    collection(db, 'promotores'),
+    where('userId', '==', uid),
+    limit(1),
+  ))
+  if (snap.empty) return null
+  return { id: snap.docs[0].id, ...snap.docs[0].data() }
+}
+
+export function subscribePromotorByUserId(uid, onData) {
+  if (!uid) return () => {}
+  const q = query(collection(db, 'promotores'), where('userId', '==', uid), limit(1))
+  return onSnapshot(q, (snap) => {
+    if (snap.empty) {
+      onData(null)
+      return
+    }
+    onData({ id: snap.docs[0].id, ...snap.docs[0].data() })
+  }, () => onData(null))
+}
+
+export async function registerAliadoSyng() {
+  const user = auth.currentUser
+  if (!user) throw new Error('Inicia sesión para continuar')
+  const token = await user.getIdToken()
+  const res = await fetch('/api/register-aliado', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({}),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'No se pudo registrarte como aliado')
+  return data
+}
+
+export function gananciaTotalAliado(aliado) {
+  if (!aliado) return 0
+  return (aliado.comisiones_pendientes ?? 0)
+    + (aliado.comisiones_disponibles ?? 0)
+    + (aliado.comisiones_pagadas ?? 0)
 }
 
 export async function findPromotorByCodigo(codigo) {

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Capacitor } from '@capacitor/core'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { updateDisplayName, updatePhoneNumber } from '../../core/services/users.service'
@@ -19,6 +20,7 @@ import { PlanUpgradeSection } from './PlanUpgradeSection'
 import { PromotorCodeSection } from './PromotorCodeSection'
 
 export function PerfilModule() {
+  const navigate = useNavigate()
   const auth = useCoreAuth()
   const { signOut } = useAuthActions()
   const { isInstalled, canInstall } = usePWAInstall()
@@ -153,6 +155,25 @@ export function PerfilModule() {
             {userData?.displayName || 'Sin nombre'}
           </p>
           <p style={{ margin: 0, fontSize: 13, color: L.ivoryMuted }}>{user?.email}</p>
+        </div>
+
+        <div style={A.section}>
+          <p style={A.sectionLabel}>Aliados Syng</p>
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate('/aliados')}
+            onKeyDown={e => e.key === 'Enter' && navigate('/aliados')}
+            style={{ ...A.row, cursor: 'pointer' }}
+          >
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontSize: 15, color: L.ivory }}>Programa de aliados</p>
+              <p style={{ margin: '4px 0 0', fontSize: 12, color: L.ivoryMuted, lineHeight: 1.45 }}>
+                Comparte tu código, gana comisión y consulta tus ganancias.
+              </p>
+            </div>
+            <span style={{ fontSize: 18, color: L.champagne }}>→</span>
+          </div>
         </div>
 
         <div style={A.section}>
