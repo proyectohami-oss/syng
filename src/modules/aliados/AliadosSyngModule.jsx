@@ -4,6 +4,7 @@ import { useCoreAuth } from '../../core/hooks/useCoreData'
 import {
   subscribePromotorByUserId,
   registerAliadoSyng,
+  subscribeRetiroSolicitado,
   isAliadosProgramActive,
   ALIADOS_PAUSADO_MSG,
   EN_REVISION_MSG,
@@ -12,6 +13,8 @@ import {
 import {
   RETIRO_MULTIPLO, faltanteParaRetiro, fmtMXN, aliadoShareUrl, aliadoShareText,
 } from '../../core/utils/aliadosRetiro'
+import { AliadosCuentasSection } from './AliadosCuentasSection'
+import { AliadosRetiroSection } from './AliadosRetiroSection'
 import { A, L } from '../../shared/agendaEditorial'
 import { showToast } from '../../shared/Toast'
 
@@ -62,6 +65,7 @@ export function AliadosSyngModule() {
   const descuentoPct = systemConfig?.descuento_usuario ?? 10
 
   const [aliado, setAliado]       = useState(null)
+  const [retiroSolicitado, setRetiroSolicitado] = useState(null)
   const [loading, setLoading]     = useState(true)
   const [registering, setRegistering] = useState(false)
   const [error, setError]         = useState(null)
@@ -74,7 +78,8 @@ export function AliadosSyngModule() {
       setAliado(data)
       setLoading(false)
     })
-    return unsub
+    const unsubRetiro = subscribeRetiroSolicitado(user.uid, setRetiroSolicitado)
+    return () => { unsub(); unsubRetiro() }
   }, [user?.uid])
 
   async function handleRegister() {
@@ -229,6 +234,17 @@ export function AliadosSyngModule() {
                 </div>
               </div>
             </div>
+
+            <AliadosCuentasSection
+              aliado={aliado}
+              userName={user?.displayName || user?.email?.split('@')[0]}
+            />
+
+            <AliadosRetiroSection
+              aliado={aliado}
+              retiroSolicitado={retiroSolicitado}
+              userName={user?.displayName || user?.email?.split('@')[0]}
+            />
 
             <div style={{ ...A.section, marginTop: 12 }}>
               <p style={A.sectionLabel}>Tu enlace</p>

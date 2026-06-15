@@ -73,6 +73,18 @@ export default defineConfig({
         secure:       true,
         rewrite:      () => '/registerAliadoSyng',
       },
+      '/api/aliados-cuentas': {
+        target:       'https://us-central1-syng-app.cloudfunctions.net',
+        changeOrigin: true,
+        secure:       true,
+        rewrite:      () => '/updateAliadoCuentas',
+      },
+      '/api/aliados-retiro': {
+        target:       'https://us-central1-syng-app.cloudfunctions.net',
+        changeOrigin: true,
+        secure:       true,
+        rewrite:      () => '/solicitarRetiroAliado',
+      },
     },
   },
 })

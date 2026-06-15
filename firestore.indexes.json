@@ -45,10 +45,19 @@
       ]
     },
     {
-      "collectionGroup": "promotores",
+      "collectionGroup": "retiros",
       "queryScope": "COLLECTION",
       "fields": [
-        { "fieldPath": "userId", "order": "ASCENDING" }
+        { "fieldPath": "promotorId", "order": "ASCENDING" },
+        { "fieldPath": "estatus", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "retiros",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "estatus", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
     }
   ],

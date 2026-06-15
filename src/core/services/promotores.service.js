@@ -78,6 +78,55 @@ export async function registerAliadoSyng() {
   return data
 }
 
+async function aliadoApiCall(path, body) {
+  const user = auth.currentUser
+  if (!user) throw new Error('Inicia sesión para continuar')
+  const token = await user.getIdToken()
+  const res = await fetch(path, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(body || {}),
+  })
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.error || 'No se pudo completar la operación')
+  return data
+}
+
+export async function updateAliadoCuentas({ cuentas_bancarias, datos_fiscales }) {
+  return aliadoApiCall('/api/aliados-cuentas', { cuentas_bancarias, datos_fiscales })
+}
+
+export async function solicitarRetiroAliado({ monto, cuentaId }) {
+  return aliadoApiCall('/api/aliados-retiro', { monto, cuentaId })
+}
+
+export function subscribeRetiroSolicitado(uid, onData) {
+  if (!uid) return () => {}
+  const q = query(
+    collection(db, 'retiros'),
+    where('userId', '==', uid),
+    where('estatus', '==', 'Solicitado'),
+    limit(1),
+  )
+  return onSnapshot(q, (snap) => {
+    if (snap.empty) {
+      onData(null)
+      return
+    }
+    onData({ id: snap.docs[0].id, ...snap.docs[0].data() })
+  }, () => onData(null))
+}
+
+export function datosFiscalesCompletos(datos) {
+  if (!datos) return false
+  const rfc = String(datos.rfc || '').trim()
+  const razon = String(datos.razon_social || '').trim()
+  return rfc.length >= 12 && razon.length >= 3
+}
+
 export function gananciaTotalAliado(aliado) {
   if (!aliado) return 0
   return (aliado.comisiones_pendientes ?? 0)

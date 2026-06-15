@@ -1,11 +1,14 @@
 /**
- * Aliados Syng — auto-registro desde la App.
+ * Aliados Syng — registro, cuentas bancarias y retiros.
  */
 const { onRequest } = require('firebase-functions/v2/https')
 const { getAuth } = require('firebase-admin/auth')
 const { getFirestore, FieldValue } = require('firebase-admin/firestore')
+const crypto = require('crypto')
 
 const db = getFirestore()
+const RETIRO_MULTIPLO = 500
+const MAX_CUENTAS = 3
 
 function generateCode() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'
@@ -14,6 +17,39 @@ function generateCode() {
     code += chars[Math.floor(Math.random() * chars.length)]
   }
   return code
+}
+
+function roundMoney(n) {
+  return Math.round(Number(n) * 100) / 100
+}
+
+function esMultiploRetiro(monto) {
+  const m = Number(monto)
+  return Number.isFinite(m) && m >= RETIRO_MULTIPLO && m % RETIRO_MULTIPLO === 0
+}
+
+function validClabe(clabe) {
+  return /^\d{18}$/.test(String(clabe || '').replace(/\s/g, ''))
+}
+
+function validRfc(rfc) {
+  return /^[A-ZÑ&]{3,4}\d{6}[A-Z0-9]{3}$/.test(String(rfc || '').trim().toUpperCase())
+}
+
+function normalizeCuentas(raw) {
+  if (!Array.isArray(raw)) return []
+  const cuentas = raw.slice(0, MAX_CUENTAS).map(c => ({
+    id: c.id || crypto.randomUUID(),
+    titular: String(c.titular || '').trim(),
+    banco: String(c.banco || '').trim(),
+    clabe: String(c.clabe || '').replace(/\s/g, ''),
+    predeterminada: !!c.predeterminada,
+  })).filter(c => c.titular && c.banco && validClabe(c.clabe))
+
+  if (!cuentas.length) return []
+  const defaultIdx = cuentas.findIndex(c => c.predeterminada)
+  cuentas.forEach((c, i) => { c.predeterminada = i === (defaultIdx >= 0 ? defaultIdx : 0) })
+  return cuentas
 }
 
 async function loadSystemConfig() {
@@ -50,7 +86,7 @@ async function findAliadoByUserId(uid) {
   const snap = await db.collection('promotores').where('userId', '==', uid).limit(1).get()
   if (snap.empty) return null
   const docSnap = snap.docs[0]
-  return { id: docSnap.id, ...docSnap.data() }
+  return { id: docSnap.id, ref: docSnap.ref, ...docSnap.data() }
 }
 
 async function findUnlinkedAliadoByEmail(email) {
@@ -70,6 +106,31 @@ async function findUnlinkedAliadoByEmail(email) {
     }
   }
   return null
+}
+
+function requireAliadoActivo(aliado) {
+  if (!aliado) {
+    const err = new Error('No eres aliado Syng')
+    err.status = 404
+    throw err
+  }
+  if (aliado.en_revision) {
+    const err = new Error('Tu cuenta está en revisión. Te avisaremos pronto.')
+    err.status = 403
+    throw err
+  }
+  if (aliado.activo === false) {
+    const err = new Error('Tu código de aliado está inactivo')
+    err.status = 403
+    throw err
+  }
+}
+
+function datosFiscalesCompletos(datos) {
+  if (!datos) return false
+  const rfc = String(datos.rfc || '').trim().toUpperCase()
+  const razon = String(datos.razon_social || '').trim()
+  return validRfc(rfc) && razon.length >= 3
 }
 
 const registerAliadoSyng = onRequest({
@@ -122,6 +183,8 @@ const registerAliadoSyng = onRequest({
       porcentaje_comision: defaultPct,
       activo: true,
       en_revision: false,
+      cuentas_bancarias: [],
+      datos_fiscales: null,
       usuarios_registrados: 0,
       usuarios_pago: 0,
       comisiones_pendientes: 0,
@@ -146,4 +209,146 @@ const registerAliadoSyng = onRequest({
   }
 })
 
-module.exports = { registerAliadoSyng }
+const updateAliadoCuentas = onRequest({
+  timeoutSeconds: 30,
+  invoker: 'public',
+}, async (req, res) => {
+  setCors(req, res)
+  if (req.method === 'OPTIONS') return res.status(204).send('')
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
+
+  try {
+    const decoded = await verifyAuth(req)
+    const aliado = await findAliadoByUserId(decoded.uid)
+    requireAliadoActivo(aliado)
+
+    const cuentas = normalizeCuentas(req.body?.cuentas_bancarias)
+    const rfc = String(req.body?.datos_fiscales?.rfc || '').trim().toUpperCase()
+    const razon_social = String(req.body?.datos_fiscales?.razon_social || '').trim()
+
+    const datos_fiscales = rfc || razon_social
+      ? {
+        rfc: rfc || aliado.datos_fiscales?.rfc || '',
+        razon_social: razon_social || aliado.datos_fiscales?.razon_social || '',
+        completo: false,
+      }
+      : (aliado.datos_fiscales || null)
+
+    if (datos_fiscales) {
+      datos_fiscales.completo = datosFiscalesCompletos(datos_fiscales)
+      if (datos_fiscales.rfc && !validRfc(datos_fiscales.rfc)) {
+        return res.status(400).json({ error: 'RFC no válido' })
+      }
+    }
+
+    await aliado.ref.update({
+      cuentas_bancarias: cuentas,
+      datos_fiscales,
+      updatedAt: FieldValue.serverTimestamp(),
+    })
+
+    return res.json({
+      ok: true,
+      cuentas_bancarias: cuentas,
+      datos_fiscales,
+    })
+  } catch (err) {
+    console.error('[updateAliadoCuentas]', err)
+    res.status(err.status || 500).json({ error: err.message || 'Error interno' })
+  }
+})
+
+const solicitarRetiroAliado = onRequest({
+  timeoutSeconds: 60,
+  invoker: 'public',
+}, async (req, res) => {
+  setCors(req, res)
+  if (req.method === 'OPTIONS') return res.status(204).send('')
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method Not Allowed' })
+
+  try {
+    const decoded = await verifyAuth(req)
+    const uid = decoded.uid
+    const { monto, cuentaId } = req.body || {}
+
+    if (!esMultiploRetiro(monto)) {
+      return res.status(400).json({ error: `Solo retiros en múltiplos de $${RETIRO_MULTIPLO} MXN` })
+    }
+
+    const result = await db.runTransaction(async (tx) => {
+      const aliadoSnap = await tx.get(db.collection('promotores').where('userId', '==', uid).limit(1))
+      if (aliadoSnap.empty) throw Object.assign(new Error('No eres aliado Syng'), { status: 404 })
+      const docSnap = aliadoSnap.docs[0]
+      const aliado = { id: docSnap.id, ...docSnap.data() }
+      requireAliadoActivo(aliado)
+
+      if (!datosFiscalesCompletos(aliado.datos_fiscales)) {
+        throw Object.assign(new Error('Completa tus datos fiscales (RFC y razón social) antes de retirar'), { status: 400 })
+      }
+
+      const cuentas = aliado.cuentas_bancarias || []
+      if (!cuentas.length) {
+        throw Object.assign(new Error('Agrega una cuenta bancaria antes de retirar'), { status: 400 })
+      }
+
+      const cuenta = cuentaId
+        ? cuentas.find(c => c.id === cuentaId)
+        : cuentas.find(c => c.predeterminada) || cuentas[0]
+      if (!cuenta) {
+        throw Object.assign(new Error('Cuenta bancaria no encontrada'), { status: 400 })
+      }
+
+      const pendientesSnap = await tx.get(
+        db.collection('retiros')
+          .where('promotorId', '==', aliado.id)
+          .where('estatus', '==', 'Solicitado'),
+      )
+      if (!pendientesSnap.empty) {
+        throw Object.assign(new Error('Ya tienes un retiro en proceso'), { status: 400 })
+      }
+
+      const disponible = roundMoney(aliado.comisiones_disponibles ?? 0)
+      const montoNum = roundMoney(monto)
+      if (montoNum > disponible) {
+        throw Object.assign(new Error(`Saldo disponible: $${disponible.toFixed(2)}`), { status: 400 })
+      }
+
+      const retiroRef = db.collection('retiros').doc()
+      tx.set(retiroRef, {
+        promotorId: aliado.id,
+        promotorNombre: aliado.nombre || '',
+        userId: uid,
+        monto: montoNum,
+        estatus: 'Solicitado',
+        cuenta: {
+          id: cuenta.id,
+          titular: cuenta.titular,
+          banco: cuenta.banco,
+          clabe: cuenta.clabe,
+        },
+        datos_fiscales: aliado.datos_fiscales,
+        createdAt: FieldValue.serverTimestamp(),
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+
+      tx.update(docSnap.ref, {
+        comisiones_disponibles: roundMoney(disponible - montoNum),
+        updatedAt: FieldValue.serverTimestamp(),
+      })
+
+      return { retiroId: retiroRef.id, monto: montoNum }
+    })
+
+    return res.json({ ok: true, ...result })
+  } catch (err) {
+    console.error('[solicitarRetiroAliado]', err)
+    res.status(err.status || 500).json({ error: err.message || 'Error interno' })
+  }
+})
+
+module.exports = {
+  registerAliadoSyng,
+  updateAliadoCuentas,
+  solicitarRetiroAliado,
+  RETIRO_MULTIPLO,
+}

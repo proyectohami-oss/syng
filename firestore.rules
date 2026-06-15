@@ -133,7 +133,7 @@ service cloud.firestore {
     }
 
     match /retiros/{retiroId} {
-      allow read: if isSyngAdmin();
+      allow read: if isSyngAdmin() || (isAuthenticated() && resource.data.userId == request.auth.uid);
       allow write: if isSyngAdmin();
     }
 
