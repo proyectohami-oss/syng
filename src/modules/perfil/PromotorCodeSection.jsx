@@ -9,6 +9,8 @@ import {
   normalizePromotorCodigo,
   isSelfReferral,
   SELF_REFERRAL_MSG,
+  isAliadosProgramActive,
+  ALIADOS_PAUSADO_MSG,
 } from '../../core/services/promotores.service'
 import { A, L } from '../../shared/agendaEditorial'
 
@@ -19,6 +21,7 @@ export function PromotorCodeSection({ systemConfig, onApplied, onError }) {
   const subscription = auth.subscription
 
   const descuentoPct = systemConfig?.descuento_usuario ?? 0
+  const aliadosActivo = isAliadosProgramActive(systemConfig)
   const canEdit = canEditAliadoCode(userData)
   const discountEligible = qualifiesForAliadoDiscount({ subscription, userData })
 
@@ -44,6 +47,10 @@ export function PromotorCodeSection({ systemConfig, onApplied, onError }) {
     const codigo = normalizePromotorCodigo(input)
     if (!codigo) {
       onError?.('Ingresa un código de aliado')
+      return
+    }
+    if (!aliadosActivo) {
+      onError?.(ALIADOS_PAUSADO_MSG)
       return
     }
     setLoading(true)
@@ -101,7 +108,11 @@ export function PromotorCodeSection({ systemConfig, onApplied, onError }) {
         Código Aliados Syng
       </p>
 
-      {!canEdit && userData?.promotorCodigoUsado ? (
+      {!aliadosActivo ? (
+        <p style={{ margin: 0, fontSize: 13, color: L.ivoryMuted, lineHeight: 1.5 }}>
+          {ALIADOS_PAUSADO_MSG}
+        </p>
+      ) : !canEdit && userData?.promotorCodigoUsado ? (
         <p style={{ margin: 0, fontSize: 13, color: L.ivoryMuted, lineHeight: 1.5 }}>
           Ya usaste un código de aliado en tu suscripción
           {userData.promotorCodigo ? ` (${userData.promotorCodigo})` : ''}.

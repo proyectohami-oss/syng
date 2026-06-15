@@ -129,7 +129,12 @@ service cloud.firestore {
 
     match /comisiones/{comisionId} {
       allow read: if isSyngAdmin();
-      allow write: if false;
+      allow write: if isSyngAdmin();
+    }
+
+    match /retiros/{retiroId} {
+      allow read: if isSyngAdmin();
+      allow write: if isSyngAdmin();
     }
 
     match /audit_log/{logId} {

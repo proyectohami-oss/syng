@@ -27,6 +27,22 @@
         { "fieldPath": "userId", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "payments",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "comisiones",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "promotorId", "order": "ASCENDING" },
+        { "fieldPath": "estatus", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []

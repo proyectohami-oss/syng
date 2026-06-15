@@ -90,6 +90,11 @@ async function resolveCheckoutPricing({ uid, plan, promotorCodigo }) {
   let descuentoPct = 0
 
   if (promotorCodigo) {
+    if (config.aliados_activo === false) {
+      const err = new Error('Aliados Syng está pausado temporalmente')
+      err.status = 400
+      throw err
+    }
     const eligible = await userEligibleForPromotorDiscount(uid)
     if (!eligible) {
       const err = new Error('El descuento de promotor solo aplica en tu primera suscripción pagada')
@@ -128,6 +133,14 @@ async function recordPromotorCommission(payment, meta) {
   const promotorId = meta.promotor_id
   if (!promotorId) return
 
+  const paymentId = String(payment.id)
+  const comisionRef = db.doc(`comisiones/${paymentId}`)
+  const existingComision = await comisionRef.get()
+  if (existingComision.exists) {
+    console.log('[MP webhook] comisión ya registrada', paymentId)
+    return
+  }
+
   const promotorRef = db.doc(`promotores/${promotorId}`)
   const promotorSnap = await promotorRef.get()
   if (!promotorSnap.exists) {
@@ -137,19 +150,18 @@ async function recordPromotorCommission(payment, meta) {
 
   const config = await loadSystemConfig()
   const promotor = promotorSnap.data()
-  const pct = Number(promotor.porcentaje_comision ?? config.comision_promotores ?? 20)
+  const pct = Number(promotor.porcentaje_comision ?? config.comision_promotores ?? 25)
   const monto = Number(payment.transaction_amount ?? 0)
   const comision = roundMoney(monto * pct / 100)
   const userId = meta.user_id || meta.userId
 
   const batch = db.batch()
 
-  const comisionRef = db.collection('comisiones').doc()
   batch.set(comisionRef, {
     promotorId,
     promotorNombre: promotor.nombre || '',
     userId,
-    paymentId: String(payment.id),
+    paymentId,
     monto,
     comision,
     porcentaje: pct,
@@ -174,7 +186,7 @@ async function recordPromotorCommission(payment, meta) {
   }
 
   await batch.commit()
-  console.log('[MP webhook] comisión registrada', promotorId, comision)
+  console.log('[MP webhook] comisión registrada', promotorId, comision, `${pct}%`)
 }
 
 function setCors(req, res) {
@@ -271,46 +283,52 @@ async function loadPlan(planId) {
 async function activateSubscriptionFromPayment(payment) {
   const paymentId = String(payment.id)
   const payRef    = db.doc(`payments/${paymentId}`)
-  const existing  = await payRef.get()
-  if (existing.exists && existing.data().status === 'approved') {
-    console.log('[MP webhook] pago ya procesado', paymentId)
-    return { duplicate: true }
-  }
-
+  const meta      = payment.metadata || {}
   const { userId, planId } = paymentUserAndPlan(payment)
+
   if (!userId || !planId || !PAID_PLANS.has(planId)) {
     console.warn('[MP webhook] pago sin userId/planId válido', paymentId, { userId, planId })
     return { skipped: true }
   }
 
-  const meta = payment.metadata || {}
+  const activated = await db.runTransaction(async (tx) => {
+    const existing = await tx.get(payRef)
+    if (existing.exists && existing.data().status === 'approved') {
+      return false
+    }
 
-  const batch = db.batch()
-  batch.set(payRef, {
-    userId,
-    planId,
-    monto:            payment.transaction_amount ?? 0,
-    precioLista:      Number(meta.precio_lista ?? 0) || null,
-    descuentoPct:     Number(meta.descuento_pct ?? 0) || null,
-    descuentoMonto:   Number(meta.descuento_monto ?? 0) || null,
-    promotorId:       meta.promotor_id || null,
-    promotorCodigo:   meta.promotor_codigo || null,
-    currency:         payment.currency_id || 'MXN',
-    status:           'approved',
-    mpPaymentId:      paymentId,
-    mpStatus:         payment.status,
-    createdAt:        FieldValue.serverTimestamp(),
-  }, { merge: true })
+    tx.set(payRef, {
+      userId,
+      planId,
+      monto:            payment.transaction_amount ?? 0,
+      precioLista:      Number(meta.precio_lista ?? 0) || null,
+      descuentoPct:     Number(meta.descuento_pct ?? 0) || null,
+      descuentoMonto:   Number(meta.descuento_monto ?? 0) || null,
+      promotorId:       meta.promotor_id || null,
+      promotorCodigo:   meta.promotor_codigo || null,
+      currency:         payment.currency_id || 'MXN',
+      status:           'approved',
+      mpPaymentId:      paymentId,
+      mpStatus:         payment.status,
+      createdAt:        FieldValue.serverTimestamp(),
+    }, { merge: true })
 
-  batch.set(db.doc(`subscriptions/${userId}`), {
-    userId,
-    planId,
-    status:    'active',
-    source:    'payment',
-    updatedAt: FieldValue.serverTimestamp(),
-  }, { merge: true })
+    tx.set(db.doc(`subscriptions/${userId}`), {
+      userId,
+      planId,
+      status:    'active',
+      source:    'payment',
+      updatedAt: FieldValue.serverTimestamp(),
+    }, { merge: true })
 
-  await batch.commit()
+    return true
+  })
+
+  if (!activated) {
+    console.log('[MP webhook] pago ya procesado', paymentId)
+    return { duplicate: true }
+  }
+
   await recordPromotorCommission(payment, meta)
   console.log('[MP webhook] plan activado', userId, planId, paymentId)
   return { activated: true, userId, planId }

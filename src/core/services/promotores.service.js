@@ -27,6 +27,13 @@ export function isSelfReferral({ user, promotor }) {
 export const SELF_REFERRAL_MSG =
   'Este código es tuyo — compártelo con alguien más (por ejemplo Fernanda) para que reciba el descuento y tú ganes comisión.'
 
+export const ALIADOS_PAUSADO_MSG =
+  'Aliados Syng está pausado temporalmente. Vuelve pronto — te avisaremos cuando esté activo de nuevo.'
+
+export function isAliadosProgramActive(systemConfig) {
+  return systemConfig?.aliados_activo !== false
+}
+
 export async function findPromotorByCodigo(codigo) {
   const normalized = normalizePromotorCodigo(codigo)
   if (!normalized) return null

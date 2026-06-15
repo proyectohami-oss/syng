@@ -21,9 +21,10 @@ const db = getFirestore()
 
 const snap = await db.doc('system_config/main').get()
 const before = snap.exists ? snap.data()?.limites?.gratis : null
+const limites = { ...(snap.exists ? snap.data()?.limites : {}), gratis: 270 }
 
 await db.doc('system_config/main').set({
-  limites: { gratis: 270 },
+  limites,
   updatedAt: FieldValue.serverTimestamp(),
 }, { merge: true })
 
