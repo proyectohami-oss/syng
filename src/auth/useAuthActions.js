@@ -31,23 +31,12 @@ export function isAndroidWeb() {
 }
 
 /**
- * Web/PWA: popup en desktop. Android: popup primero (evita bucle redirect). Nativa: redirect.
+ * Nativa Capacitor: redirect. Web: popup siempre; redirect solo Android si popup falla.
+ * iOS nunca usa redirect (Safari pierde sessionStorage entre sitios).
  */
 export function beginGoogleSignIn() {
   if (isNativeApp()) {
     return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
-  }
-
-  if (isAndroidWeb()) {
-    return signInWithPopup(auth, googleProvider)
-      .then((result) => {
-        sessionStorage.setItem('justLoggedIn', '1')
-        return { redirected: false, user: result.user }
-      })
-      .catch((err) => {
-        console.warn('[Auth] Android popup falló, intentando redirect:', err?.code)
-        return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
-      })
   }
 
   const popup = signInWithPopup(auth, googleProvider).then((result) => {
@@ -55,12 +44,10 @@ export function beginGoogleSignIn() {
     return { redirected: false, user: result.user }
   })
 
-  if (!isStandalonePwa()) return popup
+  if (isIOSWeb()) return popup
 
-  // PWA iOS: popup; redirect solo si no es iPhone (Safari ITP rompía el estado).
   return popup.catch((err) => {
-    if (isIOSWeb()) throw err
-    console.warn('[Auth] popup en PWA falló, intentando redirect:', err?.code)
+    console.warn('[Auth] popup falló, intentando redirect same-origin:', err?.code)
     return signInWithRedirect(auth, googleProvider).then(() => ({ redirected: true }))
   })
 }

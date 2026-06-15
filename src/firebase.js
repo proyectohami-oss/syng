@@ -31,14 +31,19 @@ function isMobileWeb() {
   return !Capacitor.isNativePlatform() && (isIOSWeb() || isAndroidWeb())
 }
 
-/** Prod: siempre firebaseapp.com (OAuth preconfigurado). Localhost mantiene env/default. */
+/**
+ * Web: mismo hostname que la app (OAuth vía /__/auth → vercel.json / vite proxy).
+ * Evita "missing initial state" en Safari cuando el redirect iba a firebaseapp.com.
+ * Nativo Capacitor: firebaseapp.com (sin rewrite local).
+ */
 function authDomainForApp() {
   if (Capacitor.isNativePlatform()) return 'syng-app.firebaseapp.com'
   if (typeof window !== 'undefined') {
     const { hostname } = window.location
-    if (hostname !== 'localhost' && hostname !== '127.0.0.1') {
-      return 'syng-app.firebaseapp.com'
+    if (hostname === 'localhost' || hostname === '127.0.0.1') {
+      return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || hostname
     }
+    return hostname
   }
   return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'syng-app.firebaseapp.com'
 }
@@ -55,7 +60,7 @@ const firebaseConfig = {
 export const app = initializeApp(firebaseConfig)
 
 function createAuth() {
-  if (isMobileWeb()) return getAuth(app)
+  if (Capacitor.isNativePlatform()) return getAuth(app)
   try {
     return initializeAuth(app, {
       persistence: [indexedDBLocalPersistence, browserLocalPersistence],
