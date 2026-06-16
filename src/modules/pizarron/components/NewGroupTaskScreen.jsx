@@ -12,6 +12,7 @@ import { SyngAvisoIosHelp } from '../../../shared/SyngAvisoIosHelp'
 import { showToast } from '../../../shared/Toast'
 import { calendarIcsUrl } from '../../../core/calendar/icsToken'
 import { openIosCalendarIcs } from '../../../core/calendar/calendar.service'
+import { resolveFriendlyPhrase } from '../../../core/calendar/calendarSummary'
 import { localEndOfDay, buildReminderSchedule, formatLocalDateTime } from '../../../core/calendar/localDate'
 import { useShellChrome } from '../../../shared/ShellChromeContext'
 import { L } from '../../../shared/agendaEditorial'
@@ -279,7 +280,13 @@ export function NewGroupTaskScreen() {
     setAfterSavePath(null)
     showToast('Tarea guardada · confirma en Calendario', '✓')
 
-    const icsUrl = calendarIcsUrl({ taskId, title: tTitle, alarmAt, taskTime })
+    const icsUrl = calendarIcsUrl({
+      taskId,
+      title: tTitle,
+      phrase: resolveFriendlyPhrase(),
+      alarmAt,
+      taskTime,
+    })
 
     try {
       sessionStorage.setItem('syng_ios_cal_return', '1')

@@ -9,7 +9,7 @@
       "destination": "/api/invite/[token]"
     },
     {
-      "source": "/((?!api/|favicon\\.ico|syng-ios-icon\\.png|apple-touch-icon|icon-|favicon|manifest\\.webmanifest|manifest\\.json|assets/).*)",
+      "source": "/((?!api/|robots\\.txt|sitemap\\.xml|favicon\\.ico|syng-ios-icon\\.png|apple-touch-icon|icon-|favicon|manifest\\.webmanifest|manifest\\.json|assets/).*)",
       "destination": "/index.html"
     }
   ],

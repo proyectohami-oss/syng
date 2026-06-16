@@ -1,5 +1,6 @@
 /** Estética aviso Syng — editorial, sobria, champagne sobre negro */
 import { createPortal } from 'react-dom'
+import { buildCalendarSummary, resolveFriendlyPhrase } from '../core/calendar/calendarSummary'
 
 export const L = {
   ink: '#0A0A0A',
@@ -126,8 +127,8 @@ export function LuxuryTimeCard({ notifyLabel, taskTimeLabel }) {
   )
 }
 
-export function LuxuryCalPreview({ title, notifyLabel, taskTimeLabel, compact = false }) {
-  const sum = title ? `Syng · ${title}` : 'Syng · Recordatorio'
+export function LuxuryCalPreview({ title, phrase, notifyLabel, taskTimeLabel, compact = false }) {
+  const sum = buildCalendarSummary({ title, phrase: resolveFriendlyPhrase(phrase) })
   return (
     <div style={{
       margin: compact ? '0 0 12px' : '0 0 20px',

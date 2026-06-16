@@ -31,21 +31,16 @@ function isMobileWeb() {
   return !Capacitor.isNativePlatform() && (isIOSWeb() || isAndroidWeb())
 }
 
+const FIREBASE_AUTH_DOMAIN = 'syng-app.firebaseapp.com'
+
 /**
- * Web: mismo hostname que la app (OAuth vía /__/auth → vercel.json / vite proxy).
- * Evita "missing initial state" en Safari cuando el redirect iba a firebaseapp.com.
- * Nativo Capacitor: firebaseapp.com (sin rewrite local).
+ * authDomain fijo en firebaseapp.com: Google OAuth ya autoriza
+ * https://syng-app.firebaseapp.com/__/auth/handler (sin tocar Google Cloud Console).
+ * iOS web usa popup (no redirect cross-site). vercel.json mantiene /__/auth por si
+ * algún flujo legacy lo necesita; nativo Capacitor igual usa firebaseapp.com.
  */
 function authDomainForApp() {
-  if (Capacitor.isNativePlatform()) return 'syng-app.firebaseapp.com'
-  if (typeof window !== 'undefined') {
-    const { hostname } = window.location
-    if (hostname === 'localhost' || hostname === '127.0.0.1') {
-      return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || hostname
-    }
-    return hostname
-  }
-  return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'syng-app.firebaseapp.com'
+  return import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || FIREBASE_AUTH_DOMAIN
 }
 
 const firebaseConfig = {

@@ -10,16 +10,18 @@ function b64urlEncode(str) {
   return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')
 }
 
-export function encodeCalendarToken({ taskId, title, alarmAt, taskTime, kind, redirect }) {
+export function encodeCalendarToken({ taskId, title, phrase, alarmAt, taskTime, kind, redirect, sequence }) {
   const payload = {
     id: taskId,
     t: title || 'Recordatorio',
     // Hora local del iPhone — evita que Vercel (UTC) desplace el evento
     a: toIcsLocal(new Date(alarmAt)),
+    s: sequence ?? Math.floor(Date.now() / 1000),
   }
   if (taskTime) payload.u = toIcsLocal(new Date(taskTime))
   const tz = getDeviceTimeZone()
   if (tz) payload.z = tz
+  if (phrase) payload.p = phrase
   if (kind) payload.k = kind
   if (redirect) payload.r = redirect
   return `${b64urlEncode(JSON.stringify(payload))}.ics`

@@ -122,14 +122,14 @@ function IphonePreview({ done }) {
         <>
           <LuxuryStep n="1" title="Continuar" desc="Toca el botón de abajo. iPhone abrirá la invitación." />
           <LuxuryStep n="2" title="Permitir" desc="Acepta cuando Safari te lo pida." />
-          <LuxuryStep n="3" title="Agregar al calendario" desc="Confirma el evento Syng · Recordatorio." />
+          <LuxuryStep n="3" title="Agregar al calendario" desc="Confirma el evento con Syng, la frase amable y tu tarea." />
           <p style={luxuryNote}>Sin ese gesto, el aviso no sonará fuera de Syng.</p>
           <div style={luxuryBtnPrimary}>Continuar</div>
         </>
       ) : (
         <>
           <p style={{ margin: '0 0 18px', fontSize: 13, lineHeight: 1.55, color: L.ivoryMuted }}>
-            Busca <strong style={{ color: L.ivory }}>Syng · Recordatorio</strong> en Calendario.
+            Busca el evento con <strong style={{ color: L.ivory }}>Syng · Es momento de retomarlo ·</strong> y el nombre de tu tarea en Calendario.
           </p>
           <div style={luxuryBtnOutline}>Reintentar</div>
           <div style={luxuryBtnGhost}>Listo</div>

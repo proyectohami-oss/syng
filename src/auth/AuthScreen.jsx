@@ -46,6 +46,10 @@ export function AuthScreen() {
       'access_denied':                 'Acceso cancelado. Intenta de nuevo.',
       'redirect_failed':               'Safari bloqueó el acceso. Ve a Ajustes → Safari → desactiva "Evitar rastreo entre sitios" e intenta otra vez.',
       'invalid_request':               'Google bloqueó el acceso. Prueba correo y contraseña, o actualiza la app y vuelve a intentar.',
+      'redirect_uri_mismatch':         'Google no reconoce esta URL de Syng. Abre https://syng-psi.vercel.app en Safari (no un enlace de preview) o usa correo y contraseña.',
+    }
+    if (code?.includes('redirect_uri_mismatch')) {
+      return 'Google no reconoce la URL de acceso. Abre Syng desde https://syng-psi.vercel.app en Safari (si usas el ícono, reinstálalo desde esa URL) o entra con correo y contraseña.'
     }
     if (code?.includes('invalid_request') || code?.includes('solicitud') || code?.includes('not valid')) {
       return 'Google bloqueó el acceso. Prueba con correo y contraseña abajo, o espera 2 min y reintenta tras actualizar la página.'

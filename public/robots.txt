@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Allow: /que-es-syng
+Allow: /entrar
+Disallow: /agenda
+Disallow: /pizarron
+Disallow: /pizarrones
+Disallow: /perfil
+Disallow: /notificaciones
+Disallow: /aliados
+Disallow: /recordatorio/
+
+Sitemap: https://syng-psi.vercel.app/sitemap.xml

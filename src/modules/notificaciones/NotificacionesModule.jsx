@@ -98,7 +98,7 @@ export function NotificacionesModule() {
         {notifs.map(n => (
           <div
             key={n.id}
-            onClick={() => n.actionUrl && navigate(n.actionUrl)}
+            onClick={() => (n.actionUrl || n.url) && navigate(n.actionUrl || n.url)}
             style={{
               display: 'flex',
               gap: 12,
@@ -128,7 +128,7 @@ export function NotificacionesModule() {
                 color: L.ivory,
                 lineHeight: 1.45,
               }}>
-                {n.body}
+                {n.body || n.title}
               </p>
               <p style={{ margin: '4px 0 0', fontSize: 12, color: L.ivoryFaint }}>
                 {timeAgo(n.createdAt)}

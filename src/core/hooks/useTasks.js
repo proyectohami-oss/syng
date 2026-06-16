@@ -54,8 +54,6 @@ export function useTasks() {
     throw error
   }, [])
 
-  // ── Crear ────────────────────────────────────────────────────────
-
   const createTask = useCallback(async (data) => {
     const uid = state.auth.user?.uid
     if (!uid) throw new Error('Not authenticated')
@@ -97,20 +95,9 @@ export function useTasks() {
     }
   }, [state.auth.user, state.auth.userData, state.auth.subscription, dispatch, guardMovement, handleMovementError])
 
-  // ── Actualizar ───────────────────────────────────────────────────
-
-  /**
-   * Actualiza campos de una tarea existente.
-   * Si cambia type o groupId, la tarea se reubica automáticamente
-   * gracias a removeTaskFromAllMaps en el reducer.
-   *
-   * @param {Object} task    — tarea actual del estado
-   * @param {Object} updates — campos a cambiar (title, dueDate, type, groupId, etc.)
-   */
   const updateTask = useCallback(async (task, updates) => {
     const now = Timestamp.now()
 
-    // Tarea con los cambios aplicados — usa los nuevos valores si existen
     const patched = {
       ...task,
       ...updates,
@@ -128,8 +115,6 @@ export function useTasks() {
         title: updates.title ?? task.title,
         dueDate: updates.dueDate ?? task.dueDate,
       }
-      // Solo tocar recordatorio si el formulario lo envió explícitamente.
-      // Evita borrar avisos al mover fecha, cambiar grupo, etc.
       if (!('reminder' in updates)) {
         delete fsUpdates.reminder
         delete fsUpdates.reminderTime
@@ -137,13 +122,10 @@ export function useTasks() {
       await svcUpdate(task.id, fsUpdates)
     } catch (error) {
       console.error('[useTasks] updateTask error:', error)
-      // Rollback: restaura la tarea original
       dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task })
       handleMovementError(error)
     }
   }, [dispatch, guardMovement, handleMovementError])
-
-  // ── Toggle completada/pendiente ──────────────────────────────────
 
   const toggleStatus = useCallback(async (task) => {
     const uid         = state.auth.user?.uid
@@ -174,8 +156,6 @@ export function useTasks() {
       handleMovementError(error)
     }
   }, [state.auth.user, state.auth.userData, dispatch, guardMovement, handleMovementError])
-
-  // ── Eliminar (soft delete) ───────────────────────────────────────
 
   const deleteTask = useCallback(async (task) => {
     try {

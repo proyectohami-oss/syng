@@ -72,12 +72,7 @@ async function pruneBadTokens(uid, tokens, result) {
   }
 }
 
-async function saveInApp(uid, { title, body, taskId, url }) {
-  await db.collection(`users/${uid}/notifications`).add({
-    type: 'reminder', title, body, taskId, url, read: false,
-    createdAt: FieldValue.serverTimestamp(),
-  })
-}
+const { saveInAppNotification, notifyGroupMembersFromActivity } = require('./inAppNotifications')
 
 /** Payload congelado v4 — ver src/core/notifications/PUSH_CONTRACT.js */
 const PUSH_PIPELINE_VERSION = 'native-v1'
@@ -109,7 +104,7 @@ async function deliverReminderPush({ userId, title, taskId, reminderId, test, to
   const url       = test ? recordatorioUrl(testTaskId) : recordatorioUrl(taskId)
 
   if (!test) {
-    await saveInApp(userId, { title: pushTitle, body: pushBody, taskId, url })
+    await saveInAppNotification(userId, { type: 'reminder', title: pushTitle, body: pushBody, taskId, url })
   }
 
   let entries = await getUserTokens(userId)
@@ -214,6 +209,16 @@ exports.sendReminderTask = onDocumentCreated('reminders/{id}', async (event) => 
   } catch (err) {
     console.error('[sendReminderTask] cola falló, envío directo:', err.message)
     await deliverReminderPush(payload)
+  }
+})
+
+exports.onActivityLogCreated = onDocumentCreated('activity_log/{logId}', async (event) => {
+  const data = event.data?.data()
+  if (!data) return
+  try {
+    await notifyGroupMembersFromActivity(data)
+  } catch (err) {
+    console.error('[onActivityLogCreated]', err.message)
   }
 })
 

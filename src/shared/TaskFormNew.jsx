@@ -18,6 +18,8 @@ import { showToast } from './Toast'
 const MESES = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
   'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre']
 
+const REMINDER_EDIT_MSG = 'Para cambiar fecha o aviso, elimina esta tarea y créala de nuevo con el recordatorio que necesitas.'
+
 function pad2(n) { return String(n).padStart(2, '0') }
 
 function labelFechaLarga(ds) {
@@ -131,6 +133,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
   const state = useCoreState()
   const { setHideBottomNav } = useShellChrome()
   const isEdit = !!task
+  const reminderLocked = isEdit && taskHasReminder(task)
   const inputRef = useRef(null)
   const keyboardOffset = useKeyboardOffset()
   const [saving, setSaving] = useState(false)
@@ -193,7 +196,16 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
     return () => clearTimeout(t)
   }, [])
 
+  function notifyReminderLocked() {
+    showToast(REMINDER_EDIT_MSG, 'ℹ️')
+  }
+
   function applyReminderResult({ h24, min, offsetMin }) {
+    if (reminderLocked) {
+      notifyReminderLocked()
+      setPanel('main')
+      return
+    }
     const t = from24h(h24)
     setActH12(t.h12)
     setActAmpm(t.ampm)
@@ -219,17 +231,21 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
     setSaving(true)
     try {
       if (isEdit) {
-        const { dueDate, reminder, reminderTime } = buildDueAndReminder(
-          dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
-        )
-        await updateTask(task, { title: trimmed, groupId: gId, type, dueDate, reminder, reminderTime })
-        if (repeatDays.size > 0) {
-          await Promise.all(
-            Array.from(repeatDays).sort().filter(d => d !== dateStr).map(day => {
-              const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
-              return createTask({ title: trimmed, type, groupId: gId, ...extra })
-            }),
+        if (reminderLocked) {
+          await updateTask(task, { title: trimmed, groupId: gId, type })
+        } else {
+          const { dueDate, reminder, reminderTime } = buildDueAndReminder(
+            dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
           )
+          await updateTask(task, { title: trimmed, groupId: gId, type, dueDate, reminder, reminderTime })
+          if (repeatDays.size > 0) {
+            await Promise.all(
+              Array.from(repeatDays).sort().filter(d => d !== dateStr).map(day => {
+                const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
+                return createTask({ title: trimmed, type, groupId: gId, ...extra })
+              }),
+            )
+          }
         }
         showToast('Cambios guardados', '✓')
       } else if (repeatDays.size > 0) {
@@ -302,6 +318,14 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
                       />
                     </div>
 
+                    {reminderLocked && (
+                      <div style={s.lockBanner}>
+                        <p style={s.lockTitle}>Recordatorio activo</p>
+                        <p style={s.lockText}>{REMINDER_EDIT_MSG}</p>
+                        <p style={s.lockHint}>Puedes editar el título y el grupo.</p>
+                      </div>
+                    )}
+
                     <div style={s.optionsCard}>
                       <button type="button" onClick={() => setShowGroup(v => !v)} style={s.optionRow}>
                         <span style={s.optionIcon}>👥</span>
@@ -323,17 +347,46 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
 
                       {repeatDays.size === 0 && (
                         <>
-                          <OptionRow icon="📅" label="Fecha" value={labelFechaLarga(dateStr)} onClick={() => setPanel('date')} />
+                          <OptionRow
+                            icon="📅"
+                            label="Fecha"
+                            value={labelFechaLarga(dateStr)}
+                            onClick={() => {
+                              if (reminderLocked) { notifyReminderLocked(); return }
+                              setPanel('date')
+                            }}
+                            locked={reminderLocked}
+                          />
                           <div style={s.divider} />
                         </>
                       )}
 
-                      <OptionRow icon="🔔" label="Recordatorio" value={reminderSummary} onClick={() => setPanel('reminder')} accent={reminderOn} />
+                      <OptionRow
+                        icon="🔔"
+                        label="Recordatorio"
+                        value={reminderSummary}
+                        onClick={() => {
+                          if (reminderLocked) { notifyReminderLocked(); return }
+                          setPanel('reminder')
+                        }}
+                        accent={reminderOn}
+                        locked={reminderLocked}
+                      />
                       <div style={s.divider} />
-                      <OptionRow icon="🔁" label="Repetir" value={repeatSummary} onClick={() => setShowRepeat(true)} accent={repeatDays.size > 0} />
+                      <OptionRow
+                        icon="🔁"
+                        label="Repetir"
+                        value={repeatSummary}
+                        onClick={() => {
+                          if (reminderLocked) { notifyReminderLocked(); return }
+                          setShowRepeat(true)
+                        }}
+                        accent={repeatDays.size > 0}
+                        locked={reminderLocked}
+                      />
                     </div>
 
-                    {repeatDays.size > 0 && (
+                    {repeatDays.size > 0 && !reminderLocked && (
                       <p style={s.repeatHint}>
                         {isEdit
                           ? `Se crearán ${repeatDays.size} tarea${repeatDays.size !== 1 ? 's' : ''} adicionales.`
@@ -345,7 +398,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
                   </>
                 )}
 
-                {panel === 'date' && (
+                {panel === 'date' && !reminderLocked && (
                   <div style={s.subPanel}>
                     <div style={s.card}>
                       <p style={s.cardLabel}>Elegir fecha</p>
@@ -358,7 +411,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
             </>
           )}
 
-          {panel === 'reminder' && (
+          {panel === 'reminder' && !reminderLocked && (
             <ReminderPanel
               dateStr={dateStr || defaultDate || `${today.getFullYear()}-${pad2(today.getMonth() + 1)}-${pad2(today.getDate())}`}
               initialH24={actH24}
@@ -375,7 +428,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
         </div>
       </div>
 
-      {showRepeat && (
+      {showRepeat && !reminderLocked && (
         <RepeatDayPicker
           selectedDays={repeatDays}
           onChange={days => setRepeatDays(days)}
@@ -386,13 +439,14 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
   )
 }
 
-function OptionRow({ icon, label, value, onClick, accent }) {
+function OptionRow({ icon, label, value, onClick, accent, locked = false }) {
   return (
-    <button type="button" onClick={onClick} style={s.optionRow}>
+    <button type="button" onClick={onClick} style={{ ...s.optionRow, opacity: locked ? 0.55 : 1 }}>
       <span style={s.optionIcon}>{icon}</span>
       <span style={s.optionLabel}>{label}</span>
       <span style={{ ...s.optionValue, color: accent ? L.champagne : L.ivoryMuted }}>{value}</span>
-      <IconChevron />
+      {!locked && <IconChevron />}
+      {locked && <span style={s.lockTag}>Fijo</span>}
     </button>
   )
 }
@@ -400,10 +454,12 @@ function OptionRow({ icon, label, value, onClick, accent }) {
 const s = {
   screen: {
     display: 'flex', flexDirection: 'column', flex: 1, minHeight: 0,
+    width: '100%', height: '100%',
     overflow: 'hidden', background: L.ink, color: L.ivory, position: 'relative',
   },
   overlay: {
     position: 'fixed', inset: 0, zIndex: 5000,
+    display: 'flex', flexDirection: 'column',
     background: L.ink,
     overflow: 'hidden',
     WebkitOverflowScrolling: 'touch',
@@ -419,6 +475,40 @@ const s = {
   content: {
     flex: 1, minHeight: 0, overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     padding: '12px 16px',
+  },
+  lockBanner: {
+    marginBottom: 12,
+    padding: '14px 16px',
+    borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`,
+    background: L.champagneLight,
+  },
+  lockTitle: {
+    margin: '0 0 6px',
+    fontSize: 10,
+    fontWeight: 500,
+    letterSpacing: '0.22em',
+    textTransform: 'uppercase',
+    color: L.champagne,
+  },
+  lockText: {
+    margin: '0 0 8px',
+    fontSize: 13,
+    lineHeight: 1.55,
+    color: L.ivory,
+  },
+  lockHint: {
+    margin: 0,
+    fontSize: 12,
+    lineHeight: 1.45,
+    color: L.ivoryMuted,
+  },
+  lockTag: {
+    fontSize: 10,
+    fontWeight: 600,
+    letterSpacing: '0.12em',
+    textTransform: 'uppercase',
+    color: L.ivoryFaint,
   },
   titleCard: {
     background: L.champagneLight, borderRadius: 2, marginBottom: 12,

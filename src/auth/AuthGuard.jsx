@@ -1,23 +1,35 @@
-import { useContext, useEffect, useState } from 'react'
-import { useNavigate }                     from 'react-router-dom'
-import { CoreAuthContext }                 from '../core/CoreDataProvider'
-import { AuthScreen }                      from './AuthScreen'
-import { PhoneSetupScreen }               from './PhoneSetupScreen'
-import { BienvenidaScreen }               from '../modules/bienvenida/BienvenidaScreen'
+import { useEffect, useState, useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useCoreAuth, useCoreTasks } from '../core/hooks/useCoreData'
+import { AuthScreen } from './AuthScreen'
+import { PhoneSetupScreen } from './PhoneSetupScreen'
+import { BienvenidaScreen } from '../modules/bienvenida/BienvenidaScreen'
+import {
+  getBienvenidaTaskSnapshot,
+  bienvenidaStorageKey,
+  shouldSkipBienvenidaPath,
+} from '../modules/bienvenida/bienvenidaTasks'
 import { SyngLogo } from '../shared/SyngLogo'
 import { L } from '../shared/agendaEditorial'
 
-function todayKey() {
-  return 'syng_bienvenida_' + new Date().toDateString()
-}
-
 export function AuthGuard({ children }) {
-  const auth     = useContext(CoreAuthContext)
+  const auth = useCoreAuth()
+  const tasks = useCoreTasks()
   const navigate = useNavigate()
   const [showBienvenida, setShowBienvenida] = useState(false)
+  const [gateReady, setGateReady] = useState(false)
+
+  const snapshot = useMemo(
+    () => (showBienvenida ? getBienvenidaTaskSnapshot(tasks) : null),
+    [showBienvenida, tasks],
+  )
 
   useEffect(() => {
-    if (!auth?.user || !auth?.userData) return
+    if (!auth?.user || !auth?.userData?.phoneNumber) {
+      setGateReady(false)
+      setShowBienvenida(false)
+      return
+    }
 
     const path = window.location.pathname
 
@@ -25,10 +37,9 @@ export function AuthGuard({ children }) {
     if (pendingUrl && pendingUrl.startsWith('/')) {
       sessionStorage.removeItem('pendingUrl')
       navigate(pendingUrl, { replace: true })
+      setGateReady(true)
       return
     }
-
-    if (path.startsWith('/recordatorio/')) return
 
     if (sessionStorage.getItem('justLoggedIn') === '1') {
       sessionStorage.removeItem('justLoggedIn')
@@ -36,15 +47,31 @@ export function AuthGuard({ children }) {
       if (pendingInv) {
         sessionStorage.removeItem('pendingInvToken')
         navigate(`/unirse?inv=${pendingInv}`, { replace: true })
+        setGateReady(true)
         return
       }
     }
 
-    const key = todayKey()
-    if (!localStorage.getItem(key)) {
-      localStorage.setItem(key, '1')
+    if (shouldSkipBienvenidaPath(path)) {
+      setGateReady(true)
+      return
     }
-  }, [auth?.user, auth?.userData, navigate])
+
+    if (localStorage.getItem(bienvenidaStorageKey())) {
+      setGateReady(true)
+      return
+    }
+
+    if (tasks.loading) return
+
+    setShowBienvenida(true)
+    setGateReady(true)
+  }, [auth?.user, auth?.userData?.phoneNumber, navigate, tasks.loading])
+
+  function finishBienvenida() {
+    localStorage.setItem(bienvenidaStorageKey(), '1')
+    setShowBienvenida(false)
+  }
 
   if (!auth || auth.loading) return <LoadingScreen message="Iniciando Syng…" />
 
@@ -64,13 +91,19 @@ export function AuthGuard({ children }) {
 
   if (!auth.userData) return <LoadingScreen message="Cargando tu perfil…" />
 
-  if (showBienvenida) {
-    return <BienvenidaScreen
-      userData={auth.userData}
-      tareasHoy={[]}
-      tareasAyer={[]}
-      onDone={() => setShowBienvenida(false)}
-    />
+  if (showBienvenida && snapshot) {
+    return (
+      <BienvenidaScreen
+        userData={auth.userData}
+        tareasHoy={snapshot.tareasHoy}
+        tareasAyer={snapshot.tareasAyer}
+        onDone={finishBienvenida}
+      />
+    )
+  }
+
+  if (!gateReady && !shouldSkipBienvenidaPath(window.location.pathname)) {
+    return <LoadingScreen message="Preparando tu día…" />
   }
 
   return children

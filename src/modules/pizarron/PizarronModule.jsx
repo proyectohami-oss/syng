@@ -11,6 +11,7 @@ import { ReminderBell } from '../../shared/ReminderBell'
 import { taskHasReminder } from '../../core/tasks/taskReminder'
 import { EmptyState }                  from '../../shared/EmptyState'
 import { SyncBadge }                   from '../../shared/SyncBadge'
+import { TaskFormNew }                 from '../../shared/TaskFormNew'
 import { CalendarSwipe }               from './components/CalendarSwipe'
 import { A, L }                        from '../../shared/agendaEditorial'
 
@@ -142,62 +143,12 @@ function DatePickerModal({ selectedKey, todayKey, daysWithActivity, onSelect, on
   )
 }
 
-function EditVariasModal({ count, groups, onSave, onClose }) {
-  const [fecha,        setFecha]        = useState('')
-  const [nuevoGroupId, setNuevoGroupId] = useState('__sin_cambio__')
-  const [loading,      setLoading]      = useState(false)
-  const hayCambio = fecha !== '' || nuevoGroupId !== '__sin_cambio__'
-
-  async function guardar() {
-    setLoading(true)
-    try { await onSave({ fecha, nuevoGroupId }) } finally { setLoading(false) }
-  }
-
-  return (
-    <div style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.72)', display:'flex', alignItems:'flex-end', justifyContent:'center', zIndex:1000 }}>
-      <div style={{ background:L.inkSoft, borderRadius:'2px 2px 0 0', borderTop:`1px solid ${L.champagneBorder}`, padding:'20px', width:'100%', maxWidth:480, paddingBottom:'calc(20px + env(safe-area-inset-bottom))' }}>
-        <p style={{ margin:'0 0 4px', fontSize:18, fontWeight:500, color:L.ivory, letterSpacing:'-0.01em', fontFamily:L.serif }}>
-          Editar {count} tarea{count !== 1 ? 's' : ''}
-        </p>
-        <p style={{ margin:'0 0 20px', fontSize:13, color:L.ivoryMuted }}>Solo se aplican los campos que cambies.</p>
-
-        <label style={{ display:'flex', alignItems:'center', gap:10, padding:'13px 0', borderBottom:`1px solid rgba(196,169,98,0.12)`, cursor:'pointer' }}>
-          <span>📅</span>
-          <span style={{ flex:1, fontSize:14, color:L.ivory }}>Nueva fecha</span>
-          <span style={{ fontSize:14, color: fecha ? L.champagne : L.ivoryFaint }}>
-            {fecha ? (() => { const [y,m,d] = fecha.split('-').map(Number); return `${d} de ${MESES[m-1]}` })() : 'Sin cambio ›'}
-          </span>
-          <input type="date" value={fecha} onChange={e => setFecha(e.target.value)} style={{ position:'absolute', opacity:0, pointerEvents:'none', width:0, height:0 }} />
-        </label>
-
-        <p style={{ margin:'12px 0 6px', fontSize:10, color:L.champagne, fontWeight:500, letterSpacing:'0.12em' }}>CAMBIAR GRUPO</p>
-        <div style={{ background:L.champagneLight, borderRadius:2, overflow:'hidden', border:`1px solid ${L.champagneBorder}`, marginBottom:20 }}>
-          {[{ id:'__sin_cambio__', name:'Sin cambio' }, { id:'', name:'Personal' }, ...groups].map(g => (
-            <div key={g.id} onClick={() => setNuevoGroupId(g.id)}
-              style={{ padding:'11px 16px', fontSize:14, cursor:'pointer', borderBottom:`1px solid rgba(196,169,98,0.1)`, background: nuevoGroupId === g.id ? 'rgba(196,169,98,0.12)' : 'transparent', color: nuevoGroupId === g.id ? L.champagne : L.ivory, fontWeight: nuevoGroupId === g.id ? 600 : 400 }}>
-              {g.name}
-            </div>
-          ))}
-        </div>
-
-        <div style={{ display:'flex', gap:8 }}>
-          <button onClick={onClose} style={{ ...A.btnSecondary, flex:1 }}>Cancelar</button>
-          <button onClick={guardar} disabled={!hayCambio || loading}
-            style={{ ...A.btnPrimary, flex:1, opacity: hayCambio ? 1 : 0.45, cursor: hayCambio ? 'pointer' : 'default' }}>
-            {loading ? 'Aplicando…' : 'Aplicar cambios'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
-
 export function PizarronModule() {
   const { id: groupId } = useParams()
   const navigate        = useNavigate()
   const state           = useCoreState()
   const { tasks, group, members, role, loading, uid } = usePizarronView(groupId)
-  const { toggleStatus, deleteTask, updateTask } = useTasks()
+  const { toggleStatus, deleteTask } = useTasks()
   const { leaveGroup, deleteGroup }              = useGroups()
   const perms = usePermissions(groupId)
   const readOnly = useFreeTierBlocked()
@@ -207,7 +158,6 @@ export function PizarronModule() {
   const [modal,       setModal]       = useState(null)
   const [selectedIds, setSelectedIds] = useState(new Set())
   const [calOpen,     setCalOpen]     = useState(false)
-  const [taskExpanded, setTaskExpanded] = useState(false)
   const [daySelected, setDaySelected] = useState(false)
   const [calViewMonth, setCalViewMonth] = useState(() => new Date())
   const [showYearPicker, setShowYearPicker] = useState(false)
@@ -217,7 +167,6 @@ export function PizarronModule() {
 
   function handleDayChange(key) {
     setSelectedKey(key)
-    setTaskExpanded(false)
     setDaySelected(true)
   }
 
@@ -259,7 +208,6 @@ export function PizarronModule() {
     const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
     setCalViewMonth(newDate)
     handleDayChange(toDateKey(finalDate))
-    setTaskExpanded(false)
   }
   function nextMonth() {
     const current   = parseKey(selectedKey)
@@ -270,7 +218,6 @@ export function PizarronModule() {
     const finalDate = new Date(newDate.getFullYear(), newDate.getMonth(), safeDay)
     setCalViewMonth(newDate)
     handleDayChange(toDateKey(finalDate))
-    setTaskExpanded(false)
   }
 
   const todayDate   = new Date()
@@ -425,7 +372,7 @@ export function PizarronModule() {
           </p>
         )}
 
-        {(taskExpanded ? pending : pending.slice(0,3)).map(task => {
+        {pending.map(task => {
           const member = members.find(m => m.uid === task.ownerId)
           const hora = task.dueDate ? (() => {
             const d = task.dueDate.toDate ? task.dueDate.toDate() : new Date(task.dueDate)
@@ -449,20 +396,9 @@ export function PizarronModule() {
                   {(member.displayName?.[0] ?? '?').toUpperCase()}
                 </div>
               )}
-              <button onClick={() => navigate(`/pizarron/${groupId}/editar/${task.id}`)} style={btnTask}>Editar</button>
-              <button onClick={() => setModal({ tipo:'borrar', task })} style={btnTask}>Eliminar</button>
             </div>
           )
         })}
-
-        {!taskExpanded && pending.length > 3 && (
-          <button
-            onClick={() => setTaskExpanded(true)}
-            style={{ width:'100%', padding:'10px 0', background:'none', border:'none', cursor:'pointer', fontSize:13, color:L.champagne, fontWeight:500, textAlign:'center' }}
-          >
-            Ver {pending.length - 3} más ⌄
-          </button>
-        )}
 
         {completed.length > 0 && (
           <>
@@ -486,13 +422,10 @@ export function PizarronModule() {
             {selectedIds.size} seleccionada{selectedIds.size !== 1 ? 's' : ''}
           </span>
           <div style={{ display:'flex', gap:8 }}>
-            <button onClick={async () => {
-              const todas = [...pending, ...completed]
-              const seleccionadas = todas.filter(t => selectedIds.has(t.id))
-              await Promise.all(seleccionadas.map(t => toggleStatus(t)))
-              limpiarSeleccion()
-            }} style={btnBarra}>Completar</button>
-            <button onClick={() => setModal({ tipo:'editarVarias' })} style={btnBarra}>Editar</button>
+            <button onClick={() => {
+              const t = [...pending, ...completed].find(x => selectedIds.has(x.id))
+              if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
+            }} style={btnBarra}>Editar</button>
             <button onClick={() => setModal({ tipo:'borrarVarias' })} style={{ ...btnBarra, background:'rgba(224,82,82,0.12)', color:'#E05252', border:'1px solid rgba(224,82,82,0.25)' }}>Eliminar</button>
           </div>
         </div>
@@ -520,6 +453,10 @@ export function PizarronModule() {
       )}
 
       {/* Modales */}
+      {modal?.tipo === 'editar' && (
+        <TaskFormNew task={modal.task} defaultDate={selectedKey} onClose={() => setModal(null)} />
+      )}
+
       {modal?.tipo === 'borrar' && (
         <ConfirmDialog
           title="Eliminar tarea"
@@ -545,30 +482,6 @@ export function PizarronModule() {
             setModal(null)
           }}
           onCancel={() => setModal(null)}
-        />
-      )}
-
-      {modal?.tipo === 'editarVarias' && (
-        <EditVariasModal
-          count={selectedIds.size}
-          groups={Array.from(state.groups.list.values())}
-          onClose={() => setModal(null)}
-          onSave={async ({ fecha, nuevoGroupId }) => {
-            const { Timestamp } = await import('firebase/firestore')
-            const todas = [...pending, ...completed]
-            const seleccionadas = todas.filter(t => selectedIds.has(t.id))
-            const updates = {}
-            if (fecha) updates.dueDate = Timestamp.fromDate(new Date(fecha + 'T23:59:59'))
-            if (nuevoGroupId !== '__sin_cambio__') {
-              updates.groupId = nuevoGroupId || null
-              updates.type    = nuevoGroupId ? 'group' : 'personal'
-            }
-            if (Object.keys(updates).length > 0) {
-              await Promise.all(seleccionadas.map(t => updateTask(t, updates)))
-            }
-            limpiarSeleccion()
-            setModal(null)
-          }}
         />
       )}
     </div>

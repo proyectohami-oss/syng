@@ -224,26 +224,6 @@ export async function updatePhoneNumber(uid, rawPhone) {
   return phoneNumber
 }
 
-/** Preferencias del recordatorio diario (Calendario) */
-export async function updateDailyReminderPrefs(uid, { enabled, hour, minute }) {
-  await setDoc(doc(db, 'users', uid), {
-    dailyReminder: {
-      enabled: !!enabled,
-      hour: hour ?? 8,
-      minute: minute ?? 0,
-      updatedAt: serverTimestamp(),
-    },
-    updatedAt: serverTimestamp(),
-  }, { merge: true })
-}
-
-export async function markDailyCalendarSynced(uid, dateKey) {
-  await setDoc(doc(db, 'users', uid), {
-    [`dailyReminder.calendarSynced.${dateKey}`]: true,
-    updatedAt: serverTimestamp(),
-  }, { merge: true })
-}
-
 /**
  * Busca un usuario por número de teléfono normalizado.
  * Retorna { uid, displayName, phoneNumber } o null si no existe.

@@ -1,3 +1,5 @@
+import { buildCalendarSummary } from './calendarSummary'
+
 function pad(n) {
   return String(n).padStart(2, '0')
 }
@@ -31,39 +33,33 @@ export function toIcsUtc(date) {
   )
 }
 
-function icsSummary(title) {
-  const safe = (title || 'Recordatorio').replace(/[,;\\]/g, ' ').trim()
-  const label = safe.length > 48 ? `${safe.slice(0, 45)}…` : safe
-  return `Syng · ${label}`
-}
-
-export function buildIcsEvent({
+function buildIcsEventLines({
   uid,
   title,
+  phrase,
+  kind,
   alarmAt,
   taskTime,
   url,
   tzid,
+  now,
+  sequence,
 }) {
+  const stamp = now || toIcsUtc(new Date())
   const start = toIcsLocal(alarmAt)
   const endDate = taskTime || new Date(alarmAt.getTime() + 15 * 60_000)
   const end = toIcsLocal(endDate)
-  const now = toIcsUtc(new Date())
-  const sum = icsSummary(title)
+  const sum = buildCalendarSummary({ title, phrase, kind })
   const desc = 'Tu momento Syng.\\nAbre la app cuando suene.'
-
   const dtStart = tzid ? `DTSTART;TZID=${tzid}:${start}` : `DTSTART:${start}`
   const dtEnd = tzid ? `DTEND;TZID=${tzid}:${end}` : `DTEND:${end}`
 
   return [
-    'BEGIN:VCALENDAR',
-    'VERSION:2.0',
-    'PRODID:-//Syng//Recordatorios//ES',
-    'CALSCALE:GREGORIAN',
-    'METHOD:PUBLISH',
     'BEGIN:VEVENT',
     `UID:${uid}`,
-    `DTSTAMP:${now}`,
+    `DTSTAMP:${stamp}`,
+    sequence != null ? `SEQUENCE:${sequence}` : null,
+    `LAST-MODIFIED:${stamp}`,
     dtStart,
     dtEnd,
     `SUMMARY:${sum}`,
@@ -75,6 +71,18 @@ export function buildIcsEvent({
     `DESCRIPTION:Syng te avisa`,
     'END:VALARM',
     'END:VEVENT',
+  ].filter(Boolean)
+}
+
+export function buildIcsEvent(opts) {
+  const now = toIcsUtc(new Date())
+  return [
+    'BEGIN:VCALENDAR',
+    'VERSION:2.0',
+    'PRODID:-//Syng//Recordatorios//ES',
+    'CALSCALE:GREGORIAN',
+    'METHOD:PUBLISH',
+    ...buildIcsEventLines({ ...opts, now }),
     'END:VCALENDAR',
-  ].filter(Boolean).join('\r\n')
+  ].join('\r\n')
 }

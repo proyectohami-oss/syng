@@ -23,6 +23,8 @@ import { ResumenDiarioScreen } from './modules/resumen/ResumenDiarioScreen'
 import { BienvenidoDeVueltaScreen } from './modules/reenganche/BienvenidoDeVueltaScreen'
 import { DeepLinkHandler } from './shared/DeepLinkHandler'
 import { AliadosSyngModule } from './modules/aliados/AliadosSyngModule'
+import { LandingPage } from './pages/LandingPage'
+import { QueEsSyngPage } from './pages/QueEsSyngPage'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -98,6 +100,13 @@ function AppWithViewport() {
       <DeepLinkHandler />
       <Routes>
         <Route path="/preview/aviso" element={<AvisoPreview />} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/que-es-syng" element={<QueEsSyngPage />} />
+        <Route path="/entrar" element={
+          <AuthGuard>
+            <Navigate to="/agenda" replace />
+          </AuthGuard>
+        } />
         <Route path="*" element={
       <AuthGuard>
         <InvitationChecker>
@@ -105,7 +114,6 @@ function AppWithViewport() {
           <ShellChromeProvider>
           <AppShell>
             <Routes>
-              <Route path="/"             element={<Navigate to="/agenda" replace />} />
               <Route path="/agenda"       element={<AgendaModule />} />
               <Route path="/agenda/:date" element={<DayModule />} />
               <Route path="/agenda/:date/nueva" element={<NewTaskScreen />} />

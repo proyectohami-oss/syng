@@ -12,6 +12,7 @@ const { onRequest } = require('firebase-functions/v2/https')
 const { defineString } = require('firebase-functions/params')
 const { getAuth } = require('firebase-admin/auth')
 const { getFirestore, FieldValue } = require('firebase-admin/firestore')
+const { saveInAppNotification } = require('./inAppNotifications')
 
 const mpToken = defineString('MERCADOPAGO_ACCESS_TOKEN', { default: '' })
 const db      = getFirestore()
@@ -187,6 +188,19 @@ async function recordPromotorCommission(payment, meta) {
 
   await batch.commit()
   console.log('[MP webhook] comisión registrada', promotorId, comision, `${pct}%`)
+
+  if (promotor.userId) {
+    try {
+      await saveInAppNotification(promotor.userId, {
+        type: 'payment.commission',
+        title: 'Comisión aplicada',
+        body: `Se registró una comisión de $${comision.toFixed(2)} por una nueva suscripción.`,
+        actionUrl: '/perfil',
+      })
+    } catch (err) {
+      console.warn('[MP webhook] aviso in-app comisión:', err.message)
+    }
+  }
 }
 
 function setCors(req, res) {

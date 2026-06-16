@@ -1,5 +1,7 @@
 export const config = { runtime: 'edge' }
 
+import { buildCalendarSummary, resolveFriendlyPhrase } from '../../src/core/calendar/calendarSummary.js'
+
 function pad(n) {
   return String(n).padStart(2, '0')
 }
@@ -31,15 +33,8 @@ function toIcsUtc(date) {
   )
 }
 
-function icsSummary(title) {
-  const safe = (title || 'Recordatorio').replace(/[,;\\]/g, ' ').trim()
-  const label = safe.length > 48 ? `${safe.slice(0, 45)}…` : safe
-  return `Syng · ${label}`
-}
-
 const ICS_LOCAL_RE = /^\d{8}T\d{6}$/
 
-/** Acepta "20260612T100900" (cliente) o ISO legacy */
 function normalizeIcsLocal(value) {
   if (typeof value === 'string' && ICS_LOCAL_RE.test(value)) return value
   const d = new Date(value)
@@ -70,9 +65,9 @@ function dtLine(prop, local, tzid) {
   return tz ? `${prop};TZID=${tz}:${local}` : `${prop}:${local}`
 }
 
-function buildIcsEvent({ uid, title, startLocal, endLocal, url, tzid }) {
+function buildSingleIcsEvent({ uid, title, phrase, kind, startLocal, endLocal, url, tzid, sequence }) {
   const now = toIcsUtc(new Date())
-  const sum = icsSummary(title)
+  const sum = buildCalendarSummary({ title, phrase, kind })
   const desc = 'Tu momento Syng.\\nAbre la app cuando suene.'
 
   return [
@@ -84,6 +79,8 @@ function buildIcsEvent({ uid, title, startLocal, endLocal, url, tzid }) {
     'BEGIN:VEVENT',
     `UID:${uid}`,
     `DTSTAMP:${now}`,
+    sequence != null ? `SEQUENCE:${sequence}` : null,
+    `LAST-MODIFIED:${now}`,
     dtLine('DTSTART', startLocal, tzid),
     dtLine('DTEND', endLocal, tzid),
     `SUMMARY:${sum}`,
@@ -113,7 +110,7 @@ export default async function handler(req) {
   const token = url.pathname.split('/').pop() || ''
 
   try {
-    const { id, t, a, u, k, r, z } = JSON.parse(b64urlDecode(token))
+    const { id, t, p, a, u, k, r, z, s } = JSON.parse(b64urlDecode(token))
     if (!id || !a) return new Response('Datos incompletos', { status: 400 })
 
     const startLocal = normalizeIcsLocal(a)
@@ -125,15 +122,17 @@ export default async function handler(req) {
     const targetUrl = k === 'daily'
       ? `${webApp}${r && r.startsWith('/') ? r : '/resumen-diario'}`
       : `${webApp}/recordatorio/${id}`
-    const eventUid = k === 'daily' ? `syng-${id}@syng.app` : `syng-${id}@syng.app`
 
-    const ics = buildIcsEvent({
-      uid: eventUid,
+    const ics = buildSingleIcsEvent({
+      uid: `syng-${id}@syng.app`,
       title: t,
+      phrase: k === 'daily' ? undefined : resolveFriendlyPhrase(p),
+      kind: k,
       startLocal,
       endLocal,
       url: targetUrl,
       tzid: z,
+      sequence: typeof s === 'number' ? s : (s ? Number(s) : undefined),
     })
 
     return new Response(ics, {
