@@ -31,8 +31,20 @@ export function useDayView(dateKey) {
     return ts.toMillis ? ts.toMillis() : new Date(ts).getTime()
   }
 
+  /** Pendientes sin createdAt (p. ej. serverTimestamp en vuelo) van al final, no arriba. */
+  function pendingSortMs(ts) {
+    if (!ts) return Number.MAX_SAFE_INTEGER
+    const ms = ts.toMillis ? ts.toMillis() : new Date(ts).getTime()
+    return Number.isFinite(ms) ? ms : Number.MAX_SAFE_INTEGER
+  }
+
   const pending = useMemo(
-    () => dayTasks.filter(t => t.status === 'pending').sort((a,b) => toMs(a.createdAt) - toMs(b.createdAt)),
+    () => dayTasks
+      .filter(t => t.status === 'pending')
+      .sort((a, b) => {
+        const diff = pendingSortMs(a.createdAt) - pendingSortMs(b.createdAt)
+        return diff !== 0 ? diff : a.id.localeCompare(b.id)
+      }),
     [dayTasks]
   )
 

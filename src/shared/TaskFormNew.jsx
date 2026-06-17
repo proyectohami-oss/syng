@@ -75,6 +75,18 @@ function buildDueAndReminder(dayKey, reminderOn, actH24, actM, totalOffsetMin, o
   }
 }
 
+/** Al editar sin recordatorio, no enviar reminder:null si nunca lo tuvo (evita deleteField y sync colgado). */
+function buildTaskSaveFields(dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary, existingTask = null) {
+  if (reminderOn) {
+    return buildDueAndReminder(dateStr, true, actH24, actM, totalOffsetMin, offsetSummary)
+  }
+  const dueDate = dateStr ? Timestamp.fromDate(localEndOfDay(dateStr)) : null
+  if (existingTask && taskHasReminder(existingTask)) {
+    return { dueDate, reminder: null, reminderTime: null }
+  }
+  return { dueDate }
+}
+
 function IconChevron() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={L.ivoryFaint} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -234,15 +246,17 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
         if (reminderLocked) {
           await updateTask(task, { title: trimmed, groupId: gId, type })
         } else {
-          const { dueDate, reminder, reminderTime } = buildDueAndReminder(
-            dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
+          const extra = buildTaskSaveFields(
+            dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary, task,
           )
-          await updateTask(task, { title: trimmed, groupId: gId, type, dueDate, reminder, reminderTime })
+          await updateTask(task, { title: trimmed, groupId: gId, type, ...extra })
           if (repeatDays.size > 0) {
             await Promise.all(
               Array.from(repeatDays).sort().filter(d => d !== dateStr).map(day => {
-                const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
-                return createTask({ title: trimmed, type, groupId: gId, ...extra })
+                const dayExtra = buildTaskSaveFields(
+                  day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
+                )
+                return createTask({ title: trimmed, type, groupId: gId, ...dayExtra })
               }),
             )
           }
@@ -251,16 +265,14 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
       } else if (repeatDays.size > 0) {
         await Promise.all(
           Array.from(repeatDays).sort().map(day => {
-            const extra = buildDueAndReminder(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
+            const extra = buildTaskSaveFields(day, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
             return createTask({ title: trimmed, type, groupId: gId, ...extra })
           }),
         )
         showToast('Tareas creadas', '✓')
       } else {
-        const { dueDate, reminder, reminderTime } = buildDueAndReminder(
-          dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary,
-        )
-        await createTask({ title: trimmed, type, groupId: gId, dueDate, reminder, reminderTime })
+        const extra = buildTaskSaveFields(dateStr, reminderOn, actH24, actM, totalOffsetMin, offsetSummary)
+        await createTask({ title: trimmed, type, groupId: gId, ...extra })
         showToast('Tarea creada', '✓')
       }
       onClose()
@@ -433,6 +445,7 @@ export function TaskFormNew({ task, defaultDate, onClose }) {
           selectedDays={repeatDays}
           onChange={days => setRepeatDays(days)}
           onClose={() => setShowRepeat(false)}
+          zIndex={5100}
         />
       )}
     </>
@@ -549,9 +562,22 @@ const s = {
     textTransform: 'uppercase', color: L.champagne, textAlign: 'center',
   },
   dateInput: {
-    width: '100%', boxSizing: 'border-box', padding: 14, borderRadius: 2,
-    border: `1px solid ${L.champagneBorder}`, fontSize: 15, marginBottom: 12,
-    color: L.ivory, background: L.champagneLight, fontFamily: 'inherit',
+    width: '100%',
+    maxWidth: '100%',
+    minWidth: 0,
+    WebkitMinLogicalWidth: '100%',
+    boxSizing: 'border-box',
+    display: 'block',
+    padding: 14,
+    borderRadius: 2,
+    border: `1px solid ${L.champagneBorder}`,
+    fontSize: 15,
+    marginBottom: 12,
+    color: L.ivory,
+    background: L.champagneLight,
+    fontFamily: 'inherit',
+    WebkitAppearance: 'none',
+    appearance: 'none',
   },
   btnPrimary: {
     width: '100%', padding: 14, borderRadius: 2, border: `1px solid ${L.ivory}`, cursor: 'pointer',

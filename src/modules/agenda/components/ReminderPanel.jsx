@@ -250,15 +250,6 @@ export function ReminderPanel({
             <IOSWheel items={WHEEL_H12} value={h12} onChange={setH12} />
             <IOSWheel items={WHEEL_MINS} value={min} onChange={setMin} format={v => pad2(v)} />
           </div>
-
-          <div style={ios.footer}>
-            <button type="button" style={ios.btnFilled} onClick={() => setStep('aviso')}>
-              Siguiente
-            </button>
-            <button type="button" style={ios.btnText} onClick={onSkip}>
-              Sin aviso
-            </button>
-          </div>
         </div>
       )}
 

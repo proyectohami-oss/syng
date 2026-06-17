@@ -106,7 +106,7 @@ export function DayModule() {
         </div>
       </div>
 
-      <div style={{ flex:1, overflowY:'auto', padding:'8px 16px 140px', WebkitOverflowScrolling:'touch' }}>
+      <div style={{ flex:1, overflowY:'auto', padding:`8px 16px ${haySeleccion ? 24 : 140}px`, WebkitOverflowScrolling:'touch', minHeight:0 }}>
 
         {orderedPending.length === 0 && (
           <p style={{ fontSize:14, color:L.ivoryFaint, margin:'24px 0', textAlign:'center', fontFamily:L.serif }}>
@@ -127,34 +127,6 @@ export function DayModule() {
             variant="pending"
           />
         ))}
-
-        {/* Toolbar sticky con emojis 3D */}
-        {haySeleccion && !readOnly && (
-          <div style={{ position:'sticky', bottom:12, zIndex:500, margin:'12px 0' }}>
-            <div style={{
-              height: 72,
-              background: L.inkSoft,
-              borderRadius: 2,
-              border: `1px solid ${L.champagneBorder}`,
-              boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-around',
-              padding: '0 16px',
-            }}>
-              <span style={{ fontSize:12, fontWeight:500, color:L.ivoryMuted }}>{selectedIds.size} sel.</span>
-              <button type="button" onClick={() => {
-                const t = [...pending,...completed].find(t => selectedIds.has(t.id))
-                if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
-              }} style={{ background:'none', border:'none', cursor:'pointer', padding:'4px 16px', color:L.champagne, fontSize:12, fontWeight:600, letterSpacing:'0.08em' }}>
-                EDITAR
-              </button>
-              <button type="button" onClick={() => setModal({ tipo:'borrarVarias' })} style={{ background:'none', border:'none', cursor:'pointer', padding:'4px 16px', color:'#fca5a5', fontSize:12, fontWeight:600, letterSpacing:'0.08em' }}>
-                ELIMINAR
-              </button>
-            </div>
-          </div>
-        )}
 
         {/* Completadas */}
         {completedVisible.length > 0 && (
@@ -180,6 +152,31 @@ export function DayModule() {
           </>
         )}
       </div>
+
+      {/* Barra de selección — encima de la nav (como Pizarrones) */}
+      {haySeleccion && !readOnly && (
+        <div style={{
+          flexShrink: 0,
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-around',
+          height: 72,
+          padding: '0 16px',
+          background: L.inkSoft,
+          borderTop: `1px solid ${L.champagneBorder}`,
+        }}>
+          <span style={{ fontSize:12, fontWeight:500, color:L.ivoryMuted }}>{selectedIds.size} sel.</span>
+          <button type="button" onClick={() => {
+            const t = [...pending,...completed].find(t => selectedIds.has(t.id))
+            if (t) { limpiarSeleccion(); setModal({ tipo:'editar', task:t }) }
+          }} style={{ background:'none', border:'none', cursor:'pointer', padding:'4px 16px', color:L.champagne, fontSize:12, fontWeight:600, letterSpacing:'0.08em' }}>
+            EDITAR
+          </button>
+          <button type="button" onClick={() => setModal({ tipo:'borrarVarias' })} style={{ background:'none', border:'none', cursor:'pointer', padding:'4px 16px', color:'#fca5a5', fontSize:12, fontWeight:600, letterSpacing:'0.08em' }}>
+            ELIMINAR
+          </button>
+        </div>
+      )}
 
       {/* ── FAB: Nueva tarea — esquina inferior derecha ── */}
       {!haySeleccion && !readOnly && (

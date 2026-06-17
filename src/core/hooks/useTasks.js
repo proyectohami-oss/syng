@@ -120,6 +120,7 @@ export function useTasks() {
         delete fsUpdates.reminderTime
       }
       await svcUpdate(task.id, fsUpdates)
+      dispatch({ type: CORE_ACTIONS.SET_PENDING_WRITES, hasPendingWrites: false })
     } catch (error) {
       console.error('[useTasks] updateTask error:', error)
       dispatch({ type: CORE_ACTIONS.TASK_UPDATED_OPTIMISTIC, task })

@@ -25,7 +25,7 @@ function buildPat(baseDate, dowList, weeks = 4) {
 
 function dKey(y, m, d) { return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}` }
 
-export function RepeatDayPicker({ selectedDays, onChange, onClose }) {
+export function RepeatDayPicker({ selectedDays, onChange, onClose, zIndex = 1100 }) {
   const today = new Date()
   const [viewMonth, setViewMonth] = useState(new Date(today.getFullYear(), today.getMonth(), 1))
   const [selected, setSelected] = useState(new Set(selectedDays))
@@ -56,7 +56,7 @@ export function RepeatDayPicker({ selectedDays, onChange, onClose }) {
   const count = selected.size
 
   return (
-    <div style={overlay} onClick={e => e.target === e.currentTarget && onClose()}>
+    <div style={{ ...overlay, zIndex }} onClick={e => e.target === e.currentTarget && onClose()}>
       <div style={sheet}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <span style={{ fontSize: 18, fontWeight: 400, color: L.ivory, fontFamily: L.serif, letterSpacing: '-0.02em' }}>
