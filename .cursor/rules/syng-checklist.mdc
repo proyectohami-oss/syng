@@ -1,0 +1,60 @@
+---
+description: Checklist activa de pendientes Syng App + Admin (baseline v2026-06-17-estable)
+alwaysApply: true
+---
+
+# Syng — Checklist activa
+
+**Baseline:** tag `v2026-06-17-estable` · prod https://syng-psi.vercel.app · App `~/syng` · Admin `~/syng-admin`
+
+**Reglas sesión:** Mi Agenda no tocar salvo fix puntual · Pizarrones alinear con Agenda, sin refactors amplios · cambios mínimos · deploy solo con "SI" · no commit/push salvo que lo pida · no tocar admin salvo que lo pida.
+
+**Syng App — congelada** (decisión Efrain): prod estable en `v2026-06-17-estable`; no codear salvo fix puntual que pida. Plan Gratis / teléfono / anti-abuso: **aceptado así** (sin SMS, ID dispositivo local + número en Firestore).
+
+## ✅ Cerrado
+
+- Fixes Agenda+Pizarrones (`9c67b88`), freeze/avisos/SEO (`34d2bd6`), git limpio, prod alineado
+- **Mercado Pago:** checkout + webhook + comisión + auto-referido (`assertNotSelfReferral` en `mercadopago.js`); pago real validado por Efrain; `MERCADOPAGO_PRODUCTION=true` en `functions/.env.syng-app`
+- **Aliados App:** módulo `/aliados`, código inactivo con mensaje (`ALIADO_CODIGO_INACTIVO_MSG`), deep link, retiros, FAQ, dejar programa
+- **Aliados Admin (local):** liquidar, pagar retiros SPEI, switch Aliados, form nombre+email, en revisión, calculadora margen
+- **Lista de Súper:** retirada del producto (no está en nav); ruta `/super` placeholder residual — no construir; limpiar solo si Efrain lo pide
+
+## Syng App — pendiente
+
+### Alta
+- [ ] **Reenganche:** pantalla `/bienvenido-de-vuelta` ✅ · falta Cloud Function (3–5 días sin tareas → push)
+- [ ] **Resumen diario:** pantalla `/resumen-diario` ✅ · push automático legacy (`.github/scripts` usa colección `pizarron` vieja, no `/resumen-diario`) — modernizar o validar manual
+
+### Media
+- [ ] Invitaciones en lote (multi-select, un envío, anti-duplicados)
+- [ ] Pizarrones menor: centrar "Hoy" al abrir; días pasados más tenues
+- [ ] PWA/móvil real (iPhone instalada, barra inferior iOS/Android)
+- [ ] Términos en pantalla de pago ("sin reembolsos salvo ley") — hoy solo dice "se activa al confirmarse el pago"
+
+### Pausa / backlog
+- Openpay + cobro $40/mes · form perfil · panel admin usuarios de pago (50 usuarios)
+- Planes · deep linking · auth SMS · actividad grupo · contactos iOS · clics link aliado v2 · identidad visual Pizarrones
+
+## Syng Admin — pendiente
+
+### Operacional
+- [x] Prod verificado (Finanzas/retiros ya en syng-admin.vercel.app, build previo)
+- [x] Git init en `~/syng-admin`
+- [ ] **Deploy Vercel** con nuevas features (avisos pago, CSV, liquidar elegibles) — decir **SI**
+- [ ] Guardar Configuración en prod (descuento, comisión 25%, Aliados activo) — manual Efrain
+- [ ] Commit inicial admin (cuando lo pida)
+
+### Producto — implementado local (pendiente deploy)
+- [x] Notificaciones owner por nuevo pago (banner + badge + browser notify)
+- [x] Reporte mensual Finanzas (Exportar CSV del mes)
+- [x] Corte mensual = botón **Liquidar elegibles** (ventana 7 días)
+
+### Fiscal
+- [ ] ISR / facturación aliados — contador, antes de retiros en volumen
+
+## Mercado Pago / fiscal
+
+- [x] Sandbox + producción E2E (pago real hecho)
+- [ ] Fiscal (ISR, facturación aliados) — antes de retiros reales en volumen
+
+**Formato bugs:** DÓNDE / QUÉ VEO / QUÉ DEBERÍA PASAR / QUÉ NO TOCAR / PRIORIDAD + tarea concreta.

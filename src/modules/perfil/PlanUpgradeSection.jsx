@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { collection, getDocs } from 'firebase/firestore'
+import { collection, onSnapshot } from 'firebase/firestore'
 import { db } from '../../firebase'
 import { useCoreAuth } from '../../core/hooks/useCoreData'
 import { startMercadoPagoCheckout } from '../../core/services/payments.service'
@@ -41,21 +41,22 @@ export function PlanUpgradeSection({ currentPlanId, systemConfig, appliedAliado,
     : 0
 
   useEffect(() => {
-    let cancelled = false
-    ;(async () => {
-      try {
-        const snap = await getDocs(collection(db, 'subscription_plans'))
+    setLoading(true)
+    const unsub = onSnapshot(
+      collection(db, 'subscription_plans'),
+      (snap) => {
         const list = snap.docs
           .map(d => ({ id: d.id, ...d.data() }))
           .filter(p => isPlanAvailable(p, systemConfig) && p.id !== currentPlanId)
-        if (!cancelled) setPlans(sortPlans(list))
-      } catch (e) {
-        if (!cancelled) onError?.(e.message || 'No se pudieron cargar los planes')
-      } finally {
-        if (!cancelled) setLoading(false)
-      }
-    })()
-    return () => { cancelled = true }
+        setPlans(sortPlans(list))
+        setLoading(false)
+      },
+      (e) => {
+        onError?.(e.message || 'No se pudieron cargar los planes')
+        setLoading(false)
+      },
+    )
+    return () => unsub()
   }, [currentPlanId, systemConfig, onError])
 
   useEffect(() => {

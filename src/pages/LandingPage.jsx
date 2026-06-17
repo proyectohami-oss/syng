@@ -2,25 +2,24 @@ import { useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useCoreAuth } from '../core/hooks/useCoreData'
 import { SyngLogo } from '../shared/SyngLogo'
+import { usePageMeta } from '../shared/usePageMeta'
 import { A, L } from '../shared/agendaEditorial'
 
 export function LandingPage() {
   const auth = useCoreAuth()
   const navigate = useNavigate()
 
+  usePageMeta({
+    title: 'Syng — Organiza tareas, grupos y recordatorios',
+    description: 'Syng ayuda a familias y equipos a coordinar pendientes del día, con avisos y pizarrons compartidos. Empieza gratis en México.',
+    path: '/',
+  })
+
   useEffect(() => {
     if (auth?.user && !auth.loading) {
       navigate('/agenda', { replace: true })
     }
   }, [auth?.user, auth?.loading, navigate])
-
-  if (auth?.loading) {
-    return (
-      <div style={page}>
-        <p style={{ color: L.ivoryMuted, fontSize: 14 }}>Cargando…</p>
-      </div>
-    )
-  }
 
   if (auth?.user) return null
 

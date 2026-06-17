@@ -1,5 +1,7 @@
+import { useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { SyngLogo } from '../shared/SyngLogo'
+import { usePageMeta } from '../shared/usePageMeta'
 import { A, L } from '../shared/agendaEditorial'
 
 const FAQ = [
@@ -26,6 +28,23 @@ const FAQ = [
 ]
 
 export function QueEsSyngPage() {
+  const faqSchema = useMemo(() => ({
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map(({ q, a }) => ({
+      '@type': 'Question',
+      name: q,
+      acceptedAnswer: { '@type': 'Answer', text: a },
+    })),
+  }), [])
+
+  usePageMeta({
+    title: 'Qué es Syng — App para organizar tareas en familia',
+    description: 'Preguntas frecuentes sobre Syng: agenda compartida, pizarrons de grupo, recordatorios y plan gratis. Disponible en iPhone, Android y web.',
+    path: '/que-es-syng',
+    jsonLd: faqSchema,
+  })
+
   return (
     <div style={page}>
       <Link to="/" style={backLink}>← Inicio</Link>
