@@ -29,24 +29,8 @@ import { SyngLogoRow }                from './SyngLogo'
 import { L } from './agendaEditorial'
 import { usePushNotifications } from '../core/notifications/usePushNotifications'
 import { FreeTierBanner } from './FreeTierBanner'
-
-async function shareApp() {
-  const data = {
-    title: 'Syng',
-    text:  'Estoy organizando mi vida y proyectos con Syng. Pruébala:',
-    url:   'https://syng-psi.vercel.app',
-  }
-  if (navigator.share) {
-    try { await navigator.share(data) } catch {}
-  } else {
-    try {
-      await navigator.clipboard.writeText(data.url)
-      alert('Link copiado al portapapeles')
-    } catch {
-      alert('https://syng-psi.vercel.app')
-    }
-  }
-}
+import { useSiteContent } from '../hooks/useSiteContent'
+import { FAN_PAGE_URL, DEFAULT_SHARE_MESSAGE } from '../core/services/siteContent.service'
 
 const NAV_STROKE_ACTIVE = L.champagne
 const NAV_STROKE_IDLE   = L.ivoryFaint
@@ -96,6 +80,7 @@ const NAV_ITEMS = [
 
 export function AppShell({ children }) {
   usePushNotifications()
+  const { content } = useSiteContent()
   const auth      = useCoreAuth()
   const groupsCtx = useCoreGroups()
   const navigate  = useNavigate()
@@ -121,6 +106,22 @@ export function AppShell({ children }) {
   const mediaRecorderRef = useRef(null)
   const chunksRef        = useRef([])
   const tieneSyngAI      = false // Syng AI — pausado; analizar fluidez de comunicación antes de activar
+
+  async function shareApp() {
+    const text = content.share_message || DEFAULT_SHARE_MESSAGE
+    const data = { title: 'Syng', text, url: FAN_PAGE_URL }
+    if (navigator.share) {
+      try { await navigator.share(data) } catch {}
+    } else {
+      const full = `${text}\n\n${FAN_PAGE_URL}`
+      try {
+        await navigator.clipboard.writeText(full)
+        alert('Mensaje copiado — pégalo en WhatsApp o donde quieras')
+      } catch {
+        alert(full)
+      }
+    }
+  }
 
   async function toggleSyng() {
     if (syngCargando) return
