@@ -25,6 +25,7 @@ import { DeepLinkHandler } from './shared/DeepLinkHandler'
 import { AliadosSyngModule } from './modules/aliados/AliadosSyngModule'
 import { LandingPage } from './pages/LandingPage'
 import { QueEsSyngPage } from './pages/QueEsSyngPage'
+import { FanPage } from './pages/FanPage'
 
 const globalStyles = `
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -101,6 +102,7 @@ function AppWithViewport() {
       <Routes>
         <Route path="/preview/aviso" element={<AvisoPreview />} />
         <Route path="/" element={<LandingPage />} />
+        <Route path="/fan" element={<FanPage />} />
         <Route path="/que-es-syng" element={<QueEsSyngPage />} />
         <Route path="/entrar" element={
           <AuthGuard>

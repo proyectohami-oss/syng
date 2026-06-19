@@ -107,6 +107,11 @@ service cloud.firestore {
       allow write: if isSyngAdmin();
     }
 
+    match /site_content/{docId} {
+      allow read: if true;
+      allow write: if isSyngAdmin();
+    }
+
     match /system_config/{docId} {
       allow read: if isAuthenticated();
       allow write: if isSyngAdmin();

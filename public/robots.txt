@@ -1,5 +1,6 @@
 User-agent: *
 Allow: /
+Allow: /fan
 Allow: /que-es-syng
 Allow: /entrar
 Disallow: /agenda

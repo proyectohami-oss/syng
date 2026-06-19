@@ -39,6 +39,7 @@ export function LandingPage() {
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12, maxWidth: 320, width: '100%', margin: '0 auto 32px' }}>
         <Link to="/entrar" style={ctaPrimary}>Empezar gratis</Link>
+        <Link to="/fan" style={ctaSecondary}>Ritual de personas exitosas</Link>
         <Link to="/que-es-syng" style={ctaSecondary}>Qué es Syng</Link>
       </div>
 
